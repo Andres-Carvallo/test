@@ -7,7 +7,7 @@ import { getCookie } from "cookies-next";
 import axios from "axios";
 import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
 
-function ProductPageBO() {
+export default function ProductPageBO() {
   const [filterDropdownVisible, setFilterDropdownVisible] = useState(false);
   const [actionsDropdownVisible, setActionsDropdownVisible] = useState(false);
   const { productType, setProductType, products, setProducts } = useAPI();
@@ -489,5 +489,3 @@ function ProductPageBO() {
     </section>
   );
 }
-
-export default ProductPageBO;
