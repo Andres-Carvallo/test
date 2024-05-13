@@ -1,9 +1,287 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
+"use client";
+import Link from "next/link";
 import AsideTotal from "@/components/Checkout/AsideTotal";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useAPI } from "@/app/Context/ProductTypeContext";
+import { getCookie, deleteCookie } from "cookies-next";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import AutoSubmitForm from "@/components/Checkout/AutoSubmitForm";
+import CartList from "@/components/CartCanva/CartList";
 
 function Checkout() {
+  const [regions, setRegions] = useState([]);
+  const [communes, setCommunes] = useState([]);
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedCommune, setSelectedCommune] = useState("");
+  const { cartItems, setCartItems, fetchCartData, cartData } = useAPI();
+  const totalAmount = cartData?.totals?.totalAmount;
+  const subtotalAmount = cartData?.totals?.subtotalAmount;
+  const discountAmount = cartData?.totals?.discountAmount;
+
+  const [deliveryType, setDeliveryType] = useState(""); // Valor predeterminado: entrega a domicilio
+  const [deliveryTypeID, setDeliveryTypeID] = useState("");
+  const [orderSubmitted, setOrderSubmitted] = useState(false); // Nuevo estado para controlar si se ha enviado la orden
+  const [transactionData, setTransactionData] = useState<{
+    url: string;
+    token: string;
+  } | null>(null);
+
+  const cartId = getCookie("cartId");
+  const [customer, setCustomer] = useState({
+    cartId: cartId,
+    deliveryTypeId: "",
+    useDifferentShippingAddress: false,
+    customer: {
+      firstname: "",
+      lastname: "",
+      phoneNumber: "",
+      email: "",
+      addressLine1: "",
+      addressLine2: "",
+      communeId: "",
+    },
+  });
+  const incrementQuantity = async (itemId: string) => {
+    try {
+      const itemIndex = cartItems.findIndex((item: any) => item.id === itemId);
+      if (itemIndex !== -1) {
+        const updatedCartItems = [...cartItems];
+        updatedCartItems[itemIndex] = {
+          ...updatedCartItems[itemIndex],
+          quantity: updatedCartItems[itemIndex].quantity + 1,
+        };
+        setCartItems(updatedCartItems);
+
+        // Actualizar la cantidad en la API
+        const cartId = getCookie("cartId");
+        const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`,
+          { quantity: updatedCartItems[itemIndex].quantity }
+        );
+        fetchCartData();
+      }
+    } catch (error) {
+      console.error("Error incrementing quantity:", error);
+    }
+  };
+
+  const decrementQuantity = async (itemId: string) => {
+    try {
+      const itemIndex = cartItems.findIndex((item: any) => item.id === itemId);
+      if (itemIndex !== -1 && cartItems[itemIndex].quantity > 1) {
+        const updatedCartItems = [...cartItems];
+        updatedCartItems[itemIndex] = {
+          ...updatedCartItems[itemIndex],
+          quantity: updatedCartItems[itemIndex].quantity - 1,
+        };
+        setCartItems(updatedCartItems);
+
+        // Actualizar la cantidad en la API
+        const cartId = getCookie("cartId");
+        const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`,
+          { quantity: updatedCartItems[itemIndex].quantity }
+        );
+        fetchCartData();
+      }
+    } catch (error) {
+      console.error("Error decrementing quantity:", error);
+    }
+  };
+
+  const removeItem = async (itemId: string) => {
+    try {
+      const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const cartId = getCookie("cartId");
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`
+      );
+      // Si la solicitud se completa con éxito, actualiza el estado del carrito eliminando el elemento correspondiente
+      setCartItems((prevItems: any) =>
+        prevItems.filter((item: any) => item.id !== itemId)
+      );
+      fetchCartData();
+    } catch (error) {
+      console.error("Error removing item from cart:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCartData();
+    fetchRegions();
+    console.log(cartData, "cartData");
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchRegions = async () => {
+    try {
+      const Pais = "CL";
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions`
+      );
+      console.log(response.data.regions, "response");
+      setRegions(response.data.regions);
+    } catch (error) {
+      console.error("Error fetching regions:", error);
+    }
+  };
+
+  const fetchCommunes = async (regionId: any) => {
+    try {
+      const Pais = "CL";
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes`
+      );
+      setCommunes(response.data.communes);
+    } catch (error) {
+      console.error("Error fetching communes:", error);
+    }
+  };
+
+  const handleRegionChange = (e: any) => {
+    const regionId = e.target.value;
+    setSelectedRegion(regionId);
+    setSelectedCommune(""); // Reset selected commune when region changes
+    if (regionId) {
+      fetchCommunes(regionId);
+    } else {
+      setCommunes([]); // Reset communes if no region is selected
+    }
+  };
+
+  const handleCommuneChange = (e: any) => {
+    const communeId = e.target.value;
+    setSelectedCommune(communeId);
+    console.log(communeId, "communeId");
+    setCustomer({
+      ...customer,
+      customer: {
+        ...customer.customer,
+        communeId: communeId,
+      },
+    });
+  };
+
+  const handleChangeDeliveryType = async (newValue: any) => {
+    console.log("Nuevo valor de deliveryType:", newValue);
+    setDeliveryType(newValue);
+
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
+      );
+      const deliveryTypes = response.data.deliveryTypes;
+      const selectedDeliveryType = deliveryTypes.find(
+        (type: any) => type.code === newValue
+      );
+      if (selectedDeliveryType) {
+        console.log(
+          "ID del deliveryType seleccionado:",
+          selectedDeliveryType.id
+        );
+        setDeliveryTypeID(selectedDeliveryType.id);
+      } else {
+        console.error(
+          "No se encontró el deliveryType seleccionado en la respuesta de la API"
+        );
+      }
+    } catch (error) {
+      console.error("Error al obtener los tipos de entrega:", error);
+    }
+  };
+
+  const handleSubmitOrder = async () => {
+    try {
+      const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
+        {
+          cartId: customer.cartId,
+          deliveryTypeId: deliveryTypeID,
+          useDifferentShippingAddress: false,
+          customer: {
+            firstname: customer.customer.firstname,
+            lastname: customer.customer.lastname,
+            phoneNumber: customer.customer.phoneNumber,
+            email: customer.customer.email,
+            addressLine1: customer.customer.addressLine1,
+            addressLine2: customer.customer.addressLine2,
+            communeId: customer.customer.communeId,
+          },
+        }
+      );
+
+      console.log("Respuesta del servidor:", response.data);
+
+      if (response.data.code === 0) {
+        const orderId = response.data.order.id;
+
+        const paymentGatewayResponse = await axios.get(
+          `https://pixelup-site-api-git-development-pixelups-projects.vercel.app/api/v1/payment-gateways?statusCode=ACTIVE`
+        );
+        const paymentGateways = paymentGatewayResponse.data.paymentGateways;
+        const activePaymentGatewayId = paymentGateways[0].id; // Supongamos que tomamos el primer medio de pago
+
+        // Cuarta solicitud para actualizar el estado de la orden con el medio de pago correspondiente
+        const updateOrderUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${SiteId}`;
+        const updateOrderResponse = await axios.put(updateOrderUrl, {
+          statusCode: "PAYMENT_PENDING",
+          initTransactionInfo: {
+            paymentGatewayId: activePaymentGatewayId,
+            errorUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`,
+            returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/validate?orderId=${orderId}`,
+          },
+        });
+        if (updateOrderResponse.data.code === 0) {
+          toast(
+            "¡Datos enviados correctamente y orden actualizada con medio de pago!"
+          );
+
+          setTransactionData({
+            token: updateOrderResponse.data.transaction.token,
+            url: updateOrderResponse.data.transaction.url,
+          });
+
+          // Marca la orden como enviada
+          setOrderSubmitted(true);
+        } else {
+          console.error(
+            "Error al actualizar la orden con el medio de pago:",
+            updateOrderResponse.data
+          );
+          toast.error("Error al actualizar la orden con el medio de pago");
+        }
+      }
+    } catch (error) {
+      console.error("Error al enviar la orden:", error);
+      // Manejo de errores dentro del bloque try...catch
+    } finally {
+      // Restablecer el estado del cliente y manejar la respuesta del servidor
+      deleteCookie("cartId");
+      setCustomer({
+        cartId: cartId,
+        deliveryTypeId: "",
+        useDifferentShippingAddress: false,
+        customer: {
+          firstname: "",
+          lastname: "",
+          phoneNumber: "",
+          email: "",
+          addressLine1: "",
+          addressLine2: "",
+          communeId: "",
+        },
+      });
+      // Aquí puedes manejar la respuesta del servidor según sea necesario
+    }
+  };
+
   return (
     <div className="pb-12">
       <>
@@ -92,105 +370,17 @@ function Checkout() {
         <div className="grid sm:px-10 lg:grid-cols-2 lg:px-20 xl:px-32">
           <div className="px-4 pt-8">
             <p className="text-xl font-medium">Order Summary</p>
-            <p className="text-gray-400">
+            <p className="text-gray-400 mb-4">
               Check your items. And select a suitable shipping method.
             </p>
-            <div className="mt-8 space-y-3 rounded-lg border bg-white px-2 py-4 sm:px-6 overflow-y-auto h-[60vh] ">
-              <div className="flex flex-col rounded-lg bg-white sm:flex-row">
-                <img
-                  className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                  src="https://images.unsplash.com/flagged/photo-1556637640-2c80d3201be8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"
-                  alt=""
+            <div className="w-full  bg-white shadow-lg relative ml-auto h-auto">
+              <div className="overflow-auto p-6 ">
+                <CartList
+                  cartItems={cartItems}
+                  incrementQuantity={incrementQuantity}
+                  decrementQuantity={decrementQuantity}
+                  removeItem={removeItem}
                 />
-                <div className="flex w-full flex-col px-4 py-4">
-                  <span className="font-semibold">
-                    Nike Air Max Pro 8888 - Super Light
-                  </span>
-                  <span className="float-right text-gray-400">
-                    42EU - 8.5US
-                  </span>
-                  <p className="text-lg font-bold">$138.99</p>
-                </div>
-              </div>
-              <div className="flex flex-col rounded-lg bg-white sm:flex-row">
-                <img
-                  className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                  src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8OHx8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"
-                  alt=""
-                />
-                <div className="flex w-full flex-col px-4 py-4">
-                  <span className="font-semibold">
-                    Nike Air Max Pro 8888 - Super Light
-                  </span>
-                  <span className="float-right text-gray-400">
-                    42EU - 8.5US
-                  </span>
-                  <p className="mt-auto text-lg font-bold">$238.99</p>
-                </div>
-              </div>
-              <div className="flex flex-col rounded-lg bg-white sm:flex-row">
-                <img
-                  className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                  src="https://images.unsplash.com/flagged/photo-1556637640-2c80d3201be8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"
-                  alt=""
-                />
-                <div className="flex w-full flex-col px-4 py-4">
-                  <span className="font-semibold">
-                    Nike Air Max Pro 8888 - Super Light
-                  </span>
-                  <span className="float-right text-gray-400">
-                    42EU - 8.5US
-                  </span>
-                  <p className="text-lg font-bold">$138.99</p>
-                </div>
-              </div>
-              <div className="flex flex-col rounded-lg bg-white sm:flex-row">
-                <img
-                  className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                  src="https://images.unsplash.com/flagged/photo-1556637640-2c80d3201be8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"
-                  alt=""
-                />
-                <div className="flex w-full flex-col px-4 py-4">
-                  <span className="font-semibold">
-                    Nike Air Max Pro 8888 - Super Light
-                  </span>
-                  <span className="float-right text-gray-400">
-                    42EU - 8.5US
-                  </span>
-                  <p className="text-lg font-bold">$138.99</p>
-                </div>
-              </div>
-              <div className="flex flex-col rounded-lg bg-white sm:flex-row ">
-                <img
-                  className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                  src="https://images.unsplash.com/flagged/photo-1556637640-2c80d3201be8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"
-                  alt=""
-                />
-                <div className="flex w-full flex-col px-4 py-4">
-                  <span className="font-semibold">
-                    Nike Air Max Pro 8888 - Super Light
-                  </span>
-                  <span className="float-right text-gray-400">
-                    42EU - 8.5US
-                  </span>
-                  <p className="text-lg font-bold">$138.99</p>
-                </div>
-              </div>
-              <div className="flex flex-col rounded-lg bg-white sm:flex-row">
-                <img
-                  className="m-2 h-24 w-28 rounded-md border object-cover object-center"
-                  src="https://images.unsplash.com/flagged/photo-1556637640-2c80d3201be8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8c25lYWtlcnxlbnwwfHwwfHw%3D&auto=format&fit=crop&w=500&q=60"
-                  alt=""
-                />
-                <div className="flex w-full flex-col px-4 py-4">
-                  <span className="font-semibold">
-                    Nike Air Max Pro 8888 - Super Light
-                  </span>
-                  <span className="float-right text-gray-400">
-                    42EU - 8.5US
-                  </span>
-                  <p className="text-lg font-bold">$138.99</p>
-                </div>
               </div>
             </div>
           </div>
@@ -200,92 +390,238 @@ function Checkout() {
               Complete your order by providing your payment details.
             </p>
             <div className="">
-              <label
-                htmlFor="email"
-                className="mt-4 mb-2 block text-sm font-medium"
-              >
-                Email
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="email"
-                  name="email"
-                  className="w-full rounded-md border border-gray-200 px-4 py-3 pl-11 text-sm shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="your.email@gmail.com"
-                />
-                <div className="pointer-events-none absolute inset-y-0 left-0 inline-flex items-center px-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
+              <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
+                <p className="text-xl font-medium">Customer Details</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <label
+                    htmlFor="firstname"
+                    className="block mt-4"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                    First Name
+                    <input
+                      type="text"
+                      id="firstname"
+                      name="firstname"
+                      value={customer.customer.firstname}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            firstname: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
                     />
-                  </svg>
+                  </label>
+                  <label
+                    htmlFor="lastname"
+                    className="block mt-4"
+                  >
+                    Last Name
+                    <input
+                      type="text"
+                      id="lastname"
+                      name="lastname"
+                      value={customer.customer.lastname}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            lastname: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <label
+                    htmlFor="phoneNumber"
+                    className="block mt-4"
+                  >
+                    Phone Number
+                    <input
+                      type="text"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={customer.customer.phoneNumber}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            phoneNumber: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                    />
+                  </label>
+                  <label
+                    htmlFor="email"
+                    className="block mt-4"
+                  >
+                    Email
+                    <input
+                      type="text"
+                      id="email"
+                      name="email"
+                      value={customer.customer.email}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            email: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <label
+                    htmlFor="addressLine1"
+                    className="block mt-4"
+                  >
+                    Address Line 1
+                    <input
+                      type="text"
+                      id="addressLine1"
+                      name="addressLine1"
+                      value={customer.customer.addressLine1}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            addressLine1: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+                    />
+                  </label>
+                  <label
+                    htmlFor="addressLine2"
+                    className="block mt-4"
+                  >
+                    Address Line 2
+                    <input
+                      type="text"
+                      id="addressLine2"
+                      name="addressLine2"
+                      value={customer.customer.addressLine2}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            addressLine2: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <label
+                    htmlFor="RegionId"
+                    className="block mt-4"
+                  >
+                    Región
+                    <select
+                      id="region"
+                      value={selectedRegion}
+                      onChange={(event) => {
+                        handleRegionChange(event);
+                      }}
+                      className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
+                    >
+                      <option>Selecciona Región</option>
+                      {regions.map((region: any) => (
+                        <option
+                          key={region.id}
+                          value={region.id}
+                        >
+                          {region.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label
+                    htmlFor="communeId"
+                    className="block mt-4"
+                  >
+                    Comuna
+                    <select
+                      id="commune"
+                      value={selectedCommune}
+                      onChange={(event) => {
+                        handleCommuneChange(event);
+                      }}
+                      disabled={!selectedRegion}
+                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                    >
+                      <option>Selecciona Comuna</option>
+                      {communes.map((commune: any) => (
+                        <option
+                          key={commune.id}
+                          value={commune.id}
+                        >
+                          {commune.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
               </div>
-              <label
-                htmlFor="card-holder"
-                className="mt-4 mb-2 block text-sm font-medium"
-              >
-                Nombre
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  id="card-holder"
-                  name="card-holder"
-                  className="w-full rounded-md border border-gray-200 px-4 py-3 pl-11 text-sm uppercase shadow-sm outline-none focus:z-10 focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="Your full name here"
-                />
-                <div className="pointer-events-none absolute inset-y-0 left-0 inline-flex items-center px-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
+
               <p className="mt-8 text-lg font-medium">Shipping Methods</p>
               <form className="mt-5 grid gap-6">
                 <div className="relative">
                   <input
                     className="peer hidden"
-                    id="radio_1"
+                    id="radio_retiroTienda"
                     type="radio"
                     name="radio"
-                    checked={true}
+                    value="WITHDRAWAL_FROM_STORE"
+                    checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
+                    onChange={() =>
+                      handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")
+                    }
                   />
                   <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
                   <label
                     className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                    htmlFor="radio_1"
+                    htmlFor="radio_retiroTienda"
                   >
-                    <img
-                      className="w-14 object-contain"
-                      src="/img/fed.png"
-                      alt=""
-                    />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-12 h-12"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                      />
+                    </svg>
                     <div className="ml-5">
-                      <span className="mt-2 font-semibold">Fedex Delivery</span>
+                      <span className="mt-2 font-semibold">
+                        Retiro en Tienda
+                      </span>
                       <p className="text-slate-500 text-sm leading-6">
-                        Delivery: 2-4 Days
+                        Delivery: 0-1 Days
                       </p>
                     </div>
                   </label>
@@ -293,23 +629,34 @@ function Checkout() {
                 <div className="relative">
                   <input
                     className="peer hidden"
-                    id="radio_2"
+                    id="radio_delivery"
                     type="radio"
                     name="radio"
-                    checked={true}
+                    value="HOME_DELIVERY"
+                    checked={deliveryType === "HOME_DELIVERY"}
+                    onChange={() => handleChangeDeliveryType("HOME_DELIVERY")}
                   />
                   <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
                   <label
-                    className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                    htmlFor="radio_2"
+                    className="peer-checked:border-2  peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                    htmlFor="radio_delivery"
                   >
-                    <img
-                      className="w-14 object-contain"
-                      src="/img/dhl.png"
-                      alt=""
-                    />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-12 h-12"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                      />
+                    </svg>
                     <div className="ml-5">
-                      <span className="mt-2 font-semibold">DHL Delivery</span>
+                      <span className="mt-2 font-semibold">Delivery</span>
                       <p className="text-slate-500 text-sm leading-6">
                         Delivery: 2-4 Days
                       </p>
@@ -322,24 +669,40 @@ function Checkout() {
               <div className="mt-6 border-t border-b py-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">Subtotal</p>
-                  <p className="font-semibold text-gray-900">$399.00</p>
+                  <p className="font-semibold text-gray-900">
+                    $ {subtotalAmount}
+                  </p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900">Shipping</p>
-                  <p className="font-semibold text-gray-900">$8.00</p>
+                  <p className="text-sm font-medium text-gray-900">Descuento</p>
+                  <p className="font-semibold text-gray-900">
+                    $ {discountAmount}
+                  </p>
                 </div>
               </div>
               <div className="mt-6 flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-900">Total</p>
-                <p className="text-2xl font-semibold text-gray-900">$408.00</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  $ {totalAmount}
+                </p>
               </div>
             </div>
-            <button className="mt-4 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white">
-              Place Order
+            <button
+              onClick={handleSubmitOrder}
+              className="mt-4 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white"
+            >
+              Pagar
             </button>
           </div>
         </div>
       </>
+      {orderSubmitted && transactionData && (
+        <AutoSubmitForm
+          action={transactionData.url}
+          method="post"
+          token={transactionData.token}
+        />
+      )}
     </div>
   );
 }

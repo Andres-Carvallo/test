@@ -2,7 +2,7 @@ import React from "react";
 
 export default function page() {
   return (
-    <div className="text-gray-600 body-font">
+    <section className="text-gray-600 body-font">
       <div className="container px-5 py-24 mx-auto">
         <div className="flex flex-col text-center w-full mb-20">
           <h1 className="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">
@@ -21,9 +21,9 @@ export default function page() {
               <svg
                 fill="none"
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 className="text-indigo-500 w-12 h-12 mb-3 inline-block"
                 viewBox="0 0 24 24"
               >
@@ -43,7 +43,7 @@ export default function page() {
                 stroke="currentColor"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
+                strokeWidth="2"
                 className="text-indigo-500 w-12 h-12 mb-3 inline-block"
                 viewBox="0 0 24 24"
               >
@@ -68,7 +68,7 @@ export default function page() {
                 stroke="currentColor"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
+                strokeWidth="2"
                 className="text-indigo-500 w-12 h-12 mb-3 inline-block"
                 viewBox="0 0 24 24"
               >
@@ -88,7 +88,7 @@ export default function page() {
                 stroke="currentColor"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
+                strokeWidth="2"
                 className="text-indigo-500 w-12 h-12 mb-3 inline-block"
                 viewBox="0 0 24 24"
               >
@@ -102,6 +102,6 @@ export default function page() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -10,9 +10,11 @@ function Testimonial01() {
   return (
     <div>
       <div className="my-6 font-[sans-serif] ">
-        <div className="mb-20 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl font-extrabold">Testimonials</h2>
-          <p className="text-sm text-[#333] mt-4 leading-relaxed">
+        <div className="mb-6 text-center max-w-3xl mx-auto">
+          <h2 className="text-center text-2xl font-bold text-gray-800  lg:text-3xl uppercase">
+            Testimonios
+          </h2>
+          <p className="text-base text-[#333] mt-4 leading-relaxed">
             Veniam proident aute magna anim excepteur et ex consectetur velit
             ullamco veniam minim aute sit. Elit occaecat officia et laboris
             Lorem minim. Officia do aliqua adipisicing ullamco in

@@ -8,7 +8,7 @@ import Collection01 from "@/components/Collections/Collection01";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between w-full">
+    <section className="flex min-h-screen flex-col items-center justify-between w-full">
       <Banner01 />
       <Stats02 />
       <ProductList01 />
@@ -16,6 +16,6 @@ export default function Home() {
       <CTA01 />
       <Stats01 />
       <Testimonial01 />
-    </main>
+    </section>
   );
 }

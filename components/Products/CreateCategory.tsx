@@ -8,12 +8,21 @@ interface CreateCategoryProps {
   onCategoriaNueva: any; // Definir el tipo de la función
 }
 
-interface Category {
+type Category = {
+  previewImageBase64: any;
   id: number;
   name: string;
   description: string;
   previewImageUrl: string; // Cambiar el nombre de la propiedad
-}
+  previewImage?: {
+    name: string;
+    type: string;
+    size: number;
+    data: string;
+  };
+  statusCode: string;
+  // Otros campos de la categoría
+};
 
 const CreateCategory: React.FC<CreateCategoryProps> = ({
   handleCloseModal,
@@ -77,26 +86,45 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
     fetchCategories();
   }, []);
 
-  const handleCategorySelection = (category: Category) => {
-    console.log("Data de la categoría seleccionada:", category); // Para depuración
-    setMode("update");
-    setSelectedCategory(category);
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      name: category.name,
-      description: category.description,
-      statusCode: "ACTIVE",
-      previewImage: {
-        ...prevFormData.previewImage,
-        name: category.previewImage?.name || "",
-        type: category.previewImage?.type || "",
-        size: category.previewImage?.size || 0,
-        data: category.previewImageUrl,
-      },
-    }));
-    // Mostrar la imagen previa al editar
-    if (category.previewImageUrl) {
-      setPreviewImageBase64(category.previewImageUrl);
+  const handleCategorySelection = (category: Category | string) => {
+    if (typeof category === "object") {
+      // category es un objeto de tipo Category
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        name: category.name,
+        description: category.description,
+        statusCode: category.statusCode,
+        previewImage: category.previewImage
+          ? {
+              name: category.previewImage.name || "",
+              type: category.previewImage.type || "",
+              size: category.previewImage.size || 0,
+              data: category.previewImage.data || "",
+            }
+          : {
+              name: "",
+              type: "",
+              size: 0,
+              data: "",
+            },
+        // Otros campos del formulario
+      }));
+    } else {
+      // category es una cadena
+      // Maneja este caso según sea necesario, por ejemplo, establece valores predeterminados
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        name: "Default Name",
+        description: "Default Description",
+        statusCode: "ACTIVE",
+        previewImage: {
+          name: "",
+          type: "",
+          size: 0,
+          data: "",
+        },
+        // Otros campos del formulario
+      }));
     }
   };
 

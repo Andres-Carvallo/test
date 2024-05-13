@@ -97,7 +97,7 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
   return (
     <div className="relative px-12 flex mt-[10%] justify-center ">
       {/* Modal content */}
-      <div className="relative p-4 grid grid-cols-1 sm:grid-cols-2 max-w-[50vw] min-w-[60vw] bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
+      <div className="relative p-4 grid grid-cols-1 sm:grid-cols-2 max-w-[45vw] min-w-[45vw] bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
         <div>
           <div className="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600 ">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">

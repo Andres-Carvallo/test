@@ -15,8 +15,8 @@ const Tabs: React.FC<TabsProps> = ({ handleCloseModal, fetchData }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex mt-[5%] min-w-96  bg-white my-4 p-4 rounded-xl">
+    <div className="max-w-[45vw] min-w-[45vw] mx-auto">
+      <div className="flex mt-[10vh] min-w-96  bg-white my-4 p-4 rounded-xl">
         <button
           className={`flex-1 p-4 rounded-xl ${
             activeTab === "create" ? "bg-gray-200" : ""

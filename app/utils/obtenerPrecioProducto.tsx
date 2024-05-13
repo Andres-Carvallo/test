@@ -2,11 +2,12 @@ import axios from "axios";
 
 export async function obtenerPrecioProducto(
   productId: string,
-  SiteId: string
+  SiteId: string,
+  skuId: string
 ): Promise<number | null> {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/pricings?siteId=${SiteId}`
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${SiteId}`
     );
     const { productPricings } = response.data;
     // Verifica si hay al menos un precio de producto disponible

@@ -15,13 +15,17 @@ const Header = () => {
 
   return (
     <section>
-      <header className="border-b bg-white font-sans min-h-[60px] py-4">
+      <header className="border-b bg-white font-sans min-h-[60px]">
         <div className="flex flex-wrap items-center justify-between px-10 py-3 gap-4 relative">
           <a
             href="/"
             className="text-2xl font-bold"
           >
-            PixelUP PRO
+            <img
+              src="/img/logo-1.png"
+              alt=""
+              className="h-20"
+            />
           </a>
 
           <div className="flex items-center max-lg:ml-auto lg:order-1">
