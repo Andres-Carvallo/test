@@ -6,6 +6,7 @@ import axios from "axios";
 import Marquee from "react-fast-marquee";
 import { getCookie } from "cookies-next";
 import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTiendaBO";
+import { Content } from "next/font/google";
 function ContentBlock() {
   const [loading, setLoading] = useState(false);
   const [bannerDataMarquee, setBannerDataMarquee] = useState<any | null>(null);
@@ -223,7 +224,7 @@ function ContentBlock() {
             <button
               type="submit"
               disabled={loading}
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center"
+              className="text-white bg-dark hover:bg-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
             >
               <svg
                 aria-hidden="true"
@@ -253,12 +254,14 @@ function ContentBlock() {
           <h4 className="uppercase font-bold mb-4">Mensaje bienvenida</h4>
           <div className="border border-dashed border-dark/50 rounded-lg p-4 ">
             <div className=" text-[#333] p-8 font-[sans-serif]">
-              <div className="max-w-xl mx-auto text-center">
-                <h2 className="text-4xl  font-extrabold relative after:absolute after:-bottom-5 after:h-1 after:w-1/2 after:bg-primary after:left-0 after:right-0 after:mx-auto after:rounded-full">
+              <div className="max-w-2xl mx-auto text-center">
+                <h2 className="text-3xl  font-bold uppercase  font-sans text-dark">
                   {welcomeData?.title}
                 </h2>
-                <div className="mt-12">
-                  <p className="text-base">{welcomeData?.contentText}</p>
+                <div className="mt-4">
+                  <p className="text-base font-sans text-dark">
+                    {welcomeData?.contentText}
+                  </p>
                 </div>
               </div>
             </div>
@@ -304,7 +307,7 @@ function ContentBlock() {
             <button
               type="submit"
               disabled={loading}
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center"
+              className="text-white bg-dark hover:bg-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
             >
               <svg
                 aria-hidden="true"

@@ -26,7 +26,6 @@ function CartList({
               <p className="text-md font-bold text-[#333]">
                 {item.sku.product.name}
               </p>
-              <p className="text-gray-400 text-xs mt-1">{item.quantity} Item</p>
               <h4 className="text-2xl font-bold text-[#333] mt-4 mb-2">
                 $ {item.totalPrice}
               </h4>

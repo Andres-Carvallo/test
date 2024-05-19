@@ -2,6 +2,7 @@
 import React from "react";
 import { useSearchParams } from "next/navigation";
 import ValidateComponent from "./ValidateComponent";
+
 const ValidatePage: React.FC = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");

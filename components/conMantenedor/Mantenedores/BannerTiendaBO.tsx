@@ -4,10 +4,10 @@ import React, { useState, useEffect, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 
-const BannerPrincipalBO = () => {
+const BannerTiendaBO = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
-  const [mainImage, setMainImage] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>({
+  const [mainImageTienda, setMainImageTienda] = useState<string | null>(null);
+  const [formDataTienda, setFormDataTienda] = useState<any>({
     title: "",
     landingText: "",
     buttonLink: "",
@@ -48,7 +48,7 @@ const BannerPrincipalBO = () => {
 
       const bannerImage = productTypeResponse.data.bannerImage;
       setBannerData(bannerImage);
-      setFormData({
+      setFormDataTienda({
         title: bannerImage.title,
         landingText: bannerImage.landingText,
         buttonLink: bannerImage.buttonLink,
@@ -71,7 +71,7 @@ const BannerPrincipalBO = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormDataTienda({ ...formDataTienda, [name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,11 +82,11 @@ const BannerPrincipalBO = () => {
 
       // Crear un objeto de datos actualizado excluyendo mainImage si no hay una imagen seleccionada
       const updatedDataWithoutImage = {
-        ...formData,
-        orderNumber: formData.orderNumber,
+        ...formDataTienda,
+        orderNumber: formDataTienda.orderNumber,
       };
 
-      if (!mainImage) {
+      if (!mainImageTienda) {
         delete updatedDataWithoutImage.mainImage;
       }
 
@@ -132,7 +132,7 @@ const BannerPrincipalBO = () => {
           size: file.size,
           data: result,
         };
-        setFormData((prevFormData: any) => ({
+        setFormDataTienda((prevFormData: any) => ({
           ...prevFormData,
           [imageKey]: imageInfo,
         }));
@@ -189,7 +189,7 @@ const BannerPrincipalBO = () => {
           alt="Banner Image"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="min-h-[300px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+        <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
           <h2 className="sm:text-4xl text-2xl font-bold mb-6">
             {bannerData.title}
           </h2>
@@ -212,7 +212,7 @@ const BannerPrincipalBO = () => {
         <input
           type="number"
           name="orderNumber"
-          value={formData.orderNumber}
+          value={formDataTienda.orderNumber}
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
@@ -220,7 +220,7 @@ const BannerPrincipalBO = () => {
         <input
           type="text"
           name="title"
-          value={formData.title}
+          value={formDataTienda.title}
           onChange={handleChange}
           className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Title"
@@ -228,7 +228,7 @@ const BannerPrincipalBO = () => {
         <input
           type="text"
           name="mainImageLink"
-          value={formData.mainImageLink}
+          value={formDataTienda.mainImageLink}
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />{" "}
@@ -236,7 +236,7 @@ const BannerPrincipalBO = () => {
         <input
           type="text"
           name="landingText"
-          value={formData.landingText}
+          value={formDataTienda.landingText}
           onChange={handleChange}
           className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Landing Text"
@@ -247,7 +247,7 @@ const BannerPrincipalBO = () => {
             <input
               type="text"
               name="buttonText"
-              value={formData.buttonText}
+              value={formDataTienda.buttonText}
               onChange={handleChange}
               className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Button Text"
@@ -258,7 +258,7 @@ const BannerPrincipalBO = () => {
             <input
               type="text"
               name="buttonLink"
-              value={formData.buttonLink}
+              value={formDataTienda.buttonLink}
               onChange={handleChange}
               className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Button Link"
@@ -269,22 +269,24 @@ const BannerPrincipalBO = () => {
           <input
             type="file"
             accept="image/*"
-            id="mainImage"
+            id="mainImageTienda"
             className="hidden"
-            onChange={(e) => handleImageChange(e, setMainImage, "mainImage")}
+            onChange={(e) =>
+              handleImageChange(e, setMainImageTienda, "mainImage")
+            }
           />
-          {mainImage ? (
+          {mainImageTienda ? (
             <div>
               <span className="font-bold uppercase">FOTO </span>
               <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
                 <img
-                  src={mainImage}
+                  src={mainImageTienda}
                   alt="Main Image"
                   className="w-full"
                 />
                 <button
                   className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() => handleClearImage(setMainImage)}
+                  onClick={() => handleClearImage(setMainImageTienda)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +309,7 @@ const BannerPrincipalBO = () => {
             <div>
               <span className="font-bold uppercase">FOTO </span>
               <label
-                htmlFor="mainImage"
+                htmlFor="mainImageTienda"
                 className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
               >
                 <div className="flex flex-col justify-center items-center">
@@ -366,4 +368,4 @@ const BannerPrincipalBO = () => {
   );
 };
 
-export default BannerPrincipalBO;
+export default BannerTiendaBO;

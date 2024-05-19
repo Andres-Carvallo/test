@@ -5,7 +5,7 @@ import axios from "axios";
 function ContentBienvenida() {
   const [loading, setLoading] = useState(false);
   const [bannerData, setBannerData] = useState<any | null>(null);
-
+  const [error, setError] = useState<Error | null>(null);
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
@@ -29,31 +29,74 @@ function ContentBienvenida() {
     fetchBannerHome();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial
+
+  if (loading) {
+    return (
+      <section className="bg-white dark:bg-gray-900 w-full ">
+        <div className="container px-6 py-10 mx-auto animate-pulse">
+          <h1 className="w-48 h-2 mx-auto bg-gray-200 rounded-lg dark:bg-gray-700" />
+
+          <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+          <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg sm:w-80 dark:bg-gray-700" />
+
+          <div className="grid grid-cols-1 gap-8 mt-8 xl:mt-12 xl:gap-12 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="w-full ">
+              <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
+
+              <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+              <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+            </div>
+
+            <div className="w-full ">
+              <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
+
+              <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+              <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+            </div>
+
+            <div className="w-full ">
+              <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
+
+              <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+              <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
   return (
     <section className="py-6">
       <div className=" text-[#333] p-8 font-[sans-serif]">
-        <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-4xl  font-extrabold relative after:absolute after:-bottom-5 after:h-1 after:w-1/2 after:bg-primary after:left-0 after:right-0 after:mx-auto after:rounded-full">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl  font-bold uppercase  font-sans text-dark">
             {bannerData?.title}
           </h2>
-          <div className="mt-12">
-            <p className="text-base">{bannerData?.contentText}</p>
+          <div className="mt-4">
+            <p className="text-base font-sans text-dark">
+              {bannerData?.contentText}
+            </p>
           </div>
         </div>
         <div className="flex max-w-[500px] mx-auto justify-between mt-12">
           <img
             src="/img/banners/icon_corazon.png"
-            className="w-1/3"
+            className=" h-20"
             alt=""
           />
           <img
             src="/img/banners/icon-diosa.png"
-            className="w-1/3"
+            className="h-20"
             alt=""
           />
           <img
             src="/img/banners/icon-hechoamano.png"
-            className="w-1/3"
+            className="h-20"
             alt=""
           />
         </div>

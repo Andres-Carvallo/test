@@ -10,17 +10,27 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#7cffc4",
-        dark: "#2a2a2a",
+        primary: "#e5cdbb",
+        dark: "#a98d82",
+        rosado: "#e5cdbb",
+        celeste: "#8bafdc",
+        cafe: "#a98d82",
         secondary: "#ffde59",
         succes: "#9fff33 ",
         danger: "#C70039 ",
         warning: "#FFC300 ",
       },
+      fontFamily: {
+        // 👇 Add CSS variables
+        mono: ["var(--font-roboto-mono)"],
+        kalam: ["var(--font-kalam)"],
+        oswald: ["var(--font-oswald)"],
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "login-bg": "url('/img/bg-login.png')",
       },
     },
   },

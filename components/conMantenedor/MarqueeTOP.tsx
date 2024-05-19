@@ -32,7 +32,7 @@ function MarqueeTOP() {
   }, []); // Debería ejecutarse solo en el montaje inicial
   return (
     <section>
-      <div className="flex items-center max-md:flex-col bg-dark text-white px-6 py-2 font-[sans-serif]">
+      <div className="flex items-center max-md:flex-col bg-rosado font-medium text-white px-6 py-2 font-sans uppercase">
         {/*  <div className="max-md:mt-4">
           <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
             {bannerData?.title}

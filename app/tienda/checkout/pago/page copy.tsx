@@ -1,33 +1,33 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import Link from "next/link";
+import AsideTotal from "@/components/Checkout/AsideTotal";
 import React, { useEffect, useState } from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-import { deleteCookie, getCookie, setCookie } from "cookies-next";
+import { getCookie, deleteCookie } from "cookies-next";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import AutoSubmitForm from "@/components/Checkout/AutoSubmitForm";
 import CartList from "@/components/CartCanva/CartList";
-import { useRouter } from "next/navigation";
 
 function Checkout() {
   const [regions, setRegions] = useState([]);
   const [communes, setCommunes] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCommune, setSelectedCommune] = useState("");
-  const {
-    cartItems,
-    setCartItems,
-    fetchCartData,
-    cartData,
-    setCartData,
-    setTotalItems,
-  } = useAPI();
-
-  const router = useRouter();
+  const { cartItems, setCartItems, fetchCartData, cartData } = useAPI();
+  const totalAmount = cartData?.totals?.totalAmount;
+  const subtotalAmount = cartData?.totals?.subtotalAmount;
+  const discountAmount = cartData?.totals?.discountAmount;
 
   const [deliveryType, setDeliveryType] = useState(""); // Valor predeterminado: entrega a domicilio
   const [deliveryTypeID, setDeliveryTypeID] = useState("");
+  const [orderSubmitted, setOrderSubmitted] = useState(false); // Nuevo estado para controlar si se ha enviado la orden
+  const [transactionData, setTransactionData] = useState<{
+    url: string;
+    token: string;
+  } | null>(null);
 
   const cartId = getCookie("cartId");
 
@@ -44,36 +44,124 @@ function Checkout() {
       addressLine2: "",
       communeId: "",
     },
+    discountCoupons: {
+      code: "",
+    },
   });
 
-  const handleSubmitOrder = async () => {
-    const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
-      {
-        cartId: customer.cartId,
-        deliveryTypeId: deliveryTypeID,
-        useDifferentShippingAddress: false,
-        customer: {
-          firstname: customer.customer.firstname,
-          lastname: customer.customer.lastname,
-          phoneNumber: customer.customer.phoneNumber,
-          email: customer.customer.email,
-          addressLine1: customer.customer.addressLine1,
-          addressLine2: customer.customer.addressLine2,
-          communeId: customer.customer.communeId,
-        },
-      }
-    );
+  const [discountCode, setDiscountCode] = useState(""); // Nuevo estado para el código de descuento
+  const [discountApplied, setDiscountApplied] = useState(false); // Estado para controlar si se ha aplicado un descuento
 
-    if (response.data) {
-      const idOrder = response.data.order.id;
-      console.log("idOrder", idOrder);
-      router.push(`/tienda/checkout/pago?orderId=${idOrder}`);
-      setCookie("idOrder", idOrder);
-      setCartItems([]);
-      setCartData({});
-      setTotalItems(null);
+  const applyDiscount = () => {
+    // Aquí implementa la lógica para aplicar el descuento al total
+    // Puedes usar el estado de 'discountCode' para verificar el código de descuento ingresado
+    // y luego actualizar el estado 'discountApplied' en consecuencia
+  };
+
+  // Función para quitar el descuento
+  const removeDiscount = () => {
+    // Aquí implementa la lógica para quitar el descuento y recalcular el total
+    // Puedes simplemente restablecer el estado 'discountApplied' a false y el 'discountCode' a vacío
+  };
+
+  // Modificar la función 'handleSubmitOrder' para manejar el botón "Calcular" y "Pagar"
+  const handleSubmitOrder = async () => {
+    if (discountCode && !discountApplied) {
+      const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
+        {
+          cartId: customer.cartId,
+          deliveryTypeId: deliveryTypeID,
+          useDifferentShippingAddress: false,
+          customer: {
+            firstname: customer.customer.firstname,
+            lastname: customer.customer.lastname,
+            phoneNumber: customer.customer.phoneNumber,
+            email: customer.customer.email,
+            addressLine1: customer.customer.addressLine1,
+            addressLine2: customer.customer.addressLine2,
+            communeId: customer.customer.communeId,
+          },
+          discountCoupons: {
+            code: customer.discountCoupons.code,
+          },
+        }
+      );
+      console.log("Respuesta del servidor:", response.data);
+      setDiscountApplied(true);
+    } else {
+      handleSubmitOrderSinCupon();
+    }
+  };
+
+  const handleSubmitOrderSinCupon = async () => {
+    try {
+      const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
+        {
+          cartId: customer.cartId,
+          deliveryTypeId: deliveryTypeID,
+          useDifferentShippingAddress: false,
+          customer: {
+            firstname: customer.customer.firstname,
+            lastname: customer.customer.lastname,
+            phoneNumber: customer.customer.phoneNumber,
+            email: customer.customer.email,
+            addressLine1: customer.customer.addressLine1,
+            addressLine2: customer.customer.addressLine2,
+            communeId: customer.customer.communeId,
+          },
+        }
+      );
+
+      console.log("Respuesta del servidor:", response.data);
+
+      if (response.data.code === 0) {
+        const orderId = response.data.order.id;
+
+        const paymentGatewayResponse = await axios.get(
+          `https://pixelup-site-api-git-development-pixelups-projects.vercel.app/api/v1/payment-gateways?statusCode=ACTIVE`
+        );
+        const paymentGateways = paymentGatewayResponse.data.paymentGateways;
+        const activePaymentGatewayId = paymentGateways[0].id; // Supongamos que tomamos el primer medio de pago
+
+        // Cuarta solicitud para actualizar el estado de la orden con el medio de pago correspondiente
+        const updateOrderUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${SiteId}`;
+        const updateOrderResponse = await axios.put(updateOrderUrl, {
+          statusCode: "PAYMENT_PENDING",
+          initTransactionInfo: {
+            paymentGatewayId: activePaymentGatewayId,
+            errorUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`,
+            returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/validate?orderId=${orderId}`,
+          },
+        });
+        if (updateOrderResponse.data.code === 0) {
+          toast(
+            "¡Datos enviados correctamente y orden actualizada con medio de pago!"
+          );
+
+          setTransactionData({
+            token: updateOrderResponse.data.transaction.token,
+            url: updateOrderResponse.data.transaction.url,
+          });
+
+          // Marca la orden como enviada
+          setOrderSubmitted(true);
+        } else {
+          console.error(
+            "Error al actualizar la orden con el medio de pago:",
+            updateOrderResponse.data
+          );
+          toast.error("Error al actualizar la orden con el medio de pago");
+        }
+      }
+    } catch (error) {
+      console.error("Error al enviar la orden:", error);
+      // Manejo de errores dentro del bloque try...catch
+    } finally {
+      // Restablecer el estado del cliente y manejar la respuesta del servidor
       deleteCookie("cartId");
       setCustomer({
         cartId: "",
@@ -88,9 +176,22 @@ function Checkout() {
           addressLine2: "",
           communeId: "",
         },
+        discountCoupons: {
+          code: "",
+        },
       });
+      // Aquí puedes manejar la respuesta del servidor según sea necesario
     }
-    console.log("ok", response.data);
+  };
+
+  const handleDiscountCodeChange = (e: any) => {
+    const newDiscountCode = e.target.value;
+    setCustomer((prevCustomer) => ({
+      ...prevCustomer,
+      discountCoupons: {
+        code: newDiscountCode,
+      },
+    }));
   };
 
   const incrementQuantity = async (itemId: string) => {
@@ -166,6 +267,7 @@ function Checkout() {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions`
       );
+      console.log(response.data.regions, "response");
       setRegions(response.data.regions);
     } catch (error) {
       console.error("Error fetching regions:", error);
@@ -198,6 +300,7 @@ function Checkout() {
   const handleCommuneChange = (e: any) => {
     const communeId = e.target.value;
     setSelectedCommune(communeId);
+    console.log(communeId, "communeId");
     setCustomer({
       ...customer,
       customer: {
@@ -208,6 +311,7 @@ function Checkout() {
   };
 
   const handleChangeDeliveryType = async (newValue: any) => {
+    console.log("Nuevo valor de deliveryType:", newValue);
     setDeliveryType(newValue);
 
     try {
@@ -219,6 +323,10 @@ function Checkout() {
         (type: any) => type.code === newValue
       );
       if (selectedDeliveryType) {
+        console.log(
+          "ID del deliveryType seleccionado:",
+          selectedDeliveryType.id
+        );
         setDeliveryTypeID(selectedDeliveryType.id);
       } else {
         console.error(
@@ -292,9 +400,7 @@ function Checkout() {
                   >
                     2
                   </a>
-                  <span className="font-semibold text-gray-900">
-                    Confirmación
-                  </span>
+                  <span className="font-semibold text-gray-900">Envio</span>
                 </li>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -346,7 +452,7 @@ function Checkout() {
               Complete your order by providing your payment details.
             </p>
             <div className="">
-              <div className="mt-10 bg-gray-50 px-4 pt-2 lg:mt-0">
+              <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="firstname"
@@ -535,10 +641,23 @@ function Checkout() {
                       ))}
                     </select>
                   </label>
+                  <label htmlFor="discountCode">
+                    Codigo Descuento
+                    <input
+                      type="text"
+                      className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
+                      value={customer.discountCoupons.code} // Usamos el valor del código de descuento del estado customer
+                      onChange={handleDiscountCodeChange} // Llamamos a la función handleDiscountCodeChange para actualizar el código de descuento
+                    />
+                    {discountCode && (
+                      <button onClick={removeDiscount}>Quitar Descuento</button>
+                    )}
+                  </label>
                 </div>
               </div>
 
-              <form className="mt-5 grid gap-2">
+              <p className="mt-8 text-lg font-medium">Shipping Methods</p>
+              <form className="mt-5 grid gap-6">
                 <div className="relative">
                   <input
                     className="peer hidden"
@@ -618,16 +737,45 @@ function Checkout() {
                   </label>
                 </div>
               </form>
+
+              {/* Total */}
+              <div className="mt-6 border-t border-b py-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-900">Subtotal</p>
+                  <p className="font-semibold text-gray-900">
+                    $ {subtotalAmount}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-900">Descuento</p>
+                  <p className="font-semibold text-gray-900">
+                    $ {discountAmount}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-900">Total</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  $ {totalAmount}
+                </p>
+              </div>
             </div>
             <button
               onClick={handleSubmitOrder}
               className="mt-4 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white"
             >
-              Confirmar Compra
+              Pagar
             </button>
           </div>
         </div>
       </>
+      {orderSubmitted && transactionData && (
+        <AutoSubmitForm
+          action={transactionData.url}
+          method="post"
+          token={transactionData.token}
+        />
+      )}
     </div>
   );
 }

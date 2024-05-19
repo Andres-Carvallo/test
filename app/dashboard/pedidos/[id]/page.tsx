@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useState } from "react";
-import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesID";
+import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesIDBO";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";

@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export const obtenerOrdenesId = async (orderId: any) => {
+export const obtenerProductosID = async (id: any, SiteId: string) => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}?siteId=${SiteId}`
     );
     return response.data;
   } catch (error) {

@@ -26,15 +26,15 @@ const Hero01 = () => {
               <div className="grid sm:grid-cols-3 gap-4 items-center">
                 <div className="flex flex-col items-center text-center">
                   <h5 className="font-bold text-xl mb-1">10+</h5>
-                  <p>Years Experience</p>
+                  <span>Years Experience</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <h5 className="font-bold text-xl mb-1">890</h5>
-                  <p>Cases Solved</p>
+                  <span>Cases Solved</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <h5 className="font-bold text-xl mb-1">250</h5>
-                  <p>Business Partners</p>
+                  <span>Business Partners</span>
                 </div>
               </div>
             </div>

@@ -1,8 +1,7 @@
 "use client";
-import BannerTienda from "@/components/conMantenedor/BannerTienda";
 import React, { useState } from "react";
 
-export default function ContactForm() {
+export default function HomeForm() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -47,15 +46,14 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="">
-      <BannerTienda />
+    <div className="pt-16">
       <div className="bg-white min-h-[475px] text-[#333] font-[sans-serif]">
         <div className="grid md:grid-cols-2 justify-center items-center max-md:text-center gap-8">
           <div className="max-w-md mx-auto p-4">
             <h2 className="text-4xl md:text-5xl font-extrabold my-6 md:!leading-[55px] uppercase">
-              Contacto
+              Encarga tu joya
             </h2>
-            <p className="text-base">Hablemos!</p>
+            <p className="text-base">Haz tu pedido personalizado con FBM</p>
             <div className="my-8 space-y-6">
               <input
                 name="name"

@@ -24,12 +24,12 @@ const Header = () => {
             <img
               src="/img/logo-1.png"
               alt=""
-              className="h-20"
+              className="h-14"
             />
           </a>
 
           <div className="flex items-center max-lg:ml-auto lg:order-1">
-            <span className="relative">
+            <span className="relative hidden">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20px"
@@ -80,14 +80,24 @@ const Header = () => {
             {tokenAuth ? (
               <DropdownUser />
             ) : (
-              <div>
-                <Link
-                  className="p-2 bg-primary rounded-md m-2 text-white"
-                  href="/login"
-                >
-                  Login
-                </Link>
-              </div>
+              <section className="flex">
+                <div>
+                  <Link
+                    className="p-2 bg-dark uppercase text-xs hover:bg-primary hover:text-dark rounded-md m-1 text-white"
+                    href="/tienda/login"
+                  >
+                    Login
+                  </Link>
+                </div>
+                <div>
+                  <Link
+                    className="p-2 bg-dark uppercase text-xs hover:bg-primary hover:text-dark rounded-md m-1 text-white"
+                    href="/tienda/registrar"
+                  >
+                    Registrarse
+                  </Link>
+                </div>
+              </section>
             )}
           </div>
           <ul
@@ -97,63 +107,24 @@ const Header = () => {
             <li className="max-lg:border-b max-lg:py-2">
               <Link
                 href="/"
-                className="hover:text-blue-600 text-[15px] font-bold text-blue-600 block"
+                className="hover:text-celeste   text-dark uppercase  rounded text-[18px] font-medium font-sans  block"
               >
-                Home
+                inicio
               </Link>
             </li>
             <li className="max-lg:border-b max-lg:py-2">
               <Link
-                href="/tienda/productos"
-                className="hover:text-[#007bff] text-gray-600 text-[15px] font-bold block"
+                href="/tienda"
+                className="hover:text-celeste   text-dark uppercase  rounded text-[18px] font-medium font-sans  block"
               >
                 Tienda
               </Link>
-            </li>
-            <li className="group max-lg:border-b max-lg:py-2 relative">
-              <a
-                href="javascript:void(0)"
-                className="hover:text-[#007bff] text-gray-600 text-[15px] font-bold lg:hover:fill-[#007bff] block"
-              >
-                Pages
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16px"
-                  height="16px"
-                  className="ml-1 inline-block"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 16a1 1 0 0 1-.71-.29l-6-6a1 1 0 0 1 1.42-1.42l5.29 5.3 5.29-5.29a1 1 0 0 1 1.41 1.41l-6 6a1 1 0 0 1-.7.29z"
-                    data-name="16"
-                    data-original="#000000"
-                  />
-                </svg>
-              </a>
-              <ul className="absolute hidden group-hover:block shadow-lg bg-white px-6 pb-4 pt-6 space-y-3 lg:top-5 max-lg:top-8 -left-6 min-w-[250px] z-50">
-                <li className="border-b py-2 ">
-                  <a
-                    href="javascript:void(0)"
-                    className="hover:text-[#007bff] text-gray-600 text-[15px] font-bold block"
-                  >
-                    About
-                  </a>
-                </li>
-                <li className="border-b py-2 ">
-                  <a
-                    href="javascript:void(0)"
-                    className="hover:text-[#007bff] text-gray-600 text-[15px] font-bold block"
-                  >
-                    Contact
-                  </a>
-                </li>
-              </ul>
             </li>
 
             <li className="max-lg:border-b max-lg:py-2">
               <a
                 href="javascript:void(0)"
-                className="hover:text-[#007bff] text-gray-600 text-[15px] font-bold block"
+                className="hover:text-celeste   text-dark uppercase  rounded text-[18px] font-medium font-sans  block"
               >
                 About
               </a>
@@ -161,9 +132,9 @@ const Header = () => {
             <li className="max-lg:border-b max-lg:py-2">
               <Link
                 href="/tienda/contacto"
-                className="hover:text-[#007bff] text-gray-600 text-[15px] font-bold block"
+                className="hover:text-celeste   text-dark uppercase  rounded text-[18px] font-medium font-sans  block"
               >
-                Contact
+                Contacto
               </Link>
             </li>
           </ul>

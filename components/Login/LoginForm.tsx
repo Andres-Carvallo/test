@@ -38,10 +38,10 @@ export default function LoginForm() {
 
   return (
     <>
-      <section className="flex items-center justify-center py-20">
+      <section className="flex items-center justify-center py-20 bg-login-bg bg-no-repeat bg-cover">
         <div className="container">
           <div className="flex flex-wrap">
-            <div className="w-full px-4">
+            <div className="w-full px-4 ">
               <div className="mx-auto max-w-[500px] rounded bg-white px-6 py-10 shadow-three dark:bg-dark sm:p-[60px]">
                 <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
                   Ingresa a tu cuenta

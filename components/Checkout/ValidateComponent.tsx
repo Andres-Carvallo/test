@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-
+import { useRouter } from "next/navigation";
 interface ValidateComponentProps {
   orderId: string;
   token_ws: string;
@@ -12,6 +12,8 @@ const ValidateComponent: React.FC<ValidateComponentProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isValidationDone, setIsValidationDone] = useState(false);
+  const router = useRouter();
+
   useEffect(() => {
     if (!isValidationDone) {
       const handleValidate = async () => {
@@ -48,20 +50,21 @@ const ValidateComponent: React.FC<ValidateComponentProps> = ({
           console.error("Error sending data:", error);
         } finally {
           setIsLoading(false);
+          router.push(`/tienda/checkout/ok`);
         }
       };
 
       handleValidate(); // Call the validation function when the component mounts
       setIsValidationDone(true);
     }
-  }, [isValidationDone, orderId, token_ws]); // Empty dependency array ensures the effect runs only once on mount
+  }, [isValidationDone, orderId, router, token_ws]); // Empty dependency array ensures the effect runs only once on mount
 
   return (
     <div>
       {isLoading ? (
-        <p>Validating...</p>
+        <span>Validating...</span>
       ) : (
-        <p>Validation successful!</p> // Replace with actual content based on response
+        <span>Validation successful!</span> // Replace with actual content based on response
       )}
     </div>
   );

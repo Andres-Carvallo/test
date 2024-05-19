@@ -19,6 +19,7 @@ function CartCanvas() {
     handleMenuClose,
     isMenuOpen,
     setIsMenuOpen,
+    totalItems,
   } = useAPI();
   const totalAmount = cartData?.totals?.totalAmount;
   const subtotalAmount = cartData?.totals?.subtotalAmount;
@@ -125,7 +126,7 @@ function CartCanvas() {
   };
 
   return (
-    <div className="">
+    <div className="z-50">
       <Link
         href="#"
         onClick={handleMenuOpen}
@@ -146,7 +147,7 @@ function CartCanvas() {
             />
           </svg>
           <span className="absolute left-auto -ml-1 top-0 rounded-full bg-black px-1 py-0 text-xs text-white">
-            {cartItems.length}
+            {totalItems}
           </span>
         </span>
       </Link>
@@ -159,33 +160,38 @@ function CartCanvas() {
       >
         {/* Contenido del carrito */}
         <div className="fixed top-0 left-0 w-full h-full z-[1000] before:fixed   before:w-full before:h-full before:bg-[rgba(0,0,0,0.5)] font-[sans-serif]">
-          <div className="w-full  bg-white shadow-lg relative ml-auto h-screen">
+          <div className="w-full  bg-white shadow-lg relative ml-auto h-screen z-50">
             <div className="overflow-auto p-6 h-[calc(100vh-135px)]">
-              <Link
-                href="#"
-                onClick={handleMenuClose}
-                className="menu-open-btn ease-in-up   rounded-sm   py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-opacity-90 hover:shadow-btn-hover md:block "
-              >
-                {/* Contenido del botón de apertura del carrito */}
-                <span className="relative ">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-6 h-6 text-dark hover:text-red-600 "
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </span>
-              </Link>
-              {/* Elementos de diseño original */}
-              <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
-                Tu Carrito
-              </h2>
+              <div className="flex justify-between">
+                <Link
+                  href="#"
+                  onClick={handleMenuClose}
+                  className="menu-open-btn ease-in-up   rounded-sm   py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-opacity-90 hover:shadow-btn-hover md:block "
+                >
+                  {/* Contenido del botón de apertura del carrito */}
+                  <span className="relative ">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="w-8 h-8 text-dark hover:text-red-600 "
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                </Link>
+                <h2 className="mb-4 text-center text-2xl font-bold text-dark  lg:text-3xl uppercase">
+                  Tu Carrito
+                </h2>
+              </div>
+              <h3 className="text-right uppercase text-xs  mb-4">
+                Total Productos:{" "}
+                <span className="font-bold text-lg">{totalItems}</span>
+              </h3>
               {/* Map para mostrar los productos en el carrito */}
               <CartList
                 cartItems={cartItems}

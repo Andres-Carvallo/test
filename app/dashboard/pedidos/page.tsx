@@ -338,11 +338,12 @@ function PedidosBO() {
                       </td>
                       <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {pedido.creationDate}
+                        <br /> {pedido.id}
                       </td>
                       <td className="px-2 py-3">
                         <div className="flex flex-col">
                           <div>
-                            {pedido.customer.firstname}{" "}
+                            {pedido.customer.firstname}
                             {pedido.customer.lastname}
                           </div>
                           <div className="font-bold">
