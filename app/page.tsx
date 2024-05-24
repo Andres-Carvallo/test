@@ -8,6 +8,7 @@ import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import Footer from "@/components/Footer/Footer";
 import BannerPrincipal from "@/components/conMantenedor/BannerPrincipal";
 import ContentBienvenida from "@/components/conMantenedor/ContentBienvenida";
+import BannersCategorias from "@/components/conMantenedor/BannersCategorias";
 
 export default function Home() {
   return (
@@ -18,7 +19,7 @@ export default function Home() {
         <BannerPrincipal />
         <ContentBienvenida />
         <ProductList01 />
-        <Collection01 />
+        <BannersCategorias />
         <HomeForm />
       </div>
       <Footer />

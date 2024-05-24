@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useState } from "react";
 
@@ -95,7 +96,7 @@ export default function HomeForm() {
               </button>
             </div>
           </div>
-          <div className="md:text-right max-md:mt-12 h-full">
+          <div className="md:text-right max-md:mt-12 h-full hidden md:flex">
             <img
               src="/img/Anillo-Infinito_01.webp"
               alt="Premium Benefits"

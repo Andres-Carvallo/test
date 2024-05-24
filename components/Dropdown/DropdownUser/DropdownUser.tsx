@@ -73,13 +73,20 @@ const DropdownUser = () => {
         href="#"
       >
         <span className="h-12 w-12">
-          <img
-            width={112}
-            height={112}
-            src="https://i.pravatar.cc/300"
-            alt="User"
-            className="rounded-full"
-          />
+          <span className="h-12 w-12 ">
+            <svg
+              className="absolute w-8 h-8 text-gray-600 right-3 top-2 "
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </span>
         </span>
 
         <svg
@@ -139,7 +146,7 @@ const DropdownUser = () => {
             </Link>
           </li>
 
-          <li>
+          <li className="hidden">
             <Link
               href="/pages/settings"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"

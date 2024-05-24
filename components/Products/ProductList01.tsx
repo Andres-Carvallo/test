@@ -8,7 +8,8 @@ import Link from "next/link";
 const ProductList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { addToCartHandler, products, setProducts } = useAPI();
+  const { addToCartHandler } = useAPI();
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -19,6 +20,7 @@ const ProductList = () => {
 
         const data = await obtenerProductos(SiteId, PageNumber, PageSize);
         setProducts(data.products);
+        console.log(data.products, "products");
         setLoading(false); // set loading to false after successful data fetch
       } catch (error) {
         setLoading(false); // set loading to false in case of error
@@ -106,7 +108,7 @@ const ProductList = () => {
 
   return (
     <section className="w-full mx-auto bg-white">
-      <div className="font-[sans-serif] py-6 w-[70%] mx-auto">
+      <div className="font-[sans-serif] py-6 w-[70%] mx-auto max-w-[1000px]">
         <div className="p-4 mx-auto ">
           <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
             Productos Destacados

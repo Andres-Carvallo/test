@@ -120,6 +120,7 @@ const BannerTiendaBO = () => {
     imageKey: string
   ) => {
     const file = e.target.files?.[0];
+    console.log(file, "Image file");
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {

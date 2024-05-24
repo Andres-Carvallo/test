@@ -81,11 +81,11 @@ const Header = (props: {
             <DarkModeSwitcher />
              <!-- Dark Mode Toggler --> */}
 
-            {/* <!-- Notification Menu Area --> */}
+            {/* <!-- Notification Menu Area --> 
             <DropdownNotification />
             {/* <!-- Notification Menu Area --> */}
 
-            {/* <!-- Chat Notification Area --> */}
+            {/* <!-- Chat Notification Area --> 
             <DropdownMessage />
             {/* <!-- Chat Notification Area --> */}
           </ul>

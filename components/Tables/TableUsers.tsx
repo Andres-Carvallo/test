@@ -86,7 +86,7 @@ const TableUsers = () => {
         <div className="max-w-full overflow-x-auto">
           <table className="w-full table-auto">
             <thead>
-              <tr className="bg-dark text-left dark:bg-meta-4">
+              <tr className="bg-dark text-left dark:bg-meta-4 hidden">
                 <th className="min-w-[60px] py-4 px-4 font-medium text-primary dark:text-white xl:pl-11">
                   Avatar
                 </th>
@@ -110,7 +110,7 @@ const TableUsers = () => {
                   key={key}
                   className="animate-fade-in"
                 >
-                  <td className="border-b border-dark py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                  <td className="border-b border-dark py-5 px-4 pl-9 dark:border-strokedark xl:pl-11 hidden">
                     <span className="h-12 w-12">
                       <img
                         width={112}

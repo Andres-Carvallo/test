@@ -5,6 +5,7 @@ import { obtenerProductos } from "@/app/utils/obtenerProductos";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import BannerTienda from "@/components/conMantenedor/BannerTienda";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 
 const ProductGridShop = () => {
   const [loading, setLoading] = useState(true);
@@ -12,6 +13,7 @@ const ProductGridShop = () => {
   const { addToCartHandler, products, setProducts } = useAPI();
   const [productTypes, setProductTypes] = useState([]);
   const [productTypeId, setProductTypeId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -25,12 +27,9 @@ const ProductGridShop = () => {
         productTypeId ?? searchParams.get("productTypeId");
       let data;
       if (urlProductTypeId) {
-        // Si productTypeId tiene un valor, incluirlo en la solicitud
         if (urlProductTypeId === "ALL") {
-          // Si productTypeId es "ALL", llama a obtenerProductos sin incluir el parámetro productTypeId
           data = await obtenerProductos(SiteId, PageNumber, PageSize);
         } else {
-          // Si productTypeId tiene otro valor distinto a "ALL", incluirlo en la solicitud
           data = await obtenerProductos(
             SiteId,
             PageNumber,
@@ -39,16 +38,45 @@ const ProductGridShop = () => {
           );
         }
       } else {
-        // Si productTypeId es null o undefined, llamar a obtenerProductos sin incluir este parámetro
         data = await obtenerProductos(SiteId, PageNumber, PageSize);
       }
 
-      setProducts(data.products);
-      setLoading(false); // establecer loading en false después de obtener los datos con éxito
+      // Filtra los productos según el término de búsqueda
+      const filteredProducts = data.products.filter((producto: any) =>
+        producto.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      setProducts(filteredProducts);
+
+      setLoading(false);
     } catch (error) {
-      setLoading(false); // establecer loading en false en caso de error
-      setError(error as Error); // establecer el estado de error si ocurre un error
+      setLoading(false);
+      setError(error as Error);
     }
+  };
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const sortByPrice = (products: any, order: any) => {
+    if (order === "asc") {
+      return products
+        .slice()
+        .sort((a: any, b: any) => a.pricings[0].amount - b.pricings[0].amount);
+    } else if (order === "desc") {
+      return products
+        .slice()
+        .sort((a: any, b: any) => b.pricings[0].amount - a.pricings[0].amount);
+    } else {
+      // Si no se selecciona un orden válido, se devuelve sin ordenar
+      return products;
+    }
+  };
+
+  const handleSortChange = (order: string) => {
+    const sortedProducts = sortByPrice(products, order);
+    // Actualiza el estado con los productos ordenados
+    setProducts(sortedProducts);
   };
 
   const updateURL = (pathname: any, value: any) => {
@@ -85,12 +113,18 @@ const ProductGridShop = () => {
       console.error("Error fetching products:", error);
     }
   };
+
   useEffect(() => {
     fetchProductos();
     fetchProductTypes();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchProductos(productTypeId || undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, productTypeId]);
 
   if (loading) {
     return (
@@ -204,30 +238,31 @@ const ProductGridShop = () => {
               <p className="text-xs text-gray-500 mb-2 uppercase">Ordenar</p>
               <div className="relative w-full max-w-xs mb-2">
                 <svg
-                  className="absolute top-1/2 -translate-y-1/2 left-4 z-50"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
                   xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="absolute top-1/2 -translate-y-1/2 left-4 z-50 h-6 w-6"
                 >
                   <path
-                    d="M16.5555 3.33203H3.44463C2.46273 3.33203 1.66675 4.12802 1.66675 5.10991C1.66675 5.56785 1.84345 6.00813 2.16004 6.33901L6.83697 11.2271C6.97021 11.3664 7.03684 11.436 7.0974 11.5068C7.57207 12.062 7.85127 12.7576 7.89207 13.4869C7.89728 13.5799 7.89728 13.6763 7.89728 13.869V16.251C7.89728 17.6854 9.30176 18.6988 10.663 18.2466C11.5227 17.961 12.1029 17.157 12.1029 16.251V14.2772C12.1029 13.6825 12.1029 13.3852 12.1523 13.1015C12.2323 12.6415 12.4081 12.2035 12.6683 11.8158C12.8287 11.5767 13.0342 11.3619 13.4454 10.9322L17.8401 6.33901C18.1567 6.00813 18.3334 5.56785 18.3334 5.10991C18.3334 4.12802 17.5374 3.33203 16.5555 3.33203Z"
-                    stroke="black"
-                    strokeWidth={1.6}
                     strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m12-3V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m-6-9V3.75m0 3.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 9.75V10.5"
                   />
                 </svg>
 
                 <select
+                  onChange={(e) => handleSortChange(e.target.value)}
                   id="Offer"
                   className="h-12 border z-1 border-gray-300 text-gray-900 pl-11 text-base font-normal leading-7 rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50 focus-within:bg-gray-50"
                   defaultValue="option 1"
                 >
-                  <option value="option 1">option 1</option>
-                  <option value="option 2">option 2</option>
-                  <option value="option 3">option 3</option>
-                  <option value="option 4">option 4</option>
+                  <>
+                    <option defaultValue="asc">Ordenar por...</option>
+                    <option value="asc">Precio: Menor a Mayor</option>
+                    <option value="desc">Precio: Mayor a Menor</option>
+                  </>
                 </select>
                 <svg
                   className="absolute top-1/2 -translate-y-1/2 right-4 z-50"
@@ -247,94 +282,22 @@ const ProductGridShop = () => {
                 </svg>
               </div>
 
-              <p className="text-xs text-gray-500 mb-2 uppercase">
+              <p className="text-xs text-gray-500 mb-2 mt-6 uppercase">
                 Buscar Producto
               </p>
 
               <div className="relative w-full">
                 <input
                   id="FROM"
+                  placeholder="Buscar producto..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
                   className="h-12 border border-gray-300 text-gray-900 text-xs font-medium rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white"
                 ></input>
               </div>
-            </div>
-
-            <div className="mt-7 box rounded-xl border border-gray-300 bg-white p-6 w-full md:max-w-sm">
-              <div className="flex items-center justify-between w-full pb-3 border-b border-gray-200 mb-7">
-                <p className="font-medium uppercase text-base leading-7 text-black ">
-                  Filtros
-                </p>
-                <p className="font-medium text-xs text-gray-500 cursor-pointer transition-all duration-500 hover:text-indigo-600">
-                  RESET
-                </p>
-              </div>
-
-              <div className="w-full mb-7">
-                <p className="text-xs text-gray-500 mb-2">PRECIO</p>
-                <div className="flex items-center mb-5 gap-1">
-                  <div className="relative w-full">
-                    <select
-                      id="preciofilter"
-                      className="h-12 border border-gray-300 text-gray-900 text-xs font-medium rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white"
-                    >
-                      <option selected={true}>Min</option>
-                      <option value="option 1">option 1</option>
-                      <option value="option 2">option 2</option>
-                      <option value="option 3">option 3</option>
-                      <option value="option 4">option 4</option>
-                    </select>
-                    <svg
-                      className="absolute top-1/2 -translate-y-1/2 right-4 z-50"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12.0002 5.99845L8.00008 9.99862L3.99756 5.99609"
-                        stroke="#111827"
-                        strokeWidth={1.6}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <p className="px-1 font-normal text-sm leading-6 text-gray-600">
-                    to
-                  </p>
-                  <div className="relative w-full">
-                    <select
-                      id="FROM"
-                      className="h-12 border border-gray-300 text-gray-900 text-xs font-medium rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white"
-                    >
-                      <option selected={true}>Max</option>
-                      <option value="option 1">option 1</option>
-                      <option value="option 2">option 2</option>
-                      <option value="option 3">option 3</option>
-                      <option value="option 4">option 4</option>
-                    </select>
-                    <svg
-                      className="absolute top-1/2 -translate-y-1/2 right-4 z-50"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12.0002 5.99845L8.00008 9.99862L3.99756 5.99609"
-                        stroke="#111827"
-                        strokeWidth={1.6}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-500 mb-2 uppercase">Categorías</p>
+              <p className="text-xs text-gray-500 mb-2 mt-6 uppercase">
+                Categorías
+              </p>
               <div className="relative w-full mt-2 mb-7">
                 <select
                   className="h-12 border border-gray-300 text-gray-900 text-xs font-medium rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white"
@@ -371,50 +334,6 @@ const ProductGridShop = () => {
                   />
                 </svg>
               </div>
-              <p className="font-medium text-sm leading-6 text-black mb-3">
-                Discount
-              </p>
-              <div className="box flex flex-col gap-2">
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-default-1"
-                    type="checkbox"
-                    className="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100 checked:bg-[url('https://pagedone.io/asset/uploads/1689406942.svg')]"
-                  />
-                  <label
-                    htmlFor="checkbox-default-1"
-                    className="text-xs font-normal text-gray-600 leading-4 cursor-pointer"
-                  >
-                    20% or more
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-default-2"
-                    type="checkbox"
-                    className="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100 checked:bg-[url('https://pagedone.io/asset/uploads/1689406942.svg')]"
-                  />
-                  <label
-                    htmlFor="checkbox-default-2"
-                    className="text-xs font-normal text-gray-600 leading-4 cursor-pointer"
-                  >
-                    30% or more
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="checkbox-default-3"
-                    type="checkbox"
-                    className="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100 checked:bg-[url('https://pagedone.io/asset/uploads/1689406942.svg')]"
-                  />
-                  <label
-                    htmlFor="checkbox-default-3"
-                    className="text-xs font-normal text-gray-600 leading-4 cursor-pointer"
-                  >
-                    50% or more
-                  </label>
-                </div>
-              </div>
             </div>
           </div>
           <div className="col-span-12 md:col-span-9 mt-4 md:mt-0 ">
@@ -426,17 +345,17 @@ const ProductGridShop = () => {
                   key={producto.id}
                   className="w-full  bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
                 >
-                  <a href="#">
+                  <Link href={`/tienda/productos/${producto.id}`}>
                     <div
-                      className="p-8 rounded-t-lg bg-cover bg-center"
+                      className="p-8 rounded-t-lg bg-cover bg-center "
                       style={{
                         backgroundImage: `url(${producto.previewImageUrl})`,
                         height: "300px",
                       }}
                     />
-                  </a>
+                  </Link>
                   <div className="px-5 pb-5">
-                    <a href="#">
+                    <Link href={`/tienda/productos/${producto.id}`}>
                       <h5 className="text-sm pt-3 text-center font-semibold tracking-tight text-gray-900 dark:text-white">
                         {producto.name}
                       </h5>
@@ -444,7 +363,7 @@ const ProductGridShop = () => {
                         {" "}
                         {producto.productTypes[0].name}
                       </h4>
-                    </a>
+                    </Link>
                     <div className=" hidden items-center mt-2 mb-2">
                       {[...Array(5)].map((_, index) => (
                         <svg

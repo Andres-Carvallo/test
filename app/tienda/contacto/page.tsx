@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import BannerTienda from "@/components/conMantenedor/BannerTienda";
 import React, { useState } from "react";

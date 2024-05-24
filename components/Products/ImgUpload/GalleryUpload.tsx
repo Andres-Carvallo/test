@@ -86,19 +86,19 @@ const GalleryUpload: React.FC<Props> = ({
 
       {/* Mostrar miniaturas de las imágenes seleccionadas */}
       <div
-        className={`flex flex-wrap gap-4 md:w-3/4 md:flex-initial p-4 ${
+        className={`flex flex-wrap gap-4 md:w-3/4 md:flex-initial p-4  ${
           selectedImages.length > 0 ? "block" : "hidden"
         } `}
       >
         {selectedImages.map((image, index) => (
           <div
             key={index}
-            className="relative"
+            className="relative "
           >
             <img
               src={image}
               alt={`Image ${index}`}
-              className="w-24 h-24 object-cover rounded-md"
+              className="w-16 h-16 object-cover rounded-md"
             />
             <button
               onClick={() => handleRemoveImage(index)}

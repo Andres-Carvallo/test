@@ -183,7 +183,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                           <li>
                             <Link
-                              href="/"
+                              href="/dashboard/"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                                 pathname === "/" && "text-white"
                               } `}
@@ -296,7 +296,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           </li>
                           <li>
                             <Link
-                              href="/"
+                              href="/dashboard/productos/crear/producto-variable"
                               className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                                 pathname === "/" && "text-white"
                               } `}
@@ -545,7 +545,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* <!-- Menu Item Tables --> */}
 
               {/* <!-- Menu Item Settings --> */}
-              <li>
+              <li className="hidden">
                 <Link
                   href="/dashboard/settings"
                   className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-primary duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${

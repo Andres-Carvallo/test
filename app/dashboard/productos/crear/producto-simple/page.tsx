@@ -920,6 +920,14 @@ const CrearProductoSimple: React.FC = ({}) => {
                 >
                   Crear Categoría
                 </button>
+                <button
+                  type="button"
+                  id="createAttribute"
+                  onClick={() => handleOpenModal("createAttributeModal")}
+                  className="block w-full text-left py-2 px-4 bg-dark text-white rounded-xl hover:bg-primary hover:text-dark "
+                >
+                  Crear Atributo
+                </button>
               </div>
             </div>
           </div>
@@ -946,10 +954,10 @@ const CrearProductoSimple: React.FC = ({}) => {
           openModalId === "createAttributeModal" ? "" : "hidden"
         }`}
       >
-        {/*   <CreateAtribute
+        <CreateAtribute
           handleCloseModal={handleCloseModal}
           fetchData={fetchData}
-        />*/}
+        />
       </div>
       {/* MODALS */}
     </>
