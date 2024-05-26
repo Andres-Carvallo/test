@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 
 function ImageUpload({ onImageChange, label, preloadedImageUrl }: any) {
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState<any>(null);
 
   useEffect(() => {
     if (preloadedImageUrl) {

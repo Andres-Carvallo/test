@@ -1,32 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ImageUpload from "./ImageUpload";
 import Select from "react-select";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import { useSearchParams } from "next/navigation";
 
-interface Variation {
-  [key: string]: any;
-}
-
-const VariationForm: React.FC<Variation> = ({
+const VariationForm: React.FC<any> = ({
   index,
   variation,
   attributes,
   setVariations,
   fetchVariations,
-
+  setIsEditMode,
   onDescriptionChange,
   onMainImageChange,
   onPreviewImageChange,
   onCloseForm,
   currentAttributes,
 }) => {
+  const isEditMode = !!variation.id;
   const currentVariationIndex = index;
   const [attributePairs, setAttributePairs] = useState([{ id: "", value: "" }]);
-  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([]);
-  const filteredAttributes = attributes.filter(
-    (attribute: any) => !selectedAttributes.includes(attribute.id)
-  );
+  const [selectedAttributes, setSelectedAttributes] = useState([]);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Cargar atributos actuales si está en modo edición
+    if (isEditMode && currentAttributes[variation.id]) {
+      const loadedAttributes = currentAttributes[variation.id].map(
+        (attr: any) => ({
+          id: attr.attribute ? attr.attribute.id : "", // Verificar si attr.attribute está definido
+          value: attr.attribute ? attr.attribute.value : "", // Verificar si attr.attribute está definido
+        })
+      );
+      setAttributePairs(loadedAttributes);
+      setSelectedAttributes(loadedAttributes.map((attr: any) => attr.id));
+    }
+  }, [isEditMode, currentAttributes, variation.id]);
 
   const handleAddAttributePair = () => {
     const lastPair = attributePairs[attributePairs.length - 1];
@@ -39,7 +49,7 @@ const VariationForm: React.FC<Variation> = ({
     }
   };
 
-  const handleSelectChange = (index: number, selectedOption: any) => {
+  const handleSelectChange = (index: any, selectedOption: any) => {
     const updatedPairs = [...attributePairs];
     updatedPairs[index].id = selectedOption ? selectedOption.value : "";
     setAttributePairs(updatedPairs);
@@ -49,9 +59,9 @@ const VariationForm: React.FC<Variation> = ({
     }
   };
 
-  const handleRemoveAttribute = (index: number) => {
+  const handleRemoveAttribute = (index: any) => {
     const removedAttributeId = attributePairs[index].id;
-    const updatedPairs = attributePairs.filter((pair, i) => i !== index);
+    const updatedPairs = attributePairs.filter((_, i) => i !== index);
     setAttributePairs(updatedPairs);
 
     const updatedSelectedAttributes = selectedAttributes.filter(
@@ -60,32 +70,30 @@ const VariationForm: React.FC<Variation> = ({
     setSelectedAttributes(updatedSelectedAttributes);
   };
 
-  const handleInputChange = (index: number, newValue: string) => {
+  const handleInputChange = (index: any, newValue: any) => {
     const updatedPairs = [...attributePairs];
     updatedPairs[index].value = newValue;
     setAttributePairs(updatedPairs);
   };
 
-  const handleSubmit = async (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
 
-    try {
-      // Obtener la variación actual del estado
-      const currentVariation = variation;
+    const token = getCookie("tokenAuth");
+    const idVariable = searchParams.get("productVariableId");
+    const currentVariation = variation;
 
-      // Validar campos del formulario de variaciones
+    try {
       if (
-        !currentVariation.description ||
-        !currentVariation.previewImage ||
-        !currentVariation.mainImage
+        !isEditMode &&
+        (!currentVariation.description ||
+          !currentVariation.previewImage ||
+          !currentVariation.mainImage)
       ) {
         console.error("Todos los campos son obligatorios.");
         return;
       }
 
-      // Construir el objeto de datos a enviar
       const variationData = {
         description: currentVariation.description,
         hasUnlimitedStock: currentVariation.hasUnlimitedStock,
@@ -94,63 +102,97 @@ const VariationForm: React.FC<Variation> = ({
         mainImage: currentVariation.mainImage,
       };
 
-      // Enviar datos a la API de variaciones
-      const searchParams = new URLSearchParams(window.location.search);
-      const idVariable = searchParams.get("productVariableId");
-      const token = getCookie("tokenAuth");
-      const variationResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus`,
-        variationData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      let variationResponse;
+      let variationId;
 
-      if (variationResponse.status === 200) {
-        const variationId = variationResponse.data.sku.id;
-        console.log(`Variation created with ID: ${variationId}`);
-
-        // Verificar si hay atributos para enviar
-        const validAttributePairs = attributePairs.filter(
-          (attribute) => attribute.id !== "" && attribute.value !== ""
+      if (isEditMode) {
+        variationResponse = await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${currentVariation.id}`,
+          variationData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+        variationId = currentVariation.id;
+      } else {
+        variationResponse = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus`,
+          variationData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        variationId = variationResponse.data.sku.id;
+      }
 
-        if (validAttributePairs.length > 0) {
-          // Enviar datos a la API de atributos uno por uno
-          validAttributePairs.forEach(async (attribute) => {
+      if (variationId && attributePairs.length > 0) {
+        for (const attribute of attributePairs) {
+          if (attribute.id && attribute.value) {
+            const attributeUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes/${attribute.id}`;
             try {
-              const attributeResponse = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes`,
-                {
-                  attributeId: attribute.id,
-                  value: attribute.value,
-                }
-              );
+              const existingAttributeResponse = await axios.get(attributeUrl, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
 
-              if (attributeResponse.status === 200) {
-                const attributeId = attributeResponse.data.id;
-                console.log(`Attribute created with ID: ${attributeId}`);
-              } else {
-                console.error(
-                  "Error creating attribute:",
-                  attributeResponse.statusText
+              if (existingAttributeResponse.status === 200) {
+                await axios.put(
+                  attributeUrl,
+                  { value: attribute.value },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+              } else if (existingAttributeResponse.status === 404) {
+                await axios.post(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes`,
+                  { attributeId: attribute.id, value: attribute.value },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
                 );
               }
             } catch (error) {
-              console.error("Error creating attribute:", error);
+              if (error.response && error.response.status === 404) {
+                await axios.post(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes`,
+                  { attributeId: attribute.id, value: attribute.value },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+              } else {
+                console.error("Error al verificar el atributo:", error);
+              }
             }
-          });
-
-          console.log("All attributes created successfully!");
+          }
         }
-        onCloseForm();
+      }
+
+      if (
+        variationResponse.status === 200 ||
+        variationResponse.status === 201
+      ) {
         fetchVariations();
       } else {
         console.error(
-          "Error creating variation:",
+          "Error al enviar la solicitud:",
           variationResponse.statusText
         );
       }
@@ -173,22 +215,23 @@ const VariationForm: React.FC<Variation> = ({
         </div>
         <div className="current-attributes">
           <h3>Atributos Actuales:</h3>
-          {currentAttributes[variation.id]?.map(({ attribute, index }: any) => (
-            <div
-              key={index}
-              className="mt-2 flex flex-wrap uppercase"
-            >
-              <div className="bg-primary px-2 py-1 rounded text-xs">
-                {attribute.label}:
-                <span className="font-bold">{attribute.value}</span>
+          {currentAttributes[variation.id]?.map(
+            (attribute: any, index: any) => (
+              <div
+                key={index}
+                className="mt-2 flex flex-wrap uppercase"
+              >
+                <div className="bg-primary px-2 py-1 rounded text-xs">
+                  {attribute.label}:
+                  <span className="font-bold">{attribute.value}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
 
-      {/* Muestra un formulario para agregar un nuevo par de atributo y valor */}
-      <div className="mt-2  grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="mt-2 grid grid-cols-1 lg:grid-cols-2 gap-4">
         {attributePairs.map((pair, pairIndex) => (
           <div
             key={pairIndex}
@@ -207,16 +250,14 @@ const VariationForm: React.FC<Variation> = ({
                     label: attribute.name,
                   }))}
                 onChange={(selectedOption) => {
-                  if (selectedOption) {
-                    handleSelectChange(pairIndex, selectedOption);
-                    const filteredAttributes = selectedAttributes.filter(
-                      (id) => id !== pair.id
-                    );
-                    setSelectedAttributes([
-                      ...filteredAttributes,
-                      selectedOption.value,
-                    ]);
-                  }
+                  handleSelectChange(pairIndex, selectedOption);
+                  const filteredAttributes = selectedAttributes.filter(
+                    (id) => id !== pair.id
+                  );
+                  setSelectedAttributes([
+                    ...filteredAttributes,
+                    selectedOption.value,
+                  ]);
                 }}
                 value={
                   pair.id
@@ -232,13 +273,13 @@ const VariationForm: React.FC<Variation> = ({
 
               <input
                 type="text"
-                className="border rounded px-2 py-1 mr-2 w-full "
+                className="border rounded px-2 py-1 mr-2 w-full"
                 value={pair.value}
                 onChange={(e) => handleInputChange(pairIndex, e.target.value)}
               />
               <button
                 onClick={() => {
-                  handleRemoveAttribute(pairIndex); // Limpiar la selección actual
+                  handleRemoveAttribute(pairIndex);
                 }}
               >
                 <svg
@@ -260,13 +301,12 @@ const VariationForm: React.FC<Variation> = ({
           </div>
         ))}
 
-        {/* Botón para agregar un nuevo par de atributo y valor */}
         <button
           onClick={handleAddAttributePair}
-          disabled={filteredAttributes.length === 0}
+          disabled={attributes.length === selectedAttributes.length}
           className="flex gap-2 bg-green-700 text-white px-4 py-2 rounded align-middle"
         >
-          Agregar Atributo{" "}
+          Agregar Atributo
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -320,8 +360,7 @@ const VariationForm: React.FC<Variation> = ({
           </label>
         </div>
       </div>
-      <div className="mt-2 grid grid-cols-2 gap-4 p-2 border border-dotted border-dark  rounded">
-        {" "}
+      <div className="mt-2 grid grid-cols-2 gap-4 p-2 border border-dotted border-dark rounded">
         <ImageUpload
           label="Imagen Principal"
           onImageChange={(image: any) => onMainImageChange(image, index)}
@@ -338,7 +377,7 @@ const VariationForm: React.FC<Variation> = ({
           className="bg-green-700 text-white px-4 py-2 rounded mt-4"
           onClick={handleSubmit}
         >
-          {variation.id ? "Actualizar Variación" : "Crear Variación"}
+          {isEditMode ? "Actualizar Variación" : "Crear Variación"}
         </button>
         <button
           onClick={onCloseForm}

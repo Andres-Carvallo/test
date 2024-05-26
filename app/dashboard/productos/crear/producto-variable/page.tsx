@@ -52,8 +52,8 @@ const CrearProductoVariable: React.FC = () => {
     },
   });
 
-  const [mainImage, setMainImage] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [mainImage, setMainImage] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [selectedImages, setSelectedImages] = useState([]);
   const [showForm, setShowForm] = useState(true);
   const [measures, setMeasures] = useState<Measures>({
@@ -172,15 +172,11 @@ const CrearProductoVariable: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   type FormDataKeys = keyof typeof formData;
 
   const handleImageChange = (
     e: ChangeEvent<HTMLInputElement>,
-    setImage: any,
+    setImage: React.Dispatch<React.SetStateAction<string | null>>,
     imageKey: string
   ) => {
     const file = e.target.files?.[0];
@@ -197,44 +193,25 @@ const CrearProductoVariable: React.FC = () => {
           data: result,
         };
 
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          [imageKey]: imageInfo,
-        }));
-
-        // Setear el estado para indicar que la imagen se ha cargado
+        // Determina qué imagen se está cambiando y actualiza el estado correspondiente
         if (imageKey === "mainImage") {
           setIsMainImageUploaded(true);
         } else if (imageKey === "previewImage") {
           setIsPreviewImageUploaded(true);
         }
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          [imageKey]: imageInfo,
+        }));
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleClearImage = (
-    imageType: any,
-    setImage: any,
-    setIsImageUploaded: any
+    setImage: React.Dispatch<React.SetStateAction<string | null>>
   ) => {
     setImage(null);
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [imageType]: {
-        name: "",
-        type: "",
-        size: null,
-        data: "",
-      },
-    }));
-
-    // Setear el estado para indicar que la imagen no ha sido cargada
-    if (imageType === "mainImage") {
-      setIsMainImageUploaded(false);
-    } else if (imageType === "previewImage") {
-      setIsPreviewImageUploaded(false);
-    }
   };
 
   const handleImageGalleryChange = (newImages: any) => {
@@ -256,14 +233,9 @@ const CrearProductoVariable: React.FC = () => {
   };
 
   const handleCancel = () => {
-    handleClearImage(
-      setPreviewImage,
-      "previewImage",
-      setIsPreviewImageUploaded
-    );
-    handleClearImage(setMainImage, "mainImage", setIsMainImageUploaded);
+    handleClearImage(setMainImage);
+    handleClearImage(setPreviewImage);
     setIsEditMode(false);
-    router.push("/dashboard/productos/crear/producto-variable");
     setFormData({
       productTypes: [],
       name: "",
@@ -382,6 +354,7 @@ const CrearProductoVariable: React.FC = () => {
           }
 
           // Actualizar la URL si es necesario
+          fetchData();
 
           if (idVariable !== productId) {
             searchParams.set("productVariableId", productId);
@@ -399,6 +372,7 @@ const CrearProductoVariable: React.FC = () => {
             console.log(`El ID del SKU es: ${sku}`);
 
             // Actualizar la URL si es necesario
+            fetchData();
             const searchParams = new URLSearchParams(window.location.search);
             const idVariable = searchParams.get("productVariableId");
             if (idVariable !== id) {
@@ -428,6 +402,10 @@ const CrearProductoVariable: React.FC = () => {
       setIsEditMode(true);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <div>
@@ -546,9 +524,7 @@ const CrearProductoVariable: React.FC = () => {
                 />
                 <button
                   className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() =>
-                    handleClearImage(setMainImage, "mainImage", mainImage)
-                  }
+                  onClick={() => handleClearImage(setMainImage)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -620,13 +596,7 @@ const CrearProductoVariable: React.FC = () => {
                 />
                 <button
                   className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() =>
-                    handleClearImage(
-                      setPreviewImage,
-                      "previewImage",
-                      previewImage
-                    )
-                  }
+                  onClick={() => handleClearImage(setPreviewImage)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -761,7 +731,10 @@ const CrearProductoVariable: React.FC = () => {
         </button>
       ) : null}
 
-      <VariablesPage isEditMode={isEditMode} />
+      <VariablesPage
+        isEditMode={isEditMode}
+        setIsEditMode={setIsEditMode}
+      />
     </div>
   );
 };

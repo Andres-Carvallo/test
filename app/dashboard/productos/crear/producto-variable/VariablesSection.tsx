@@ -12,7 +12,7 @@ interface Variation {
 type AttributesByVariation = {
   [key: string]: any[];
 };
-function VariationsComponente({ isEditMode }: any) {
+function VariationsComponente({ isEditMode, setIsEditMode }: any) {
   const [variations, setVariations] = useState<Variation[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
   const [currentAttributes, setCurrentAttributes] = useState({});
@@ -75,17 +75,23 @@ function VariationsComponente({ isEditMode }: any) {
         setVariations(filteredVariations);
 
         // Crear un objeto para almacenar los atributos por variación
-        let attributesByVariation = {};
+        let attributesByVariation: AttributesByVariation = {};
 
         // Iterar sobre cada variación y llamar a fetchAttributesForVariation
         for (const variation of filteredVariations) {
-          const attributesByVariation: AttributesByVariation = {};
-
           const attributes = await fetchAttributesForVariation(variation.id);
-          // Almacenar los atributos en el objeto usando el ID de la variación como clave
-          attributesByVariation[variation.id] = attributes;
-        }
 
+          // Verificar si los atributos son null antes de almacenarlos
+          if (attributes !== null) {
+            // Almacenar los atributos en el objeto usando el ID de la variación como clave
+            attributesByVariation[variation.id] = attributes;
+          } else {
+            console.log(
+              `No se encontraron atributos para la variación con ID: ${variation.id}`
+            );
+          }
+        }
+        console.log(attributesByVariation, "attributesByVariation");
         setCurrentAttributes(attributesByVariation);
       } else {
         console.error("Error fetching variations:", responseVariations.message);
@@ -278,6 +284,7 @@ function VariationsComponente({ isEditMode }: any) {
                 currentAttributes={currentAttributes}
                 setVariations={setVariations}
                 index={index}
+                setIsEditMode={setIsEditMode}
                 attributes={attributes}
                 onDescriptionChange={(e: any) =>
                   handleDescriptionChange(e, index)
