@@ -3,23 +3,19 @@ import ImageUpload from "./ImageUpload";
 import Select from "react-select";
 import { getCookie } from "cookies-next";
 import VariationForm from "./VariationForm";
-
+import axios from "axios";
 interface Variation {
   description: string;
   images: any[];
-  selectedAttributes: { value: string; label: string }[];
   [key: string]: any;
 }
-
+type AttributesByVariation = {
+  [key: string]: any[];
+};
 function VariationsComponente({ isEditMode }: any) {
   const [variations, setVariations] = useState<Variation[]>([]);
   const [attributes, setAttributes] = useState<any[]>([]);
-  const [inputValue, setInputValue] = useState("");
-
-  // Función para manejar cambios en el input
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
+  const [currentAttributes, setCurrentAttributes] = useState({});
 
   const [currentVariationIndex, setCurrentVariationIndex] = useState<
     number | null
@@ -28,6 +24,7 @@ function VariationsComponente({ isEditMode }: any) {
   useEffect(() => {
     fetchAttributes();
     fetchVariations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAttributes = async () => {
@@ -53,6 +50,9 @@ function VariationsComponente({ isEditMode }: any) {
     }
   };
 
+  // Definir el objeto para almacenar los atributos por variación fuera de la función
+  const attributesByVariation: { [key: string]: any[] } = {};
+
   const fetchVariations = async () => {
     try {
       const token = getCookie("tokenAuth");
@@ -74,10 +74,19 @@ function VariationsComponente({ isEditMode }: any) {
         );
         setVariations(filteredVariations);
 
-        // Iterar sobre las variaciones y llamar a fetchAttributesForVariation para cada una
-        filteredVariations.forEach((variation) => {
-          fetchAttributesForVariation(variation.id);
-        });
+        // Crear un objeto para almacenar los atributos por variación
+        let attributesByVariation = {};
+
+        // Iterar sobre cada variación y llamar a fetchAttributesForVariation
+        for (const variation of filteredVariations) {
+          const attributesByVariation: AttributesByVariation = {};
+
+          const attributes = await fetchAttributesForVariation(variation.id);
+          // Almacenar los atributos en el objeto usando el ID de la variación como clave
+          attributesByVariation[variation.id] = attributes;
+        }
+
+        setCurrentAttributes(attributesByVariation);
       } else {
         console.error("Error fetching variations:", responseVariations.message);
       }
@@ -86,7 +95,7 @@ function VariationsComponente({ isEditMode }: any) {
     }
   };
 
-  const fetchAttributesForVariation = async (variationId) => {
+  const fetchAttributesForVariation = async (variationId: any) => {
     try {
       const token = getCookie("tokenAuth");
       const searchParams = new URLSearchParams(window.location.search);
@@ -103,58 +112,23 @@ function VariationsComponente({ isEditMode }: any) {
 
       const responseData = await response.json();
       if (responseData.code === 0) {
-        const attributes = responseData.skuAttributes.map((skuAttribute) => ({
-          value: skuAttribute.value,
-          label: skuAttribute.attribute.name,
-          inputName: skuAttribute.attribute.name, // Nombre del campo para el input
-        }));
-
-        // Log de los atributos obtenidos
-        console.log(
-          "Atributos encontrados para la variación con ID",
-          variationId,
-          ":",
-          attributes
+        const attributes = responseData.skuAttributes.map(
+          (skuAttribute: any) => ({
+            value: skuAttribute.value,
+            label: skuAttribute.attribute.name,
+          })
         );
-
-        // Obtener un array de los valores de los atributos como strings
-        const attributeValues = attributes.map((attribute) => attribute.value);
-
-        // Log de los valores iniciales de los inputs
-        console.log(attributeValues, "attributeValues");
-
-        // Actualizar el estado inputValue con los valores iniciales
-        setInputValue(attributeValues);
-
-        // Actualizar la variación con los atributos obtenidos
-        setVariations((prevVariations) => {
-          const updatedVariations = prevVariations.map((variation) => {
-            if (variation.id === variationId) {
-              const variationWithAttributes = {
-                ...variation,
-                selectedAttributes: attributes,
-              };
-
-              // Actualizar los valores de los atributos en el estado del componente VariationForm
-              attributes.forEach((attribute) => {
-                variationWithAttributes[attribute.value] = attribute.value; // Asignar el valor del atributo
-              });
-
-              return variationWithAttributes;
-            }
-            return variation;
-          });
-
-          return updatedVariations;
-        });
+        return attributes; // Devuelve los atributos en lugar de guardarlos en el estado
       } else {
         console.error(
           "Error al obtener los atributos de la variación:",
           responseData.message
         );
+        return null; // En caso de error, devuelve null
       }
     } catch (error) {
       console.error("Error al obtener los atributos de la variación:", error);
+      return null; // En caso de error, devuelve null
     }
   };
 
@@ -167,18 +141,10 @@ function VariationsComponente({ isEditMode }: any) {
         hasStockNotifications: false,
         mainImage: null,
         previewImage: null,
-        selectedAttributes: [],
         images: [],
       },
     ]);
     setCurrentVariationIndex(variations.length); // Abrir el formulario del último agregado
-  };
-
-  const handleRemoveVariation = (index: number) => {
-    const updatedVariations = [...variations];
-    updatedVariations.splice(index, 1);
-    setVariations(updatedVariations);
-    setCurrentVariationIndex(null); // Cerrar el formulario al eliminar
   };
 
   const handleDescriptionChange = (
@@ -189,24 +155,6 @@ function VariationsComponente({ isEditMode }: any) {
     setVariations((prevVariations) => {
       const updatedVariations = [...prevVariations];
       updatedVariations[index].description = value;
-      return updatedVariations;
-    });
-  };
-
-  const handleAttributeChange = (selectedOptions: any, index: number) => {
-    // Obtener el valor seleccionado del atributo
-    const newValue = selectedOptions.map((option: any) => option.value);
-
-    // Actualizar el estado de la variación con los nuevos valores de atributos
-    setVariations((prevVariations) => {
-      const updatedVariations = [...prevVariations];
-      updatedVariations[index].selectedAttributes = selectedOptions;
-      // Actualizar los valores de los atributos en la variación
-      selectedOptions.forEach((option: any) => {
-        const attributeValue = option.value;
-        const attributeName = option.label;
-        updatedVariations[index][attributeValue] = ""; // Asignar el valor del atributo
-      });
       return updatedVariations;
     });
   };
@@ -227,7 +175,32 @@ function VariationsComponente({ isEditMode }: any) {
       return updatedVariations;
     });
   };
+  const handleDeleteVariation = async (skuId: string) => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const idVariable = searchParams.get("productVariableId");
+      const token = getCookie("tokenAuth");
 
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${skuId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log(`Variation with ID: ${skuId} deleted successfully.`);
+        fetchVariations(); // Call fetchVariations to update the list
+      } else {
+        console.error("Error deleting variation:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error deleting variation:", error);
+    }
+  };
   const handleCloseForm = () => {
     setCurrentVariationIndex(null);
   };
@@ -278,7 +251,7 @@ function VariationsComponente({ isEditMode }: any) {
                   </div>
                 )}
               </button>
-              <button onClick={() => handleRemoveVariation(index)}>
+              <button onClick={() => handleDeleteVariation(variation.id)}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -302,20 +275,17 @@ function VariationsComponente({ isEditMode }: any) {
               <VariationForm
                 variation={variation}
                 fetchVariations={fetchVariations}
+                currentAttributes={currentAttributes}
                 setVariations={setVariations}
                 index={index}
                 attributes={attributes}
-                inputValue={inputValue}
-                setInputValue={setInputValue}
-                handleInputChange={handleInputChange}
-                onDescriptionChange={(e) => handleDescriptionChange(e, index)}
-                onAttributeChange={(selectedOptions: any) =>
-                  handleAttributeChange(selectedOptions, index)
+                onDescriptionChange={(e: any) =>
+                  handleDescriptionChange(e, index)
                 }
-                onMainImageChange={(image) =>
+                onMainImageChange={(image: any) =>
                   handleMainImageChange(image, index)
                 }
-                onPreviewImageChange={(image) =>
+                onPreviewImageChange={(image: any) =>
                   handlePreviewImageChange(image, index)
                 }
                 onCloseForm={handleCloseForm}

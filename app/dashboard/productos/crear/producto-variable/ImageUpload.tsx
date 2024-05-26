@@ -55,7 +55,7 @@ function ImageUpload({ onImageChange, label, preloadedImageUrl }: any) {
         />
         {image ? (
           <div>
-            <h1>Imagen de Previsualización</h1>
+            <h1>{label}</h1>
             <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
               <img
                 src={image}
