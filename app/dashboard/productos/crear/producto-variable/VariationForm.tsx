@@ -39,14 +39,28 @@ const VariationForm: React.FC<any> = ({
   }, [isEditMode, currentAttributes, variation.id]);
 
   const handleAddAttributePair = () => {
-    const lastPair = attributePairs[attributePairs.length - 1];
-    if (lastPair.id !== "") {
-      setAttributePairs([...attributePairs, { id: "", value: "" }]);
-    } else {
+    // Verificar si ya se han seleccionado todos los atributos disponibles
+    if (attributes.length === selectedAttributes.length) {
+      console.log("Ya se han seleccionado todos los atributos disponibles.");
+      return;
+    }
+
+    // Obtener el último par de atributos si existe
+    const lastPair =
+      attributePairs.length > 0
+        ? attributePairs[attributePairs.length - 1]
+        : null;
+
+    // Verificar si el último par tiene un atributo seleccionado
+    if (lastPair && lastPair.id === "") {
       console.log(
         "Debe seleccionar una opción antes de agregar un nuevo par de atributo y valor."
       );
+      return;
     }
+
+    // Agregar un nuevo par de atributos vacío
+    setAttributePairs([...attributePairs, { id: "", value: "" }]);
   };
 
   const handleSelectChange = (index: any, selectedOption: any) => {
@@ -60,6 +74,12 @@ const VariationForm: React.FC<any> = ({
   };
 
   const handleRemoveAttribute = (index: any) => {
+    // Verificar si es el último par de atributos
+    if (attributePairs.length === 1) {
+      console.log("Debe haber al menos un par de atributos.");
+      return;
+    }
+
     const removedAttributeId = attributePairs[index].id;
     const updatedPairs = attributePairs.filter((_, i) => i !== index);
     setAttributePairs(updatedPairs);

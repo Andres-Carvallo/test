@@ -11,7 +11,7 @@ function ContentBlock() {
   const [loading, setLoading] = useState(false);
   const [bannerDataMarquee, setBannerDataMarquee] = useState<any | null>(null);
   const [marqueeData, setMarqueeData] = useState({
-    title: "",
+    title: "hola",
     contentText: "",
   });
   const [welcomeData, setWelcomeData] = useState({
@@ -43,7 +43,7 @@ function ContentBlock() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4597fb95-2463-4e99-b1fb-14e8d08a0893";
+      const bannerId = "c8fa666d-5dad-4446-9b5d-4c224f1f2797";
       // Enviar los datos al endpoint
       const token = getCookie("tokenAuth");
       await axios.put(
@@ -80,7 +80,7 @@ function ContentBlock() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4597fb95-2463-4e99-b1fb-14e8d08a0893";
+      const bannerId = "c8fa666d-5dad-4446-9b5d-4c224f1f2797";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -103,7 +103,7 @@ function ContentBlock() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "88097fde-c6cf-402a-b5a3-8d13e181d204";
+      const bannerId = "9fc87a86-154a-40ff-b5ac-39dead5d3bb3";
       // Enviar los datos al endpoint
       const token = getCookie("tokenAuth");
       await axios.put(
@@ -139,7 +139,7 @@ function ContentBlock() {
   const fetchWelcomeBanner = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "88097fde-c6cf-402a-b5a3-8d13e181d204";
+      const bannerId = "9fc87a86-154a-40ff-b5ac-39dead5d3bb3";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
