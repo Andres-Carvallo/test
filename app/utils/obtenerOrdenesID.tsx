@@ -1,15 +1,9 @@
 import axios from "axios";
 
-export const obtenerOrdenesId = async (orderId: any, token: any) => {
+export const obtenerOrdenesId = async (orderId: any) => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders/${orderId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
     );
     return response.data;
   } catch (error) {

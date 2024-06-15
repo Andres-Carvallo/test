@@ -1,0 +1,175 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { getCookie } from "cookies-next";
+import { jwtDecode } from "jwt-decode";
+import Link from "next/link";
+
+interface Order {
+  id: number;
+  correlative: string;
+  creationDate: string;
+  totals: {
+    totalAmount: number;
+  };
+}
+
+interface OrderDataProps {
+  orders: Order[];
+  error: string;
+  loading: boolean;
+}
+
+interface OrderDataState {
+  orders: Order[];
+  error: string;
+  loading: boolean;
+}
+
+export default function OrderData() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
+
+  const token = getCookie("ClientTokenAuth");
+  const decodeToken = token ? jwtDecode(token) : null;
+
+  const formatDateToChileanTime = (isoDateString: string) => {
+    const date = new Date(isoDateString);
+
+    // Ajustar la hora a la zona horaria de Chile (GMT-4)
+    const timezoneOffset = -4 * 60; // -4 horas en minutos
+    const adjustedDate = new Date(date.getTime() + timezoneOffset * 60 * 1000);
+
+    const day = adjustedDate.getDate().toString().padStart(2, "0");
+    const month = (adjustedDate.getMonth() + 1).toString().padStart(2, "0"); // Los meses son 0-indexados
+    const year = adjustedDate.getFullYear();
+    const hours = adjustedDate.getHours().toString().padStart(2, "0");
+    const minutes = adjustedDate.getMinutes().toString().padStart(2, "0");
+
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const id = decodeToken?.sub;
+        const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/orders?siteId=${siteId}&pageNumber=1&pageSize=50`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.code === 0) {
+          setOrders(response.data.orders);
+        } else {
+          setError("Failed to fetch orders. Please try again.");
+        }
+      } catch (err) {
+        setError("An error occurred. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [decodeToken?.sub]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+
+  return (
+    <div>
+      <div className="max-w-6xl mx-auto">
+        {/* Nuevo bloque para mostrar la sección de opiniones */}
+        <div
+          className="border overflow-hidden shadow-md mb-4"
+          style={{ borderRadius: "var(--radius)" }}
+        >
+          <div className="bg-white p-4 flex justify-between items-center">
+            <div className="flex items-center">
+              <img
+                src="https://images.vexels.com/media/users/3/134165/isolated/preview/435c122f8420a57fd38d06a30292f2bb-icono-de-estrella-plana-68.png"
+                alt="Opinion"
+                className="w-12 h-12 object-cover mr-4"
+                style={{ borderRadius: "50%" }}
+              />
+              <p className="text-m text-gray-700">
+                5 productos esperan tu opinión
+              </p>
+            </div>
+            <Link
+              href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
+              className="px-4 py-2 bg-primary text-secondary hover:bg-secondary hover:text-primary transition duration-300"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              Calificar
+            </Link>
+          </div>
+        </div>
+
+        {/* Iteración sobre los pedidos */}
+        {orders.map((order, index) => (
+          <div
+            key={index}
+            className="border overflow-hidden shadow-md mb-4"
+            style={{ borderRadius: "var(--radius)" }}
+          >
+            <div className="bg-white p-4">
+              <p className="text-sm text-gray-700">
+                {" "}
+                {formatDateToChileanTime(order.creationDate)}
+              </p>
+            </div>
+            <div className="bg-secondary p-4 flex items-center">
+              <div className="mr-6">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-8"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+                  />
+                </svg>
+              </div>
+              <div className="flex flex-col justify-between flex-grow">
+                <div>
+                  <p className="font-bold text-lg">Orden ID</p>
+                  <p className="text-sm">#{order.correlative}</p>
+                </div>
+              </div>
+              <div className="flex flex-col items-center justify-center text-center mr-4">
+                <p className="font-semibold">Monto total</p>
+                <p className="text-lg font-bold">
+                  ${order.totals.totalAmount.toLocaleString("es-CL")}
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  router.push(`/tienda/mi-cuenta/mis-pedidos/${order.id}`)
+                }
+                className="ml-4 px-4 py-2 bg-primary text-secondary hover:bg-secondary hover:text-primary transition duration-300"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                Ver Detalle
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

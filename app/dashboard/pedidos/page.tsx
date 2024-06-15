@@ -24,8 +24,8 @@ function PedidosBO() {
     try {
       const PageNumber = 1;
       const PageSize = 100;
-      const token = getCookie("tokenAuth");
-      console.log(token, "tokenAuth");
+      const token = getCookie("AdminTokenAuth");
+      console.log(token, "AdminTokenAuth");
 
       const data = await obtenerPedidos(PageNumber, PageSize, token);
       setPedidos(data.orders);
@@ -338,11 +338,12 @@ function PedidosBO() {
                       </td>
                       <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {pedido.creationDate}
+                        <br /> {pedido.id}
                       </td>
                       <td className="px-2 py-3">
                         <div className="flex flex-col">
                           <div>
-                            {pedido.customer.firstname}{" "}
+                            {pedido.customer.firstname}
                             {pedido.customer.lastname}
                           </div>
                           <div className="font-bold">

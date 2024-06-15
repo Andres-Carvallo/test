@@ -13,6 +13,7 @@ export function APIContextProvider({ children, SiteId }) {
   const [cartData, setCartData] = useState({});
   const [pedidos, setPedidos] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [totalItems, setTotalItems] = useState([]);
 
   const handleMenuOpen = () => {
     setIsMenuOpen(true);
@@ -84,8 +85,24 @@ export function APIContextProvider({ children, SiteId }) {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}?siteId=${SiteId}`
         );
-        setCartItems(response.data.cart.items);
-        setCartData(response.data.cart);
+
+        // Obtener los datos del carrito de la respuesta
+        const cartData = response.data.cart;
+
+        // Verificar si hay items en el carrito
+        if (cartData && cartData.items) {
+          let totalItems = 0;
+
+          // Sumar las cantidades de los elementos del carrito
+          cartData.items.forEach((item) => {
+            totalItems += item.quantity;
+          });
+
+          // Actualizar el estado con los datos del carrito y el total de elementos
+          setCartItems(cartData.items);
+          setCartData(cartData);
+          setTotalItems(totalItems);
+        }
       } else {
         // Si no hay cartId, no hagas la solicitud HTTP y maneja la lógica correspondiente aquí
         console.log("No cartId found. Unable to fetch cart data.");
@@ -133,12 +150,15 @@ export function APIContextProvider({ children, SiteId }) {
         setCartItems,
         fetchCartData,
         cartData,
+        setCartData,
         pedidos,
         setPedidos,
         isMenuOpen,
         setIsMenuOpen,
         handleMenuOpen,
         handleMenuClose,
+        totalItems,
+        setTotalItems,
       }}
     >
       {children}

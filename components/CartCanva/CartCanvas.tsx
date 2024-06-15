@@ -19,6 +19,7 @@ function CartCanvas() {
     handleMenuClose,
     isMenuOpen,
     setIsMenuOpen,
+    totalItems,
   } = useAPI();
   const totalAmount = cartData?.totals?.totalAmount;
   const subtotalAmount = cartData?.totals?.subtotalAmount;
@@ -125,7 +126,7 @@ function CartCanvas() {
   };
 
   return (
-    <div className="">
+    <div className="z-50">
       <Link
         href="#"
         onClick={handleMenuOpen}
@@ -135,9 +136,9 @@ function CartCanvas() {
         <span className="relative ">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="20px"
-            height="20px"
-            className="cursor-pointer fill-[#333] hover:fill-[#007bff] inline"
+            width="22px"
+            height="22px"
+            className="cursor-pointer fill-primary hover:fill-primary inline"
             viewBox="0 0 512 512"
           >
             <path
@@ -145,47 +146,71 @@ function CartCanvas() {
               data-original="#000000"
             />
           </svg>
-          <span className="absolute left-auto -ml-1 top-0 rounded-full bg-black px-1 py-0 text-xs text-white">
-            {cartItems.length}
+          <span className="absolute left-auto -ml-1 top-0 rounded-full bg-primary px-1 py-0 text-xs text-white">
+            {totalItems}
           </span>
         </span>
       </Link>
       <div
         ref={offcanvasRef}
         id="menu-cart"
-        className={`offcanvas-menu fixed z-50  bg-slate-100 h-screen dark:border-strokedark dark:bg-form-strokedark top-0 right-0 p-6 w-2/3 md:w-1/3 ease-in-out duration-1000 shadow-md flex pt-32  ${
+        className={`offcanvas-menu fixed z-50  bg-slate-100 h-screen dark:border-strokedark dark:bg-form-strokedark top-0 right-0 p-6 w-full sm:w-2/3 md:w-1/2   ease-in-out duration-1000 shadow-md flex pt-32  ${
           isMenuOpen ? "" : "translate-x-full"
         }`}
       >
         {/* Contenido del carrito */}
         <div className="fixed top-0 left-0 w-full h-full z-[1000] before:fixed   before:w-full before:h-full before:bg-[rgba(0,0,0,0.5)] font-[sans-serif]">
-          <div className="w-full  bg-white shadow-lg relative ml-auto h-screen">
+          <div className="w-full  bg-white shadow-lg relative ml-auto h-screen z-50">
             <div className="overflow-auto p-6 h-[calc(100vh-135px)]">
-              <Link
-                href="#"
-                onClick={handleMenuClose}
-                className="menu-open-btn ease-in-up   rounded-sm   py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-opacity-90 hover:shadow-btn-hover md:block "
-              >
-                {/* Contenido del botón de apertura del carrito */}
-                <span className="relative ">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    className="w-6 h-6 text-dark hover:text-red-600 "
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </span>
-              </Link>
-              {/* Elementos de diseño original */}
-              <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
-                Tu Carrito
-              </h2>
+              <div className="flex justify-between">
+                <Link
+                  href="#"
+                  onClick={handleMenuClose}
+                  className="menu-open-btn ease-in-up   rounded-sm   py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-opacity-90 hover:shadow-btn-hover md:block "
+                >
+                  {/* Contenido del botón de apertura del carrito */}
+                  <span className="relative ">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="w-8 h-8 hover:text-secondary text-primary"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                </Link>
+                <h2 className="mb-4 text-center text-2xl font-bold text-dark  lg:text-3xl uppercase">
+                  Tu Carrito
+                </h2>
+              </div>
+              <h3 className="text-right uppercase text-xs  mb-4">
+                Total Productos:{" "}
+                <span className="font-bold text-lg">{totalItems}</span>
+              </h3>
+              <div className="grid grid-cols-12 mt-8 max-md:hidden pb-6 border-b border-gray-200">
+                <div className="col-span-12 md:col-span-7">
+                  <p className="font-normal text-lg leading-8 text-gray-400">
+                    Producto
+                  </p>
+                </div>
+                <div className="col-span-12 md:col-span-5">
+                  <div className="grid grid-cols-5">
+                    <div className="col-span-4">
+                      <p className="font-normal text-lg leading-8 text-gray-400 text-center">
+                        Cantidad
+                      </p>
+                    </div>
+                    {/*                                 <div className="col-span-2">
+                                    <p className="font-normal text-lg leading-8 text-gray-400 text-center">Total</p>
+                                </div> */}
+                  </div>
+                </div>
+              </div>
               {/* Map para mostrar los productos en el carrito */}
               <CartList
                 cartItems={cartItems}
@@ -197,15 +222,16 @@ function CartCanvas() {
             <div className="p-6 absolute bottom-0 w-full border-t bg-white">
               <ul className="text-[#333] divide-y">
                 {/* Subtotal del carrito */}
-                <li className="flex flex-wrap gap-4 text-md font-bold">
+                <li className="flex flex-wrap gap-4 text-2xl font-bold">
                   Subtotal <span className="ml-auto">${subtotalAmount}</span>
+                  {/* .toLocaleString('es-CL') */}
                 </li>
-                <li className="flex flex-wrap gap-4 text-md font-bold">
+                {/*                 <li className="flex flex-wrap gap-4 text-md font-bold">
                   Descuento <span className="ml-auto">${discountAmount}</span>
                 </li>
                 <li className="flex flex-wrap gap-4 text-md font-bold">
                   Total <span className="ml-auto">${totalAmount}</span>
-                </li>
+                </li> */}
               </ul>
               {/* Botón de checkout */}
               <Link href="/tienda/checkout">
@@ -217,7 +243,8 @@ function CartCanvas() {
                       // Aquí puedes llamar a la función que deseas ejecutar después de 4 segundos
                     }, 1000); // 4000 milisegundos = 4 segundos
                   }}
-                  className="menu-open-btn ease-in-up mt-6 text-md px-6 py-2.5 w-full bg-blue-600 hover:bg-blue-700 text-white rounded"
+                  className="shadow menu-open-btn ease-in-up mt-6 text-md px-6 py-2.5 w-full bg-primary hover:bg-secondary text-secondary hover:text-primary"
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   Check out
                 </button>

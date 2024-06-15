@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React from "react";
+import Link from "next/link";
 
 export default function Collection01() {
   return (
@@ -12,8 +13,8 @@ export default function Collection01() {
 
           <div className="grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
             {/* product - start */}
-            <div>
-              <a
+            <div className="max-w-[200px]">
+              <Link
                 href="#"
                 className="group relative flex h-96 items-end overflow-hidden rounded-lg bg-gray-100 p-4 shadow-lg"
               >
@@ -25,81 +26,11 @@ export default function Collection01() {
                 />
 
                 <div className="relative flex w-full flex-col rounded-lg bg-white p-4 text-center">
-                  <span className="text-gray-500">Colgantes</span>
                   <span className="text-lg font-bold text-gray-800 lg:text-xl">
                     Diosa Madre
                   </span>
                 </div>
-              </a>
-            </div>
-            {/* product - end */}
-
-            {/* product - start */}
-            <div>
-              <a
-                href="#"
-                className="group relative flex h-96 items-end overflow-hidden rounded-lg bg-gray-100 p-4 shadow-lg"
-              >
-                <img
-                  src="/img/category/colec_mini_SAGRADAS.webp"
-                  loading="lazy"
-                  alt="Colección Diosa Madre"
-                  className="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
-                />
-
-                <div className="relative flex w-full flex-col rounded-lg bg-white p-4 text-center">
-                  <span className="text-gray-500">Colgantes</span>
-                  <span className="text-lg font-bold text-gray-800 lg:text-xl">
-                    Diosa Madre
-                  </span>
-                </div>
-              </a>
-            </div>
-            {/* product - end */}
-
-            {/* product - start */}
-            <div>
-              <a
-                href="#"
-                className="group relative flex h-96 items-end overflow-hidden rounded-lg bg-gray-100 p-4 shadow-lg"
-              >
-                <img
-                  src="/img/category/colec-MINI_COSMOS.webp"
-                  loading="lazy"
-                  alt="Colección Diosa Madre"
-                  className="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
-                />
-
-                <div className="relative flex w-full flex-col rounded-lg bg-white p-4 text-center">
-                  <span className="text-gray-500">Colgantes</span>
-                  <span className="text-lg font-bold text-gray-800 lg:text-xl">
-                    Diosa Madre
-                  </span>
-                </div>
-              </a>
-            </div>
-            {/* product - end */}
-
-            {/* product - start */}
-            <div>
-              <a
-                href="#"
-                className="group relative flex h-96 items-end overflow-hidden rounded-lg bg-gray-100 p-4 shadow-lg"
-              >
-                <img
-                  src="/img/category/colec-MINI_SELLOS.webp"
-                  loading="lazy"
-                  alt="Colección Diosa Madre"
-                  className="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
-                />
-
-                <div className="relative flex w-full flex-col rounded-lg bg-white p-4 text-center">
-                  <span className="text-gray-500">Colgantes</span>
-                  <span className="text-lg font-bold text-gray-800 lg:text-xl">
-                    Diosa Madre
-                  </span>
-                </div>
-              </a>
+              </Link>
             </div>
             {/* product - end */}
           </div>

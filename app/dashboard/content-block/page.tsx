@@ -6,11 +6,12 @@ import axios from "axios";
 import Marquee from "react-fast-marquee";
 import { getCookie } from "cookies-next";
 import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTiendaBO";
+import { Content } from "next/font/google";
 function ContentBlock() {
   const [loading, setLoading] = useState(false);
   const [bannerDataMarquee, setBannerDataMarquee] = useState<any | null>(null);
   const [marqueeData, setMarqueeData] = useState({
-    title: "",
+    title: "hola",
     contentText: "",
   });
   const [welcomeData, setWelcomeData] = useState({
@@ -42,9 +43,9 @@ function ContentBlock() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4597fb95-2463-4e99-b1fb-14e8d08a0893";
+      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
       // Enviar los datos al endpoint
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
         {
@@ -79,7 +80,7 @@ function ContentBlock() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4597fb95-2463-4e99-b1fb-14e8d08a0893";
+      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -102,9 +103,9 @@ function ContentBlock() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "88097fde-c6cf-402a-b5a3-8d13e181d204";
+      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
       // Enviar los datos al endpoint
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
         {
@@ -138,7 +139,7 @@ function ContentBlock() {
   const fetchWelcomeBanner = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "88097fde-c6cf-402a-b5a3-8d13e181d204";
+      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -223,7 +224,7 @@ function ContentBlock() {
             <button
               type="submit"
               disabled={loading}
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center"
+              className="text-white bg-dark hover:bg-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
             >
               <svg
                 aria-hidden="true"
@@ -253,12 +254,14 @@ function ContentBlock() {
           <h4 className="uppercase font-bold mb-4">Mensaje bienvenida</h4>
           <div className="border border-dashed border-dark/50 rounded-lg p-4 ">
             <div className=" text-[#333] p-8 font-[sans-serif]">
-              <div className="max-w-xl mx-auto text-center">
-                <h2 className="text-4xl  font-extrabold relative after:absolute after:-bottom-5 after:h-1 after:w-1/2 after:bg-primary after:left-0 after:right-0 after:mx-auto after:rounded-full">
+              <div className="max-w-2xl mx-auto text-center">
+                <h2 className="text-3xl  font-bold uppercase  font-sans text-dark">
                   {welcomeData?.title}
                 </h2>
-                <div className="mt-12">
-                  <p className="text-base">{welcomeData?.contentText}</p>
+                <div className="mt-4">
+                  <p className="text-base font-sans text-dark">
+                    {welcomeData?.contentText}
+                  </p>
                 </div>
               </div>
             </div>
@@ -304,7 +307,7 @@ function ContentBlock() {
             <button
               type="submit"
               disabled={loading}
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center"
+              className="text-white bg-dark hover:bg-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
             >
               <svg
                 aria-hidden="true"

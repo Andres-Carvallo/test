@@ -11,8 +11,8 @@ const BannerPrincipal = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "78a1774f-afc9-49b9-9564-a7505200aa31";
-      const bannerImageId = "7bad7b6c-9026-4ac2-a701-cd7c7888639d";
+      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerImageId = "e38d6684-20c2-4a08-a46d-4a45306cacad";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -39,23 +39,23 @@ const BannerPrincipal = () => {
       className="w-full"
     >
       {bannerData && (
-        <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
+        <div className="relative font-sans  before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
           <img
             src={bannerData.images[0].mainImage.url}
             alt="Banner Image"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="min-h-[300px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-            <h2 className="sm:text-4xl text-2xl font-bold mb-6">
+          <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+            <h2 className=" text-2xl font-semibold mb-2 uppercase">
               {bannerData.images[0].title}
             </h2>
-            <p className="text-lg text-center text-gray-200">
+            <p className="text-md text-center text-gray-200">
               {bannerData.images[0].landingText}
             </p>
             <a
               href={bannerData.images[0].buttonLink}
-              className="mt-8 bg-transparent text-white text-base font-semibold py-2.5 px-6 border-2 border-white rounded hover:bg-white hover:text-black transition duration-300 ease-in-out"
-            >
+              className="mt-8 bg-dark bg-primary text-secondary hover:text-primary text-base font-semibold py-2.5 px-6  rounded hover:bg-secondary"
+              >
               {bannerData.images[0].buttonText}
             </a>
           </div>

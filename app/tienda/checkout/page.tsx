@@ -1,35 +1,36 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import Link from "next/link";
-import AsideTotal from "@/components/Checkout/AsideTotal";
 import React, { useEffect, useState } from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-import { getCookie, deleteCookie } from "cookies-next";
+import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import AutoSubmitForm from "@/components/Checkout/AutoSubmitForm";
 import CartList from "@/components/CartCanva/CartList";
+import { useRouter } from "next/navigation";
 
 function Checkout() {
   const [regions, setRegions] = useState([]);
   const [communes, setCommunes] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCommune, setSelectedCommune] = useState("");
-  const { cartItems, setCartItems, fetchCartData, cartData } = useAPI();
-  const totalAmount = cartData?.totals?.totalAmount;
-  const subtotalAmount = cartData?.totals?.subtotalAmount;
-  const discountAmount = cartData?.totals?.discountAmount;
+  const {
+    cartItems,
+    setCartItems,
+    fetchCartData,
+    cartData,
+    setCartData,
+    setTotalItems,
+  } = useAPI();
+
+  const router = useRouter();
 
   const [deliveryType, setDeliveryType] = useState(""); // Valor predeterminado: entrega a domicilio
   const [deliveryTypeID, setDeliveryTypeID] = useState("");
-  const [orderSubmitted, setOrderSubmitted] = useState(false); // Nuevo estado para controlar si se ha enviado la orden
-  const [transactionData, setTransactionData] = useState<{
-    url: string;
-    token: string;
-  } | null>(null);
 
   const cartId = getCookie("cartId");
+
   const [customer, setCustomer] = useState({
     cartId: cartId,
     deliveryTypeId: "",
@@ -44,6 +45,54 @@ function Checkout() {
       communeId: "",
     },
   });
+
+  const handleSubmitOrder = async () => {
+    const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
+      {
+        cartId: customer.cartId,
+        deliveryTypeId: deliveryTypeID,
+        useDifferentShippingAddress: false,
+        customer: {
+          firstname: customer.customer.firstname,
+          lastname: customer.customer.lastname,
+          phoneNumber: customer.customer.phoneNumber,
+          email: customer.customer.email,
+          addressLine1: customer.customer.addressLine1,
+          addressLine2: customer.customer.addressLine2,
+          communeId: customer.customer.communeId,
+        },
+      }
+    );
+
+    if (response.data) {
+      const idOrder = response.data.order.id;
+      console.log("idOrder", idOrder);
+      router.push(`/tienda/checkout/pago?orderId=${idOrder}`);
+      setCookie("idOrder", idOrder);
+      setCartItems([]);
+      setCartData({});
+      setTotalItems(null);
+      deleteCookie("cartId");
+      setCustomer({
+        cartId: "",
+        deliveryTypeId: "",
+        useDifferentShippingAddress: false,
+        customer: {
+          firstname: "",
+          lastname: "",
+          phoneNumber: "",
+          email: "",
+          addressLine1: "",
+          addressLine2: "",
+          communeId: "",
+        },
+      });
+    }
+    console.log("ok", response.data);
+  };
+
   const incrementQuantity = async (itemId: string) => {
     try {
       const itemIndex = cartItems.findIndex((item: any) => item.id === itemId);
@@ -111,21 +160,12 @@ function Checkout() {
     }
   };
 
-  useEffect(() => {
-    fetchCartData();
-    fetchRegions();
-    console.log(cartData, "cartData");
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const fetchRegions = async () => {
     try {
       const Pais = "CL";
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions`
       );
-      console.log(response.data.regions, "response");
       setRegions(response.data.regions);
     } catch (error) {
       console.error("Error fetching regions:", error);
@@ -136,7 +176,7 @@ function Checkout() {
     try {
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?hasShippingZones=true`
       );
       setCommunes(response.data.communes);
     } catch (error) {
@@ -158,7 +198,6 @@ function Checkout() {
   const handleCommuneChange = (e: any) => {
     const communeId = e.target.value;
     setSelectedCommune(communeId);
-    console.log(communeId, "communeId");
     setCustomer({
       ...customer,
       customer: {
@@ -169,7 +208,6 @@ function Checkout() {
   };
 
   const handleChangeDeliveryType = async (newValue: any) => {
-    console.log("Nuevo valor de deliveryType:", newValue);
     setDeliveryType(newValue);
 
     try {
@@ -181,10 +219,6 @@ function Checkout() {
         (type: any) => type.code === newValue
       );
       if (selectedDeliveryType) {
-        console.log(
-          "ID del deliveryType seleccionado:",
-          selectedDeliveryType.id
-        );
         setDeliveryTypeID(selectedDeliveryType.id);
       } else {
         console.error(
@@ -196,91 +230,11 @@ function Checkout() {
     }
   };
 
-  const handleSubmitOrder = async () => {
-    try {
-      const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
-        {
-          cartId: customer.cartId,
-          deliveryTypeId: deliveryTypeID,
-          useDifferentShippingAddress: false,
-          customer: {
-            firstname: customer.customer.firstname,
-            lastname: customer.customer.lastname,
-            phoneNumber: customer.customer.phoneNumber,
-            email: customer.customer.email,
-            addressLine1: customer.customer.addressLine1,
-            addressLine2: customer.customer.addressLine2,
-            communeId: customer.customer.communeId,
-          },
-        }
-      );
-
-      console.log("Respuesta del servidor:", response.data);
-
-      if (response.data.code === 0) {
-        const orderId = response.data.order.id;
-
-        const paymentGatewayResponse = await axios.get(
-          `https://pixelup-site-api-git-development-pixelups-projects.vercel.app/api/v1/payment-gateways?statusCode=ACTIVE`
-        );
-        const paymentGateways = paymentGatewayResponse.data.paymentGateways;
-        const activePaymentGatewayId = paymentGateways[0].id; // Supongamos que tomamos el primer medio de pago
-
-        // Cuarta solicitud para actualizar el estado de la orden con el medio de pago correspondiente
-        const updateOrderUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${SiteId}`;
-        const updateOrderResponse = await axios.put(updateOrderUrl, {
-          statusCode: "PAYMENT_PENDING",
-          initTransactionInfo: {
-            paymentGatewayId: activePaymentGatewayId,
-            errorUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`,
-            returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/validate?orderId=${orderId}`,
-          },
-        });
-        if (updateOrderResponse.data.code === 0) {
-          toast(
-            "¡Datos enviados correctamente y orden actualizada con medio de pago!"
-          );
-
-          setTransactionData({
-            token: updateOrderResponse.data.transaction.token,
-            url: updateOrderResponse.data.transaction.url,
-          });
-
-          // Marca la orden como enviada
-          setOrderSubmitted(true);
-        } else {
-          console.error(
-            "Error al actualizar la orden con el medio de pago:",
-            updateOrderResponse.data
-          );
-          toast.error("Error al actualizar la orden con el medio de pago");
-        }
-      }
-    } catch (error) {
-      console.error("Error al enviar la orden:", error);
-      // Manejo de errores dentro del bloque try...catch
-    } finally {
-      // Restablecer el estado del cliente y manejar la respuesta del servidor
-      deleteCookie("cartId");
-      setCustomer({
-        cartId: cartId,
-        deliveryTypeId: "",
-        useDifferentShippingAddress: false,
-        customer: {
-          firstname: "",
-          lastname: "",
-          phoneNumber: "",
-          email: "",
-          addressLine1: "",
-          addressLine2: "",
-          communeId: "",
-        },
-      });
-      // Aquí puedes manejar la respuesta del servidor según sea necesario
-    }
-  };
+  useEffect(() => {
+    fetchCartData();
+    fetchRegions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="pb-12">
@@ -315,7 +269,7 @@ function Checkout() {
                       />
                     </svg>
                   </a>
-                  <span className="font-semibold text-gray-900">Shop</span>
+                  <span className="font-semibold text-gray-900">Tienda</span>
                 </li>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -338,7 +292,9 @@ function Checkout() {
                   >
                     2
                   </a>
-                  <span className="font-semibold text-gray-900">Shipping</span>
+                  <span className="font-semibold text-gray-900">
+                    Confirmación
+                  </span>
                 </li>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -361,7 +317,7 @@ function Checkout() {
                   >
                     3
                   </a>
-                  <span className="font-semibold text-gray-500">Payment</span>
+                  <span className="font-semibold text-gray-500">Pago</span>
                 </li>
               </ul>
             </div>
@@ -390,8 +346,7 @@ function Checkout() {
               Complete your order by providing your payment details.
             </p>
             <div className="">
-              <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
-                <p className="text-xl font-medium">Customer Details</p>
+              <div className="mt-10 bg-gray-50 px-4 pt-2 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="firstname"
@@ -530,10 +485,30 @@ function Checkout() {
                     />
                   </label>
                 </div>
+                <div
+                  style={{ borderRadius: "var(--radius)" }}
+                  className="shadow flex items-center p-4 my-2 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+                  role="alert"
+                >
+                  <svg
+                    className="flex-shrink-0 inline w-4 h-4 me-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                  </svg>
+                  <span className="sr-only">Info</span>
+                  <div>
+                    <span className="font-semibold">Delivery.</span> Solo
+                    apareceran las comunas que tengan disponibilidad de entrega.
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="RegionId"
-                    className="block mt-4"
+                    className="block"
                   >
                     Región
                     <select
@@ -557,7 +532,7 @@ function Checkout() {
                   </label>
                   <label
                     htmlFor="communeId"
-                    className="block mt-4"
+                    className="block"
                   >
                     Comuna
                     <select
@@ -583,8 +558,7 @@ function Checkout() {
                 </div>
               </div>
 
-              <p className="mt-8 text-lg font-medium">Shipping Methods</p>
-              <form className="mt-5 grid gap-6">
+              <form className="mt-5 grid gap-2">
                 <div className="relative">
                   <input
                     className="peer hidden"
@@ -664,45 +638,16 @@ function Checkout() {
                   </label>
                 </div>
               </form>
-
-              {/* Total */}
-              <div className="mt-6 border-t border-b py-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900">Subtotal</p>
-                  <p className="font-semibold text-gray-900">
-                    $ {subtotalAmount}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900">Descuento</p>
-                  <p className="font-semibold text-gray-900">
-                    $ {discountAmount}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-6 flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-900">Total</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  $ {totalAmount}
-                </p>
-              </div>
             </div>
             <button
               onClick={handleSubmitOrder}
               className="mt-4 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white"
             >
-              Pagar
+              Confirmar Compra
             </button>
           </div>
         </div>
       </>
-      {orderSubmitted && transactionData && (
-        <AutoSubmitForm
-          action={transactionData.url}
-          method="post"
-          token={transactionData.token}
-        />
-      )}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export const obtenerProductos = async (
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
-    console.error("Error al obtener el usuario: " + error);
+    console.error("Error al obtener productos: " + error);
     throw error;
   }
 };

@@ -10,7 +10,7 @@ const Header = (props: {
   setSidebarOpen: (arg0: boolean) => void;
 }) => {
   return (
-    <header className="sticky top-0 flex w-full bg-white shadow-sm z-index: 10;">
+    <header className="sticky top-0 flex w-full bg-white shadow-sm z-30">
       <div className="flex flex-grow items-center justify-between px-4 py-4 shadow-2 md:px-6 2xl:px-11">
         <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
@@ -81,11 +81,11 @@ const Header = (props: {
             <DarkModeSwitcher />
              <!-- Dark Mode Toggler --> */}
 
-            {/* <!-- Notification Menu Area --> */}
+            {/* <!-- Notification Menu Area --> 
             <DropdownNotification />
             {/* <!-- Notification Menu Area --> */}
 
-            {/* <!-- Chat Notification Area --> */}
+            {/* <!-- Chat Notification Area --> 
             <DropdownMessage />
             {/* <!-- Chat Notification Area --> */}
           </ul>

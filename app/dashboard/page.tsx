@@ -1,8 +1,43 @@
-import React from "react";
+"use client";
+import axios from "axios";
+import { getCookie } from "cookies-next";
+import { useEffect, useState } from "react";
 
-export default function page() {
+const StatsDashboard = () => {
+  const [salesSummary, setSalesSummary] = useState(null);
+
+  const fetchSalesSummary = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth"); // Obtén el token de las cookies
+
+      // Configuración de la solicitud
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      // Realiza la solicitud GET
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/sales-summary?statusCode=PAYMENT_COMPLETED&startDate=2024-04-01&endDate=2024-05-31&currencyCodeId=8ccc1abd-b35b-45ff-b814-b7c78fff3594`,
+        config
+      );
+
+      // Maneja la respuesta
+      console.log("Sales Summary Data:", response.data);
+      setSalesSummary(response.data); // Guarda los datos en el estado
+    } catch (error) {
+      console.error("Error fetching sales summary:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSalesSummary();
+  }, []);
+
   return (
-    <section className="text-gray-600 body-font">
+    <div className="text-gray-600 body-font">
       <div className="container px-5 py-24 mx-auto">
         <div className="flex flex-col text-center w-full mb-20">
           <h1 className="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">
@@ -41,8 +76,8 @@ export default function page() {
               <svg
                 fill="none"
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 strokeWidth="2"
                 className="text-indigo-500 w-12 h-12 mb-3 inline-block"
                 viewBox="0 0 24 24"
@@ -66,8 +101,8 @@ export default function page() {
               <svg
                 fill="none"
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 strokeWidth="2"
                 className="text-indigo-500 w-12 h-12 mb-3 inline-block"
                 viewBox="0 0 24 24"
@@ -86,8 +121,8 @@ export default function page() {
               <svg
                 fill="none"
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 strokeWidth="2"
                 className="text-indigo-500 w-12 h-12 mb-3 inline-block"
                 viewBox="0 0 24 24"
@@ -102,6 +137,8 @@ export default function page() {
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
-}
+};
+
+export default StatsDashboard;

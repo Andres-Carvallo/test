@@ -29,8 +29,9 @@ function TabExtra({
       <div className="w-1/4 ">
         <ul>
           <li
-            className={`p-4 mb-1 rounded-lg border border-dark/30 cursor-pointer ${
-              activeTab === 1 ? "bg-primary text-dark" : "bg-white"
+            style={{ borderRadius: 'var(--radius)' }}
+            className={`shadow p-4 mb-1 border border-dark/30 cursor-pointer ${
+              activeTab === 1 ? "bg-primary text-secondary" : "text-primary"
             }`}
             onClick={() => setActiveTab(1)}
           >
@@ -55,8 +56,9 @@ function TabExtra({
             </div>
           </li>
           <li
-            className={`p-4 mb-1 rounded-lg border border-dark/30 cursor-pointer ${
-              activeTab === 2 ? "bg-primary text-dark" : "bg-white"
+          style={{ borderRadius: 'var(--radius)' }}
+            className={`shadow p-4 mb-1 mt-2 border border-dark/30 cursor-pointer ${
+              activeTab === 2 ? "bg-primary text-secondary" : "text-primary"
             }`}
             onClick={() => setActiveTab(2)}
           >
@@ -83,8 +85,9 @@ function TabExtra({
             </div>
           </li>
           <li
-            className={`p-4 rounded-lg border border-dark/30 cursor-pointer ${
-              activeTab === 3 ? "bg-primary text-dark" : "bg-white"
+          style={{ borderRadius: 'var(--radius)' }}
+            className={`shadow mt-2  p-4 border border-dark/30 cursor-pointer ${
+              activeTab === 3 ? "bg-primary text-secondary" : "text-primary"
             }`}
             onClick={() => setActiveTab(3)}
           >
@@ -111,7 +114,7 @@ function TabExtra({
         </ul>
       </div>
       {/* Contenido a la derecha */}
-      <div className="w-3/4 bg-white rounded-lg border border-dark/30 ml-2">
+      <div className="shadow w-3/4 bg-white border border-dark/30 ml-2" style={{ borderRadius: 'var(--radius)' }}>
         <div className={activeTab === 1 ? "p-4" : "p-4 hidden"}>
           <div className="my-2 space-x-4">
             <h3 className="text-md font-bold uppercase mb-2">
@@ -150,7 +153,8 @@ function TabExtra({
           </label>
           <input
             type="number"
-            className="block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+            className="shadow py-3 block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
+            style={{ borderRadius: 'var(--radius)' }}
             id="length"
             name="length"
             value={formData.measures.length || ""}
@@ -161,7 +165,8 @@ function TabExtra({
           </label>
           <input
             type="number"
-            className="block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+            className="shadow py-3 block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
+            style={{ borderRadius: 'var(--radius)' }}            
             id="width"
             name="width"
             value={formData.measures.width || ""}
@@ -172,7 +177,8 @@ function TabExtra({
           </label>
           <input
             type="number"
-            className="block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+            className="shadow py-3 block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
+            style={{ borderRadius: 'var(--radius)' }}            
             id="height"
             name="height"
             value={formData.measures.height || ""}
@@ -183,7 +189,8 @@ function TabExtra({
           </label>
           <input
             type="number"
-            className="block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+            className="shadow py-3 block mb-2 p-2.5 mt-2 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
+            style={{ borderRadius: 'var(--radius)' }}            
             id="weight"
             name="weight"
             value={formData.measures.weight || ""}

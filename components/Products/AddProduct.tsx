@@ -34,7 +34,7 @@ const AddProduct: React.FC<AddprodcutProps> = ({
     productTypeId: "",
   });
 
-  const token = String(getCookie("tokenAuth"));
+  const token = String(getCookie("AdminTokenAuth"));
 
   const handleCategoryChange = (event: any) => {
     const { value } = event.target;

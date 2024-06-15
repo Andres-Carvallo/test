@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Validate from "@/components/Checkout/Validate";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Pago OK",
@@ -9,12 +10,18 @@ export const metadata: Metadata = {
 
 const Ok = () => {
   return (
-    <>
-      <div className="container py-16">
-        <Validate />
-      </div>
-    </>
+    <div className="container py-16">
+      <Validate />
+    </div>
   );
 };
 
-export default Ok;
+const OkWithSuspense = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Ok />
+    </Suspense>
+  );
+};
+
+export default OkWithSuspense;

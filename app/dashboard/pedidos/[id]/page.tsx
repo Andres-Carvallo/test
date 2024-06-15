@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useState } from "react";
-import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesID";
+import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesIDBO";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -13,7 +13,7 @@ interface Order {
 export default function DetalleOrdenes() {
   const { id } = useParams();
   const [pedidos, setPedidos] = useState<Order | null>(null);
-  const Token = String(getCookie("tokenAuth"));
+  const Token = String(getCookie("AdminTokenAuth"));
 
   useEffect(() => {
     const fetchData = async () => {

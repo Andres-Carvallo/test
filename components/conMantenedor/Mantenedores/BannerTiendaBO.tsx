@@ -4,10 +4,10 @@ import React, { useState, useEffect, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 
-const BannerPrincipalBO = () => {
+const BannerTiendaBO = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
-  const [mainImage, setMainImage] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>({
+  const [mainImageTienda, setMainImageTienda] = useState<string | null>(null);
+  const [formDataTienda, setFormDataTienda] = useState<any>({
     title: "",
     landingText: "",
     buttonLink: "",
@@ -32,9 +32,9 @@ const BannerPrincipalBO = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const token = getCookie("tokenAuth");
-      const bannerId = "be00fd66-7cfd-4e1d-9ab1-3d1239679417";
-      const bannerImageId = "44017c18-2791-491d-8356-c2d34fb50460";
+      const token = getCookie("AdminTokenAuth");
+      const bannerId = "0c482c67-65eb-4cbc-be04-2786262cb8fd";
+      const bannerImageId = "90c5ff6c-d258-4b26-8d94-d694efdfd9e8";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
@@ -48,7 +48,7 @@ const BannerPrincipalBO = () => {
 
       const bannerImage = productTypeResponse.data.bannerImage;
       setBannerData(bannerImage);
-      setFormData({
+      setFormDataTienda({
         title: bannerImage.title,
         landingText: bannerImage.landingText,
         buttonLink: bannerImage.buttonLink,
@@ -71,28 +71,28 @@ const BannerPrincipalBO = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormDataTienda({ ...formDataTienda, [name]: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       // Crear un objeto de datos actualizado excluyendo mainImage si no hay una imagen seleccionada
       const updatedDataWithoutImage = {
-        ...formData,
-        orderNumber: formData.orderNumber,
+        ...formDataTienda,
+        orderNumber: formDataTienda.orderNumber,
       };
 
-      if (!mainImage) {
+      if (!mainImageTienda) {
         delete updatedDataWithoutImage.mainImage;
       }
 
       // Send updated data to the server
-      const bannerId = "be00fd66-7cfd-4e1d-9ab1-3d1239679417";
-      const bannerImageId = "44017c18-2791-491d-8356-c2d34fb50460";
+      const bannerId = "0c482c67-65eb-4cbc-be04-2786262cb8fd";
+      const bannerImageId = "90c5ff6c-d258-4b26-8d94-d694efdfd9e8";
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
         updatedDataWithoutImage,
@@ -120,6 +120,7 @@ const BannerPrincipalBO = () => {
     imageKey: string
   ) => {
     const file = e.target.files?.[0];
+    console.log(file, "Image file");
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
@@ -132,7 +133,7 @@ const BannerPrincipalBO = () => {
           size: file.size,
           data: result,
         };
-        setFormData((prevFormData: any) => ({
+        setFormDataTienda((prevFormData: any) => ({
           ...prevFormData,
           [imageKey]: imageInfo,
         }));
@@ -189,7 +190,7 @@ const BannerPrincipalBO = () => {
           alt="Banner Image"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="min-h-[300px] relative z-50 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+        <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
           <h2 className="sm:text-4xl text-2xl font-bold mb-6">
             {bannerData.title}
           </h2>
@@ -212,42 +213,48 @@ const BannerPrincipalBO = () => {
         <input
           type="number"
           name="orderNumber"
-          value={formData.orderNumber}
+          value={formDataTienda.orderNumber}
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <span className="font-bold uppercase">Titulo </span>
+        <h3 className="font-normal text-primary">
+          Titulo <span className="text-primary">*</span>
+        </h3>
         <input
           type="text"
           name="title"
-          value={formData.title}
+          value={formDataTienda.title}
           onChange={handleChange}
-          className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+          style={{ borderRadius: "var(--radius)" }}
           placeholder="Title"
         />
         <input
           type="text"
           name="mainImageLink"
-          value={formData.mainImageLink}
+          value={formDataTienda.mainImageLink}
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />{" "}
-        <span className="font-bold uppercase">Texto </span>
+        <h3 className="font-normal text-primary">
+          Texto <span className="text-primary">*</span>
+        </h3>
         <input
           type="text"
           name="landingText"
-          value={formData.landingText}
+          value={formDataTienda.landingText}
           onChange={handleChange}
-          className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+          style={{ borderRadius: "var(--radius)" }}
           placeholder="Landing Text"
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/*         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <span className="font-bold uppercase hidden">Texto Boton </span>
             <input
               type="text"
               name="buttonText"
-              value={formData.buttonText}
+              value={formDataTienda.buttonText}
               onChange={handleChange}
               className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Button Text"
@@ -258,33 +265,37 @@ const BannerPrincipalBO = () => {
             <input
               type="text"
               name="buttonLink"
-              value={formData.buttonLink}
+              value={formDataTienda.buttonLink}
               onChange={handleChange}
               className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Button Link"
             />
           </div>
-        </div>
+        </div> */}
         <div>
           <input
             type="file"
             accept="image/*"
-            id="mainImage"
+            id="mainImageTienda"
             className="hidden"
-            onChange={(e) => handleImageChange(e, setMainImage, "mainImage")}
+            onChange={(e) =>
+              handleImageChange(e, setMainImageTienda, "mainImage")
+            }
           />
-          {mainImage ? (
+          {mainImageTienda ? (
             <div>
-              <span className="font-bold uppercase">FOTO </span>
+              <h3 className="font-normal text-primary">
+                Foto <span className="text-primary">*</span>
+              </h3>
               <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
                 <img
-                  src={mainImage}
+                  src={mainImageTienda}
                   alt="Main Image"
                   className="w-full"
                 />
                 <button
                   className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() => handleClearImage(setMainImage)}
+                  onClick={() => handleClearImage(setMainImageTienda)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -305,10 +316,13 @@ const BannerPrincipalBO = () => {
             </div>
           ) : (
             <div>
-              <span className="font-bold uppercase">FOTO </span>
+              <h3 className="font-normal text-primary">
+                Foto <span className="text-primary">*</span>
+              </h3>
               <label
-                htmlFor="mainImage"
-                className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                htmlFor="mainImageTienda"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg
@@ -338,7 +352,8 @@ const BannerPrincipalBO = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-primary w-full uppercase text-dark hover:bg-dark hover:text-white  font-bold py-2 px-4 rounded flex-wrap mt-6"
+          className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+          style={{ borderRadius: "var(--radius)" }}
         >
           <svg
             aria-hidden="true"
@@ -359,11 +374,11 @@ const BannerPrincipalBO = () => {
               fill="currentColor"
             />
           </svg>
-          {loading ? "Loading..." : "Update Banner"}
+          {loading ? "Loading..." : "Actualizar"}
         </button>
       </form>
     </section>
   );
 };
 
-export default BannerPrincipalBO;
+export default BannerTiendaBO;
