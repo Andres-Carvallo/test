@@ -26,7 +26,7 @@ export default function ProductPageBO() {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const PageNumber = 1;
       const PageSize = 100;
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       const data = await obtenerProductosBO(PageNumber, PageSize, token);
       setProducts(data.products);
@@ -47,7 +47,7 @@ export default function ProductPageBO() {
 
   const deleteProduct = async (id: any) => {
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}`,
         {

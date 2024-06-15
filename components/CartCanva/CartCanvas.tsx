@@ -136,9 +136,9 @@ function CartCanvas() {
         <span className="relative ">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="20px"
-            height="20px"
-            className="cursor-pointer fill-[#333] hover:fill-[#007bff] inline"
+            width="22px"
+            height="22px"
+            className="cursor-pointer fill-primary hover:fill-primary inline"
             viewBox="0 0 512 512"
           >
             <path
@@ -146,7 +146,7 @@ function CartCanvas() {
               data-original="#000000"
             />
           </svg>
-          <span className="absolute left-auto -ml-1 top-0 rounded-full bg-black px-1 py-0 text-xs text-white">
+          <span className="absolute left-auto -ml-1 top-0 rounded-full bg-primary px-1 py-0 text-xs text-white">
             {totalItems}
           </span>
         </span>
@@ -154,7 +154,7 @@ function CartCanvas() {
       <div
         ref={offcanvasRef}
         id="menu-cart"
-        className={`offcanvas-menu fixed z-50  bg-slate-100 h-screen dark:border-strokedark dark:bg-form-strokedark top-0 right-0 p-6 w-2/3 md:w-1/3 ease-in-out duration-1000 shadow-md flex pt-32  ${
+        className={`offcanvas-menu fixed z-50  bg-slate-100 h-screen dark:border-strokedark dark:bg-form-strokedark top-0 right-0 p-6 w-full sm:w-2/3 md:w-1/2   ease-in-out duration-1000 shadow-md flex pt-32  ${
           isMenuOpen ? "" : "translate-x-full"
         }`}
       >
@@ -174,7 +174,7 @@ function CartCanvas() {
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
                       fill="currentColor"
-                      className="w-8 h-8 text-dark hover:text-red-600 "
+                      className="w-8 h-8 hover:text-secondary text-primary"
                     >
                       <path
                         fillRule="evenodd"
@@ -192,6 +192,25 @@ function CartCanvas() {
                 Total Productos:{" "}
                 <span className="font-bold text-lg">{totalItems}</span>
               </h3>
+              <div className="grid grid-cols-12 mt-8 max-md:hidden pb-6 border-b border-gray-200">
+                <div className="col-span-12 md:col-span-7">
+                  <p className="font-normal text-lg leading-8 text-gray-400">
+                    Producto
+                  </p>
+                </div>
+                <div className="col-span-12 md:col-span-5">
+                  <div className="grid grid-cols-5">
+                    <div className="col-span-4">
+                      <p className="font-normal text-lg leading-8 text-gray-400 text-center">
+                        Cantidad
+                      </p>
+                    </div>
+                    {/*                                 <div className="col-span-2">
+                                    <p className="font-normal text-lg leading-8 text-gray-400 text-center">Total</p>
+                                </div> */}
+                  </div>
+                </div>
+              </div>
               {/* Map para mostrar los productos en el carrito */}
               <CartList
                 cartItems={cartItems}
@@ -203,15 +222,16 @@ function CartCanvas() {
             <div className="p-6 absolute bottom-0 w-full border-t bg-white">
               <ul className="text-[#333] divide-y">
                 {/* Subtotal del carrito */}
-                <li className="flex flex-wrap gap-4 text-md font-bold">
+                <li className="flex flex-wrap gap-4 text-2xl font-bold">
                   Subtotal <span className="ml-auto">${subtotalAmount}</span>
+                  {/* .toLocaleString('es-CL') */}
                 </li>
-                <li className="flex flex-wrap gap-4 text-md font-bold">
+                {/*                 <li className="flex flex-wrap gap-4 text-md font-bold">
                   Descuento <span className="ml-auto">${discountAmount}</span>
                 </li>
                 <li className="flex flex-wrap gap-4 text-md font-bold">
                   Total <span className="ml-auto">${totalAmount}</span>
-                </li>
+                </li> */}
               </ul>
               {/* Botón de checkout */}
               <Link href="/tienda/checkout">
@@ -223,7 +243,8 @@ function CartCanvas() {
                       // Aquí puedes llamar a la función que deseas ejecutar después de 4 segundos
                     }, 1000); // 4000 milisegundos = 4 segundos
                   }}
-                  className="menu-open-btn ease-in-up mt-6 text-md px-6 py-2.5 w-full bg-blue-600 hover:bg-blue-700 text-white rounded"
+                  className="shadow menu-open-btn ease-in-up mt-6 text-md px-6 py-2.5 w-full bg-primary hover:bg-secondary text-secondary hover:text-primary"
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   Check out
                 </button>

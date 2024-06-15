@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
+import Navbar01 from "@/components/PIXELUP/Navbar01/Navbar01";
+import Footer03 from "@/components/PIXELUP/Footer03/Footer03";
 
 export const metadata: Metadata = {
   title: "TIENDA",
@@ -16,9 +18,9 @@ export default function RootLayout({
   return (
     <>
       <MarqueeTOP />
-      <Header />
+      <Navbar01 />
       <div>{children}</div>
-      <Footer />
+      <Footer03 />
     </>
   );
 }

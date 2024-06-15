@@ -26,7 +26,7 @@ function BannerTienda() {
     try {
       setLoading(true); // Show loading indicator
       const bannerId = "be00fd66-7cfd-4e1d-9ab1-3d1239679417"; // Reemplazar con el ID correcto del banner de tienda
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,

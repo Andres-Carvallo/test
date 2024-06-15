@@ -9,7 +9,7 @@ import { UserData } from "@/types/UserData";
 
 const DropdownUser = () => {
   const router = useRouter();
-  const Token = String(getCookie("tokenAuth"));
+  const Token = String(getCookie("AdminTokenAuth"));
   const decodeToken = jwtDecode(Token);
 
   const id = decodeToken.sub;
@@ -32,7 +32,7 @@ const DropdownUser = () => {
   }, [Token, id]);
 
   const handleLogout = async () => {
-    deleteCookie("tokenAuth");
+    deleteCookie("AdminTokenAuth");
     router.push("/");
   };
 

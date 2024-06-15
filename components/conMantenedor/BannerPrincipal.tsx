@@ -11,8 +11,8 @@ const BannerPrincipal = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "be55f57b-71e6-469a-a809-306f102fcfa1";
-      const bannerImageId = "eb9f8de5-c514-401f-8121-789b10b80b70";
+      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerImageId = "e38d6684-20c2-4a08-a46d-4a45306cacad";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -54,8 +54,8 @@ const BannerPrincipal = () => {
             </p>
             <a
               href={bannerData.images[0].buttonLink}
-              className="mt-8 bg-dark text-white text-base font-semibold py-2.5 px-6  rounded hover:bg-white hover:text-black transition duration-300 ease-in-out"
-            >
+              className="mt-8 bg-dark bg-primary text-secondary hover:text-primary text-base font-semibold py-2.5 px-6  rounded hover:bg-secondary"
+              >
               {bannerData.images[0].buttonText}
             </a>
           </div>

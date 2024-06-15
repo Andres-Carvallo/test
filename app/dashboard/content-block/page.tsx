@@ -43,9 +43,9 @@ function ContentBlock() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "c8fa666d-5dad-4446-9b5d-4c224f1f2797";
+      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
       // Enviar los datos al endpoint
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
         {
@@ -80,7 +80,7 @@ function ContentBlock() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "c8fa666d-5dad-4446-9b5d-4c224f1f2797";
+      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -103,9 +103,9 @@ function ContentBlock() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "9fc87a86-154a-40ff-b5ac-39dead5d3bb3";
+      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
       // Enviar los datos al endpoint
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
         {
@@ -139,7 +139,7 @@ function ContentBlock() {
   const fetchWelcomeBanner = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "9fc87a86-154a-40ff-b5ac-39dead5d3bb3";
+      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

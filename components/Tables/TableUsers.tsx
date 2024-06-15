@@ -8,7 +8,7 @@ import { obtenerUsuario } from "@/app/utils/obtenerUsuario";
 import axios from "axios";
 
 const TableUsers = () => {
-  const Token = String(getCookie("tokenAuth"));
+  const Token = String(getCookie("AdminTokenAuth"));
 
   const [Usuarios, setUsuarios] = useState([] as UserData[]);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -54,7 +54,7 @@ const TableUsers = () => {
 
   const handleDelete = async () => {
     try {
-      const token = String(getCookie("tokenAuth"));
+      const token = String(getCookie("AdminTokenAuth"));
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -33,7 +33,7 @@ const BannersCategoriasBO = () => {
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true);
-      const bannerId = "c7f38d9e-fc5b-436c-86f5-1015b5cc70dd";
+      const bannerId = "cb50bccd-aff7-4ac7-8e13-8d784ad125ac";
 
       const BannersCategory = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -54,7 +54,7 @@ const BannersCategoriasBO = () => {
 
   const fetchProductTypes = async () => {
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       const productTypes = await obtenerTiposProductos(
         process.env.NEXT_PUBLIC_API_URL_SITEID,
         token,
@@ -69,9 +69,9 @@ const BannersCategoriasBO = () => {
   };
 
   const deleteSlider = async (id: any) => {
-    const bannerId = "c7f38d9e-fc5b-436c-86f5-1015b5cc70dd";
+    const bannerId = "cb50bccd-aff7-4ac7-8e13-8d784ad125ac";
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${id}`,
         {
@@ -89,7 +89,7 @@ const BannersCategoriasBO = () => {
 
   const SliderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const bannerId = "c7f38d9e-fc5b-436c-86f5-1015b5cc70dd";
+    const bannerId = "cb50bccd-aff7-4ac7-8e13-8d784ad125ac";
 
     // Verificar si hay menos de 4 sliders antes de agregar uno nuevo
     if (slidersData.length >= 4) {
@@ -116,7 +116,7 @@ const BannersCategoriasBO = () => {
     }
 
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
@@ -258,19 +258,20 @@ const BannersCategoriasBO = () => {
           className=" mx-auto"
         >
           <div>
-            <label
-              htmlFor="categorySelect"
-              className="font-bold uppercase"
-            >
-              Seleccionar Categoría:
+            <label htmlFor="categorySelect">
+              <h3 className="font-normal text-primary">
+                Seleccionar Categoria <span className="text-primary">*</span>
+              </h3>
             </label>
             <select
               id="categorySelect"
               name="categorySelect"
               onChange={handleSelectCategory}
-              className="block w-full px-3 py-2 mt-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
             >
               <option value="">Seleccione una categoría</option>
+
               {categories.map((category) => (
                 <option
                   key={category.id}
@@ -282,18 +283,18 @@ const BannersCategoriasBO = () => {
             </select>
           </div>
           <div className="my-4">
-            <label
-              htmlFor="orderNumber"
-              className="font-bold uppercase"
-            >
-              Orden
+            <label htmlFor="orderNumber">
+              <h3 className="font-normal text-primary">
+                Seleccionar Categoria <span className="text-primary">*</span>
+              </h3>
             </label>
             <select
               id="orderNumber"
               name="orderNumber"
               value={updatedSliderCategory.orderNumber}
               onChange={(event) => handleChangeSlider(event)}
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
             >
               <option value="1">1</option>
               <option value="2">2</option>
@@ -394,7 +395,9 @@ const BannersCategoriasBO = () => {
             />
             {mainImageSlider ? (
               <div>
-                <span className="font-bold uppercase">FOTO </span>
+                <h3 className="font-normal text-primary">
+                  Foto <span className="text-primary">*</span>
+                </h3>
                 <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
                   <img
                     src={mainImageSlider}
@@ -424,10 +427,13 @@ const BannersCategoriasBO = () => {
               </div>
             ) : (
               <div>
-                <span className="font-bold uppercase">FOTO </span>
+                <h3 className="font-normal text-primary">
+                  Foto <span className="text-primary">*</span>
+                </h3>
                 <label
                   htmlFor="mainImageSlider"
-                  className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                  className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10"
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   <div className="flex flex-col justify-center items-center">
                     <svg
@@ -458,7 +464,8 @@ const BannersCategoriasBO = () => {
           <div className="mt-6 flex justify-center">
             <button
               type="submit"
-              className="bg-primary w-full uppercase text-dark hover:bg-dark hover:text-white  font-bold py-2 px-4 rounded flex-wrap mt-6"
+              className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+              style={{ borderRadius: "var(--radius)" }}
             >
               Agregar Slider
             </button>

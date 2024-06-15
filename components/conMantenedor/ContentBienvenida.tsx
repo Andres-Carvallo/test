@@ -9,7 +9,7 @@ function ContentBienvenida() {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "9fc87a86-154a-40ff-b5ac-39dead5d3bb3";
+      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

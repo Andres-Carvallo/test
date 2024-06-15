@@ -12,7 +12,7 @@ const BannersCategorias = () => {
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "c7f38d9e-fc5b-436c-86f5-1015b5cc70dd";
+      const bannerId = "cb50bccd-aff7-4ac7-8e13-8d784ad125ac";
 
       const BannersCategory = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

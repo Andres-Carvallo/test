@@ -4,16 +4,27 @@ import React, { useEffect, useState } from "react";
 import { obtenerProductosID } from "@/app/utils/obtenerProductosID";
 import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-
-function ProductoSimple() {
+interface Product {
+  hasVariations: boolean;
+  pricingRanges?: {
+    minimumAmount: number;
+    maximumAmount: number;
+  }[];
+  pricings?: {
+    amount: number;
+  }[];
+  skuId?: string;
+  id?: string;
+}
+const ProductoSimple: React.FC<Product> = () => {
   const { id } = useParams();
   const { addToCartHandler } = useAPI();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [products, setProducts] = useState(null);
+  const [products, setProducts] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
-  const [productImages, setProductImages] = useState([]);
-  const [selectedImage, setSelectedImage] = useState("");
+  const [productImages, setProductImages] = useState<any>([]);
+  const [selectedImage, setSelectedImage] = useState<any>("");
 
   useEffect(() => {
     const fetchProductos = async () => {
@@ -28,7 +39,7 @@ function ProductoSimple() {
       }
     };
     fetchProductos();
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const fetchProductImages = async () => {
@@ -47,15 +58,38 @@ function ProductoSimple() {
       }
     };
     fetchProductImages();
-  }, [products]);
+  }, [products, id]);
 
-  const handleThumbnailClick = (imageUrl) => {
+  const handleThumbnailClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
   };
 
   const handleAddToCart = () => {
-    addToCartHandler(products?.skuId, quantity);
+    if (products?.hasVariations) {
+      window.location.href = `/tienda/productos/${products.id}`;
+    } else {
+      addToCartHandler(products?.skuId, quantity);
+    }
   };
+
+  const renderPrice = () => {
+    if (products?.hasVariations && products.pricingRanges) {
+      const { minimumAmount, maximumAmount } = products.pricingRanges[0];
+      return `$ ${minimumAmount} - $ ${maximumAmount}`;
+    }
+    if (products?.pricings) {
+      return `$ ${products.pricings[0].amount}`;
+    }
+    return null;
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className="pb-5 pt-20 relative ">
@@ -64,7 +98,6 @@ function ProductoSimple() {
           <div className="pro-detail max-lg:max-w-[608px] max-lg:mx-auto lg:w-1/2 flex flex-col pt-8">
             <div className="flex gap-8">
               <div>
-                {" "}
                 <img
                   src={products?.mainImageUrl}
                   alt="Product Image"
@@ -77,7 +110,7 @@ function ProductoSimple() {
                 </h2>
                 <div className="flex flex-col sm:flex-row sm:items-center">
                   <h6 className="font-manrope font-semibold text-2xl leading-9 text-gray-900 pr-5 sm:border-r border-gray-200 mr-5">
-                    $ {products?.pricings[0]?.amount}
+                    {renderPrice()}
                   </h6>
                   <div className="flex align-middle">
                     {products &&
@@ -85,7 +118,7 @@ function ProductoSimple() {
                         (productType: any, index: any) => (
                           <p
                             key={index}
-                            className="font-medium text-md text-white hover:bg-primary hover:text-dark  bg-dark w-fit p-1 px-2 rounded-xl"
+                            className="font-medium text-md text-white hover:bg-primary hover:text-dark bg-dark w-fit p-1 px-2 rounded-xl"
                           >
                             {productType.name}
                           </p>
@@ -95,7 +128,7 @@ function ProductoSimple() {
                 </div>
               </div>
             </div>
-            <p className="text-gray-500 text-base font-normal my-8 ">
+            <p className="text-gray-500 text-base font-normal my-8">
               {products?.description}
             </p>
             <div className="block w-full">
@@ -175,7 +208,7 @@ function ProductoSimple() {
               />
             </div>
             <div className="grid grid-cols-4 gap-4 lg:gap-6 mt-4 lg:mt-6">
-              {productImages.map((image, index) => (
+              {productImages.map((image: any, index: any) => (
                 <img
                   key={index}
                   src={image.imageUrl}
@@ -190,6 +223,6 @@ function ProductoSimple() {
       </div>
     </div>
   );
-}
+};
 
 export default ProductoSimple;

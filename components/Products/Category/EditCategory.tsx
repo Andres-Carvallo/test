@@ -89,7 +89,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const authToken = getCookie("tokenAuth");
+    const authToken = getCookie("AdminTokenAuth");
     const categoryIdToUpdate = selectedCategoryId;
 
     const requestData = {
@@ -165,7 +165,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${getCookie("tokenAuth")}`,
+            Authorization: `Bearer ${getCookie("AdminTokenAuth")}`,
           },
         }
       );

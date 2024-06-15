@@ -1,7 +1,8 @@
 import React from "react";
 import Stars from "@/components/Products/Detail/Stars";
 import BannerTienda from "@/components/conMantenedor/BannerTienda";
-import ProductoSimple from "./ProductoSimple";
+import ProductDetail from "@/app/tienda/productos/ProductDetail";
+import Buscador01 from "@/components/PIXELUP/Buscador/Buscador01";
 interface Order {
   [x: string]: any;
   correlative: string;
@@ -11,7 +12,8 @@ export default function DetalleProductos() {
   return (
     <section>
       <BannerTienda />
-      <ProductoSimple />
+
+      <ProductDetail />
 
       <Stars />
     </section>

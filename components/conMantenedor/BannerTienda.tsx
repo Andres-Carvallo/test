@@ -11,8 +11,8 @@ const BannerPrincipal = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "a6911843-fc2b-4244-b7eb-f1a694c85c19";
-      const bannerImageId = "7c91c1f9-848a-49d0-a012-67985cc59c93";
+      const bannerId = "0c482c67-65eb-4cbc-be04-2786262cb8fd";
+      const bannerImageId = "90c5ff6c-d258-4b26-8d94-d694efdfd9e8";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

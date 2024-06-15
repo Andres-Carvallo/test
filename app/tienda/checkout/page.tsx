@@ -176,7 +176,7 @@ function Checkout() {
     try {
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?hasShippingZones=true`
       );
       setCommunes(response.data.communes);
     } catch (error) {
@@ -485,10 +485,30 @@ function Checkout() {
                     />
                   </label>
                 </div>
+                <div
+                  style={{ borderRadius: "var(--radius)" }}
+                  className="shadow flex items-center p-4 my-2 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+                  role="alert"
+                >
+                  <svg
+                    className="flex-shrink-0 inline w-4 h-4 me-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                  </svg>
+                  <span className="sr-only">Info</span>
+                  <div>
+                    <span className="font-semibold">Delivery.</span> Solo
+                    apareceran las comunas que tengan disponibilidad de entrega.
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="RegionId"
-                    className="block mt-4"
+                    className="block"
                   >
                     Región
                     <select
@@ -512,7 +532,7 @@ function Checkout() {
                   </label>
                   <label
                     htmlFor="communeId"
-                    className="block mt-4"
+                    className="block"
                   >
                     Comuna
                     <select

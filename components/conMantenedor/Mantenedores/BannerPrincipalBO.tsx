@@ -32,9 +32,9 @@ const BannerPrincipalBO = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const token = getCookie("tokenAuth");
-      const bannerId = "be55f57b-71e6-469a-a809-306f102fcfa1";
-      const bannerImageId = "eb9f8de5-c514-401f-8121-789b10b80b70";
+      const token = getCookie("AdminTokenAuth");
+      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerImageId = "e38d6684-20c2-4a08-a46d-4a45306cacad";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
@@ -78,7 +78,7 @@ const BannerPrincipalBO = () => {
     e.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       // Crear un objeto de datos actualizado excluyendo mainImage si no hay una imagen seleccionada
       const updatedDataWithoutImage = {
@@ -91,8 +91,8 @@ const BannerPrincipalBO = () => {
       }
 
       // Send updated data to the server
-      const bannerId = "be55f57b-71e6-469a-a809-306f102fcfa1";
-      const bannerImageId = "eb9f8de5-c514-401f-8121-789b10b80b70";
+      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerImageId = "e38d6684-20c2-4a08-a46d-4a45306cacad";
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
         updatedDataWithoutImage,
@@ -190,15 +190,13 @@ const BannerPrincipalBO = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-          <h2 className=" text-2xl font-semibold mb-2 uppercase">
-            {bannerData.title}
-          </h2>
+          <h2 className="text-2xl font-semibold mb-2">{bannerData.title}</h2>
           <p className="text-md text-center text-gray-200">
             {bannerData.landingText}
           </p>
           <a
             href={bannerData.buttonLink}
-            className="mt-8 bg-dark text-white text-base font-semibold py-2.5 px-6  rounded hover:bg-white hover:text-black transition duration-300 ease-in-out"
+            className="mt-8 bg-dark bg-primary text-secondary hover:text-primary text-base font-semibold py-2.5 px-6  rounded hover:bg-secondary"
           >
             {bannerData.buttonText}
           </a>
@@ -216,13 +214,15 @@ const BannerPrincipalBO = () => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <span className="font-bold uppercase">Titulo </span>
+        <h3 className="font-normal text-primary">
+          Titulo <span className="text-primary">*</span>
+        </h3>
         <input
           type="text"
           name="title"
           value={formData.title}
           onChange={handleChange}
-          className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Title"
         />
         <input
@@ -232,35 +232,41 @@ const BannerPrincipalBO = () => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />{" "}
-        <span className="font-bold uppercase">Texto </span>
+        <h3 className="font-normal text-primary">
+          Texto <span className="text-primary">*</span>
+        </h3>
         <input
           type="text"
           name="landingText"
           value={formData.landingText}
           onChange={handleChange}
-          className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Landing Text"
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
           <div>
-            <span className="font-bold uppercase">Texto Boton </span>
+            <h3 className="font-normal text-primary">
+              Texto Boton <span className="text-primary">*</span>
+            </h3>
             <input
               type="text"
               name="buttonText"
               value={formData.buttonText}
               onChange={handleChange}
-              className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+              className="shadow block w-full px-4 py-3 mb-4 mt-2 border border-gray-300 rounded-md"
               placeholder="Button Text"
             />
           </div>
           <div>
-            <span className="font-bold uppercase">Link de destino </span>
+            <h3 className="font-normal text-primary">
+              Link de destino <span className="text-primary">*</span>
+            </h3>
             <input
               type="text"
               name="buttonLink"
               value={formData.buttonLink}
               onChange={handleChange}
-              className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Button Link"
             />
           </div>
@@ -275,8 +281,8 @@ const BannerPrincipalBO = () => {
           />
           {mainImage ? (
             <div>
-              <span className="font-bold uppercase">FOTO </span>
-              <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
+              <span className="font-normal text-primary">Foto </span>
+              <div className="relative mt-3 h-[150px] rounded-lg object-contain overflow-hidden">
                 <img
                   src={mainImage}
                   alt="Main Image"
@@ -305,10 +311,12 @@ const BannerPrincipalBO = () => {
             </div>
           ) : (
             <div>
-              <span className="font-bold uppercase">FOTO </span>
+              <h3 className="font-normal text-primary">
+                Foto <span className="text-primary">*</span>
+              </h3>
               <label
                 htmlFor="mainImage"
-                className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg
@@ -338,7 +346,8 @@ const BannerPrincipalBO = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-primary w-full uppercase text-dark hover:bg-dark hover:text-white  font-bold py-2 px-4 rounded flex-wrap mt-6"
+          className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+          style={{ borderRadius: "var(--radius)" }}
         >
           <svg
             aria-hidden="true"
@@ -359,7 +368,7 @@ const BannerPrincipalBO = () => {
               fill="currentColor"
             />
           </svg>
-          {loading ? "Loading..." : "Update Banner"}
+          {loading ? "Loading..." : "Actualizar"}
         </button>
       </form>
     </section>

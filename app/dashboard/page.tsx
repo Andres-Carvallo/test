@@ -8,7 +8,7 @@ const StatsDashboard = () => {
 
   const fetchSalesSummary = async () => {
     try {
-      const token = getCookie("tokenAuth"); // Obtén el token de las cookies
+      const token = getCookie("AdminTokenAuth"); // Obtén el token de las cookies
 
       // Configuración de la solicitud
       const config = {

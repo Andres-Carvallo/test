@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import { obtenerCuponesBO } from "@/app/utils/obtenerCuponesBO";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+
 function CuponForm() {
   const [currencyCode, setCurrencyCode] = useState("");
   const [code, setCode] = useState("");
@@ -16,32 +17,121 @@ function CuponForm() {
   const [cupones, setCupones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [editingCuponId, setEditingCuponId] = useState<string | null>(null); // Track editing cupon ID
+
+  const [codeError, setCodeError] = useState<string>("");
+  const [amountError, setAmountError] = useState<string>("");
+  const [percentageError, setPercentageError] = useState<string>("");
+  const [expirationDateError, setExpirationDateError] = useState<string>("");
+  const [typeError, setTypeError] = useState<string>("");
+  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCode(value);
+
+    if (value.trim() === "") {
+      setCodeError("El código no puede estar vacío");
+    } else {
+      setCodeError("");
+    }
+  };
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setAmount(value);
+
+    if (isNaN(value) || value <= 0) {
+      setAmountError("Ingrese un monto válido mayor que cero");
+    } else {
+      setAmountError("");
+    }
+  };
+
+  const handlePercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setPercentage(value);
+
+    if (isNaN(value) || value <= 0 || value > 100) {
+      setPercentageError("Ingrese un porcentaje válido entre 0 y 100");
+    } else {
+      setPercentageError("");
+    }
+  };
+
+  const handleExpirationDateChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value;
+    setExpirationDate(value);
+
+    const today = new Date();
+    const selectedDate = new Date(value);
+
+    if (value === "" || selectedDate < today) {
+      setExpirationDateError("Seleccione una fecha de expiración válida");
+    } else {
+      setExpirationDateError("");
+    }
+  };
+
+  useEffect(() => {
+    fetchCupones();
+  }, []);
 
   const fetchCupones = async () => {
     try {
       const PageNumber = 1;
       const PageSize = 50;
 
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       const data = await obtenerCuponesBO(PageNumber, PageSize, token);
       setCupones(data.discountCoupons);
-      console.log(data, "data");
-      setLoading(false); // set loading to false after successful data fetch
+      setLoading(false);
     } catch (error) {
-      setLoading(false); // set loading to false in case of error
-      setError(error as Error); // set error state if an error occurs
+      setLoading(false);
+      setError(error as Error);
     }
   };
-  useEffect(() => {
-    fetchCupones();
-  }, []);
+  const formatDateToChileanTime = (isoDateString: string) => {
+    const date = new Date(isoDateString);
 
+    // Ajustar la hora a la zona horaria de Chile (GMT-4)
+    const timezoneOffset = -4 * 60; // -4 horas en minutos
+    const adjustedDate = new Date(date.getTime() + timezoneOffset * 60 * 1000);
+
+    const day = adjustedDate.getDate().toString().padStart(2, "0");
+    const month = (adjustedDate.getMonth() + 1).toString().padStart(2, "0"); // Los meses son 0-indexados
+    const year = adjustedDate.getFullYear();
+    const hours = adjustedDate.getHours().toString().padStart(2, "0");
+    const minutes = adjustedDate.getMinutes().toString().padStart(2, "0");
+
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  };
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    if (code.trim() === "") {
+      setCodeError("El código no puede estar vacío");
+      return;
+    }
+
+    if (type !== "FIXED_AMOUNT" && type !== "PERCENTAGE") {
+      setTypeError("Selecciona un tipo de descuento válido");
+      return;
+    }
+
+    if (type === "FIXED_AMOUNT" && (isNaN(amount) || amount <= 0)) {
+      setAmountError("Ingrese un monto válido mayor que cero");
+      return;
+    }
+
+    if (
+      type === "PERCENTAGE" &&
+      (isNaN(percentage) || percentage <= 0 || percentage > 100)
+    ) {
+      setPercentageError("Ingrese un porcentaje válido entre 0 y 100");
+      return;
+    }
     try {
-      const token = getCookie("tokenAuth");
-      // Obtener currencyCode
+      const token = getCookie("AdminTokenAuth");
       const currencyResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
         {
@@ -53,26 +143,75 @@ function CuponForm() {
       );
 
       const currencyCode = currencyResponse.data.currencyCodes[0].id;
-      // Crear el objeto cupón
-      const cupon = {
+
+      const cupon: {
+        code: string;
+        description: string;
+        type: string;
+        amount: number | null;
+        percentage: number | null;
+        hasFreeShipping: boolean;
+        statusCode: string;
+        expirationDate: string | null;
+        currencyCodeId: string; // Add this line
+      } = {
         code,
-        description,
+        description: "pixelup cupon",
         type,
         amount: type === "FIXED_AMOUNT" ? amount : null,
         percentage: type === "PERCENTAGE" ? percentage : null,
         hasFreeShipping,
         statusCode: "ACTIVE",
         expirationDate: expirationDate ? expirationDate : null,
+        currencyCodeId: currencyCode, // Use correct property name
       };
 
       if (type === "FIXED_AMOUNT") {
-        currencyCodeId: currencyCode;
+        cupon.currencyCodeId = currencyCode; // Use correct property name
       }
 
-      // Enviar el objeto cupón a la API
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons`,
-        cupon,
+      if (editingCuponId) {
+        // Update existing cupon if editing
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${editingCuponId}`,
+          cupon,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("Cupón actualizado");
+      } else {
+        // Create new cupon if not editing
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons`,
+          cupon,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("Cupón creado");
+      }
+
+      fetchCupones();
+      resetForm();
+    } catch (error) {
+      console.error("Error creating/editing cupon:", error);
+    }
+  };
+
+  const handleEdit = async (cupon: any) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+
+      // Realizar la solicitud GET para obtener el detalle del cupón
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${cupon.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -80,16 +219,40 @@ function CuponForm() {
           },
         }
       );
-      fetchCupones();
-      console.log("Cupón creado:", response.data);
+
+      // Extraer los datos del cupón del cuerpo de la respuesta
+      const cuponDetail = response.data.discountCoupon;
+
+      // Rellenar el formulario con los datos del cupón obtenidos
+      setEditingCuponId(cupon.id);
+      setCode(cuponDetail.code);
+      setDescription(cuponDetail.description);
+      setType(cuponDetail.type);
+      setAmount(cuponDetail.amount || 0);
+      setPercentage(cuponDetail.percentage || 0);
+      setHasFreeShipping(cuponDetail.hasFreeShipping);
+
+      // Manejar la fecha de expiración
+      const expirationDateISO = cuponDetail.expirationDate; // "2024-06-20T00:00:00.000Z"
+      const expirationDateOnly = expirationDateISO.split("T")[0]; // "2024-06-20"
+      setExpirationDate(expirationDateOnly);
+
+      // Determinar el tipo de descuento
+      if (cuponDetail.percentage !== 0) {
+        setType("PERCENTAGE");
+        setPercentage(cuponDetail.percentage);
+      } else {
+        setType("FIXED_AMOUNT");
+        setAmount(cuponDetail.amount || 0);
+      }
     } catch (error) {
-      console.error("Error creating cupon:", error);
+      console.error("Error obteniendo detalle del cupón:", error);
     }
   };
 
   const handleDelete = async (couponId: any) => {
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${couponId}`,
         {
@@ -105,15 +268,29 @@ function CuponForm() {
     }
   };
 
+  const resetForm = () => {
+    setEditingCuponId(null);
+    setCode("");
+    setDescription("");
+    setType("FIXED_AMOUNT");
+    setAmount(0);
+    setPercentage(0);
+    setHasFreeShipping(false);
+    setExpirationDate("");
+  };
+
   return (
     <section>
-      <Breadcrumb pageName="Zonas de Repartos" />
-      <div className="border border-dashed border-dark/50 rounded-lg p-4 bg-white my-6 overflow-x-auto">
+      <Breadcrumb pageName="Cupones" />
+      <div
+        className="border border-primary p-4 bg-white my-6 overflow-x-auto"
+        style={{ borderRadius: "var(--radius)" }}
+      >
         <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
           Cupones Activos
         </h2>
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-100">
             <tr>
               <th
                 scope="col"
@@ -125,7 +302,7 @@ function CuponForm() {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell"
               >
-                Fecha
+                Fecha Vigencia
               </th>
               <th
                 scope="col"
@@ -137,7 +314,7 @@ function CuponForm() {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Estado
+                Envío Gratis
               </th>
               <th
                 scope="col"
@@ -155,10 +332,10 @@ function CuponForm() {
                 </td>
                 <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
                   <div className="text-sm text-gray-900">
-                    {cupon.creationDate}
+                    {formatDateToChileanTime(cupon.creationDate)}
                   </div>
                   <div className="text-sm text-gray-900">
-                    {cupon.expirationDate}
+                    {formatDateToChileanTime(cupon.expirationDate)}
                   </div>
                 </td>
                 <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
@@ -171,14 +348,14 @@ function CuponForm() {
                 </td>
                 <td className="px-6 py-4 md:whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {cupon.status_code}
+                    {cupon.hasFreeShipping === true ? "Si" : "No"}
                   </div>
                 </td>
 
                 <td className="px-6 py-4 md:whitespace-nowrap space-x-2">
                   <button
-                    //onClick={() => handleEdit(cupon)}
-                    className="bg-primary hover:bg-dark text-dark hover:text-primary font-bold py-2 px-4 rounded"
+                    onClick={() => handleEdit(cupon)}
+                    className="bg-primary hover:bg-dark text-secondary hover:bg-secondary hover:text-primary font-bold py-2 px-4 rounded"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -222,7 +399,7 @@ function CuponForm() {
       </div>
       <div>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => handleSubmit(e)}
           className="space-y-4"
         >
           <div>
@@ -230,31 +407,35 @@ function CuponForm() {
               htmlFor="code"
               className="block"
             >
-              <span className="font-bold uppercase">Code:</span>
+              <h3 className="font-normal text-primary">Code:</h3>
+
               <input
                 type="text"
                 id="code"
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={handleCodeChange}
                 placeholder="Enter code..."
-                className="block w-full rounded-md border border-dark/50 p-1 mt-1"
+                className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                style={{ borderRadius: "var(--radius)" }}
                 required
               />
             </label>
+            {codeError && <p className="text-red-500">{codeError}</p>}
           </div>
-          <div>
+          <div className="hidden">
             <label
               htmlFor="description"
               className="block"
             >
-              <span className="font-bold uppercase">Description:</span>
+              <h3 className="font-normal text-primary">Descripción:</h3>
               <input
                 type="text"
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Enter description..."
-                className="block w-full rounded-md border border-dark/50 p-1 mt-1"
+                className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                style={{ borderRadius: "var(--radius)" }}
                 required
               />
             </label>
@@ -264,15 +445,16 @@ function CuponForm() {
               htmlFor="type"
               className="block"
             >
-              <span className="font-bold uppercase">Type:</span>
+              <h3 className="font-normal text-primary">Tipo de descuento:</h3>
               <select
                 id="type"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="block w-full rounded-md border border-dark/50 p-2 mt-1 bg-white"
+                className="bg-white shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                style={{ borderRadius: "var(--radius)" }}
               >
-                <option value="FIXED_AMOUNT">Fixed Amount</option>
-                <option value="PERCENTAGE">Percentage</option>
+                <option value="FIXED_AMOUNT">Monto Fijo</option>
+                <option value="PERCENTAGE">Porcentaje</option>
               </select>
             </label>
           </div>
@@ -282,17 +464,19 @@ function CuponForm() {
                 htmlFor="amount"
                 className="block"
               >
-                <span className="font-bold uppercase">Amount:</span>
+                <h3 className="font-normal text-primary">Monto:</h3>
                 <input
                   type="number"
                   id="amount"
                   value={amount}
-                  onChange={(e) => setAmount(parseFloat(e.target.value))}
+                  onChange={handleAmountChange}
                   placeholder="Enter amount..."
-                  className="block w-full rounded-md border border-dark/50 p-1 mt-1"
+                  className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                  style={{ borderRadius: "var(--radius)" }}
                   required
                 />
               </label>
+              {amountError && <p className="text-red-500">{amountError}</p>}
             </div>
           )}
           {type === "PERCENTAGE" && (
@@ -301,16 +485,20 @@ function CuponForm() {
                 htmlFor="percentage"
                 className="block"
               >
-                <span className="font-bold uppercase">Percentage:</span>
+                <h3 className="font-normal text-primary">Porcentaje:</h3>
                 <input
                   type="number"
                   id="percentage"
                   value={percentage}
-                  onChange={(e) => setPercentage(parseFloat(e.target.value))}
+                  onChange={handlePercentageChange}
                   placeholder="Enter percentage..."
-                  className="block w-full rounded-md border border-dark/50 p-1 mt-1"
+                  className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                  style={{ borderRadius: "var(--radius)" }}
                   required
                 />
+                {percentageError && (
+                  <p className="text-red-500">{percentageError}</p>
+                )}
               </label>
             </div>
           )}
@@ -326,7 +514,7 @@ function CuponForm() {
               htmlFor="hasFreeShipping"
               className="uppercase"
             >
-              Has Free Shipping
+              Tiene envío gratis
             </label>
           </div>
           <div>
@@ -334,22 +522,47 @@ function CuponForm() {
               htmlFor="expirationDate"
               className="block"
             >
-              <span className="font-bold uppercase">Expiration Date:</span>
+              <h3 className="font-normal text-primary">Fecha de expiración:</h3>
               <input
                 type="date"
                 id="expirationDate"
                 value={expirationDate}
-                onChange={(e) => setExpirationDate(e.target.value)}
-                className="block w-full rounded-md border border-dark/50 p-1 mt-1"
+                onChange={handleExpirationDateChange}
+                className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                style={{ borderRadius: "var(--radius)" }}
               />
+              {expirationDateError && (
+                <p className="text-red-500">{expirationDateError}</p>
+              )}
             </label>
           </div>
-          <button
-            type="submit"
-            className="bg-primary uppercase text-dark hover:bg-dark hover:text-white font-bold py-2 px-4 rounded flex-wrap"
-          >
-            Create Cupon
-          </button>
+          <div className="flex justify-between gap-4">
+            <button
+              onClick={handleSubmit}
+              className="w-full shadow bg-primary uppercase text-secondary hover:bg-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap"
+            >
+              {editingCuponId ? "Actualizar Cupon" : "Crear Cupon"}
+            </button>
+
+            {editingCuponId ? (
+              <button
+                onClick={() => {
+                  setEditingCuponId(null);
+                  setCode("");
+                  setDescription("");
+                  setType("FIXED_AMOUNT");
+                  setAmount(0);
+                  setPercentage(0);
+                  setHasFreeShipping(false);
+                  setExpirationDate(""); // o cualquier otro estado que tenga influencia en la edición
+                  // Otros acciones para cancelar la edición, como resetear formularios, etc.
+                }}
+                className="w-full shadow bg-secondary uppercase text-primary hover:bg-primary hover:text-secondary font-bold py-2 px-4 rounded flex-wrap"
+              >
+                Cancelar
+              </button>
+            ) : null}
+          </div>
         </form>
       </div>
     </section>

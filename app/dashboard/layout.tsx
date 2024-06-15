@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/HeaderDashboard";
 import { redirect } from "next/navigation";
 import { getCookie } from "cookies-next";
+import Sidebarprueba from "@/components/sidebarprueba";
 
 export default function RootLayout({
   children,
@@ -18,7 +19,7 @@ export default function RootLayout({
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  const Token = getCookie("tokenAuth");
+  const Token = getCookie("AdminTokenAuth");
 
   useEffect(() => {
     if (!Token) {
@@ -39,6 +40,8 @@ export default function RootLayout({
               sidebarOpen={sidebarOpen}
               setSidebarOpen={setSidebarOpen}
             />
+
+            {/* <Sidebarprueba/> */}
             {/* <!-- ===== Sidebar End ===== --> */}
 
             {/* <!-- ===== Content Area Start ===== --> */}
@@ -52,7 +55,7 @@ export default function RootLayout({
 
               {/* <!-- ===== Main Content Start ===== --> */}
 
-              <div className="mx-auto p-6 w-full -z-10">{children} </div>
+              <div className="mx-auto p-6 w-full z-1">{children} </div>
 
               {/* <!-- ===== Main Content End ===== --> */}
             </div>

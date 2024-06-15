@@ -4,14 +4,53 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Select from "react-select";
-import GalleryUpload from "@/components/Products/ImgUpload/GalleryUpload";
+import GalleryUpload from "@/components/Products/ImgUpload/GalleryUploadV2";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import VariablesPage from "./VariablesSection";
-import ImageUpload from "./ImageUpload";
+import ImageUploader from "../producto-simple/ImageUploader";
+
+interface ImageData {
+  name: string;
+  type: string;
+  size: number;
+  data: string;
+}
 
 const CrearProductoVariable: React.FC = () => {
+  const [skuImages, setSkuImages] = useState<any[]>([]);
+  const fetchImages = async (productId: any, skuId: any) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images`,
+
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data, "skuImagesvariable");
+      if (data.code === 0) {
+        // Extracción del stock de la primera skuInventory, si existe
+        setSkuImages(data.skuImages);
+      } else {
+        console.error(
+          "Error al obtener el stock de la variación:",
+          data.message
+        );
+        return null; // En caso de error, devuelve null
+      }
+    } catch (error) {
+      console.error("Error al obtener el stock de la variación:", error);
+      return null; // En caso de error, devuelve null
+    }
+  };
+
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -22,8 +61,12 @@ const CrearProductoVariable: React.FC = () => {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [productId, setProductId] = useState<string | null>(null);
+  const [skuIdBase, setSkuIdBase] = useState(null);
   const { productType, setProductType } = useAPI();
   const [selectedProductTypes, setSelectedProductTypes] = useState([]);
+
+  const [hasFeaturedBaseSku, setHasFeaturedBaseSku] = useState(false);
+
   const [formData, setFormData] = useState({
     productTypes: [],
     name: "",
@@ -32,6 +75,7 @@ const CrearProductoVariable: React.FC = () => {
     enabledForDelivery: false,
     enabledForWithdrawal: false,
     hasVariations: true,
+    hasFeaturedBaseSku: false,
     measures: {
       length: null,
       width: null,
@@ -51,10 +95,10 @@ const CrearProductoVariable: React.FC = () => {
       data: "",
     },
   });
-
+  const [thumbnails, setThumbnails] = useState([]);
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedImages, setSelectedImages] = useState<ImageData[]>([]);
   const [showForm, setShowForm] = useState(true);
   const [measures, setMeasures] = useState<Measures>({
     length: null,
@@ -79,7 +123,7 @@ const CrearProductoVariable: React.FC = () => {
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const token = getCookie("tokenAuth");
+        const token = getCookie("AdminTokenAuth");
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}`,
           {
@@ -91,6 +135,7 @@ const CrearProductoVariable: React.FC = () => {
         );
 
         const productData = response.data.product;
+
         const selectedProductTypes = productData.productTypes.map(
           (productType: any) => ({
             value: productType.id,
@@ -150,7 +195,7 @@ const CrearProductoVariable: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       const SiteId = process.env.NEXT_PUBLIC_API_SITEID;
       const PageNumber = 1;
@@ -214,12 +259,14 @@ const CrearProductoVariable: React.FC = () => {
     setImage(null);
   };
 
-  const handleImageGalleryChange = (newImages: any) => {
-    setSelectedImages(newImages);
+  const handleImageGalleryChange = (images: ImageData[]) => {
+    setSelectedImages(images);
   };
 
-  const handleImageRemove = (index: any) => {
-    setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  const handleImageRemove = (index: number) => {
+    const newImages = [...selectedImages];
+    newImages.splice(index, 1);
+    setSelectedImages(newImages);
   };
 
   const handleInputMeasuresChange = (
@@ -235,6 +282,8 @@ const CrearProductoVariable: React.FC = () => {
   const handleCancel = () => {
     handleClearImage(setMainImage);
     handleClearImage(setPreviewImage);
+    setProductId(null);
+    setThumbnails([]);
     setIsEditMode(false);
     setFormData({
       productTypes: [],
@@ -244,6 +293,7 @@ const CrearProductoVariable: React.FC = () => {
       enabledForDelivery: false,
       enabledForWithdrawal: false,
       hasVariations: true,
+      hasFeaturedBaseSku: false,
       measures: {
         length: null,
         width: null,
@@ -263,28 +313,70 @@ const CrearProductoVariable: React.FC = () => {
         data: "",
       },
     });
+    router.replace("/dashboard/productos/crear/producto-variable");
   };
-  const fetchProductDetails = async (idVariable: any) => {
-    const token = getCookie("tokenAuth");
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      try {
+        const token = getCookie("AdminTokenAuth");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const responseData = await response.json();
+        if (responseData.code === 0) {
+          setSkuIdBase(responseData.product.skuId);
+        } else {
+          console.error(
+            "Error fetching product details:",
+            responseData.message
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+      }
+    };
+
+    fetchProductDetails();
+  }, [productId]);
+
+  const uploadImage = async (
+    name: string,
+    type: string,
+    size: number,
+    data: string,
+    productId: string,
+    skuId: string
+  ) => {
+    const token = getCookie("AdminTokenAuth");
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images`,
       {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          mainImage: {
+            name,
+            type,
+            size,
+            data,
+          },
+        }),
       }
     );
-    const responseData = await response.json();
-    if (responseData.code === 0) {
-      return {
-        productId: responseData.product.id,
-        skuId: responseData.product.skuId,
-      };
-    } else {
-      console.error("Error fetching product details:", responseData.message);
-      return null;
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload image: ${response.statusText}`);
     }
+    return response.json();
   };
 
   const handleSubmit = async (
@@ -300,7 +392,7 @@ const CrearProductoVariable: React.FC = () => {
     }
 
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       const dataToSubmit = {
         ...formData,
@@ -314,6 +406,7 @@ const CrearProductoVariable: React.FC = () => {
           ? formData.previewImage
           : undefined,
       };
+      dataToSubmit.hasFeaturedBaseSku = false;
 
       if (!formData.enabledForDelivery) {
         delete dataToSubmit.measures;
@@ -336,56 +429,40 @@ const CrearProductoVariable: React.FC = () => {
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log(responseData);
+        console.log(responseData, "wtf");
 
-        if (isEditMode) {
-          const productId: string = responseData.product.id;
+        const { product } = responseData;
+        const { id, skuId: sku } = product;
+        for (const image of selectedImages) {
+          await uploadImage(
+            image.name,
+            `image/${image.type}`,
+            image.size,
+            image.data,
+            id,
+            sku
+          );
+        }
+
+        if (id && sku) {
+          console.log(`El ID del producto es: ${id}`);
+          console.log(`El ID del SKU es: ${sku}`);
+
+          fetchData();
           const searchParams = new URLSearchParams(window.location.search);
           const idVariable = searchParams.get("productVariableId");
-          const productDetails = await fetchProductDetails(idVariable);
-
-          if (productDetails) {
-            const { productId, skuId } = productDetails;
-
-            // Aquí puedes integrar cualquier lógica adicional si es necesario
-
-            console.log(`El ID del producto es: ${productId}`);
-            console.log(`El ID del SKU es: ${skuId}`);
-          }
-
-          // Actualizar la URL si es necesario
-          fetchData();
-
-          if (idVariable !== productId) {
-            searchParams.set("productVariableId", productId);
+          if (idVariable !== id) {
+            searchParams.set("productVariableId", id);
             const newURL = `${
               window.location.pathname
             }?${searchParams.toString()}`;
             router.replace(newURL);
           }
         } else {
-          const { product } = responseData;
-          const { id, skuId: sku } = product;
-
-          if (id && sku) {
-            console.log(`El ID del producto es: ${id}`);
-            console.log(`El ID del SKU es: ${sku}`);
-
-            // Actualizar la URL si es necesario
-            fetchData();
-            const searchParams = new URLSearchParams(window.location.search);
-            const idVariable = searchParams.get("productVariableId");
-            if (idVariable !== id) {
-              searchParams.set("productVariableId", id);
-              const newURL = `${
-                window.location.pathname
-              }?${searchParams.toString()}`;
-              router.replace(newURL);
-            }
-          } else {
-            console.log("No se pudo obtener el ID del producto");
-          }
+          console.log("No se pudo obtener el ID del producto");
         }
+
+        alert("Todas las imágenes se cargaron correctamente!");
       } else {
         console.error("Error al enviar la solicitud:", response.statusText);
       }
@@ -407,13 +484,26 @@ const CrearProductoVariable: React.FC = () => {
     fetchData();
   }, []);
 
+  const customStyles = {
+    control: (base: any) => ({
+      ...base,
+      height: 45,
+      minHeight: 45,
+    }),
+  };
+
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <div>
-          <label htmlFor="nombreProducto">Nombre Producto Base</label>
+          <label
+            htmlFor="nombreProducto"
+            className="font-normal text-primary"
+          >
+            Nombre Producto Base
+          </label>
           <input
-            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+            className="shadow py-3 block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
             type="text"
             name="nombreProducto"
             id="nombreProducto"
@@ -425,7 +515,10 @@ const CrearProductoVariable: React.FC = () => {
         </div>
         <div>
           <div>
-            <label className="">Categoría de Producto Base</label>
+            <label className="font-normal text-primary">
+              Categoría de Producto Base
+            </label>
+
             <Select
               options={productTypeOptions}
               isMulti
@@ -435,66 +528,95 @@ const CrearProductoVariable: React.FC = () => {
                 setSelectedProductTypes(selectedOptions);
               }}
               className="mt-2"
+              styles={customStyles}
             />
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap justify-between py-2 px-4 my-2 gap-4 border w-full">
-        <label
-          className="block  cursor-pointer"
-          htmlFor="habilitarDespacho"
+
+      <div className="mt-8">
+        <label className="font-normal text-primary ">Tipo de entrega</label>
+
+        <div
+          className="flex flex-wrap py-2 px-4 my-2 gap-4"
+          style={{ borderRadius: "var(--radius)" }}
         >
-          <div className="flex gap-4 items-center bg-primary p-2 rounded-xl text-black font-medium hover:bg-primary/30 ">
-            Habilitar Despacho
+          <label
+            className="block  cursor-pointer"
+            htmlFor="habilitarDespacho"
+          >
+            <div
+              className="shadow flex gap-4 items-center bg-primary hover:bg-secondary p-2 text-secondary hover:text-primary font-medium "
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              Habilitar Despacho
+              <input
+                type="checkbox"
+                className="cursor-pointer"
+                name="habilitarDespacho"
+                id="habilitarDespacho"
+                checked={formData.enabledForDelivery}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+
+                  setFormData({
+                    ...formData,
+                    enabledForDelivery: checked,
+                    measures: checked
+                      ? formData.measures || {
+                          length: null,
+                          width: null,
+                          height: null,
+                          weight: null,
+                        }
+                      : {
+                          length: null,
+                          width: null,
+                          height: null,
+                          weight: null,
+                        },
+                  });
+                }}
+              />
+            </div>
+          </label>
+          <div
+            className="shadow flex gap-4 items-center bg-primary hover:bg-secondary p-2 text-secondary hover:text-primary font-medium "
+            style={{ borderRadius: "var(--radius)" }}
+          >
+            <label
+              className="block cursor-pointer"
+              htmlFor="habilitarRetiro"
+            >
+              Habilitar Retiro
+            </label>
             <input
               type="checkbox"
-              name="habilitarDespacho"
-              id="habilitarDespacho"
-              checked={formData.enabledForDelivery}
-              onChange={(event) => {
-                const checked = event.target.checked;
-
+              name="habilitarRetiro"
+              className="cursor-pointer"
+              id="habilitarRetiro"
+              checked={formData.enabledForWithdrawal}
+              onChange={(event) =>
                 setFormData({
                   ...formData,
-                  enabledForDelivery: checked,
-                  measures: checked
-                    ? formData.measures || {
-                        length: null,
-                        width: null,
-                        height: null,
-                        weight: null,
-                      }
-                    : { length: null, width: null, height: null, weight: null },
-                });
-              }}
+                  enabledForWithdrawal: event.target.checked,
+                })
+              }
             />
           </div>
-        </label>
-        <div className="flex gap-4 items-center">
-          <label
-            className="block"
-            htmlFor="habilitarRetiro"
-          >
-            Habilitar Retiro
-          </label>
-          <input
-            type="checkbox"
-            name="habilitarRetiro"
-            id="habilitarRetiro"
-            checked={formData.enabledForWithdrawal}
-            onChange={(event) =>
-              setFormData({
-                ...formData,
-                enabledForWithdrawal: event.target.checked,
-              })
-            }
-          />
         </div>
       </div>
-      <div>
-        <label htmlFor="descripcion">Descripción Producto Base</label>
+
+      <div className="mt-8">
+        <label
+          htmlFor="descripcion"
+          className="font-normal text-primary"
+        >
+          Descripción Producto Base
+        </label>
         <textarea
-          className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+          className="shadow block p-2 mt-2 py-3 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
+          style={{ borderRadius: "var(--radius)" }}
           name="descripcion"
           id="descripcion"
           value={formData.description}
@@ -504,7 +626,7 @@ const CrearProductoVariable: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-8">
         <div>
           <input
             type="file"
@@ -515,8 +637,14 @@ const CrearProductoVariable: React.FC = () => {
           />
           {mainImage ? (
             <div>
-              <h1>Imagen Principal</h1>
-              <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
+              <label className="font-normal text-primary">
+                Imagen Principal
+              </label>
+
+              <div
+                className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
+                style={{ borderRadius: "var(--radius)" }}
+              >
                 <img
                   src={mainImage}
                   alt="Main Image"
@@ -545,10 +673,13 @@ const CrearProductoVariable: React.FC = () => {
             </div>
           ) : (
             <div>
-              <h1>Imagen Principal</h1>
+              <label className="font-normal text-primary">
+                Imagen Principal
+              </label>
               <label
                 htmlFor="mainImage"
-                className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                className="shadow flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg
@@ -587,15 +718,20 @@ const CrearProductoVariable: React.FC = () => {
           />
           {previewImage ? (
             <div>
-              <h1>Imagen Secundaria</h1>
-              <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
+              <label className="font-normal text-primary">
+                Imagen Secundaria
+              </label>
+              <div
+                className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
+                style={{ borderRadius: "var(--radius)" }}
+              >
                 <img
                   src={previewImage}
                   alt="Preview Image"
                   className="w-full"
                 />
                 <button
-                  className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
+                  className="absolute top-0 right-0  bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
                   onClick={() => handleClearImage(setPreviewImage)}
                 >
                   <svg
@@ -617,10 +753,13 @@ const CrearProductoVariable: React.FC = () => {
             </div>
           ) : (
             <div>
-              <h1>Imagen Secundaria</h1>
+              <label className="font-normal text-primary">
+                Imagen Secundaria
+              </label>
               <label
                 htmlFor="previewImage"
-                className="flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                className="shadow flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg
@@ -647,77 +786,142 @@ const CrearProductoVariable: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
 
-        <div className="mt-2">
-          <h1 className="mb-2">Galería</h1>
-          <GalleryUpload
-            selectedImages={selectedImages}
-            handleImageGalleryChange={handleImageGalleryChange}
-            handleImageRemove={handleImageRemove}
-          />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+        <div className="flex space-x-4 overflow-x-auto p-4">
+          {isEditMode ? (
+            <ImageUploader
+              productId={productId}
+              skuId={skuIdBase}
+              skuImages={skuImages}
+              fetchImages={fetchImages}
+            />
+          ) : (
+            <GalleryUpload
+              selectedImages={selectedImages}
+              handleImageGalleryChange={handleImageGalleryChange}
+              handleImageRemove={handleImageRemove}
+            />
+          )}
+        </div>
+        <div>
+          <label htmlFor="medidas">
+            <div className=" flex gap-2">
+              <label className="font-normal text-primary">
+                Medidas Delivery
+              </label>
+              <button onClick={() => setShowForm(!showForm)}>
+                {showForm ? (
+                  <span className="bg-primary text-secondary p-1 text-xs">
+                    Ocultar
+                  </span>
+                ) : (
+                  <span className="bg-primary text-secondary p-1 text-xs">
+                    Mostrar
+                  </span>
+                )}
+              </button>
+            </div>
+          </label>
+          {showForm &&
+            (formData.enabledForDelivery ? (
+              <div className="mt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <div className="">
+                    <label
+                      htmlFor="largo"
+                      className="text-xs"
+                    >
+                      Largo (cm.)
+                    </label>
+                    <input
+                      type="number"
+                      name="length"
+                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                      value={measures.length || ""}
+                      onChange={handleInputMeasuresChange}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="ancho"
+                      className="text-xs"
+                    >
+                      Ancho (cm.)
+                    </label>
+                    <input
+                      type="number"
+                      name="width"
+                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                      value={measures.width || ""}
+                      onChange={handleInputMeasuresChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <label
+                      htmlFor="alto"
+                      className="text-xs"
+                    >
+                      Alto (cm.)
+                    </label>
+                    <input
+                      type="number"
+                      name="height"
+                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                      value={measures.height || ""}
+                      onChange={handleInputMeasuresChange}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="peso"
+                      className="text-xs"
+                    >
+                      Peso (kg.)
+                    </label>
+                    <input
+                      type="number"
+                      name="weight"
+                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                      value={measures.weight || ""}
+                      onChange={handleInputMeasuresChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{ borderRadius: "var(--radius)" }}
+                className="shadow mt-4 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
+                role="alert"
+              >
+                <svg
+                  className="flex-shrink-0 inline w-4 h-4 me-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  <span className="font-semibold">Habilitar despacho.</span> Se
+                  debe seleccionar la opcion para poder mostrar las medidas.
+                </div>
+              </div>
+            ))}
         </div>
       </div>
 
-      <label htmlFor="medidas">
-        <div className="mt-2 flex gap-2">
-          <h3>Medidas Delivery</h3>
-          <button onClick={() => setShowForm(!showForm)}>
-            {showForm ? (
-              <span className="bg-primary p-1 text-xs">Ocultar</span>
-            ) : (
-              <span className="bg-primary p-1 text-xs">Mostrar</span>
-            )}
-          </button>
-        </div>
-      </label>
-
-      {showForm && formData.enabledForDelivery && (
-        <div className="mt-2">
-          <div className="mt-2">
-            <label htmlFor="largo">Largo</label>
-            <input
-              type="number"
-              name="length"
-              className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-              value={measures.length || ""}
-              onChange={handleInputMeasuresChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="ancho">Ancho</label>
-            <input
-              type="number"
-              name="width"
-              className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-              value={measures.width || ""}
-              onChange={handleInputMeasuresChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="alto">Alto</label>
-            <input
-              type="number"
-              name="height"
-              className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-              value={measures.height || ""}
-              onChange={handleInputMeasuresChange}
-            />
-          </div>
-          <div>
-            <label htmlFor="peso">Peso</label>
-            <input
-              type="number"
-              name="weight"
-              className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-              value={measures.weight || ""}
-              onChange={handleInputMeasuresChange}
-            />
-          </div>
-        </div>
-      )}
-
       <button
-        className="bg-primary text-white px-4 py-2 rounded mt-4"
+        className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
+        style={{ borderRadius: "var(--radius)" }}
         onClick={handleSubmit}
       >
         {isEditMode ? "Guardar Cambios" : "Crear Producto Base"}
@@ -734,6 +938,13 @@ const CrearProductoVariable: React.FC = () => {
       <VariablesPage
         isEditMode={isEditMode}
         setIsEditMode={setIsEditMode}
+        productId={productId}
+        skuId={skuIdBase}
+        skuImages={skuImages}
+        fetchImages={fetchImages}
+        selectedImages={selectedImages}
+        handleImageGalleryChange={handleImageGalleryChange}
+        handleImageRemove={handleImageRemove}
       />
     </div>
   );

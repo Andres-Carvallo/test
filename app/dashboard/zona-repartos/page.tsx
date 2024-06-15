@@ -46,7 +46,7 @@ function ZonasRepartos() {
   useEffect(() => {
     const fetchCurrencyCode = async () => {
       try {
-        const token = getCookie("tokenAuth");
+        const token = getCookie("AdminTokenAuth");
         const currencyResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
           {
@@ -71,7 +71,7 @@ function ZonasRepartos() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       let response;
       // Obtener currencyCodeId
       const currencyResponse = await axios.get(
@@ -164,7 +164,7 @@ function ZonasRepartos() {
       const PageNumber = 1;
       const PageSize = 50;
 
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       const data = await obtenerZonasRepartosBO(PageNumber, PageSize, token);
       setZonas(data.shippingZones);
@@ -189,7 +189,7 @@ function ZonasRepartos() {
 
   const fetchCommunes = async (regionId: any) => {
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       const Pais = "CL";
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes`,
@@ -265,7 +265,7 @@ function ZonasRepartos() {
 
   const handleEdit = async (zone: any) => {
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       const currencyResponse = await axios.get<{
         currencyCodes: { id: string }[];
       }>(
@@ -300,7 +300,7 @@ function ZonasRepartos() {
 
   const handleDelete = async (zoneId: string) => {
     try {
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${zoneId}`,
         {
@@ -331,12 +331,12 @@ function ZonasRepartos() {
   return (
     <section>
       <Breadcrumb pageName="Zonas de Repartos" />
-      <div className="border border-dashed border-dark/50 rounded-lg p-4 bg-white my-6 overflow-x-auto">
+      <div className="shadow-md border border-primary rounded-lg p-4 bg-white my-6 overflow-x-auto">
         <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
           Zonas Activas
         </h2>
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-100">
             <tr>
               <th
                 scope="col"
@@ -394,7 +394,7 @@ function ZonasRepartos() {
                 <td className="px-6 py-4 md:whitespace-nowrap space-x-2">
                   <button
                     onClick={() => handleEdit(zone)}
-                    className="bg-primary hover:bg-dark text-dark hover:text-primary font-bold py-2 px-4 rounded"
+                    className="bg-primary hover:bg-secondary text-secondary hover:text-primary font-bold py-2 px-4 rounded"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -437,10 +437,11 @@ function ZonasRepartos() {
         </table>
       </div>
 
-      <div className="border border-dashed border-dark/50 rounded-lg p-4 bg-white my-6">
+      <div className="shadow-md border  border-primary rounded-lg p-4 bg-white my-6">
         <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
           {isEditing ? "Editar Zona de Reparto" : "Crear Zona de Reparto"}
         </h2>
+
         <div>
           {isEditing && (
             <button
@@ -465,7 +466,9 @@ function ZonasRepartos() {
         </div>
         <div>
           <label className="block mt-4">
-            <span className="font-bold uppercase">Nombre Zona</span>
+            <h3 className="font-normal text-primary">
+              Nombre Zona <span className="text-primary">*</span>
+            </h3>
             <input
               type="text"
               id="ZoneName"
@@ -473,22 +476,59 @@ function ZonasRepartos() {
               onChange={handleChange}
               value={zoneData.name}
               placeholder="Ingresa nombre de nueva Zona...."
-              className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
             />
           </label>
           <label className="block mt-4">
-            <span className="font-bold uppercase">Descripción Zona </span>
+            <h3 className="font-normal text-primary">
+              Descripción zona <span className="text-primary">*</span>
+            </h3>
             <textarea
               id="ZoneDescription"
               name="description"
               value={zoneData.description}
               onChange={handleChange}
               placeholder="Ingresa descripción de nueva Zona...."
-              className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
             ></textarea>
           </label>
+          {/*           <div className="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" style={{ borderRadius: 'var(--radius)' }}    role="alert">
+            <div className="flex">
+            <div className="py-1"><svg className="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+          <div>
+            <p className="font-bold">Costo de despacho</p>
+            <p className="text-sm">El costo de despacho es para la zona a crear</p>
+          </div>
+          </div>
+        </div> */}
+
+          <div
+            style={{ borderRadius: "var(--radius)" }}
+            className="shadow flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+            role="alert"
+          >
+            <svg
+              className="flex-shrink-0 inline w-4 h-4 me-3"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="sr-only">Info</span>
+            <div>
+              <span className="font-semibold">Costo de despacho.</span> El costo
+              de despacho es para la zona a crear.
+            </div>
+          </div>
+
           <label className="block mt-4">
-            <span className="font-bold uppercase">Monto Zona</span>
+            <h3 className="font-normal text-primary">
+              Costo de despacho <span className="text-primary">*</span>
+            </h3>
             <input
               type="number"
               id="ZoneAmount"
@@ -496,7 +536,8 @@ function ZonasRepartos() {
               value={zoneData.amount}
               onChange={handleChange}
               placeholder="Ingresa Precio de nueva Zona...."
-              className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
             />
           </label>
         </div>
@@ -505,14 +546,17 @@ function ZonasRepartos() {
             htmlFor="region"
             className="block mt-4"
           >
-            <span className="font-bold uppercase">Región </span>
+            <h3 className="font-normal text-primary">
+              Región <span className="text-primary">*</span>
+            </h3>
             <select
               id="region"
               value={selectedRegion}
               onChange={(event) => {
                 handleRegionChange(event);
               }}
-              className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
             >
               <option>Selecciona Región</option>
               {regions.map((region: any) => (
@@ -529,7 +573,9 @@ function ZonasRepartos() {
             htmlFor="commune"
             className="block mt-4"
           >
-            <span className="font-bold uppercase">Comuna </span>
+            <h3 className="font-normal text-primary">
+              Comuna <span className="text-primary">*</span>
+            </h3>
             <select
               id="commune"
               value={selectedCommune}
@@ -537,7 +583,8 @@ function ZonasRepartos() {
                 handleCommuneChange(event);
               }}
               disabled={!selectedRegion}
-              className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
             >
               <option>Selecciona Comuna</option>
               {communes.map((commune: any) => (
@@ -554,7 +601,8 @@ function ZonasRepartos() {
         <div className="mt-4">
           <button
             onClick={addCommune}
-            className="bg-primary uppercase text-dark hover:bg-dark hover:text-white  font-bold py-2 px-4 rounded flex-wrap"
+            className="shadow bg-primary hover:bg-secondary uppercase text-secondary hover:text-primary font-bold py-2 px-4  flex-wrap"
+            style={{ borderRadius: "var(--radius)" }}
           >
             Agregar Comuna
           </button>
@@ -601,7 +649,8 @@ function ZonasRepartos() {
         <div className="mt-4">
           <button
             onClick={handleSubmit}
-            className="bg-primary w-full uppercase text-dark hover:bg-dark hover:text-white  font-bold py-2 px-4 rounded flex-wrap"
+            className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+            style={{ borderRadius: "var(--radius)" }}
           >
             {isEditing ? "Actualizar Zona" : "Crear Zona"}
           </button>

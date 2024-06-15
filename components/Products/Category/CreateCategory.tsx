@@ -11,13 +11,13 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
   handleCloseModal,
   fetchData,
 }) => {
-  const [formData, setFormData] = useState({
+  const [formDataCategory, setFormDataCategory] = useState({
     name: "",
     description: "",
-    previewImage: "",
-    previewImageName: "",
-    previewImageType: "",
-    previewImageSize: 0,
+    previewImageCategory: "",
+    previewImageNameCategory: "",
+    previewImageTypeCategory: "",
+    previewImageSizeCategory: 0,
     imageLoaded: false,
     base64Data: "", // Datos base64 de la imagen para enviar al servidor
   });
@@ -26,8 +26,8 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prevFormData) => ({
-      ...prevFormData,
+    setFormDataCategory((prevFormDataCategory) => ({
+      ...prevFormDataCategory,
       [name]: value,
     }));
   };
@@ -39,12 +39,12 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
       reader.onload = () => {
         const base64Data = reader.result?.toString().split(",")[1];
 
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          previewImage: reader.result as string,
-          previewImageName: file.name,
-          previewImageType: file.type,
-          previewImageSize: file.size,
+        setFormDataCategory((prevFormDataCategory) => ({
+          ...prevFormDataCategory,
+          previewImageCategory: reader.result as string,
+          previewImageNameCategory: file.name,
+          previewImageTypeCategory: file.type,
+          previewImageSizeCategory: file.size,
           imageLoaded: true,
           base64Data: base64Data || "",
         }));
@@ -54,12 +54,12 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
   };
 
   const handleRemoveImage = () => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      previewImage: "",
-      previewImageName: "",
-      previewImageType: "",
-      previewImageSize: 0,
+    setFormDataCategory((prevFormDataCategory) => ({
+      ...prevFormDataCategory,
+      previewImageCategory: "",
+      previewImageNameCategory: "",
+      previewImageTypeCategory: "",
+      previewImageSizeCategory: 0,
       imageLoaded: false,
       base64Data: "",
     }));
@@ -67,19 +67,19 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const authToken = getCookie("tokenAuth");
+    const authToken = getCookie("AdminTokenAuth");
 
     const requestData = {
-      name: formData.name,
-      description: formData.description,
+      name: formDataCategory.name,
+      description: formDataCategory.description,
       statusCode: "ACTIVE",
-      ...(formData.base64Data
+      ...(formDataCategory.base64Data
         ? {
             previewImage: {
-              name: formData.previewImageName,
-              type: formData.previewImageType,
-              size: formData.previewImageSize,
-              data: `data:${formData.previewImageType};base64,${formData.base64Data}`,
+              name: formDataCategory.previewImageNameCategory,
+              type: formDataCategory.previewImageTypeCategory,
+              size: formDataCategory.previewImageSizeCategory,
+              data: `data:${formDataCategory.previewImageTypeCategory};base64,${formDataCategory.base64Data}`,
             },
           }
         : {}),
@@ -107,13 +107,13 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
 
       fetchData();
 
-      setFormData({
+      setFormDataCategory({
         name: "",
         description: "",
-        previewImage: "",
-        previewImageName: "",
-        previewImageType: "",
-        previewImageSize: 0,
+        previewImageCategory: "",
+        previewImageNameCategory: "",
+        previewImageTypeCategory: "",
+        previewImageSizeCategory: 0,
         imageLoaded: false,
         base64Data: "",
       });
@@ -141,7 +141,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                   type="text"
                   name="name"
                   id="name"
-                  value={formData.name}
+                  value={formDataCategory.name}
                   onChange={handleChange}
                   className="bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                   placeholder="Nombre Categoría"
@@ -155,7 +155,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                   <textarea
                     id="description"
                     name="description"
-                    value={formData.description}
+                    value={formDataCategory.description}
                     onChange={handleChange}
                     rows={4}
                     className="block w-full min-h-52 p-2.5 text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
@@ -163,12 +163,12 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                   />
                 </div>
                 <div className="flex flex-col justify-center mt-6 items-center w-full relative border border-dashed border-gray-300 rounded-lg p-5">
-                  {formData.imageLoaded ? (
+                  {formDataCategory.imageLoaded ? (
                     <div className="w-full h-40 relative">
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="absolute inset-0 overflow-hidden rounded-lg ">
                           <img
-                            src={formData.previewImage}
+                            src={formDataCategory.previewImageCategory}
                             alt="Preview"
                             className="w-full  object-cover rounded-lg"
                           />
@@ -197,7 +197,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                     </div>
                   ) : (
                     <label
-                      htmlFor="previewImage"
+                      htmlFor="previewImageCategory"
                       className="cursor-pointer"
                     >
                       <div className="flex flex-col justify-center items-center">
@@ -225,8 +225,8 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                       </div>
                       <input
                         type="file"
-                        id="previewImage"
-                        name="previewImage"
+                        id="previewImageCategory"
+                        name="previewImageCategory"
                         onChange={handleFileChange}
                         className="hidden"
                         accept="image/*"

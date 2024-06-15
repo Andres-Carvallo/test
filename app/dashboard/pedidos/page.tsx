@@ -24,8 +24,8 @@ function PedidosBO() {
     try {
       const PageNumber = 1;
       const PageSize = 100;
-      const token = getCookie("tokenAuth");
-      console.log(token, "tokenAuth");
+      const token = getCookie("AdminTokenAuth");
+      console.log(token, "AdminTokenAuth");
 
       const data = await obtenerPedidos(PageNumber, PageSize, token);
       setPedidos(data.orders);

@@ -39,7 +39,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
     size: 0,
     data: "",
   });
-  const token = String(getCookie("tokenAuth"));
+  const token = String(getCookie("AdminTokenAuth"));
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
       const PageNumber = 1;
       const PageSize = 10;
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       const data = await obtenerTiposProductos(
         SiteId,

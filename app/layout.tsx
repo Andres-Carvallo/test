@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Inter, Roboto_Mono, Kalam, Oswald } from "next/font/google";
+import { Inter, Roboto_Mono, Kalam, Oswald, Lato } from "next/font/google";
 import "./globals.css";
 import { APIContextProvider } from "@/app/Context/ProductTypeContext";
 import toast, { Toaster } from "react-hot-toast";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
@@ -17,7 +18,11 @@ const kalam = Kalam({
   weight: ["400"],
   variable: "--font-kalam",
 });
-
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-lato",
+});
 const oswald = Oswald({
   subsets: ["latin"],
   weight: "400",
@@ -37,10 +42,12 @@ export default function RootLayout({
     <html lang="en">
       <APIContextProvider SiteId={SiteId}>
         <body
-          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} `}
+          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} `}
         >
-          <Toaster />
-          <div className="min-h-screen">{children}</div>
+          <Providers>
+            <Toaster />
+            <div className="min-h-screen ">{children}</div>
+          </Providers>
         </body>
       </APIContextProvider>
     </html>

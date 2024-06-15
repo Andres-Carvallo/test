@@ -13,7 +13,7 @@ interface Order {
 export default function DetalleOrdenes() {
   const { id } = useParams();
   const [pedidos, setPedidos] = useState<Order | null>(null);
-  const Token = String(getCookie("tokenAuth"));
+  const Token = String(getCookie("AdminTokenAuth"));
 
   useEffect(() => {
     const fetchData = async () => {

@@ -57,7 +57,7 @@ const CrearUsuarioForm = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
-      const token = String(getCookie("tokenAuth"));
+      const token = String(getCookie("AdminTokenAuth"));
       const newUser = {
         ...formData,
         statusCode: "ACTIVE", // Define el valor del statusCode como desees

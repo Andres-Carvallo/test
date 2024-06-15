@@ -32,9 +32,9 @@ const BannerTiendaBO = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const token = getCookie("tokenAuth");
-      const bannerId = "a6911843-fc2b-4244-b7eb-f1a694c85c19";
-      const bannerImageId = "7c91c1f9-848a-49d0-a012-67985cc59c93";
+      const token = getCookie("AdminTokenAuth");
+      const bannerId = "0c482c67-65eb-4cbc-be04-2786262cb8fd";
+      const bannerImageId = "90c5ff6c-d258-4b26-8d94-d694efdfd9e8";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
@@ -78,7 +78,7 @@ const BannerTiendaBO = () => {
     e.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
 
       // Crear un objeto de datos actualizado excluyendo mainImage si no hay una imagen seleccionada
       const updatedDataWithoutImage = {
@@ -91,8 +91,8 @@ const BannerTiendaBO = () => {
       }
 
       // Send updated data to the server
-      const bannerId = "a6911843-fc2b-4244-b7eb-f1a694c85c19";
-      const bannerImageId = "7c91c1f9-848a-49d0-a012-67985cc59c93";
+      const bannerId = "0c482c67-65eb-4cbc-be04-2786262cb8fd";
+      const bannerImageId = "90c5ff6c-d258-4b26-8d94-d694efdfd9e8";
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
         updatedDataWithoutImage,
@@ -217,13 +217,16 @@ const BannerTiendaBO = () => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <span className="font-bold uppercase">Titulo </span>
+        <h3 className="font-normal text-primary">
+          Titulo <span className="text-primary">*</span>
+        </h3>
         <input
           type="text"
           name="title"
           value={formDataTienda.title}
           onChange={handleChange}
-          className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+          style={{ borderRadius: "var(--radius)" }}
           placeholder="Title"
         />
         <input
@@ -233,16 +236,19 @@ const BannerTiendaBO = () => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />{" "}
-        <span className="font-bold uppercase">Texto </span>
+        <h3 className="font-normal text-primary">
+          Texto <span className="text-primary">*</span>
+        </h3>
         <input
           type="text"
           name="landingText"
           value={formDataTienda.landingText}
           onChange={handleChange}
-          className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+          style={{ borderRadius: "var(--radius)" }}
           placeholder="Landing Text"
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/*         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <span className="font-bold uppercase hidden">Texto Boton </span>
             <input
@@ -265,7 +271,7 @@ const BannerTiendaBO = () => {
               placeholder="Button Link"
             />
           </div>
-        </div>
+        </div> */}
         <div>
           <input
             type="file"
@@ -278,7 +284,9 @@ const BannerTiendaBO = () => {
           />
           {mainImageTienda ? (
             <div>
-              <span className="font-bold uppercase">FOTO </span>
+              <h3 className="font-normal text-primary">
+                Foto <span className="text-primary">*</span>
+              </h3>
               <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
                 <img
                   src={mainImageTienda}
@@ -308,10 +316,13 @@ const BannerTiendaBO = () => {
             </div>
           ) : (
             <div>
-              <span className="font-bold uppercase">FOTO </span>
+              <h3 className="font-normal text-primary">
+                Foto <span className="text-primary">*</span>
+              </h3>
               <label
                 htmlFor="mainImageTienda"
-                className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg
@@ -341,7 +352,8 @@ const BannerTiendaBO = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-primary w-full uppercase text-dark hover:bg-dark hover:text-white  font-bold py-2 px-4 rounded flex-wrap mt-6"
+          className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+          style={{ borderRadius: "var(--radius)" }}
         >
           <svg
             aria-hidden="true"
@@ -362,7 +374,7 @@ const BannerTiendaBO = () => {
               fill="currentColor"
             />
           </svg>
-          {loading ? "Loading..." : "Update Banner"}
+          {loading ? "Loading..." : "Actualizar"}
         </button>
       </form>
     </section>

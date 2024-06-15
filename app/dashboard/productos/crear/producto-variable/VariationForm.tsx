@@ -4,24 +4,44 @@ import Select from "react-select";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import { useSearchParams } from "next/navigation";
-
+import { HandlePriceSku } from "@/app/utils/HandlePriceSku";
+import { handleStockSku } from "@/app/utils/HandleStockSku";
+import ImageUploaderVariable from "./ImageUploaderVariable";
+import GalleryUpload from "@/components/Products/ImgUpload/GalleryUpload";
 const VariationForm: React.FC<any> = ({
   index,
   variation,
   attributes,
   setVariations,
   fetchVariations,
+  currentPrices,
+  currentStocks,
   setIsEditMode,
   onDescriptionChange,
   onMainImageChange,
   onPreviewImageChange,
   onCloseForm,
   currentAttributes,
+  productId,
+  variationImages,
+  fetchVariationImages,
+  selectedImages,
+  handleImageGalleryChange,
+  handleImageRemove,
 }) => {
   const isEditMode = !!variation.id;
+
   const currentVariationIndex = index;
   const [attributePairs, setAttributePairs] = useState([{ id: "", value: "" }]);
-  const [selectedAttributes, setSelectedAttributes] = useState([]);
+  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([]);
+  const [precioNormal, setPrecioNormal] = useState<number | null>(
+    currentPrices[variation.id] !== null ? currentPrices[variation.id] : null
+  );
+
+  const [stockQuantity, setStockQuantity] = useState<number | null>(
+    currentStocks[variation.id] !== null ? currentStocks[variation.id] : null
+  );
+
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -91,15 +111,19 @@ const VariationForm: React.FC<any> = ({
   };
 
   const handleInputChange = (index: any, newValue: any) => {
+    // Convertir el nuevo valor a mayúsculas y eliminar espacios y signos
+    const sanitizedValue = newValue.toUpperCase().replace(/[^A-Z]/g, "");
+
+    // Actualizar los pares de atributos con el nuevo valor tratado
     const updatedPairs = [...attributePairs];
-    updatedPairs[index].value = newValue;
+    updatedPairs[index].value = sanitizedValue;
     setAttributePairs(updatedPairs);
   };
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
 
-    const token = getCookie("tokenAuth");
+    const token = getCookie("AdminTokenAuth");
     const idVariable = searchParams.get("productVariableId");
     const currentVariation = variation;
 
@@ -151,6 +175,27 @@ const VariationForm: React.FC<any> = ({
         variationId = variationResponse.data.sku.id;
       }
 
+      if (idVariable && stockQuantity !== null) {
+        try {
+          await HandlePriceSku(idVariable, variationId, precioNormal);
+        } catch (error) {
+          console.error("Error handling stock:", error);
+        }
+      } else {
+        console.error("Invalid input parameters for stock handling.");
+      }
+
+      if (idVariable && stockQuantity !== null) {
+        try {
+          await handleStockSku(idVariable, variationId, stockQuantity);
+        } catch (error) {
+          console.error("Error handling stock:", error);
+        }
+      } else {
+        console.error("Invalid input parameters for stock handling.");
+      }
+
+      // Manejar los atributos de la variación
       if (variationId && attributePairs.length > 0) {
         for (const attribute of attributePairs) {
           if (attribute.id && attribute.value) {
@@ -185,7 +230,7 @@ const VariationForm: React.FC<any> = ({
                   }
                 );
               }
-            } catch (error) {
+            } catch (error: any) {
               if (error.response && error.response.status === 404) {
                 await axios.post(
                   `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes`,
@@ -270,14 +315,16 @@ const VariationForm: React.FC<any> = ({
                     label: attribute.name,
                   }))}
                 onChange={(selectedOption) => {
-                  handleSelectChange(pairIndex, selectedOption);
-                  const filteredAttributes = selectedAttributes.filter(
-                    (id) => id !== pair.id
-                  );
-                  setSelectedAttributes([
-                    ...filteredAttributes,
-                    selectedOption.value,
-                  ]);
+                  if (selectedOption) {
+                    handleSelectChange(pairIndex, selectedOption);
+                    const filteredAttributes = selectedAttributes.filter(
+                      (id) => id !== pair.id
+                    );
+                    setSelectedAttributes([
+                      ...filteredAttributes,
+                      selectedOption.value,
+                    ]);
+                  }
                 }}
                 value={
                   pair.id
@@ -379,6 +426,107 @@ const VariationForm: React.FC<any> = ({
             Notificaciones de stock
           </label>
         </div>
+      </div>
+      <div className="mt-4 grid grid-cols-1 space-y-2">
+        <div className=" border border-dashed border-dark/50 rounded-lg p-4">
+          <div className="grid grid-cols-1 gap-2">
+            <div>
+              <label htmlFor={`precioNormal_${index}`}>Precio Normal</label>
+              <input
+                type="number"
+                id={`precioNormal_${index}`}
+                name="precioNormal"
+                value={precioNormal !== null ? precioNormal : ""}
+                onChange={(e) => setPrecioNormal(Number(e.target.value))}
+                placeholder="Precio normal"
+                className="p-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+              />
+            </div>
+          </div>
+        </div>
+        <div className=" border border-dashed border-dark/50 rounded-lg p-4">
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label htmlFor={`stock_${index}`}>Stock</label>
+              <input
+                type="number"
+                id={`stock_${index}`}
+                name="precioNormal"
+                value={stockQuantity !== null ? stockQuantity : ""}
+                onChange={(e) => setStockQuantity(Number(e.target.value))}
+                placeholder="Stock"
+                className="p-2 py-2.5 w-full mt-1 text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                required
+              />
+
+              <div className=" hidden">
+                <label className="inline-flex items-center cursor-pointer pl-2">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                  />
+                  <div className="relative top-2 w-10 h-6 bg-background border-primary border  peer-focus:outline-1 peer-focus:ring-1 peer-focus:ring-primary dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-primary after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-secondary after:border-primary after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+                  <span className="ms-3 mt-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    Activar Alerta
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label>
+                Alerta Stock{" "}
+                <span className="text-xs font-bold">( Proximamente )</span>{" "}
+              </label>
+              <input
+                type="number"
+                disabled
+                className="block mb-2 p-2.5 mt-1 w-full text-sm text-dark bg-gray-100 rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                name=""
+                id=""
+              />
+              <p className="text-xs flex items-center gap-2">
+                <span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                    />
+                  </svg>
+                </span>
+                Recibirás una notificación por correo electrónico cuando el
+                stock alcance el umbral seleccionado.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        {isEditMode ? (
+          variation && variation.id ? (
+            <ImageUploaderVariable
+              productId={productId}
+              skuId={variation.id}
+              variationImages={variationImages}
+              fetchVariationImages={fetchVariationImages}
+            />
+          ) : null
+        ) : variation && variation.id ? (
+          <GalleryUpload
+            selectedImages={
+              variation.selectedImages ? variation.selectedImages : []
+            } // Asegúrate de que variation.selectedImages esté definido
+            handleImageGalleryChange={handleImageGalleryChange}
+            handleImageRemove={handleImageRemove}
+          />
+        ) : null}
       </div>
       <div className="mt-2 grid grid-cols-2 gap-4 p-2 border border-dotted border-dark rounded">
         <ImageUpload

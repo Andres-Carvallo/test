@@ -3,12 +3,82 @@
 @tailwind utilities;
 
 body {
-  font-family: "Inter", sans-serif;
-  background-color: #f9f9f9;
+  @apply font-lato;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@layer base {
+  /*   
+  --background: Color de fondo principal de la aplicación.
+  --foreground: Usado para titulos y parrafos.                Color principal del texto o del contenido sobre el fondo.
+  --card: Usado para banners                                  Color de fondo para tarjetas o elementos destacados.
+  --card-foreground: Color del texto o contenido sobre las tarjetas.
+  --popover: Color de fondo para elementos emergentes (popovers).
+  --popover-foreground: Color del texto o contenido sobre los elementos emergentes.
+  --primary:  Botones                                                  Color principal o primario de la interfaz, usado en botones o elementos destacados.
+  --primary-foreground:  Color del texto en fondo oscuro               Color del texto o contenido sobre los elementos con color primario.
+  --secondary:   HoverBotones                                          Color secundario, usado en botones secundarios o elementos menos destacados.
+  --secondary-foreground: Color del texto o contenido sobre los elementos con color secundario.
+  --muted: Color para elementos que deberían ser menos destacados (colores tenues).
+  --muted-foreground: Color del texto o contenido sobre los elementos tenues.
+  --accent: Color de acento para elementos destacados o importantes.
+  --accent-foreground: Color del texto o contenido sobre los elementos de acento.
+  --destructive: Color para acciones destructivas (como eliminar o advertir).
+  --destructive-foreground: Color del texto o contenido sobre los elementos destructivos.
+  --border: Color de los bordes de elementos.
+  --input: Color de fondo para campos de entrada.
+  --ring: Color del borde para elementos enfocados (focus ring).
+  --radius: Valor del radio de borde para elementos redondeados (por ejemplo, botones, tarjetas). */
+
+  @layer base {
+    :root {
+      --background: 256 100% 100%;
+      --foreground: 256 5% 10%;
+      --card: 256 50% 100%;
+      --card-foreground: 256 5% 15%;
+      --popover: 256 100% 100%;
+      --popover-foreground: 256 100% 10%;
+      --primary: 256 65% 59%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 256 30% 90%;
+      --secondary-foreground: 0 0% 0%;
+      --muted: 218 30% 95%;
+      --muted-foreground: 256 5% 40%;
+      --accent: 218 30% 90%;
+      --accent-foreground: 256 5% 15%;
+      --destructive: 0 100% 50%;
+      --destructive-foreground: 256 5% 100%;
+      --border: 256 30% 82%;
+      --input: 256 30% 50%;
+      --ring: 256 65% 59%;
+      --radius: 1rem;
+    }
+    .dark {
+      --background: 256 50% 10%;
+      --foreground: 256 5% 100%;
+      --card: 256 50% 10%;
+      --card-foreground: 256 5% 100%;
+      --popover: 256 50% 5%;
+      --popover-foreground: 256 5% 100%;
+      --primary: 256 65% 59%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 256 30% 20%;
+      --secondary-foreground: 0 0% 100%;
+      --muted: 218 30% 25%;
+      --muted-foreground: 256 5% 65%;
+      --accent: 218 30% 25%;
+      --accent-foreground: 256 5% 95%;
+      --destructive: 0 100% 50%;
+      --destructive-foreground: 256 5% 100%;
+      --border: 256 30% 50%;
+      --input: 256 30% 50%;
+      --ring: 256 65% 59%;
+      --radius: 1rem;
+    }
   }
 }

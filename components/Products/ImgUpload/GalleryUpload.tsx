@@ -3,7 +3,7 @@ import React, { useState, ChangeEvent } from "react";
 import Modal from "@/components/Products/ImgUpload/ModalGalleryUpload";
 interface Props {
   selectedImages: string[];
-  handleImageGalleryChange: (images: string[]) => void;
+  handleImageGalleryChange: any;
   handleImageRemove: (index: number) => void;
 }
 const GalleryUpload: React.FC<Props> = ({
@@ -48,7 +48,8 @@ const GalleryUpload: React.FC<Props> = ({
       {/* Etiqueta label emulando el diseño del input */}
       <label
         htmlFor="fileInput"
-        className={`flex flex-col bg-white justify-center items-center pt-2 pb-2 border border-dashed border-dark/50 rounded-lg cursor-pointer ${
+        style={{ borderRadius: "var(--radius)" }}
+        className={`shadow flex flex-col bg-white justify-center items-center mt-2 pt-2 pb-2 border border-dashed border-primary cursor-pointer ${
           selectedImages.length > 0 ? "md:w-1/4" : "md:w-full"
         } z-10`}
       >

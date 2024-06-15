@@ -1,90 +1,99 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { obtenerProductos } from "@/app/utils/obtenerProductos";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import BannerTienda from "@/components/conMantenedor/BannerTienda";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import ProductCard from "@/components/PIXELUP/Productos03/ProductCard";
 
 const ProductGridShop = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { addToCartHandler, products, setProducts } = useAPI();
   const [productTypes, setProductTypes] = useState([]);
-  const [productTypeId, setProductTypeId] = useState<string | null>(null);
+  const [productTypeId, setProductTypeId] = useState<string | undefined>(
+    undefined
+  );
   const [searchTerm, setSearchTerm] = useState("");
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
+  const [pageSize, setPageSize] = useState(8); // Estado para la cantidad de productos por página
+  const [currentPage, setCurrentPage] = useState(1); // Estado para la página actual
+  const [totalPages, setTotalPages] = useState(1); // Estado para el total de páginas
 
-  const fetchProductos = async (productTypeId?: string) => {
+  // Referencia al contenedor de productos
+  const productsRef = useRef<HTMLDivElement>(null);
+
+  const fetchProductos = async (
+    productTypeId?: string,
+    pageNumber: number = 1
+  ) => {
     try {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const PageNumber = 1;
-      const PageSize = 8;
-      const urlProductTypeId =
-        productTypeId ?? searchParams.get("productTypeId");
+      const PageSize = pageSize; // Tamaño de página configurable
+      const urlProductTypeId = productTypeId ?? undefined; // Convertir null a undefined
+
       let data;
       if (urlProductTypeId) {
         if (urlProductTypeId === "ALL") {
-          data = await obtenerProductos(SiteId, PageNumber, PageSize);
+          data = await obtenerProductos(SiteId, pageNumber, PageSize);
         } else {
           data = await obtenerProductos(
             SiteId,
-            PageNumber,
+            pageNumber,
             PageSize,
             urlProductTypeId
           );
         }
       } else {
-        data = await obtenerProductos(SiteId, PageNumber, PageSize);
+        data = await obtenerProductos(SiteId, pageNumber, PageSize);
       }
 
-      // Filtra los productos según el término de búsqueda
+      // Actualiza el estado con la cantidad de productos por página y la cantidad de páginas
+      setPageSize(data.pagination.pageSize);
+      setTotalPages(data.pagination.totalPages);
+      setCurrentPage(pageNumber);
+
       const filteredProducts = data.products.filter((producto: any) =>
         producto.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
       setProducts(filteredProducts);
-
       setLoading(false);
     } catch (error) {
       setLoading(false);
       setError(error as Error);
     }
   };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
   const sortByPrice = (products: any, order: any) => {
-    if (order === "asc") {
-      return products
-        .slice()
-        .sort((a: any, b: any) => a.pricings[0].amount - b.pricings[0].amount);
-    } else if (order === "desc") {
-      return products
-        .slice()
-        .sort((a: any, b: any) => b.pricings[0].amount - a.pricings[0].amount);
-    } else {
-      // Si no se selecciona un orden válido, se devuelve sin ordenar
-      return products;
-    }
+    return products.slice().sort((a: any, b: any) => {
+      const getPrice = (product: any) => {
+        if (product.hasVariations && product.pricingRanges) {
+          return order === "asc"
+            ? product.pricingRanges[0].maximumAmount
+            : product.pricingRanges[0].minimumAmount;
+        } else if (product.pricings) {
+          return product.pricings[0].amount;
+        } else {
+          return Infinity;
+        }
+      };
+
+      const priceA = getPrice(a);
+      const priceB = getPrice(b);
+
+      return order === "asc" ? priceA - priceB : priceB - priceA;
+    });
   };
 
   const handleSortChange = (order: string) => {
     const sortedProducts = sortByPrice(products, order);
-    // Actualiza el estado con los productos ordenados
     setProducts(sortedProducts);
   };
 
-  const updateURL = (pathname: any, value: any) => {
-    const searchParams = new URLSearchParams(window.location.search);
-    searchParams.set("productTypeId", value);
-    const newURL = `${pathname}?${searchParams.toString()}`;
-    window.history.replaceState(null, "", newURL);
-  };
   const fetchProductTypes = async () => {
     try {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -100,31 +109,30 @@ const ProductGridShop = () => {
       console.error("Error fetching product types:", error);
     }
   };
-  const handleChangeCategories = async (value: any) => {
-    // Actualizar el estado de productTypeId
-    setProductTypeId(value);
 
-    // Llamar a fetchProductos() con el valor más reciente de productTypeId
+  const handleChangeCategories = async (value: string) => {
+    setProductTypeId(value === "ALL" ? undefined : value);
     try {
-      await fetchProductos(value);
-
-      updateURL(window.location.pathname, `${value}`);
+      await fetchProductos(value === "ALL" ? undefined : value, 1); // Reset page to 1 on category change
     } catch (error) {
       console.error("Error fetching products:", error);
     }
   };
 
+  const handlePageChange = (pageNumber: number) => {
+    fetchProductos(productTypeId, pageNumber);
+    // Desplazarse a la sección de productos al cambiar de página
+    productsRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
     fetchProductos();
     fetchProductTypes();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    fetchProductos(productTypeId || undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, productTypeId]);
+    fetchProductos(productTypeId, currentPage);
+  }, [searchTerm, productTypeId, currentPage]);
 
   if (loading) {
     return (
@@ -151,266 +159,275 @@ const ProductGridShop = () => {
       </div>
     );
   }
+
   if (error) {
     return <div>Error: {error.message}</div>;
   }
+
   return (
-    <section className=" relative pb-12 z-0">
+    <section className="relative pb-32 z-0">
       <BannerTienda />
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-8 mt-6">
-        <div className=" flex-col lg:flex-row lg:items-center max-lg:gap-4 justify-between w-full hidden">
-          <ul className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-12">
-            <li className="flex items-center cursor-pointer outline-none group">
+
+      <div className="w-full px-16 mx-auto mt-12 ">
+        <div
+          ref={productsRef}
+          className="absolute top-[19rem] left-0 w-full h-px"
+        ></div>
+        <div className="w-full max-md:mx-auto flex flex-wrap md:justify-between md:items-center gap-4 mb-8">
+          <div className="w-full md:w-auto flex items-center">
+            <p className="text-xs font-semibold w-full md:w-auto text-center md:text-left">
+              Mostrando {pageSize} productos por página
+            </p>
+          </div>
+
+          <div className="w-full md:w-auto flex flex-col md:flex-row items-center gap-4">
+            <div className="relative w-full md:w-64 flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
+                strokeWidth="1.5"
                 stroke="currentColor"
-                className="w-6 h-6"
+                className="size-6 absolute left-3 text-gray-400 pointer-events-none"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                 />
               </svg>
-              <span className="font-normal text-md uppercase leading-8 text-indigo-600 ml-2 mr-3 transition-all duration-500 group-hover:text-indigo-600">
-                Más Vendidos
-              </span>
-              <button className="flex aspect-square h-6 rounded-full border border-indigo-600  items-center justify-center font-manrope font-medium text-base text-indigo-600  transition-all duration-500 group-hover:border-indigo-600 group-hover:text-indigo-600">
-                8
-              </button>
-            </li>
+              <input
+                id="FROM"
+                placeholder="Buscar producto..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="shadow h-12 border border-gray-300 text-gray-900 text-xs font-medium rounded-full block w-full py-2.5 pl-10 pr-4 appearance-none focus:outline-none bg-white"
+              />
+            </div>
 
-            <li className="flex items-center cursor-pointer outline-none group">
+            <div className="relative w-full md:w-48 flex items-center">
+              <select
+                className="shadow h-12 border border-gray-300 text-gray-900 pl-4 pr-10 text-xs font-normal leading-7 rounded-full block w-full py-2.5 px-4 appearance-none focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50 focus-within:bg-gray-50"
+                id="productType"
+                name="productType"
+                onChange={(e) => handleChangeCategories(e.target.value)}
+              >
+                <option value="ALL">Categorías</option>
+                {productTypes.map((productType: any) => (
+                  <option
+                    key={productType.id}
+                    value={productType.id}
+                  >
+                    {productType.name}
+                  </option>
+                ))}
+              </select>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
+                strokeWidth="1.5"
                 stroke="currentColor"
-                className="w-6 h-6"
+                className="absolute right-3 size-6 pointer-events-none"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
                 />
               </svg>
-              <span className="font-normal uppercase text-md leading-8 text-black pl-2 pr-3 transition-all duration-500 group-hover:text-indigo-600">
-                En Oferta
-              </span>
-              <span className="w-6 h-6 rounded-full border border-gray-900 flex items-center justify-center font-manrope font-medium text-base text-gray-900 transition-all duration-500 group-hover:border-indigo-600 group-hover:text-indigo-600">
-                3
-              </span>
-            </li>
+            </div>
 
-            <li className="flex items-center cursor-pointer outline-none group">
+            <div className="relative w-full md:w-48 flex items-center">
+              <select
+                onChange={(e) => handleSortChange(e.target.value)}
+                id="Offer"
+                className="shadow h-12 border border-gray-300 text-gray-900 pl-4 pr-10 text-xs font-normal leading-7 rounded-full block w-full py-2.5 px-4 appearance-none focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50 focus-within:bg-gray-50"
+                defaultValue="asc"
+              >
+                <option value="asc">Ordenar por...</option>
+                <option value="asc">Precio: Menor a Mayor</option>
+                <option value="desc">Precio: Mayor a Menor</option>
+              </select>
               <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                className="absolute right-3 size-6 pointer-events-none"
               >
                 <path
-                  className="stroke-black transition-all duration-500 group-hover:stroke-indigo-600"
-                  d="M9.69081 22H13.537M11.6139 2V3.53846M18.4123 4.8163L17.3244 5.90416M4.8155 4.81701L5.90336 5.90486M2 11.6154H3.53846M19.6893 11.6154H21.2278M7.53442 15.6948C5.2814 13.4418 5.2814 9.78895 7.53442 7.53592C9.78744 5.2829 13.4403 5.2829 15.6933 7.53592C17.9464 9.78895 17.9464 13.4418 15.6933 15.6948C15.1999 16.1883 14.6393 16.5737 14.041 16.851C13.745 16.9881 13.537 17.2743 13.537 17.6005L13.537 18.9231C13.537 19.3479 13.1926 19.6923 12.7677 19.6923H10.46C10.0352 19.6923 9.69081 19.3479 9.69081 18.9231V17.6005C9.6908 17.2743 9.48274 16.9881 9.18677 16.851C8.58845 16.5737 8.02786 16.1883 7.53442 15.6948Z"
-                  stroke="black"
-                  strokeWidth={1.5}
                   strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
                 />
               </svg>
-              <span className="font-normal text-md uppercase leading-8 text-black pl-2 pr-3 transition-all duration-500 group-hover:text-indigo-600">
-                Nuevos
-              </span>
-              <span className="w-6 h-6 rounded-full border border-gray-900 flex items-center justify-center font-manrope font-medium text-base text-gray-900 transition-all duration-500 group-hover:border-indigo-600 group-hover:text-indigo-600">
-                1
-              </span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="grid grid-cols-12">
-          <div className="col-span-12 md:col-span-3 w-full max-md:mx-auto">
-            <div className="box rounded-xl border border-gray-300 bg-white p-6 w-full md:max-w-sm">
-              <p className="text-xs text-gray-500 mb-2 uppercase">Ordenar</p>
-              <div className="relative w-full max-w-xs mb-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="absolute top-1/2 -translate-y-1/2 left-4 z-50 h-6 w-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m12-3V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m-6-9V3.75m0 3.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 9.75V10.5"
-                  />
-                </svg>
-
-                <select
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  id="Offer"
-                  className="h-12 border z-1 border-gray-300 text-gray-900 pl-11 text-base font-normal leading-7 rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50 focus-within:bg-gray-50"
-                  defaultValue="option 1"
-                >
-                  <>
-                    <option defaultValue="asc">Ordenar por...</option>
-                    <option value="asc">Precio: Menor a Mayor</option>
-                    <option value="desc">Precio: Mayor a Menor</option>
-                  </>
-                </select>
-                <svg
-                  className="absolute top-1/2 -translate-y-1/2 right-4 z-50"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12.0002 5.99845L8.00008 9.99862L3.99756 5.99609"
-                    stroke="#111827"
-                    strokeWidth={1.6}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-
-              <p className="text-xs text-gray-500 mb-2 mt-6 uppercase">
-                Buscar Producto
-              </p>
-
-              <div className="relative w-full">
-                <input
-                  id="FROM"
-                  placeholder="Buscar producto..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className="h-12 border border-gray-300 text-gray-900 text-xs font-medium rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white"
-                ></input>
-              </div>
-              <p className="text-xs text-gray-500 mb-2 mt-6 uppercase">
-                Categorías
-              </p>
-              <div className="relative w-full mt-2 mb-7">
-                <select
-                  className="h-12 border border-gray-300 text-gray-900 text-xs font-medium rounded-full block w-full py-2.5 px-4 appearance-none relative focus:outline-none bg-white"
-                  id="productType"
-                  name="productType"
-                  onChange={(e: any) => {
-                    handleChangeCategories(e.target.value);
-                  }}
-                >
-                  <option value="ALL">Todos</option>
-                  {productTypes.map((productType: any) => (
-                    <option
-                      key={productType.id}
-                      value={productType.id}
-                    >
-                      {productType.name}
-                    </option>
-                  ))}
-                </select>
-                <svg
-                  className="absolute top-1/2 -translate-y-1/2 right-4 z-50"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12.0002 5.99845L8.00008 9.99862L3.99756 5.99609"
-                    stroke="#111827"
-                    strokeWidth={1.6}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
             </div>
           </div>
-          <div className="col-span-12 md:col-span-9 mt-4 md:mt-0 ">
-            {" "}
-            {/* Abre la columna */}
-            <div className="grid grid-cols-1  sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:ml-6">
-              {products.map((producto: any) => (
-                <div
-                  key={producto.id}
-                  className="w-full  bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
+        </div>
+
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {products.map((producto: any) => {
+            const renderPrice = () => {
+              if (producto.hasVariations && producto.pricingRanges) {
+                const { minimumAmount, maximumAmount } =
+                  producto.pricingRanges[0];
+                return (
+                  <span className=" text-gray-900 dark:text-white">
+                    ${maximumAmount.toLocaleString("es-CL")} - $
+                    {minimumAmount.toLocaleString("es-CL")}
+                  </span>
+                );
+              }
+              if (producto.pricings) {
+                return (
+                  <span className=" text-gray-900 dark:text-white">
+                    ${producto.pricings[0].amount.toLocaleString("es-CL")}
+                  </span>
+                );
+              }
+              return null;
+            };
+
+            return (
+              <div
+                key={producto.id}
+                className="w-full bg-background p-4 shadow-xl rounded-lg"
+              >
+                <Link
+                  href={`/tienda/productos/${producto.id}`}
+                  className="group block overflow-hidden border shadow-sm rounded-lg"
                 >
-                  <Link href={`/tienda/productos/${producto.id}`}>
-                    <div
-                      className="p-8 rounded-t-lg bg-cover bg-center "
-                      style={{
-                        backgroundImage: `url(${producto.previewImageUrl})`,
-                        height: "300px",
-                      }}
-                    />
-                  </Link>
-                  <div className="px-5 pb-5">
-                    <Link href={`/tienda/productos/${producto.id}`}>
-                      <h5 className="text-sm pt-3 text-center font-semibold tracking-tight text-gray-900 dark:text-white">
-                        {producto.name}
-                      </h5>
-                      <h4 className="text-xs my-2 py-1 text-center bg-dark rounded-lg  text-white ">
-                        {" "}
-                        {producto.productTypes[0].name}
-                      </h4>
-                    </Link>
-                    <div className=" hidden items-center mt-2 mb-2">
-                      {[...Array(5)].map((_, index) => (
-                        <svg
-                          key={index}
-                          className="w-4 h-4 text-yellow-300"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="currentColor"
-                          viewBox="0 0 22 20"
-                        >
-                          <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
-                        </svg>
-                      ))}
-                      <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800 ms-3">
-                        5.0
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">
-                        $ {producto.pricings[0].amount}
-                      </span>
-                      <button
-                        onClick={() => addToCartHandler(producto.skuId, 1)}
-                        className="text-dark bg-primary hover:bg-dark hover:text-white font-medium rounded-lg text-sm mt-1 px-2.5 py-2.5 text-center "
+                  <div
+                    className="h-60 relative bg-background flex flex-col justify-between p-6 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${producto.previewImageUrl})`,
+                    }}
+                  >
+                    <p className="px-2 absolute top-1 py-1 mt-2 bg-primary text-secondary font-light text-xs text-center rounded-lg">
+                      {producto.productTypes[0].name}
+                    </p>
+                  </div>
+                </Link>
+                <div className="p-2 flex flex-col items-center">
+                  <h1 className="text-black dark:text-white text-center font-semibold mt-1">
+                    {producto.name}
+                  </h1>
+                  <h3 className="text-black hidden dark:text-white text-center text-xs mt-1">
+                    {producto.description.slice(0, 100)}
+                    {producto.description.length > 100 ? "..." : ""}
+                  </h3>
+                  <p className="text-center text-black font-xs font-base dark:text-white mt-1">
+                    {renderPrice()}
+                  </p>
+                  <div className="flex items-center justify-center">
+                    {producto.hasVariations ? (
+                      <Link
+                        href={`/tienda/productos/${producto.id}`}
+                        className="shadow text-center mt-4 py-2 px-4 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-4 h-4"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-                          />
-                        </svg>
+                        Ver más detalles
+                      </Link>
+                    ) : (
+                      <button
+                        className="shadow mt-4 py-2 px-4 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg"
+                        onClick={() => addToCartHandler(producto.skuId, 1)}
+                      >
+                        Agregar al carrito
                       </button>
-                    </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>{" "}
-          {/* Cierra la columna */}
+              </div>
+            );
+          })}
+        </div> */}
+        <div className="flex w-full justify-center pt-6">
+          <div className="flex flex-wrap max-w-[1500px] w-full justify-center gap-8 px-4">
+            {products.map((product: any) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                addToCartHandler={addToCartHandler}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* PAGINATION */}
+        <div
+          aria-label="Page navigation example"
+          className="mt-10 flex justify-center pt-8"
+        >
+          <ul className="flex items-center -space-x-px h-10 text-base">
+            <li>
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 ${
+                  currentPage === 1 ? "cursor-not-allowed" : ""
+                }`}
+              >
+                <span className="sr-only">Previous</span>
+                <svg
+                  className="w-3 h-3 rtl:rotate-180"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 6 10"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 1 1 5l4 4"
+                  />
+                </svg>
+              </button>
+            </li>
+            {[...Array(totalPages)].map((_, index) => (
+              <li key={index}>
+                <button
+                  onClick={() => handlePageChange(index + 1)}
+                  className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
+                    currentPage === index + 1
+                      ? "text-blue-600 border-blue-300 bg-blue-50"
+                      : ""
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+            <li>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
+                  currentPage === totalPages ? "cursor-not-allowed" : ""
+                }`}
+              >
+                <span className="sr-only">Next</span>
+                <svg
+                  className="w-3 h-3 rtl:rotate-180"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 6 10"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="m1 9 4-4-4-4"
+                  />
+                </svg>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </section>

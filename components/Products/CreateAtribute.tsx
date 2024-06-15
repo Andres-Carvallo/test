@@ -15,7 +15,7 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
   handleCloseModal,
   fetchData,
 }) => {
-  const token = String(getCookie("tokenAuth"));
+  const token = String(getCookie("AdminTokenAuth"));
   const [attributes, setAtributes] = useState<Attribute[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
     try {
       const PageNumber = 1;
       const PageSize = 10;
-      const token = getCookie("tokenAuth");
+      const token = getCookie("AdminTokenAuth");
       const data = await obtenerAtributos(token, PageNumber, PageSize);
 
       setAtributes(data.attributes);

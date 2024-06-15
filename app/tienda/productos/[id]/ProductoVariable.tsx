@@ -8,7 +8,7 @@ function ProductoSimple() {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [products, setProducts] = useState(null);
+  const [products, setProducts] = useState<any>(null);
   const [productImages, setProductImages] = useState([]);
   useEffect(() => {
     const fetchProductos = async () => {
