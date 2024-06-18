@@ -38,28 +38,44 @@ const BannerPrincipal = () => {
       id="banner"
       className="w-full z-10"
     >
-      {bannerData && (
-        <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
-          <img
-            src={bannerData.images[0].mainImage.url}
-            alt="Banner Image"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-            <h2 className="sm:text-4xl text-2xl font-bold mb-6">
-              {bannerData.images[0].title}
-            </h2>
-            <p className="text-lg text-center text-gray-200">
-              {bannerData.images[0].landingText}
-            </p>
-            <a
-              href={bannerData.images[0].buttonLink}
-              className="mt-8 hidden bg-transparent text-white text-base font-semibold py-2.5 px-6 border-2 border-white rounded hover:bg-white hover:text-black transition duration-300 ease-in-out"
-            >
-              {bannerData.images[0].buttonText}
-            </a>
+      {loading ? (
+        <section
+          id="banner"
+          className="w-full z-10 animate-pulse"
+        >
+          <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-gray-300 before:opacity-50 before:z-10">
+            <div className="absolute inset-0 w-full h-full bg-gray-200"></div>
+            <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+              <div className="h-8 bg-gray-300 rounded w-3/4 mb-6"></div>
+              <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
+              <div className="h-10 bg-gray-300 rounded w-1/4"></div>
+            </div>
           </div>
-        </div>
+        </section>
+      ) : (
+        bannerData && (
+          <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
+            <img
+              src={bannerData.images[0].mainImage.url}
+              alt="Banner Image"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+              <h2 className="sm:text-4xl text-2xl font-bold mb-6">
+                {bannerData.images[0].title}
+              </h2>
+              <p className="text-lg text-center text-gray-200">
+                {bannerData.images[0].landingText}
+              </p>
+              <a
+                href={bannerData.images[0].buttonLink}
+                className="mt-8 hidden bg-transparent text-white text-base font-semibold py-2.5 px-6 border-2 border-white rounded hover:bg-white hover:text-black transition duration-300 ease-in-out"
+              >
+                {bannerData.images[0].buttonText}
+              </a>
+            </div>
+          </div>
+        )
       )}
     </section>
   );

@@ -8,6 +8,7 @@ import toast, { Toaster } from "react-hot-toast";
 import AutoSubmitForm from "@/components/Checkout/AutoSubmitForm";
 import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesID";
 import { useSearchParams } from "next/navigation";
+import Loader from "@/components/common/Loader";
 
 function CheckoutPago() {
   const [orderSubmitted, setOrderSubmitted] = useState(false); // Nuevo estado para controlar si se ha enviado la orden
@@ -134,7 +135,7 @@ function CheckoutPago() {
     }
   };
   if (loading) {
-    return <div>Cargando...</div>;
+    return <Loader />;
   }
 
   if (error) {

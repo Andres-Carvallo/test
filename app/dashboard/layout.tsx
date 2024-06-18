@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/HeaderDashboard";
 import { redirect } from "next/navigation";
 import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
 import Sidebarprueba from "@/components/sidebarprueba";
 
 export default function RootLayout({
@@ -15,17 +16,39 @@ export default function RootLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const router = useRouter();
+  const Token = getCookie("AdminTokenAuth");
+
   useEffect(() => {
     setTimeout(() => setLoading(false), 1000);
   }, []);
 
-  const Token = getCookie("AdminTokenAuth");
-
   useEffect(() => {
-    if (!Token) {
-      redirect("/");
-    }
-  }, [Token]);
+    const checkCookie = () => {
+      const token = getCookie("AdminTokenAuth");
+      if (!token) {
+        router.push("/admin-login"); // Redirigir al home si no hay token
+      } else {
+        setLoading(false);
+      }
+    };
+
+    checkCookie();
+
+    // Configurar un intervalo para verificar la cookie cada 45 minutos
+    const intervalId = setInterval(checkCookie, 2700000); // 45 minutos
+
+    // Limpiar el intervalo al desmontar el componente
+    return () => clearInterval(intervalId);
+  }, [router]);
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (!Token) {
+    router.push("/admin-login");
+  }
 
   if (Token) {
     return (
@@ -65,6 +88,6 @@ export default function RootLayout({
       </div>
     );
   } else {
-    return null;
+    router.push("/admin-login");
   }
 }

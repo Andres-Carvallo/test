@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import CheckoutPago from "@/components/Checkout/CheckoutPago";
 import { Suspense } from "react";
+import Loader from "@/components/common/Loader";
 
 export const metadata: Metadata = {
   title: "Pago",
@@ -18,7 +19,7 @@ const Pago = () => {
 
 const OkWithSuspense = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <Pago />
     </Suspense>
   );

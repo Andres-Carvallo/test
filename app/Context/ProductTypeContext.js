@@ -111,29 +111,36 @@ export function APIContextProvider({ children, SiteId }) {
       console.error("Error fetching cart data:", error);
     }
   };
-  // Función para agregar un elemento al carrito
+  // Función para agregar un elemento al carrito existente
   const addToCart = async (cartId, skuId, quantity) => {
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items?siteId=${SiteId}`,
         {
-          method: "POST",
+          skuId: skuId,
+          quantity: quantity,
+        },
+        {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            skuId: skuId,
-            quantity: quantity,
-          }),
         }
       );
-      const data = await response.json();
-      console.log("Elemento agregado al carrito:", data);
+      console.log("Elemento agregado al carrito:", response.data);
       toast.success("Producto agregado al carrito");
       setIsMenuOpen(true);
       fetchCartData();
     } catch (error) {
-      console.error("Error al agregar elemento al carrito:", error);
+      if (error.response && error.response.data) {
+        const errorMessage = error.response.data.message;
+        console.log(errorMessage);
+        toast.error(errorMessage);
+      } else {
+        console.error("Error al agregar elemento al carrito:", error);
+        toast.error(
+          "Error al agregar producto al carrito. Inténtalo de nuevo más tarde."
+        );
+      }
     }
   };
 

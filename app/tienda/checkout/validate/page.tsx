@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Validate from "@/components/Checkout/Validate";
 import { Suspense } from "react";
-
+import Loader from "@/components/common/Loader";
 export const metadata: Metadata = {
   title: "Pago OK",
   description: "This is About Page for Startup Nextjs Template",
@@ -18,7 +18,7 @@ const Ok = () => {
 
 const OkWithSuspense = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Loader />}>
       <Ok />
     </Suspense>
   );
