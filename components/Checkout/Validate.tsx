@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import ValidateComponent from "./ValidateComponent";
 
 const ValidatePage: React.FC = () => {
@@ -16,6 +16,8 @@ const ValidatePage: React.FC = () => {
           token_ws={token_ws}
         />
       )}
+
+      {!orderId && !token_ws && redirect("/tienda/")}
     </div>
   );
 };

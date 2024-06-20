@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import dynamic from "next/dynamic";
+import axios from "axios";
+import OfferCanvas from "@/components/Offcanvas/OfferCanvas";
 
 type Offer = {
   id: string;
@@ -12,6 +13,7 @@ type Offer = {
   startDate: Date;
   endDate: Date;
 };
+
 function DetalleOferta() {
   const { id } = useParams();
   const [sku, setSku] = useState<any[]>([]);
@@ -21,85 +23,132 @@ function DetalleOferta() {
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, number | null>
   >({});
-  const [variationsWithOffers, setVariationsWithOffers] = useState<
-    Record<string, boolean>
-  >({});
+  const [variationsWithOffers, setVariationsWithOffers] = useState<any>([]);
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [offerToDelete, setOfferToDelete] = useState(null);
+  const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
+  const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
+  const [offerToEdit, setOfferToEdit] = useState<Offer | null>(null);
 
   const handleVariationSelect = async (variation: any) => {
     setSelectedVariation(variation);
-
     await fetchOffersForVariation(id as string, variation.id);
   };
-  const handleDeleteOffer = (offerId: any) => {
+
+  const handleDeleteOffer = (offerId: string) => {
     setOfferToDelete(offerId);
     setShowModal(true);
   };
 
-  const handleModalConfirm = () => {
-    // Eliminar la oferta seleccionada
-    // Luego de eliminar la oferta, cerrar el modal
-    setShowModal(false);
+  const handleEditOffer = (offerId: string) => {
+    const offer = offers.find((o) => o.id === offerId);
+    console.log("Editing offer:", offer); // Verifica la oferta que se está editando
+    setOfferToEdit(offer || null);
+    setIsOffcanvasOpen(true);
+    console.log("Offcanvas open:", isOffcanvasOpen); // Verifica si el Offcanvas se abre
+  };
+
+  const handleModalConfirm = async () => {
+    if (offerToDelete && selectedVariation) {
+      try {
+        const token = String(getCookie("AdminTokenAuth"));
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        };
+        const response = await axios.delete(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${selectedVariation.id}/offers/${offerToDelete}`,
+          config
+        );
+        console.log("Oferta eliminada con éxito:", response.data);
+        setShowModal(false);
+        fetchOffersForVariation(id as string, selectedVariation.id);
+      } catch (error) {
+        console.log("Error al eliminar la oferta:", error);
+      }
+    }
   };
 
   const handleModalCancel = () => {
     setShowModal(false);
   };
-  useEffect(() => {
-    const fetchVariations = async () => {
-      try {
-        const token = getCookie("AdminTokenAuth");
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus?statusCode=ACTIVE`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const responseVariations = await response.json();
 
-        if (responseVariations.code === 0) {
-          const filteredVariations = responseVariations.skus.filter(
-            (variation: any) => !variation.isBaseSku
-          );
-          const attributesByVariation: Record<string, any[]> = {};
-          const pricesByVariation: Record<string, number | null> = {};
-          const offersByVariation: Record<string, boolean> = {};
+  const handleSaveOffer = async (updatedOffer: Offer) => {
+    try {
+      const token = String(getCookie("AdminTokenAuth"));
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${selectedVariation.id}/offers/${updatedOffer.id}`,
+        updatedOffer,
+        config
+      );
+      console.log("Oferta actualizada con éxito:", response.data);
+      fetchOffersForVariation(id as string, selectedVariation.id);
+      setIsOffcanvasOpen(false);
+    } catch (error) {
+      console.log("Error al actualizar la oferta:", error);
+    }
+  };
 
-          const fetchTasks = filteredVariations.map(async (variation: any) => {
-            const [attributes, price, hasOffer] = await Promise.all([
-              fetchAttributesForVariation(id as string, variation.id),
-              fetchPriceForVariation(id as string, variation.id),
-              fetchHasOfferForVariation(id as string, variation.id),
-            ]);
-            attributesByVariation[variation.id] = attributes;
-            pricesByVariation[variation.id] = price;
-            offersByVariation[variation.id] = hasOffer;
-          });
-
-          await Promise.all(fetchTasks);
-          setCurrentAttributes(attributesByVariation);
-          setCurrentPrices(pricesByVariation);
-          setVariationsWithOffers(offersByVariation);
-
-          setSku(filteredVariations);
-        } else {
-          console.error(
-            "Error fetching variations:",
-            responseVariations.message
-          );
+  const fetchVariations = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus?statusCode=ACTIVE`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      } catch (error) {
-        console.error("Error fetching variations:", error);
-      }
-    };
+      );
+      const responseVariations = await response.json();
 
+      if (responseVariations.code === 0) {
+        const filteredVariations = responseVariations.skus.filter(
+          (variation: any) => !variation.isBaseSku
+        );
+        const attributesByVariation: Record<string, any[]> = {};
+        const pricesByVariation: Record<string, number | null> = {};
+        const offersByVariation: Record<string, boolean> = {};
+
+        const fetchTasks = filteredVariations.map(async (variation: any) => {
+          const [attributes, price, hasOffer] = await Promise.all([
+            fetchAttributesForVariation(id as string, variation.id),
+            fetchPriceForVariation(id as string, variation.id),
+            fetchHasOfferForVariation(id as string, variation.id),
+          ]);
+          attributesByVariation[variation.id] = attributes;
+          pricesByVariation[variation.id] = price;
+          offersByVariation[variation.id] = hasOffer;
+        });
+
+        await Promise.all(fetchTasks);
+        setCurrentAttributes(attributesByVariation);
+        setCurrentPrices(pricesByVariation);
+        setVariationsWithOffers(offersByVariation);
+
+        setSku(filteredVariations);
+        console.log("Variaciones:", filteredVariations);
+      } else {
+        console.error("Error fetching variations:", responseVariations.message);
+      }
+    } catch (error) {
+      console.error("Error fetching variations:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchVariations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchOffersForVariation = async (productId: string, skuId: string) => {
@@ -217,6 +266,7 @@ function DetalleOferta() {
       return [];
     }
   };
+
   const formatDateToChileanTime = (isoDateString: string) => {
     const date = new Date(isoDateString);
 
@@ -233,13 +283,6 @@ function DetalleOferta() {
     return `${day}-${month}-${year}`;
   };
 
-  const offer: Offer = {
-    id: "123",
-    unitPrice: 10.99,
-    startDate: new Date(),
-    endDate: new Date(),
-  };
-
   return (
     <section>
       <Breadcrumb pageName="Administrar Oferta" />
@@ -247,40 +290,8 @@ function DetalleOferta() {
         <div className="flex flex-col md:flex-row items-center justify-center p-4">
           <div className="w-full md:w-2/3 flex flex-col items-center">
             <div className="flex flex-col items-center justify-center text-center text-4xl mt-2 mb-4">
-              Prueba
+              {sku.length > 0 && <h3 key={sku[0].id}>{sku[0].product.name}</h3>}
             </div>
-            <form className="flex items-center w-full max-w-md mx-auto">
-              <label
-                htmlFor="simple-search"
-                className="sr-only"
-              >
-                Search
-              </label>
-              <div className="relative w-full">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <svg
-                    aria-hidden="true"
-                    className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  id="simple-search"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                  placeholder="Search"
-                  required
-                />
-              </div>
-            </form>
           </div>
         </div>
 
@@ -349,9 +360,17 @@ function DetalleOferta() {
                           Editar
                         </button>
                       ) : null}
-                      <button className="bg-green-700 text-white px-1 py-0.5 rounded hover:underline">
-                        Crear Oferta
-                      </button>
+
+                      <OfferCanvas
+                        itemId={selectedVariation?.product.id}
+                        //handleEditOffer={handleEditOffer}
+                        skuId={selectedVariation?.id}
+                        fetchVariations={fetchVariations}
+                        offerToEdit={offerToEdit}
+                        onSave={handleSaveOffer}
+                        isOpen={isOffcanvasOpen}
+                        onClose={() => setIsOffcanvasOpen(false)}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -361,42 +380,66 @@ function DetalleOferta() {
         </div>
         <div className="w-full">
           {selectedVariation && (
-            <div>
-              <h2>Ofertas de la variación {selectedVariation.name}</h2>
-              <div className="flex flex-wrap justify-center">
-                {offers.length ? (
-                  offers.map((offer) => (
-                    <div
-                      key={offer.id}
-                      className="offer-card w-fit p-2  m-2 bg-primary text-white rounded-lg shadow-lg relative"
-                    >
-                      <button
-                        className="absolute top-0 right-1 m-1 text-lg hover:text-gray-500 transition duration-300 ease-in-out"
-                        onClick={() => handleDeleteOffer(offer.id)}
-                      >
-                        ×
-                      </button>
-                      <div className="offer-info">
-                        <h3>${offer.unitPrice.toLocaleString("es-CL")}</h3>
-
-                        <p className="text-sm">
-                          {formatDateToChileanTime(
-                            offer.startDate.toISOString()
-                          )}{" "}
-                          -{" "}
-                          {formatDateToChileanTime(offer.endDate.toISOString())}
-                        </p>
-                        {/* mostrar más información de la oferta si es necesario */}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="offer-card">
-                    <div className="offer-info">
-                      <h3>No hay ofertas disponibles</h3>
-                    </div>
-                  </div>
-                )}
+            <div className="pb-6">
+              <h2 className="text-center font-semibold uppercase py-6">
+                Ofertas de la variación{" "}
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                      <th className="px-2 py-2">Precio</th>
+                      <th className="px-2 py-2">Fecha de Inicio</th>
+                      <th className="px-2 py-2">Fecha de Fin</th>
+                      <th className="px-2 py-2">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {offers.length ? (
+                      offers.map((offer) => (
+                        <tr
+                          key={offer.id}
+                          className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                        >
+                          <td className="px-2 py-2">
+                            ${offer.unitPrice.toLocaleString("es-CL")}
+                          </td>
+                          <td className="px-2 py-2">
+                            {formatDateToChileanTime(
+                              offer.startDate.toString()
+                            )}
+                          </td>
+                          <td className="px-2 py-2">
+                            {formatDateToChileanTime(offer.endDate.toString())}
+                          </td>
+                          <td className="px-2 py-2 flex justify-center gap-2">
+                            <button
+                              onClick={() => handleEditOffer(offer.id)}
+                              className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleDeleteOffer(offer.id)}
+                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                            >
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-2 py-2"
+                        >
+                          No hay ofertas disponibles
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

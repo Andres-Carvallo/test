@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useEffect, useRef } from "react";
-import { deleteCookie, getCookie } from "cookies-next"; // Importa getCookie para verificar si existe el token de autenticación
+import { deleteCookie, getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { jwtDecode } from "jwt-decode";
@@ -12,31 +12,40 @@ import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 export default function Page() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const router = useRouter();
-  const Token = String(getCookie("AdminTokenAuth"));
-  const decodeToken = jwtDecode(Token);
-  const id = decodeToken.sub;
+  const token = getCookie("AdminTokenAuth")?.toString();
 
   const [userDataInfo, setUserDataInfo] = useState<UserData>();
 
   useEffect(() => {
-    const token = Token?.toString();
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwtDecode(token);
+    } catch (error) {
+      console.error("Error al decodificar el token:", error);
+      router.push("/login");
+      return;
+    }
+
+    const userId = decodedToken.sub;
 
     const fetchData = async () => {
       try {
-        console.log("token", token);
-        const userData = await obtenerUsuarioPorID(id, token);
-        console.log("userData", userData);
-        const userDataInfo = userData.user;
-        setUserDataInfo(userDataInfo);
+        const userData = await obtenerUsuarioPorID(userId, token);
+        setUserDataInfo(userData.user);
       } catch (error) {
-        console.error("Error al obtener el usuario: " + error);
+        console.error("Error al obtener el usuario:", error);
+        router.push("/login");
       }
     };
 
     fetchData();
-  }, [Token, id]);
+  }, [token, router]);
 
   useEffect(() => {
     function handleClickOutside(event: any) {
@@ -45,10 +54,7 @@ export default function Page() {
       }
     }
 
-    // Adjuntar el controlador de eventos al documento
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Eliminar el controlador de eventos al desmontar el componente
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -60,13 +66,12 @@ export default function Page() {
 
   const handleLogout = async () => {
     deleteCookie("AdminTokenAuth");
-    router.push("/");
+    router.push("/login");
   };
 
   return (
     <div style={{ position: "relative" }}>
-      {/* Condición para mostrar el botón de inicio de sesión */}
-      {!Token && (
+      {!token && (
         <Link href="/login">
           <button
             id="loginButton"
@@ -78,8 +83,7 @@ export default function Page() {
         </Link>
       )}
 
-      {/* Condición para mostrar el menú de usuario si existe el token */}
-      {Token && (
+      {token && (
         <button
           id="dropdownUserAvatarButton"
           onClick={toggleDropdown}
@@ -95,8 +99,7 @@ export default function Page() {
         </button>
       )}
 
-      {/* Dropdown menu */}
-      {isOpen && Token && (
+      {isOpen && token && (
         <div
           ref={dropdownRef}
           id="dropdownAvatar"
@@ -105,10 +108,9 @@ export default function Page() {
         >
           <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
             <div>
-              {" "}
               {userDataInfo?.firstname} {userDataInfo?.lastname}
             </div>
-            <div className="font-medium truncate"> {userDataInfo?.email}</div>
+            <div className="font-medium truncate">{userDataInfo?.email}</div>
           </div>
           <ul
             className="py-2 text-sm text-gray-700 dark:text-gray-200"

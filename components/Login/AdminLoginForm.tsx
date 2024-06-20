@@ -1,14 +1,16 @@
 "use client";
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import axios from "axios";
 import { setCookie } from "cookies-next";
+
 export default function AdminLoginForm() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       const data = {
@@ -21,16 +23,20 @@ export default function AdminLoginForm() {
         data
       );
 
-      if (response.status !== 200) {
-        console.log("error");
+      if (response.status === 200) {
+        const token = response.data.token;
+        setCookie("AdminTokenAuth", token, {
+          maxAge: 60 * 45, // 45 minutos en segundos
+        });
+        window.location.href = "/dashboard";
+      } else {
         throw new Error("Error during login");
       }
-
-      const token = response.data.token;
-      setCookie("AdminTokenAuth", token);
-      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Error during login:", error);
+      setError(
+        "Error de inicio de sesión. Por favor, verifica tus credenciales."
+      );
     } finally {
       setLoading(false);
     }
@@ -44,19 +50,30 @@ export default function AdminLoginForm() {
             Ingresa a tu Panel de Administración
           </h3>
 
+          {error && (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+              role="alert"
+            >
+              <strong className="font-bold">Error:</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="mb-8">
               <label
                 htmlFor="email"
                 className="mb-3 block text-sm text-dark dark:text-white"
               >
-                Your Email
+                Tu Email
               </label>
               <input
                 type="email"
                 name="email"
-                placeholder="Enter your Email"
+                placeholder="Ingresa tu Email"
                 className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+                required
               />
             </div>
             <div className="mb-8">
@@ -64,21 +81,23 @@ export default function AdminLoginForm() {
                 htmlFor="password"
                 className="mb-3 block text-sm text-dark dark:text-white"
               >
-                Your Password
+                Tu Contraseña
               </label>
               <input
                 type="password"
                 name="password"
-                placeholder="Enter your Password"
+                placeholder="Ingresa tu Contraseña"
                 className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+                required
               />
             </div>
             <div className="mb-6">
               <button
                 type="submit"
                 className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-secondary shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
+                disabled={loading}
               >
-                Login
+                {loading ? "Cargando..." : "Iniciar Sesión"}
               </button>
             </div>
           </form>

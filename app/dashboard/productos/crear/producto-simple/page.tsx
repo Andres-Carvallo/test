@@ -13,6 +13,7 @@ import axios from "axios";
 import Select from "react-select";
 import { useSearchParams, useRouter } from "next/navigation"; // Importar los hooks necesarios
 import ImageUploader from "./ImageUploader";
+import StarCheckbox from "@/components/PIXELUP/Checkbox/StarCheckbox";
 
 const CrearProductoSimple: React.FC = ({}) => {
   const { productType, setProductType } = useAPI();
@@ -36,8 +37,20 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
   const searchParams = useSearchParams(); // Utilizar useSearchParams para obtener parámetros de búsqueda
   const router = useRouter(); // Utilizar useRouter para redirigir si es necesario
-
+  const [destacado, setDestacado] = useState(false);
   const [skuImages, setSkuImages] = useState<any[]>([]);
+
+  const [isFeatured, setIsFeatured] = useState(false);
+
+  const handleCheckboxChange = () => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      hasFeaturedBaseSku: !prevFormData.hasFeaturedBaseSku,
+    }));
+    setIsFeatured(!isFeatured);
+    setDestacado(!destacado);
+  };
+
   const fetchImages = async (productId: any, skuId: any) => {
     try {
       const token = getCookie("AdminTokenAuth");
@@ -70,13 +83,14 @@ const CrearProductoSimple: React.FC = ({}) => {
 
   const handleCheckOfferChange = () => {
     setCheckOfferChecked(!checkOfferChecked);
+    setDestacado(!destacado);
   };
 
-  const fetchOffer = async (productId: any, skuId: any) => {
+  const fetchDestacado = async (productId: any, skuId: any) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}`,
 
         {
           headers: {
@@ -85,11 +99,11 @@ const CrearProductoSimple: React.FC = ({}) => {
           },
         }
       );
+
       const data = await response.json();
-      console.log(data, "data offer");
       if (data.code === 0) {
+        setDestacado(data.sku.isFeatured);
         // Extracción del stock de la primera skuInventory, si existe
-        setOfferPrice(data.skuOffers[0].unitPrice);
       } else {
         console.error(
           "Error al obtener el stock de la variación:",
@@ -102,6 +116,37 @@ const CrearProductoSimple: React.FC = ({}) => {
       return null; // En caso de error, devuelve null
     }
   };
+
+  // const fetchOffer = async (productId: any, skuId: any) => {
+  //   try {
+  //     const token = getCookie("AdminTokenAuth");
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers`,
+
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     console.log(data, "data offer");
+  //     if (data.code === 0) {
+  //       // Extracción del stock de la primera skuInventory, si existe
+  //       setOfferPrice(data.skuOffers[0].unitPrice);
+  //     } else {
+  //       console.error(
+  //         "Error al obtener el stock de la variación:",
+  //         data.message
+  //       );
+  //       return null; // En caso de error, devuelve null
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al obtener el stock de la variación:", error);
+  //     return null; // En caso de error, devuelve null
+  //   }
+  // };
 
   // Obtener tipos de producto
   const fetchProducTypes = async () => {
@@ -214,6 +259,7 @@ const CrearProductoSimple: React.FC = ({}) => {
 
   useEffect(() => {
     fetchProducTypes();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -552,8 +598,9 @@ const CrearProductoSimple: React.FC = ({}) => {
         const productData = response.data.product;
         fetchStock(productData.id, productData.skuId);
         fetchPrice(productData.id, productData.skuId);
-        fetchOffer(productData.id, productData.skuId);
+        //fetchOffer(productData.id, productData.skuId);
         fetchImages(productData.id, productData.skuId);
+        fetchDestacado(productData.id, productData.skuId);
         setSkuId(productData.skuId);
 
         const selectedProductTypes = productData.productTypes.map(
@@ -571,6 +618,7 @@ const CrearProductoSimple: React.FC = ({}) => {
           enabledForWithdrawal: productData.enabledForWithdrawal,
           hasVariations: productData.hasVariations,
           productTypes: selectedProductTypes,
+
           mainImage: isMainImageUploaded
             ? formData.mainImage
             : (undefined as any),
@@ -584,6 +632,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             weight: null,
           },
         });
+        console.log(productData, "productData");
         setMainImage(productData.mainImageUrl);
         setPreviewImage(productData.previewImageUrl);
       } catch (error) {
@@ -617,52 +666,58 @@ const CrearProductoSimple: React.FC = ({}) => {
         {/* Columna principal */}
         <div className="md:col-span-4 lg:col-span-3 flex flex-col pb-8 ">
           <div className="border border-dashed border-dark/50 rounded-lg p-4 mb-4 block lg:hidden sticky top-24 bg-white z-50">
-            <h1 className="mb-4 text-bold border-b border-dark uppercase">
-              {isEditMode ? "Editar Producto" : "Publicar"}
-            </h1>
-            <h3>
-              Estado:{" "}
-              <span className="text-dark font-bold pl-2">Publicado</span>
-            </h3>
-            <h3>
-              Fecha Publicación:
-              <span className="text-dark font-bold pl-2">12/04/2024</span>
-            </h3>
-            <div className="flex justify-between mt-4 gap-2">
-              <div>
-                <button
-                  className="block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                  style={{ borderRadius: "var(--radius)" }}
-                  type="button"
-                  onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                    setStatus(isEditMode ? "ACTIVE" : "DRAFT");
-                    handleSubmit(event);
-                  }}
-                >
-                  {isEditMode ? "Publicar" : "Guardar Borrador"}
-                </button>
-              </div>
-              <div>
-                <button
-                  className="block w-full text-left py-2 px-4 bg-primary text-dark rounded-xl hover:bg-dark hover:text-primary"
-                  type="button"
-                  onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                    setStatus("ACTIVE");
-                    handleSubmit(event);
-                  }}
-                >
-                  {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
-                </button>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  id="createCategories"
-                  onClick={() => handleOpenModal("createCategoriesModal")}
-                  className="block w-full text-left py-2 px-4 bg-dark text-white rounded-xl hover:bg-primary hover:text-dark"
-                >
-                  Crear Categoría
-                </button>
+            <div style={{ borderRadius: "var(--radius)" }}>
+              <h1 className="mb-4 text-bold border-b border-dark uppercase">
+                {isEditMode ? "Editar Producto" : "Publicar"}
+              </h1>
+              <h3>
+                Estado:{" "}
+                <span className="text-dark font-bold pl-2">
+                  {isEditMode ? "Publicado" : "Borrador"}
+                </span>
+              </h3>
+
+              <div className="flex justify-between mt-4 flex-col gap-2">
+                <div className="hidden">
+                  <button
+                    className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                    style={{ borderRadius: "var(--radius)" }}
+                    type="button"
+                  >
+                    {isEditMode ? "Actualizar Borrador" : "Guardar Borrador"}
+                  </button>
+                </div>
+                <div>
+                  <button
+                    className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                    style={{ borderRadius: "var(--radius)" }}
+                    type="button"
+                    onClick={handleSubmit}
+                  >
+                    {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <hr className="my-4" />
+                  <button
+                    type="button"
+                    id="createCategories"
+                    onClick={() => handleOpenModal("createCategoriesModal")}
+                    className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                    style={{ borderRadius: "var(--radius)" }}
+                  >
+                    Crear Categoría
+                  </button>
+                  <button
+                    type="button"
+                    id="createAttribute"
+                    onClick={() => handleOpenModal("createAttributeModal")}
+                    className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                    style={{ borderRadius: "var(--radius)" }}
+                  >
+                    Crear Atributo
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -670,7 +725,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             <div>
               <label
                 htmlFor="nombreProducto"
-                className="font-normal text-primary"
+                className="font-normal "
               >
                 Nombre Producto
               </label>
@@ -686,36 +741,70 @@ const CrearProductoSimple: React.FC = ({}) => {
               />
             </div>
             <div>
-              <div>
-                <label className="font-normal text-primary">Categoría</label>
-                <Select
-                  isMulti
-                  name="Categorías"
-                  options={productTypeOptions}
-                  classNamePrefix="Selecciona"
-                  className="basic-multi-select block mt-2 w-full text-sm text-dark bg-white focus:ring-primary focus:border-primary"
-                  value={formData.productTypes.map((productType: any) => ({
-                    value: productType.id,
-                    label: productType.name,
-                  }))}
-                  onChange={(selectedOptions) => {
-                    const selectedIds = selectedOptions.map((option: any) => ({
-                      id: option.value,
-                      name: option.label, // Incluye el nombre para que se muestre correctamente en modo edición
-                    }));
-                    setFormData({
-                      ...formData,
-                      productTypes: selectedIds,
-                    } as any);
-                  }}
-                />
+              <label
+                htmlFor="producotDestacado"
+                className="font-normal "
+              >
+                Producto Destacado
+              </label>
+              <div className="flex">
+                <div className="self-center mx-6">
+                  <StarCheckbox
+                    isChecked={destacado}
+                    onChange={handleCheckboxChange}
+                  />
+                </div>
+                <div
+                  style={{ borderRadius: "var(--radius)" }}
+                  className="shadow flex items-center p-4 my-2 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+                  role="alert"
+                >
+                  <svg
+                    className="flex-shrink-0 inline w-4 h-4 me-3"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                  </svg>
+                  <span className="sr-only">Info</span>
+                  <div>
+                    <span className="font-semibold">Destacado.</span> Activa la
+                    estrella para que este producto sea destacado.
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          <div>
+            <div>
+              <label className="font-normal ">Categoría</label>
+              <Select
+                isMulti
+                name="Categorías"
+                options={productTypeOptions}
+                classNamePrefix="Selecciona"
+                className="basic-multi-select block mt-2 w-full text-sm text-dark bg-white focus:ring-primary focus:border-primary"
+                value={formData.productTypes.map((productType: any) => ({
+                  value: productType.id,
+                  label: productType.name,
+                }))}
+                onChange={(selectedOptions) => {
+                  const selectedIds = selectedOptions.map((option: any) => ({
+                    id: option.value,
+                    name: option.label, // Incluye el nombre para que se muestre correctamente en modo edición
+                  }));
+                  setFormData({
+                    ...formData,
+                    productTypes: selectedIds,
+                  } as any);
+                }}
+              />
+            </div>
+          </div>
           <div className="mt-4">
-            <label className="font-normal text-primary">
-              Descripción Producto
-            </label>
+            <label className="font-normal ">Descripción Producto</label>
             <textarea
               className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
               style={{ borderRadius: "var(--radius)" }}
@@ -730,12 +819,12 @@ const CrearProductoSimple: React.FC = ({}) => {
           </div>
           <div className="mt-4 grid grid-cols-1 space-y-8">
             <div
-              className="shadow border border-primary p-4"
+              className="shadow border  p-4"
               style={{ borderRadius: "var(--radius)" }}
             >
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="font-normal text-primary">Precio</label>
+                  <label className="font-normal ">Precio</label>
                   <input
                     type="number"
                     className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
@@ -749,7 +838,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   />
                 </div>
                 <div>
-                  <label className="font-normal text-primary">Stock</label>
+                  <label className="font-normal ">Stock</label>
                   <input
                     type="number"
                     className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
@@ -778,13 +867,13 @@ const CrearProductoSimple: React.FC = ({}) => {
               </div>
             </div>
             <div
-              className={`mt-4 bg-primary p-4 text-dark shadow border border-primary  ${
+              className={`mt-4 bg-primary p-4 text-dark shadow border   ${
                 checkOfferChecked ? "" : " hidden"
               }`}
               style={{ borderRadius: "var(--radius)" }}
             >
               <div>
-                <label className="font-normal text-primary">
+                <label className="font-normal text-white">
                   Recibiras una alerta al alcanzar el stock minimo
                 </label>
                 <input
@@ -813,9 +902,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               />
               {mainImage ? (
                 <div>
-                  <label className="font-normal text-primary">
-                    Imagen Principal
-                  </label>
+                  <label className="font-normal ">Imagen Principal</label>
 
                   <div
                     className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
@@ -849,12 +936,10 @@ const CrearProductoSimple: React.FC = ({}) => {
                 </div>
               ) : (
                 <div>
-                  <label className="font-normal text-primary">
-                    Imagen Principal
-                  </label>
+                  <label className="font-normal ">Imagen Principal</label>
                   <label
                     htmlFor="mainImage"
-                    className="shadow flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
+                    className="shadow flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-gray-600 cursor-pointer w-full z-10"
                     style={{ borderRadius: "var(--radius)" }}
                   >
                     <div className="flex flex-col justify-center items-center">
@@ -894,9 +979,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               />
               {previewImage ? (
                 <div>
-                  <label className="font-normal text-primary">
-                    Imagen Secundaria
-                  </label>
+                  <label className="font-normal ">Imagen Secundaria</label>
                   <div
                     className="relative mt-2 h-[150px] object-contain overflow-hidden"
                     style={{ borderRadius: "var(--radius)" }}
@@ -929,12 +1012,10 @@ const CrearProductoSimple: React.FC = ({}) => {
                 </div>
               ) : (
                 <div>
-                  <label className="font-normal text-primary">
-                    Imagen Secundaria
-                  </label>
+                  <label className="font-normal ">Imagen Secundaria</label>
                   <label
                     htmlFor="previewImage"
-                    className="shadow flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
+                    className="shadow flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-gray-600 cursor-pointer w-full z-10"
                     style={{ borderRadius: "var(--radius)" }}
                   >
                     <div className="flex flex-col justify-center items-center">
@@ -996,7 +1077,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         <div className="md:col-span-1 border-l mt-2 ml-4 pl-4 ">
           {/* Contenido de la barra lateral */}
           <div
-            className="bg-white border border-dashed border-primary p-4 mb-4 hidden lg:block sticky top-24"
+            className="bg-white border border-dashed border-gray-600 p-4 mb-4 hidden lg:block sticky top-24"
             style={{ borderRadius: "var(--radius)" }}
           >
             <h1 className="mb-4 text-bold border-b border-dark uppercase">
@@ -1012,7 +1093,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             <div className="flex justify-between mt-4 flex-col gap-2">
               <div className="hidden">
                 <button
-                  className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
                   style={{ borderRadius: "var(--radius)" }}
                   type="button"
                 >
@@ -1021,7 +1102,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               </div>
               <div>
                 <button
-                  className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
                   style={{ borderRadius: "var(--radius)" }}
                   type="button"
                   onClick={handleSubmit}
@@ -1035,7 +1116,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   type="button"
                   id="createCategories"
                   onClick={() => handleOpenModal("createCategoriesModal")}
-                  className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
                   style={{ borderRadius: "var(--radius)" }}
                 >
                   Crear Categoría
@@ -1044,7 +1125,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   type="button"
                   id="createAttribute"
                   onClick={() => handleOpenModal("createAttributeModal")}
-                  className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
                   style={{ borderRadius: "var(--radius)" }}
                 >
                   Crear Atributo

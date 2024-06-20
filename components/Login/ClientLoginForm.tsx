@@ -27,7 +27,12 @@ export default function ClientLoginForm() {
       }
 
       const token = response.data.token;
-      setCookie("ClientTokenAuth", token);
+
+      // Configurar la cookie para que expire en 45 minutos
+      setCookie("ClientTokenAuth", token, {
+        maxAge: 60 * 45, // 45 minutos en segundos
+      });
+
       window.location.href = "/tienda";
     } catch (error) {
       console.error("Error during login:", error);

@@ -3,37 +3,50 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { deleteCookie, getCookie } from "cookies-next";
-import { obtenerClienteID } from "@/app/utils/obtenerClienteID";
+import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { UserData } from "@/types/UserData";
+import { obtenerClienteID } from "@/app/utils/obtenerClienteID";
 
 const DropdownUser = () => {
-  const Token = getCookie("ClientTokenAuth");
-
-  const decodeToken = Token ? jwtDecode(Token) : null;
+  const router = useRouter();
+  const token = getCookie("ClientTokenAuth")?.toString();
 
   const [userDataInfo, setUserDataInfo] = useState<UserData>();
 
   useEffect(() => {
-    const id = decodeToken?.sub;
+    if (!token) {
+      router.push("/tienda/login");
+      return;
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwtDecode<{ sub: string }>(token);
+    } catch (error) {
+      console.error("Error al decodificar el token:", error);
+      router.push("/tienda/login");
+      return;
+    }
+
+    const userId = decodedToken.sub;
+
     const fetchData = async () => {
       try {
-        const userData = await obtenerClienteID(id, Token);
-
-        const userDataInfo = userData.customer;
-        setUserDataInfo(userDataInfo);
-        console.log(userDataInfo, "user");
+        const userData = await obtenerClienteID(userId, token);
+        setUserDataInfo(userData.customer);
       } catch (error) {
-        console.error("Error al obtener el usuario: " + error);
+        console.error("Error al obtener el usuario:", error);
+        router.push("/tienda/login");
       }
     };
 
     fetchData();
-  }, [Token, decodeToken?.sub]);
+  }, [token, router]);
 
   const handleLogout = async () => {
     deleteCookie("ClientTokenAuth");
-    window.location.href = "/tienda";
+    window.location.href = "/tienda/login";
   };
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -55,7 +68,6 @@ const DropdownUser = () => {
     return () => document.removeEventListener("click", clickHandler);
   });
 
-  // close if the esc key is pressed
   useEffect(() => {
     const keyHandler = ({ keyCode }: KeyboardEvent) => {
       if (!dropdownOpen || keyCode !== 27) return;
@@ -66,17 +78,17 @@ const DropdownUser = () => {
   });
 
   return (
-    <div className="relative ">
+    <div className="relative">
       <Link
         ref={trigger}
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className="flex items-center"
         href="#"
       >
-        <span className="h-12 w-8 ">
+        <span className="h-12 w-8">
           <span>
             <svg
-              className="absolute w-6 h-6 text-primary hover:text-secondary  right-4 top-3 "
+              className="absolute w-6 h-6 text-primary hover:text-secondary right-4 top-3"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -93,7 +105,7 @@ const DropdownUser = () => {
         </span>
 
         <svg
-          className="hidden fill-current sm:block "
+          className="hidden fill-current sm:block"
           width="12"
           height="8"
           viewBox="0 0 12 8"
@@ -109,13 +121,12 @@ const DropdownUser = () => {
         </svg>
       </Link>
 
-      {/* <!-- Dropdown Start --> */}
       <div
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute z-50 w-60 right-0 py-2 mt-2 flex  flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
-          dropdownOpen === true ? "block" : "hidden"
+        className={`absolute z-50 w-60 right-0 py-2 mt-2 flex flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
+          dropdownOpen ? "block" : "hidden"
         }`}
       >
         <div className="px-4 py-3 text-sm text-gray-900 dark:text-white">
@@ -159,13 +170,13 @@ const DropdownUser = () => {
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 className="size-6"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
                 />
               </svg>
@@ -197,7 +208,6 @@ const DropdownUser = () => {
           Log Out
         </button>
       </div>
-      {/* <!-- Dropdown End --> */}
     </div>
   );
 };

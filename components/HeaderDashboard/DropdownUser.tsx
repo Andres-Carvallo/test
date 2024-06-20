@@ -1,35 +1,48 @@
+"use client";
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteCookie, getCookie } from "cookies-next";
-import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import { jwtDecode } from "jwt-decode";
+import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import { UserData } from "@/types/UserData";
 
 const DropdownUser = () => {
   const router = useRouter();
-  const Token = String(getCookie("AdminTokenAuth"));
-  const decodeToken = jwtDecode(Token);
-
-  const id = decodeToken.sub;
+  const token = getCookie("AdminTokenAuth")?.toString();
 
   const [userDataInfo, setUserDataInfo] = useState<UserData>();
 
   useEffect(() => {
-    const token = Token?.toString();
+    if (!token) {
+      router.push("/admin-login");
+      return;
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = jwtDecode<{ sub: string }>(token);
+    } catch (error) {
+      console.error("Error al decodificar el token:", error);
+      router.push("/admin-login");
+      return;
+    }
+
+    const userId = decodedToken.sub;
+
     const fetchData = async () => {
       try {
-        const userData = await obtenerUsuarioPorID(id, token);
-        const userDataInfo = userData.user;
-        setUserDataInfo(userDataInfo);
+        const userData = await obtenerUsuarioPorID(userId, token);
+        setUserDataInfo(userData.user);
       } catch (error) {
-        console.error("Error al obtener el usuario: " + error);
+        console.error("Error al obtener el usuario:", error);
+        router.push("/login");
       }
     };
 
     fetchData();
-  }, [Token, id]);
+  }, [token, router]);
 
   const handleLogout = async () => {
     deleteCookie("AdminTokenAuth");
@@ -55,7 +68,6 @@ const DropdownUser = () => {
     return () => document.removeEventListener("click", clickHandler);
   });
 
-  // close if the esc key is pressed
   useEffect(() => {
     const keyHandler = ({ keyCode }: KeyboardEvent) => {
       if (!dropdownOpen || keyCode !== 27) return;
