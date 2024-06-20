@@ -135,7 +135,7 @@ const CrearProductoVariable: React.FC = () => {
         );
 
         const productData = response.data.product;
-
+        console.log(productData, "productData");
         const selectedProductTypes = productData.productTypes.map(
           (productType: any) => ({
             value: productType.id,

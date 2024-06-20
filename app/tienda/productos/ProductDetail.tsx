@@ -64,7 +64,7 @@ const ProductDetail: React.FC = () => {
   const fetchThumbnails = async (productId: string, skuId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=586b6573-f223-44bd-849a-caac59c4999a`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       const data = await response.json();
 
@@ -258,7 +258,7 @@ const ProductDetail: React.FC = () => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${variationId}/attributes?siteId=586b6573-f223-44bd-849a-caac59c4999a`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
 
       const responseData = await response.json();
@@ -277,7 +277,7 @@ const ProductDetail: React.FC = () => {
   const fetchPriceForVariation = async (productId: string, skuId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=586b6573-f223-44bd-849a-caac59c4999a`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       const data = await response.json();
       if (data.code === 0) {
@@ -294,7 +294,7 @@ const ProductDetail: React.FC = () => {
   const fetchOffersForVariation = async (productId: string, skuId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=586b6573-f223-44bd-849a-caac59c4999a`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       const data = await response.json();
       if (data.code === 0) {
@@ -303,7 +303,7 @@ const ProductDetail: React.FC = () => {
           return offers[0];
         } else {
           const productResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=586b6573-f223-44bd-849a-caac59c4999a`
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
           );
           const productData = await productResponse.json();
           if (productData.code === 0 && productData.offers.length > 0) {

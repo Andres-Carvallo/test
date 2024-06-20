@@ -1,0 +1,149 @@
+"use client";
+import Link from "next/link";
+import { useEffect, useState, useRef } from "react";
+import OfferForm from "./form/OfferForm";
+
+type Offer = {
+  id: string;
+  unitPrice: number;
+  startDate: Date;
+  endDate: Date;
+};
+
+type OfferCanvasProps = {
+  itemId: string;
+  skuId: string;
+  fetchVariations: () => void;
+  offerToEdit?: Offer | null;
+  onSave: (updatedOffer: Offer) => void;
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+function OfferCanvas({
+  itemId,
+  skuId,
+  fetchVariations,
+  offerToEdit,
+  onSave,
+  isOpen,
+  onClose,
+}: OfferCanvasProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(isOpen);
+  const offcanvasRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscKey);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!offcanvasRef.current) return;
+
+    if (isOpen) {
+      offcanvasRef.current.classList.add("translate-x-0");
+      setIsMenuOpen(true);
+    } else {
+      offcanvasRef.current.classList.remove("translate-x-0");
+      offcanvasRef.current.classList.add("translate-x-full");
+      setIsMenuOpen(false);
+    }
+  }, [isOpen]);
+
+  const handleMenuOpen = () => {
+    setIsMenuOpen(true);
+  };
+
+  const [unitPrice, setUnitPrice] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currencyCode, setCurrencyCode] = useState("");
+
+  const handleMenuOpenCreate = () => {
+    setIsMenuOpen(true);
+    setUnitPrice("");
+    setStartDate("");
+    setEndDate("");
+    setCurrencyCode("");
+  };
+
+  const handleMenuClose = () => {
+    setIsMenuOpen(false);
+    onClose();
+  };
+
+  return (
+    <div>
+      <Link
+        href="#"
+        onClick={handleMenuOpenCreate}
+        className="menu-open-btn ease-in-up rounded-sm bg-green-700 px-8 py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-secondary hover:text-primary hover:shadow-btn-hover md:block md:px-9 lg:px-6 xl:px-9"
+      >
+        Crear Oferta
+      </Link>
+      <div
+        ref={offcanvasRef}
+        className={`offcanvas-menu fixed z-50 bg-black h-screen dark:border-strokedark dark:bg-form-strokedark top-20 right-0 p-6 w-2/3 md:w-1/3 ease-in-out duration-1000 shadow-md flex items-center ${
+          isMenuOpen ? "" : "translate-x-full"
+        }`}
+      >
+        <Link
+          href="#"
+          onClick={handleMenuClose}
+          className="menu-close-btn absolute top-6 left-6"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="white"
+            className="w-8 h-8"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18 18 6M6 6l12 12"
+            />
+          </svg>
+        </Link>
+        <div className="flex items-center flex-col">
+          <h1 className="text-white dark:text-bodydark text-2xl font-bold uppercase">
+            {offerToEdit ? "Editar Oferta" : "Crear Oferta"}
+          </h1>
+          <p className="text-white pb-6 dark:text-bodydark">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </p>
+          <OfferForm
+            id={itemId}
+            skuId={skuId}
+            fetchVariations={fetchVariations}
+            handleMenuOpen={handleMenuOpen}
+            handleMenuClose={handleMenuClose}
+            offerToEdit={offerToEdit} // Pasa la oferta a editar al formulario
+            onSave={onSave} // Pasa la función onSave para manejar la guardado
+            unitPrice={unitPrice}
+            setUnitPrice={setUnitPrice}
+            setEndDate={setEndDate}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            endDate={endDate}
+            currencyCode={currencyCode}
+            setCurrencyCode={setCurrencyCode}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default OfferCanvas;

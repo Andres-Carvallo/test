@@ -36,7 +36,6 @@ const Hero: React.FC<HeroProps> = ({ HeroData }) => {
 
       const bannerImage = productTypeResponse.data.banner;
       setBannerData(bannerImage);
-      console.log(bannerImage, "banner image");
     } catch (error) {
       console.error("Error al obtener los tipos de producto:", error);
       // Manejar el error según sea necesario

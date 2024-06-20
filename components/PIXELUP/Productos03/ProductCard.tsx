@@ -11,8 +11,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
   addToCartHandler,
   product,
 }) => {
-  console.log(`Product types length: ${product.productTypes.length}`);
-
   const renderPrice = () => {
     if (product.hasVariations && product.pricingRanges) {
       const { minimumAmount, maximumAmount } = product.pricingRanges[0];
