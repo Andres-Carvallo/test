@@ -8,7 +8,7 @@ export default function Navbar() {
     titulo: "Adventure calls, conquer mountain trails.",
     subtitulo: "Adventure calls, conquer mountain trails.",
     parrafo: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-    img: "/img/pixelup-white.png",
+    img: "/img/pixelup.png",
   };
 
   return <Navbar01 />;

@@ -62,7 +62,7 @@ export default function Navbar() {
               <Link href="/">
                 <img
                   className="h-14 w-14"
-                  src="/img/logo-1.png"
+                  src="/img/pixelup.png"
                   alt="Logo"
                 />
               </Link>

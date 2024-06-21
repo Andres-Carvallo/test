@@ -1,5 +1,6 @@
 "use client";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import GoogleAnalyticsData from "@/components/PIXELUP/Dashboard/Analitycs/Google";
 import MostSoldProducts from "@/components/PIXELUP/Dashboard/Ventas/MostSoldProducts";
 import SalesSummary from "@/components/PIXELUP/Dashboard/Ventas/SalesSummary";
 import axios from "axios";
@@ -76,6 +77,7 @@ const StatsDashboard = () => {
       <div className="container px-5 py-4 mx-auto">
         <SalesSummary salesData={salesSummary} />
         <MostSoldProducts salesData={salesData} />
+        <GoogleAnalyticsData />
       </div>
     </div>
   );

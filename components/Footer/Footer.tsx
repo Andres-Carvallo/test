@@ -97,7 +97,7 @@ export default function Footer() {
             <p className="text-white text-sm sm:order-1">
               Diseñado por
               <img
-                src="/img/pixelup-white.png"
+                src="/img/pixelup.png"
                 alt=""
                 className="w-24"
               />

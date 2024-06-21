@@ -58,7 +58,7 @@ function CheckoutPago() {
       if (response.data.code === 0) {
         toast.success("Descuento aplicado con éxito");
         fetchOrders();
-        setDiscountCode("");
+        setDiscountCode(discountCode);
       } else {
         toast.error("Error al aplicar el descuento");
       }
@@ -125,15 +125,16 @@ function CheckoutPago() {
           updateOrderResponse.data
         );
         toast.error("Error al actualizar la orden con el medio de pago");
+        // Redirigir a la página de error
+        window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`;
       }
     } catch (error) {
       console.error("Error al enviar la orden:", error);
-      // Manejo de errores dentro del bloque try...catch
-    } finally {
-      // Restablecer el estado del cliente y manejar la respuesta del servidor
-      // Aquí puedes manejar la respuesta del servidor según sea necesario
+      // Redirigir a la página de error
+      window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`;
     }
   };
+
   if (loading) {
     return <Loader />;
   }
@@ -232,10 +233,8 @@ function CheckoutPago() {
         </div>
         <div className="grid sm:px-10 lg:grid-cols-2 lg:px-20 xl:px-32">
           <div className="px-4 pt-8">
-            <p className="text-xl font-medium">Order Summary</p>
-            <p className="text-gray-400 mb-4">
-              Check your items. And select a suitable shipping method.
-            </p>
+            <p className="text-xl font-medium">Detalle Orden</p>
+            <p className="text-gray-400 mb-4">Listado de tu carrito</p>
             <div className="w-full  bg-white shadow-lg relative ml-auto h-auto">
               <div className="overflow-auto p-6 ">
                 <section>
@@ -243,7 +242,7 @@ function CheckoutPago() {
                     <div className="container px-4 mx-auto">
                       <div className="p-2">
                         <p className="mb-2  text-gray-400 font-medium">
-                          3 products
+                          Productos
                         </p>
                         <div className="flex flex-col pb-7 border-b border-black border-opacity-5">
                           {orderDetail.items.map((order: any) => (
@@ -252,15 +251,28 @@ function CheckoutPago() {
                               key={order.sku.name}
                             >
                               <div className="flex items-center mb-6 lg:mb-0">
+                                <div className="w-full max-w-24 ">
+                                  <img
+                                    src={order.sku.mainImageUrl}
+                                    alt="perfume bottle image"
+                                    className="mx-auto rounded-xl p-2"
+                                  />
+                                </div>
                                 <div>
-                                  <span className="inline-block mb-4 text-lg font-heading font-medium ">
+                                  <span className="inline-block  text-lg font-heading font-medium ">
                                     {order.sku.product.name}
                                   </span>
                                   <div className="flex flex-wrap">
                                     <p className="mr-4 text-sm font-heading font-medium">
-                                      <span>Color:</span>
+                                      <span>Cantidad:</span>
                                       <span className="ml-2 text-gray-400 font-body">
                                         {order.quantity}
+                                      </span>
+                                    </p>
+                                    <p className="mr-4 text-sm font-heading font-medium">
+                                      <span>Precio:</span>
+                                      <span className="ml-2 text-gray-400 font-body">
+                                        {order.unitPrice}
                                       </span>
                                     </p>
                                   </div>
@@ -277,10 +289,8 @@ function CheckoutPago() {
             </div>
           </div>
           <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
-            <p className="text-xl font-medium">Payment Details</p>
-            <p className="text-gray-400">
-              Complete your order by providing your payment details.
-            </p>
+            <p className="text-xl font-medium">Datos Personales</p>
+            <p className="text-gray-400">Completa tus datos de entrega.</p>
             <div className="">
               <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
@@ -288,7 +298,7 @@ function CheckoutPago() {
                     htmlFor="firstname"
                     className="block mt-4 relative"
                   >
-                    First Name
+                    Nombre
                     <input
                       type="text"
                       id="firstname"
@@ -302,7 +312,7 @@ function CheckoutPago() {
                     htmlFor="lastname"
                     className="block mt-4"
                   >
-                    Last Name
+                    Apellido
                     <input
                       type="text"
                       id="lastname"
@@ -318,7 +328,7 @@ function CheckoutPago() {
                     htmlFor="phoneNumber"
                     className="block mt-4"
                   >
-                    Phone Number
+                    Teléfono
                     <input
                       type="text"
                       id="phoneNumber"
@@ -378,7 +388,7 @@ function CheckoutPago() {
                     htmlFor="addressLine1"
                     className="block mt-4"
                   >
-                    Address Line 1
+                    Dirección
                     <input
                       type="text"
                       id="addressLine1"
@@ -392,7 +402,7 @@ function CheckoutPago() {
                     htmlFor="addressLine2"
                     className="block mt-4"
                   >
-                    Address Line 2
+                    Comentarios Dirección
                     <input
                       type="text"
                       id="addressLine2"

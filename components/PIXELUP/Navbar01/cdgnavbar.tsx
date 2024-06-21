@@ -134,7 +134,7 @@ const Navbar01: React.FC = ({}) => {
             >
               <img
                 className="object-cover h-20"
-                src="/img/logo-1.png"
+                src="/img/pixelup.png"
                 alt="logo"
               />
             </a>

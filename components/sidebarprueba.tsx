@@ -18,7 +18,7 @@ const Sidebar = () => {
           <i className="ai-three-line-horizontal text-lg"></i>
         </button>
         <img
-          src="/img/pixelup-white.png"
+          src="/img/pixelup.png"
           className="h-20"
           alt="Logo"
         />

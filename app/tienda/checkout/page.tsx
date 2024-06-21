@@ -47,6 +47,19 @@ function Checkout() {
   });
 
   const handleSubmitOrder = async () => {
+    // Validar campos vacíos
+    if (
+      !customer.customer.firstname ||
+      !customer.customer.lastname ||
+      !customer.customer.phoneNumber ||
+      !customer.customer.email ||
+      !customer.customer.addressLine1 ||
+      !customer.customer.communeId
+    ) {
+      toast.error("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
     const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
@@ -325,10 +338,8 @@ function Checkout() {
         </div>
         <div className="grid sm:px-10 lg:grid-cols-2 lg:px-20 xl:px-32">
           <div className="px-4 pt-8">
-            <p className="text-xl font-medium">Order Summary</p>
-            <p className="text-gray-400 mb-4">
-              Check your items. And select a suitable shipping method.
-            </p>
+            <p className="text-xl font-medium">Detalle Orden</p>
+            <p className="text-gray-400 mb-4">Listado de tu carrito</p>
             <div className="w-full  bg-white shadow-lg relative ml-auto h-auto">
               <div className="overflow-auto p-6 ">
                 <CartList
@@ -341,10 +352,8 @@ function Checkout() {
             </div>
           </div>
           <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
-            <p className="text-xl font-medium">Payment Details</p>
-            <p className="text-gray-400">
-              Complete your order by providing your payment details.
-            </p>
+            <p className="text-xl font-medium">Datos Personales</p>
+            <p className="text-gray-400">Completa tus datos de entrega</p>
             <div className="">
               <div className="mt-10 bg-gray-50 px-4 pt-2 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
@@ -352,7 +361,7 @@ function Checkout() {
                     htmlFor="firstname"
                     className="block mt-4"
                   >
-                    First Name
+                    Nombre
                     <input
                       type="text"
                       id="firstname"
@@ -374,7 +383,7 @@ function Checkout() {
                     htmlFor="lastname"
                     className="block mt-4"
                   >
-                    Last Name
+                    Apellido
                     <input
                       type="text"
                       id="lastname"
@@ -398,7 +407,7 @@ function Checkout() {
                     htmlFor="phoneNumber"
                     className="block mt-4"
                   >
-                    Phone Number
+                    Teléfono
                     <input
                       type="text"
                       id="phoneNumber"
@@ -444,7 +453,7 @@ function Checkout() {
                     htmlFor="addressLine1"
                     className="block mt-4"
                   >
-                    Address Line 1
+                    Direccion
                     <input
                       type="text"
                       id="addressLine1"
@@ -466,7 +475,7 @@ function Checkout() {
                     htmlFor="addressLine2"
                     className="block mt-4"
                   >
-                    Address Line 2
+                    Direccion 2
                     <input
                       type="text"
                       id="addressLine2"
