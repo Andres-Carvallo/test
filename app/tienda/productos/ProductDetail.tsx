@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-import Loader from "@/components/common/Loader";
+import Head from "next/head";
 
 interface Variation {
   id: string;
@@ -423,229 +423,239 @@ const ProductDetail: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
-      {isLoading ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 animate-pulse">
-          <div className="flex flex-col md:flex-row -mx-4">
-            <div className="md:flex-1 px-4">
-              <div className="flex items-center justify-center">
-                <div className="flex flex-col justify-center items-center space-y-2 mr-4">
-                  <div className="flex flex-col gap-4 justify-start items-center">
-                    {[1, 2, 3, 4, 5].map((index) => (
+    <>
+      {" "}
+      <title>{productName}</title>
+      <meta
+        name="description"
+        content={description}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+        {isLoading ? (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 animate-pulse">
+            <div className="flex flex-col md:flex-row -mx-4">
+              <div className="md:flex-1 px-4">
+                <div className="flex items-center justify-center">
+                  <div className="flex flex-col justify-center items-center space-y-2 mr-4">
+                    <div className="flex flex-col gap-4 justify-start items-center">
+                      {[1, 2, 3, 4, 5].map((index) => (
+                        <div
+                          key={index}
+                          className="w-20 h-20 bg-gray-200 rounded"
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="w-[500px] h-[500px] bg-gray-200 rounded"></div>
+                </div>
+              </div>
+              <div className="md:flex-1 px-4 ml-4 space-y-6">
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="flex space-x-2">
+                    {[1, 2, 3].map((index) => (
                       <div
                         key={index}
-                        className="w-20 h-20 bg-gray-200 rounded"
+                        className="h-10 w-10 bg-gray-200 rounded"
                       ></div>
                     ))}
                   </div>
                 </div>
-                <div className="w-[500px] h-[500px] bg-gray-200 rounded"></div>
-              </div>
-            </div>
-            <div className="md:flex-1 px-4 ml-4 space-y-6">
-              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-              <div className="space-y-4">
-                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
-              <div className="space-y-4">
-                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-                <div className="flex space-x-2">
-                  {[1, 2, 3].map((index) => (
-                    <div
-                      key={index}
-                      className="h-10 w-10 bg-gray-200 rounded"
-                    ></div>
-                  ))}
-                </div>
-              </div>
-              <div className="h-12 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col md:flex-row -mx-4">
-          <div className="md:flex-1 px-4">
-            <div className="flex items-center justify-center">
-              <div className="flex flex-col justify-center items-center space-y-2 mr-4">
-                {/* Miniaturas en una columna a la izquierda */}
-                <div className="flex flex-col gap-4 justify-start items-center">
-                  {renderThumbnails()}
-                </div>
-              </div>
-              {/* Imagen principal */}
-              <div
-                className="w-[500px] h-[500px] bg-gray-100 flex items-center justify-center"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <img
-                  src={selectedThumbnail || mainImageUrl}
-                  alt="Producto"
-                  className="object-cover h-full w-full rounded-lg"
-                />
+                <div className="h-12 bg-gray-200 rounded w-1/2"></div>
               </div>
             </div>
           </div>
-
-          <div className="md:flex-1 px-4 ml-4">
-            <h2 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
-              {productName}
-            </h2>
-            <p className="text-gray-500 text-sm">
-              Categoría: {categories.join(", ")}
-            </p>
-
-            <div className="flex items-center space-x-4 my-4">
-              <div>
-                <div className="rounded-lg bg-background flex py-2 px3">
-                  <span className="font-bold text-primary text-3xl">
-                    {selectedVariationPrice !== null ? (
-                      <span>
-                        ${selectedVariationPrice.toLocaleString("es-CL")}
-                      </span>
-                    ) : (
-                      <span>
-                        {minPrice !== "No disponible" &&
-                        maxPrice !== "No disponible"
-                          ? `$${parseFloat(minPrice).toLocaleString(
-                              "es-CL"
-                            )} - $${parseFloat(maxPrice).toLocaleString(
-                              "es-CL"
-                            )}`
-                          : "Precio no disponible"}
-                      </span>
-                    )}
-                  </span>
+        ) : (
+          <div className="flex flex-col md:flex-row -mx-4">
+            <div className="md:flex-1 px-4">
+              <div className="flex items-center justify-center">
+                <div className="flex flex-col justify-center items-center space-y-2 mr-4">
+                  {/* Miniaturas en una columna a la izquierda */}
+                  <div className="flex flex-col gap-4 justify-start items-center">
+                    {renderThumbnails()}
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1">
-                {selectedVariation &&
-                  selectedVariation.offers &&
-                  selectedVariation.offers.length > 0 && (
-                    <p className="text-red-600">
-                      Precio Oferta: $
-                      {selectedVariation.offers[0].unitPrice.toLocaleString(
-                        "es-CL"
-                      )}
-                    </p>
-                  )}
-                <p className="text-primary text-xl font-semibold">Dcto. 25%</p>
+                {/* Imagen principal */}
+                <div
+                  className="w-[500px] h-[500px] bg-gray-100 flex items-center justify-center"
+                  style={{ borderRadius: "var(--radius)" }}
+                >
+                  <img
+                    src={selectedThumbnail || mainImageUrl}
+                    alt="Producto"
+                    className="object-cover h-full w-full rounded-lg"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="mt-8">
-              <h3 className="text-lg font-bold text-foreground">
-                Acerca del producto
-              </h3>
-              <p className="mt-4 text-gray-700">
-                {description ||
-                  "Femenina, encantadora y misteriosa. Es la hermosa Luna que rige sobre el mundo de las emociones y da ritmo a los ciclos de vida. Para las que amamos la luna y sus secretos."}
+            <div className="md:flex-1 px-4 ml-4">
+              <h2 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
+                {productName}
+              </h2>
+              <p className="text-gray-500 text-sm">
+                Categoría: {categories.join(", ")}
               </p>
-            </div>
 
-            <div className="mt-4">
-              <h3 className="font-semibold">Atributos:</h3>
-              <div className="flex flex-col space-y-4 mt-2">
-                {Object.entries(currentAttributes).map(
-                  ([attributeName, attributeValues]) => (
-                    <div key={attributeName}>
-                      <h4>{attributeName}:</h4>
-                      <div className="flex space-x-2">
-                        {attributeValues.map((value, index) => (
-                          <button
-                            key={`${attributeName}-${index}`}
-                            className={`px-3 py-1 rounded border ${
-                              selectedAttributes[attributeName] === value
-                                ? "bg-blue-600 text-white"
-                                : "bg-white text-gray-800"
-                            } ${
-                              disabledAttributes[attributeName] &&
-                              disabledAttributes[attributeName][index]
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            }`}
-                            onClick={() =>
-                              !disabledAttributes[attributeName][index] &&
-                              handleAttributeChange(attributeName, value)
-                            }
-                            disabled={
-                              disabledAttributes[attributeName] &&
-                              disabledAttributes[attributeName][index]
-                            }
-                          >
-                            {value}
-                          </button>
-                        ))}
+              <div className="flex items-center space-x-4 my-4">
+                <div>
+                  <div className="rounded-lg bg-background flex py-2 px3">
+                    <span className="font-bold text-primary text-3xl">
+                      {selectedVariationPrice !== null ? (
+                        <span>
+                          ${selectedVariationPrice.toLocaleString("es-CL")}
+                        </span>
+                      ) : (
+                        <span>
+                          {minPrice !== "No disponible" &&
+                          maxPrice !== "No disponible"
+                            ? `$${parseFloat(minPrice).toLocaleString(
+                                "es-CL"
+                              )} - $${parseFloat(maxPrice).toLocaleString(
+                                "es-CL"
+                              )}`
+                            : "Precio no disponible"}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  {selectedVariation &&
+                    selectedVariation.offers &&
+                    selectedVariation.offers.length > 0 && (
+                      <p className="text-red-600">
+                        Precio Oferta: $
+                        {selectedVariation.offers[0].unitPrice.toLocaleString(
+                          "es-CL"
+                        )}
+                      </p>
+                    )}
+                  <p className="text-primary text-xl font-semibold">
+                    Dcto. 25%
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-lg font-bold text-foreground">
+                  Acerca del producto
+                </h3>
+                <p className="mt-4 text-gray-700">
+                  {description ||
+                    "Femenina, encantadora y misteriosa. Es la hermosa Luna que rige sobre el mundo de las emociones y da ritmo a los ciclos de vida. Para las que amamos la luna y sus secretos."}
+                </p>
+              </div>
+
+              <div className="mt-4">
+                <h3 className="font-semibold">Atributos:</h3>
+                <div className="flex flex-col space-y-4 mt-2">
+                  {Object.entries(currentAttributes).map(
+                    ([attributeName, attributeValues]) => (
+                      <div key={attributeName}>
+                        <h4>{attributeName}:</h4>
+                        <div className="flex space-x-2">
+                          {attributeValues.map((value, index) => (
+                            <button
+                              key={`${attributeName}-${index}`}
+                              className={`px-3 py-1 rounded border ${
+                                selectedAttributes[attributeName] === value
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-white text-gray-800"
+                              } ${
+                                disabledAttributes[attributeName] &&
+                                disabledAttributes[attributeName][index]
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                !disabledAttributes[attributeName][index] &&
+                                handleAttributeChange(attributeName, value)
+                              }
+                              disabled={
+                                disabledAttributes[attributeName] &&
+                                disabledAttributes[attributeName][index]
+                              }
+                            >
+                              {value}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )
-                )}
+                    )
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="flex py-4 space-x-4 items-center mt-4">
-              <div className="flex flex-col items-center space-y-2">
-                <div className="text-center text-xs uppercase text-gray-400 tracking-wide font-semibold">
-                  Cantidad
+              <div className="flex py-4 space-x-4 items-center mt-4">
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="text-center text-xs uppercase text-gray-400 tracking-wide font-semibold">
+                    Cantidad
+                  </div>
+                  <div className="relative w-[80px]">
+                    <select
+                      onChange={(e) => setQuantity(parseInt(e.target.value))}
+                      className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <option
+                          className="text-center"
+                          key={i}
+                        >
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
+                    <svg
+                      className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                      />
+                    </svg>
+                  </div>
                 </div>
-                <div className="relative w-[80px]">
-                  <select
-                    onChange={(e) => setQuantity(parseInt(e.target.value))}
-                    className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
-                  >
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <option
-                        className="text-center"
-                        key={i}
-                      >
-                        {i + 1}
-                      </option>
-                    ))}
-                  </select>
-                  <svg
-                    className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                    />
-                  </svg>
-                </div>
+                <button
+                  onClick={handleAddToCart}
+                  className={`h-14 px-6 py-2 font-semibold rounded-xl bg-primary hover:bg-secondary text-foreground ${
+                    hasVariations &&
+                    (!attributeSelected || !areAllAttributesSelected())
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={
+                    hasVariations &&
+                    (!attributeSelected || !areAllAttributesSelected())
+                  }
+                >
+                  {hasVariations &&
+                  (!attributeSelected || !areAllAttributesSelected())
+                    ? "Selecciona todas las Variaciones"
+                    : "Agregar al Carrito"}
+                </button>
               </div>
-              <button
-                onClick={handleAddToCart}
-                className={`h-14 px-6 py-2 font-semibold rounded-xl bg-primary hover:bg-secondary text-foreground ${
-                  hasVariations &&
-                  (!attributeSelected || !areAllAttributesSelected())
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : ""
-                }`}
-                disabled={
-                  hasVariations &&
-                  (!attributeSelected || !areAllAttributesSelected())
-                }
-              >
-                {hasVariations &&
-                (!attributeSelected || !areAllAttributesSelected())
-                  ? "Selecciona todas las Variaciones"
-                  : "Agregar al Carrito"}
-              </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 

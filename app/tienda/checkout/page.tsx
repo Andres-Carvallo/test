@@ -250,8 +250,9 @@ function Checkout() {
   }, []);
 
   return (
-    <div className="pb-12">
-      <>
+    <>
+      <title>Checkout</title>
+      <div className="pb-12">
         <div className="flex flex-col items-center border-b bg-white py-4 sm:flex-row sm:px-10 lg:px-20 xl:px-32">
           <a
             href="#"
@@ -656,8 +657,8 @@ function Checkout() {
             </button>
           </div>
         </div>
-      </>
-    </div>
+      </div>
+    </>
   );
 }
 

@@ -2,32 +2,48 @@ import React, { useEffect, useState } from "react";
 import "tailwindcss/tailwind.css";
 
 interface Product {
-  id: number;
-  date: string;
-  name: string;
-  quantity: number;
+  productId: string;
+  productName: string;
+  productImageUrl: string | null;
   amount: number;
+  quantity: number;
 }
 
 interface MostSoldProductsProps {
   salesData: Product[];
+  startDateProducts: string;
+  endDateProducts: string;
+  setStartDateProducts: (date: string) => void;
+  setEndDateProducts: (date: string) => void;
+  fetchMostSoldProducts: (
+    startDate: string,
+    endDate: string,
+    orderBy: string
+  ) => void;
 }
 
-const MostSoldProducts: React.FC<MostSoldProductsProps> = ({ salesData }) => {
-  const [startDate, setStartDate] = useState<string>("2024-04-01");
-  const [endDate, setEndDate] = useState<string>("2024-05-31");
+const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
+  salesData,
+  startDateProducts,
+  endDateProducts,
+  setStartDateProducts,
+  setEndDateProducts,
+  fetchMostSoldProducts,
+}) => {
   const [orderBy, setOrderBy] = useState<string>("amount"); // can be 'amount' or 'quantity'
   const [filteredData, setFilteredData] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (salesData && salesData.length > 0) {
-      const filtered = salesData.filter((item) => {
-        const date = new Date(item.date);
-        return date >= new Date(startDate) && date <= new Date(endDate);
-      });
+    fetchMostSoldProducts(startDateProducts, endDateProducts, orderBy);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startDateProducts, endDateProducts, orderBy]);
 
-      const aggregatedData = filtered.reduce((acc, item) => {
-        const existingProduct = acc.find((product) => product.id === item.id);
+  useEffect(() => {
+    if (salesData && salesData.length > 0) {
+      const aggregatedData = salesData.reduce((acc, item) => {
+        const existingProduct = acc.find(
+          (product) => product.productId === item.productId
+        );
         if (existingProduct) {
           existingProduct.quantity += item.quantity;
           existingProduct.amount += item.amount;
@@ -46,19 +62,22 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({ salesData }) => {
       });
 
       setFilteredData(sorted);
+    } else {
+      setFilteredData([]); // Reset filtered data if no salesData
     }
-  }, [startDate, endDate, orderBy, salesData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [salesData]);
 
   return (
-    <div className=" p-6 rounded shadow border m-4">
+    <div className="p-6 rounded shadow border m-4">
       <h2 className="text-xl font-bold mb-4">Most Sold Products</h2>
       <div className="flex space-x-4 mb-4">
         <div>
           <label className="block text-gray-700 font-medium">Start Date</label>
           <input
             type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            value={startDateProducts}
+            onChange={(e) => setStartDateProducts(e.target.value)}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-blue-400"
           />
         </div>
@@ -66,8 +85,8 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({ salesData }) => {
           <label className="block text-gray-700 font-medium">End Date</label>
           <input
             type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            value={endDateProducts}
+            onChange={(e) => setEndDateProducts(e.target.value)}
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring p-2 border focus:ring-opacity-50 focus:ring-blue-400"
           />
         </div>
@@ -83,27 +102,31 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({ salesData }) => {
           </select>
         </div>
       </div>
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="py-2 border-b">Product Name</th>
-            <th className="py-2 border-b">Quantity Sold</th>
-            <th className="py-2 border-b">Total Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((product, index) => (
-            <tr
-              key={index}
-              className="text-center"
-            >
-              <td className="py-2 border-b">{product.name}</td>
-              <td className="py-2 border-b">{product.quantity}</td>
-              <td className="py-2 border-b">${product.amount.toFixed(2)}</td>
+      {filteredData.length > 0 ? (
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th className="py-2 border-b">Product Name</th>
+              <th className="py-2 border-b">Quantity Sold</th>
+              <th className="py-2 border-b">Total Amount</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.map((product, index) => (
+              <tr
+                key={index}
+                className="text-center"
+              >
+                <td className="py-2 border-b">{product.productName}</td>
+                <td className="py-2 border-b">{product.quantity}</td>
+                <td className="py-2 border-b">${product.amount.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>No hay productos en este rango de fechas.</p>
+      )}
     </div>
   );
 };

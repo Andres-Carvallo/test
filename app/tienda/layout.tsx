@@ -5,11 +5,6 @@ import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import Navbar01 from "@/components/PIXELUP/Navbar01/Navbar01";
 import Footer03 from "@/components/PIXELUP/Footer03/Footer03";
 
-export const metadata: Metadata = {
-  title: "TIENDA",
-  description: "buff your bussiness",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{

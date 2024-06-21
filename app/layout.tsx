@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Inter, Roboto_Mono, Kalam, Oswald, Lato } from "next/font/google";
 import "./globals.css";
 import { APIContextProvider } from "@/app/Context/ProductTypeContext";
@@ -28,10 +27,6 @@ const oswald = Oswald({
   weight: "400",
   variable: "--font-oswald",
 });
-export const metadata: Metadata = {
-  title: "PixelUP - PRO",
-  description: "buff your bussiness",
-};
 
 export default function RootLayout({
   children,

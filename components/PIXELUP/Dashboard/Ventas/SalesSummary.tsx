@@ -13,11 +13,19 @@ interface SalesDataItem {
 
 interface SalesSummaryProps {
   salesData: SalesDataItem[] | null;
+  startDate: string;
+  endDate: string;
+  setStartDate: (date: string) => void;
+  setEndDate: (date: string) => void;
 }
 
-const SalesSummary: React.FC<SalesSummaryProps> = ({ salesData }) => {
-  const [startDate, setStartDate] = useState<string>("2024-04-01");
-  const [endDate, setEndDate] = useState<string>("2024-04-30");
+const SalesSummary: React.FC<SalesSummaryProps> = ({
+  salesData,
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+}) => {
   const [filteredData, setFilteredData] = useState<SalesDataItem[]>([]);
 
   useEffect(() => {
