@@ -5,7 +5,7 @@ import { APIContextProvider } from "@/app/Context/ProductTypeContext";
 import toast, { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
-import Script from "next/script";
+import AnalyticsWrapper from "@/app/Context/AnalyticsWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
@@ -42,21 +42,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <Script
+      <header>
+        <script
           async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GOOGLE_ANALYTICS_STREAM_ID}`}
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
         />
-
-        <Script id="google-analytics">
-          {`
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', ${process.env.GOOGLE_ANALYTICS_STREAM_ID}});
-  `}
-        </Script>
-      </head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
+          `,
+          }}
+        />
+      </header>
       <APIContextProvider SiteId={SiteId}>
         <Analytics />
 
