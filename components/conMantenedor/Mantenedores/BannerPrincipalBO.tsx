@@ -13,13 +13,7 @@ interface BannerImage {
   buttonText: string;
   mainImageLink: string;
   orderNumber: number;
-  mainImage: {
-    url: any;
-    name: any;
-    type: any;
-    size: any;
-    data: any;
-  };
+  mainImage?: any;
 }
 
 const BannerPrincipalBO: React.FC = () => {
@@ -154,7 +148,7 @@ const BannerPrincipalBO: React.FC = () => {
         };
 
         // Filtrar el campo mainImage si no se ha cargado una nueva imagen
-        if (!isMainImageUploaded) {
+        if (!isMainImageUploaded && updatedData) {
           delete updatedData.mainImage;
         }
 
