@@ -5,9 +5,7 @@ import { APIContextProvider } from "@/app/Context/ProductTypeContext";
 import toast, { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
-import AnalyticsWrapper from "@/app/Context/AnalyticsWrapper";
 
-const inter = Inter({ subsets: ["latin"] });
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
