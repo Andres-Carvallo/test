@@ -10,6 +10,8 @@ import axios from "axios";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import VariablesPage from "./VariablesSection";
 import ImageUploader from "../producto-simple/ImageUploader";
+import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import TabCategory from "@/components/Products/Category/TabCategory";
 
 interface ImageData {
   name: string;
@@ -50,7 +52,28 @@ const CrearProductoVariable: React.FC = () => {
       return null; // En caso de error, devuelve null
     }
   };
+  const fetchProducTypes = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const SiteId = process.env.NEXT_PUBLIC_API_SITEID;
+      const PageNumber = 1;
+      const PageSize = 100;
 
+      const productTypeResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?siteId=${SiteId}&pageNumber=${PageNumber}&pageSize=${PageSize}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setProductType(productTypeResponse.data.productTypes);
+    } catch (error) {
+      console.error("Error al obtener los tipos de producto:", error);
+    }
+  };
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -119,7 +142,7 @@ const CrearProductoVariable: React.FC = () => {
     height: number | null;
     weight: number | null;
   }
-
+  const [openModalId, setOpenModalId] = useState(null);
   useEffect(() => {
     const fetchProductData = async () => {
       try {
@@ -491,462 +514,562 @@ const CrearProductoVariable: React.FC = () => {
       minHeight: 45,
     }),
   };
-
+  function handleOpenModal(modalId: any) {
+    setOpenModalId(modalId);
+  }
+  const handleCloseModal = () => {
+    setOpenModalId(null);
+  };
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <div>
-          <label
-            htmlFor="nombreProducto"
-            className="font-normal text-primary"
-          >
-            Nombre Producto Base
-          </label>
-          <input
-            className="shadow py-3 block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-            type="text"
-            name="nombreProducto"
-            id="nombreProducto"
-            value={formData.name}
-            onChange={(event) =>
-              setFormData({ ...formData, name: event.target.value })
-            }
-          />
-        </div>
-        <div>
+    <>
+      <Breadcrumb pageName="Crear producto" />
+      <div className="grid grid-cols-1 md:grid-cols-4 px-4">
+        {/* Columna principal */}
+        <div className="md:col-span-4 lg:col-span-3 flex flex-col pb-8 ">
           <div>
-            <label className="font-normal text-primary">
-              Categoría de Producto Base
-            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div>
+                <label
+                  htmlFor="nombreProducto"
+                  className="font-normal text-primary"
+                >
+                  Nombre Producto Base
+                </label>
+                <input
+                  className="shadow py-3 block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                  type="text"
+                  name="nombreProducto"
+                  id="nombreProducto"
+                  value={formData.name}
+                  onChange={(event) =>
+                    setFormData({ ...formData, name: event.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <div>
+                  <label className="font-normal text-primary">
+                    Categoría de Producto Base
+                  </label>
 
-            <Select
-              options={productTypeOptions}
-              isMulti
-              value={formData.productTypes}
-              onChange={(selectedOptions: any) => {
-                setFormData({ ...formData, productTypes: selectedOptions });
-                setSelectedProductTypes(selectedOptions);
-              }}
-              className="mt-2"
-              styles={customStyles}
-            />
-          </div>
-        </div>
-      </div>
+                  <Select
+                    options={productTypeOptions}
+                    isMulti
+                    value={formData.productTypes}
+                    onChange={(selectedOptions: any) => {
+                      setFormData({
+                        ...formData,
+                        productTypes: selectedOptions,
+                      });
+                      setSelectedProductTypes(selectedOptions);
+                    }}
+                    className="mt-2"
+                    styles={customStyles}
+                  />
+                </div>
+              </div>
+            </div>
 
-      <div className="mt-8">
-        <label className="font-normal text-primary ">Tipo de entrega</label>
+            <div className="mt-8">
+              <label className="font-normal text-primary ">
+                Tipo de entrega
+              </label>
 
-        <div
-          className="flex flex-wrap py-2 px-4 my-2 gap-4"
-          style={{ borderRadius: "var(--radius)" }}
-        >
-          <label
-            className="block  cursor-pointer"
-            htmlFor="habilitarDespacho"
-          >
-            <div
-              className="shadow flex gap-4 items-center bg-primary hover:bg-secondary p-2 text-secondary hover:text-primary font-medium "
-              style={{ borderRadius: "var(--radius)" }}
-            >
-              Habilitar Despacho
-              <input
-                type="checkbox"
-                className="cursor-pointer"
-                name="habilitarDespacho"
-                id="habilitarDespacho"
-                checked={formData.enabledForDelivery}
-                onChange={(event) => {
-                  const checked = event.target.checked;
+              <div
+                className="flex flex-wrap py-2 px-4 my-2 gap-4"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <label
+                  className="block  cursor-pointer"
+                  htmlFor="habilitarDespacho"
+                >
+                  <div
+                    className="shadow flex gap-4 items-center bg-primary hover:bg-secondary p-2 text-secondary hover:text-primary font-medium "
+                    style={{ borderRadius: "var(--radius)" }}
+                  >
+                    Habilitar Despacho
+                    <input
+                      type="checkbox"
+                      className="cursor-pointer"
+                      name="habilitarDespacho"
+                      id="habilitarDespacho"
+                      checked={formData.enabledForDelivery}
+                      onChange={(event) => {
+                        const checked = event.target.checked;
 
-                  setFormData({
-                    ...formData,
-                    enabledForDelivery: checked,
-                    measures: checked
-                      ? formData.measures || {
-                          length: null,
-                          width: null,
-                          height: null,
-                          weight: null,
-                        }
-                      : {
-                          length: null,
-                          width: null,
-                          height: null,
-                          weight: null,
-                        },
-                  });
-                }}
+                        setFormData({
+                          ...formData,
+                          enabledForDelivery: checked,
+                          measures: checked
+                            ? formData.measures || {
+                                length: null,
+                                width: null,
+                                height: null,
+                                weight: null,
+                              }
+                            : {
+                                length: null,
+                                width: null,
+                                height: null,
+                                weight: null,
+                              },
+                        });
+                      }}
+                    />
+                  </div>
+                </label>
+                <div
+                  className="shadow flex gap-4 items-center bg-primary hover:bg-secondary p-2 text-secondary hover:text-primary font-medium "
+                  style={{ borderRadius: "var(--radius)" }}
+                >
+                  <label
+                    className="block cursor-pointer"
+                    htmlFor="habilitarRetiro"
+                  >
+                    Habilitar Retiro
+                  </label>
+                  <input
+                    type="checkbox"
+                    name="habilitarRetiro"
+                    className="cursor-pointer"
+                    id="habilitarRetiro"
+                    checked={formData.enabledForWithdrawal}
+                    onChange={(event) =>
+                      setFormData({
+                        ...formData,
+                        enabledForWithdrawal: event.target.checked,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <label
+                htmlFor="descripcion"
+                className="font-normal text-primary"
+              >
+                Descripción Producto Base
+              </label>
+              <textarea
+                className="shadow block p-2 mt-2 py-3 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
+                style={{ borderRadius: "var(--radius)" }}
+                name="descripcion"
+                id="descripcion"
+                value={formData.description}
+                onChange={(event) =>
+                  setFormData({ ...formData, description: event.target.value })
+                }
               />
             </div>
-          </label>
-          <div
-            className="shadow flex gap-4 items-center bg-primary hover:bg-secondary p-2 text-secondary hover:text-primary font-medium "
-            style={{ borderRadius: "var(--radius)" }}
-          >
-            <label
-              className="block cursor-pointer"
-              htmlFor="habilitarRetiro"
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-8">
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="mainImage"
+                  className="hidden"
+                  onChange={(e) =>
+                    handleImageChange(e, setMainImage, "mainImage")
+                  }
+                />
+                {mainImage ? (
+                  <div>
+                    <label className="font-normal text-primary">
+                      Imagen Principal
+                    </label>
+
+                    <div
+                      className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
+                      <img
+                        src={mainImage}
+                        alt="Main Image"
+                        className="w-full"
+                      />
+                      <button
+                        className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
+                        onClick={() => handleClearImage(setMainImage)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-6 h-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="font-normal text-primary">
+                      Imagen Principal
+                    </label>
+                    <label
+                      htmlFor="mainImage"
+                      className="shadow flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
+                      <div className="flex flex-col justify-center items-center">
+                        <svg
+                          className="w-12 h-12 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span>
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          SVG, PNG, JPG or GIF (MAX. 800x400px)
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </div>
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="previewImage"
+                  className="hidden"
+                  onChange={(e) =>
+                    handleImageChange(e, setPreviewImage, "previewImage")
+                  }
+                />
+                {previewImage ? (
+                  <div>
+                    <label className="font-normal text-primary">
+                      Imagen Secundaria
+                    </label>
+                    <div
+                      className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
+                      <img
+                        src={previewImage}
+                        alt="Preview Image"
+                        className="w-full"
+                      />
+                      <button
+                        className="absolute top-0 right-0  bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
+                        onClick={() => handleClearImage(setPreviewImage)}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-6 h-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="font-normal text-primary">
+                      Imagen Secundaria
+                    </label>
+                    <label
+                      htmlFor="previewImage"
+                      className="shadow flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
+                      <div className="flex flex-col justify-center items-center">
+                        <svg
+                          className="w-12 h-12 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="font-semibold">Click to upload</span>
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          SVG, PNG, JPG or GIF (MAX. 800x400px)
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+              <div className="flex space-x-4 overflow-x-auto p-4">
+                {isEditMode ? (
+                  <ImageUploader
+                    productId={productId}
+                    skuId={skuIdBase}
+                    skuImages={skuImages}
+                    fetchImages={fetchImages}
+                  />
+                ) : (
+                  <GalleryUpload
+                    selectedImages={selectedImages}
+                    handleImageGalleryChange={handleImageGalleryChange}
+                    handleImageRemove={handleImageRemove}
+                  />
+                )}
+              </div>
+              <div>
+                <label htmlFor="medidas">
+                  <div className=" flex gap-2">
+                    <label className="font-normal text-primary">
+                      Medidas Delivery
+                    </label>
+                    <button onClick={() => setShowForm(!showForm)}>
+                      {showForm ? (
+                        <span className="bg-primary text-secondary p-1 text-xs">
+                          Ocultar
+                        </span>
+                      ) : (
+                        <span className="bg-primary text-secondary p-1 text-xs">
+                          Mostrar
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </label>
+                {showForm &&
+                  (formData.enabledForDelivery ? (
+                    <div className="mt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                        <div className="">
+                          <label
+                            htmlFor="largo"
+                            className="text-xs"
+                          >
+                            Largo (cm.)
+                          </label>
+                          <input
+                            type="number"
+                            name="length"
+                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                            value={measures.length || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="ancho"
+                            className="text-xs"
+                          >
+                            Ancho (cm.)
+                          </label>
+                          <input
+                            type="number"
+                            name="width"
+                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                            value={measures.width || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                        <div>
+                          <label
+                            htmlFor="alto"
+                            className="text-xs"
+                          >
+                            Alto (cm.)
+                          </label>
+                          <input
+                            type="number"
+                            name="height"
+                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                            value={measures.height || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="peso"
+                            className="text-xs"
+                          >
+                            Peso (kg.)
+                          </label>
+                          <input
+                            type="number"
+                            name="weight"
+                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                            value={measures.weight || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{ borderRadius: "var(--radius)" }}
+                      className="shadow mt-4 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
+                      role="alert"
+                    >
+                      <svg
+                        className="flex-shrink-0 inline w-4 h-4 me-3"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                      </svg>
+                      <span className="sr-only">Info</span>
+                      <div>
+                        <span className="font-semibold">
+                          Habilitar despacho.
+                        </span>{" "}
+                        Se debe seleccionar la opcion para poder mostrar las
+                        medidas.
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <button
+              className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
+              style={{ borderRadius: "var(--radius)" }}
+              onClick={handleSubmit}
             >
-              Habilitar Retiro
-            </label>
-            <input
-              type="checkbox"
-              name="habilitarRetiro"
-              className="cursor-pointer"
-              id="habilitarRetiro"
-              checked={formData.enabledForWithdrawal}
-              onChange={(event) =>
-                setFormData({
-                  ...formData,
-                  enabledForWithdrawal: event.target.checked,
-                })
-              }
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <label
-          htmlFor="descripcion"
-          className="font-normal text-primary"
-        >
-          Descripción Producto Base
-        </label>
-        <textarea
-          className="shadow block p-2 mt-2 py-3 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
-          style={{ borderRadius: "var(--radius)" }}
-          name="descripcion"
-          id="descripcion"
-          value={formData.description}
-          onChange={(event) =>
-            setFormData({ ...formData, description: event.target.value })
-          }
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-8">
-        <div>
-          <input
-            type="file"
-            accept="image/*"
-            id="mainImage"
-            className="hidden"
-            onChange={(e) => handleImageChange(e, setMainImage, "mainImage")}
-          />
-          {mainImage ? (
-            <div>
-              <label className="font-normal text-primary">
-                Imagen Principal
-              </label>
-
-              <div
-                className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
-                style={{ borderRadius: "var(--radius)" }}
+              {isEditMode ? "Guardar Cambios" : "Crear Producto Base"}
+            </button>
+            {isEditMode ? (
+              <button
+                onClick={handleCancel}
+                className="bg-red-700 text-white px-4 py-2 rounded mt-4 ml-4"
               >
-                <img
-                  src={mainImage}
-                  alt="Main Image"
-                  className="w-full"
-                />
-                <button
-                  className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() => handleClearImage(setMainImage)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <label className="font-normal text-primary">
-                Imagen Principal
-              </label>
-              <label
-                htmlFor="mainImage"
-                className="shadow flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <div className="flex flex-col justify-center items-center">
-                  <svg
-                    className="w-12 h-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
-                  </p>
-                </div>
-              </label>
-            </div>
-          )}
-        </div>
-        <div>
-          <input
-            type="file"
-            accept="image/*"
-            id="previewImage"
-            className="hidden"
-            onChange={(e) =>
-              handleImageChange(e, setPreviewImage, "previewImage")
-            }
-          />
-          {previewImage ? (
-            <div>
-              <label className="font-normal text-primary">
-                Imagen Secundaria
-              </label>
-              <div
-                className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <img
-                  src={previewImage}
-                  alt="Preview Image"
-                  className="w-full"
-                />
-                <button
-                  className="absolute top-0 right-0  bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() => handleClearImage(setPreviewImage)}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <label className="font-normal text-primary">
-                Imagen Secundaria
-              </label>
-              <label
-                htmlFor="previewImage"
-                className="shadow flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <div className="flex flex-col justify-center items-center">
-                  <svg
-                    className="w-12 h-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
-                  </p>
-                </div>
-              </label>
-            </div>
-          )}
-        </div>
-      </div>
+                Cancelar Edicion
+              </button>
+            ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-        <div className="flex space-x-4 overflow-x-auto p-4">
-          {isEditMode ? (
-            <ImageUploader
+            <VariablesPage
+              isEditMode={isEditMode}
+              setIsEditMode={setIsEditMode}
               productId={productId}
               skuId={skuIdBase}
               skuImages={skuImages}
               fetchImages={fetchImages}
-            />
-          ) : (
-            <GalleryUpload
               selectedImages={selectedImages}
               handleImageGalleryChange={handleImageGalleryChange}
               handleImageRemove={handleImageRemove}
             />
-          )}
+          </div>
         </div>
-        <div>
-          <label htmlFor="medidas">
-            <div className=" flex gap-2">
-              <label className="font-normal text-primary">
-                Medidas Delivery
-              </label>
-              <button onClick={() => setShowForm(!showForm)}>
-                {showForm ? (
-                  <span className="bg-primary text-secondary p-1 text-xs">
-                    Ocultar
-                  </span>
-                ) : (
-                  <span className="bg-primary text-secondary p-1 text-xs">
-                    Mostrar
-                  </span>
-                )}
-              </button>
-            </div>
-          </label>
-          {showForm &&
-            (formData.enabledForDelivery ? (
-              <div className="mt-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                  <div className="">
-                    <label
-                      htmlFor="largo"
-                      className="text-xs"
-                    >
-                      Largo (cm.)
-                    </label>
-                    <input
-                      type="number"
-                      name="length"
-                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                      value={measures.length || ""}
-                      onChange={handleInputMeasuresChange}
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="ancho"
-                      className="text-xs"
-                    >
-                      Ancho (cm.)
-                    </label>
-                    <input
-                      type="number"
-                      name="width"
-                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                      value={measures.width || ""}
-                      onChange={handleInputMeasuresChange}
-                    />
-                  </div>
-                </div>
+        {/* FIN COL PRINCIPAL */}
+        <div className="md:col-span-1 border-l mt-2 ml-4 pl-4 ">
+          {/* Contenido de la barra lateral */}
+          <div
+            className="bg-white border border-dashed border-gray-600 p-4 mb-4 hidden lg:block sticky top-24"
+            style={{ borderRadius: "var(--radius)" }}
+          >
+            <h1 className="mb-4 text-bold border-b border-dark uppercase">
+              {isEditMode ? "Editar Producto" : "Publicar"}
+            </h1>
+            <h3>
+              Estado:{" "}
+              <span className="text-dark font-bold pl-2">
+                {isEditMode ? "Publicado" : "Borrador"}
+              </span>
+            </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                  <div>
-                    <label
-                      htmlFor="alto"
-                      className="text-xs"
-                    >
-                      Alto (cm.)
-                    </label>
-                    <input
-                      type="number"
-                      name="height"
-                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                      value={measures.height || ""}
-                      onChange={handleInputMeasuresChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="peso"
-                      className="text-xs"
-                    >
-                      Peso (kg.)
-                    </label>
-                    <input
-                      type="number"
-                      name="weight"
-                      className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                      value={measures.weight || ""}
-                      onChange={handleInputMeasuresChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div
-                style={{ borderRadius: "var(--radius)" }}
-                className="shadow mt-4 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
-                role="alert"
-              >
-                <svg
-                  className="flex-shrink-0 inline w-4 h-4 me-3"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+            <div className="flex justify-between mt-4 flex-col gap-2">
+              <div className="hidden">
+                <button
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
+                  style={{ borderRadius: "var(--radius)" }}
+                  type="button"
                 >
-                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                </svg>
-                <span className="sr-only">Info</span>
-                <div>
-                  <span className="font-semibold">Habilitar despacho.</span> Se
-                  debe seleccionar la opcion para poder mostrar las medidas.
-                </div>
+                  {isEditMode ? "Actualizar Borrador" : "Guardar Borrador"}
+                </button>
               </div>
-            ))}
+              <div>
+                <button
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
+                  style={{ borderRadius: "var(--radius)" }}
+                  type="button"
+                  onClick={handleSubmit}
+                >
+                  {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
+                </button>
+              </div>
+              <div className="space-y-2">
+                <hr className="my-4" />
+                <button
+                  type="button"
+                  id="createCategories"
+                  onClick={() => handleOpenModal("createCategoriesModal")}
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
+                  style={{ borderRadius: "var(--radius)" }}
+                >
+                  Crear Categoría
+                </button>
+                <button
+                  type="button"
+                  id="createAttribute"
+                  onClick={() => handleOpenModal("createAttributeModal")}
+                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
+                  style={{ borderRadius: "var(--radius)" }}
+                >
+                  Crear Atributo
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+        {/* FIN COL SIDEBAR */}
+      </div>
+      {/* MODALS */}
+      <div
+        id="createCategoriesModal"
+        tabIndex={-1}
+        className={`overflow-y-auto overflow-x-hidden px-12 pt-12 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080] left-0 z-50 w-full h-[calc(100%)] ${
+          openModalId === "createCategoriesModal" ? "" : "hidden"
+        }`}
+      >
+        <TabCategory
+          handleCloseModal={handleCloseModal}
+          fetchData={fetchProducTypes}
+        />
       </div>
 
-      <button
-        className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
-        style={{ borderRadius: "var(--radius)" }}
-        onClick={handleSubmit}
-      >
-        {isEditMode ? "Guardar Cambios" : "Crear Producto Base"}
-      </button>
-      {isEditMode ? (
-        <button
-          onClick={handleCancel}
-          className="bg-red-700 text-white px-4 py-2 rounded mt-4 ml-4"
-        >
-          Cancelar Edicion
-        </button>
-      ) : null}
-
-      <VariablesPage
-        isEditMode={isEditMode}
-        setIsEditMode={setIsEditMode}
-        productId={productId}
-        skuId={skuIdBase}
-        skuImages={skuImages}
-        fetchImages={fetchImages}
-        selectedImages={selectedImages}
-        handleImageGalleryChange={handleImageGalleryChange}
-        handleImageRemove={handleImageRemove}
-      />
-    </div>
+      {/* MODALS */}
+    </>
   );
 };
 

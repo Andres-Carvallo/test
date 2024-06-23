@@ -419,7 +419,12 @@ export default function ProductPageBO() {
                         </div>
                       </td>
                       <td className="px-2 py-3">{product.price}</td>
-                      <td className="px-2 py-3">{product.statusCode}</td>
+                      <td className="px-2 py-3">
+                        {product.statusCode === "ACTIVE"
+                          ? "PUBLICADO"
+                          : product.statusCode}
+                      </td>
+
                       <td className="px-2 py-3 flex items-center justify-end space-x-2">
                         <button
                           onClick={() => showDeleteModal(product)}
@@ -433,7 +438,7 @@ export default function ProductPageBO() {
                               ? `/dashboard/productos/crear/producto-variable?productVariableId=${product.id}`
                               : `/dashboard/productos/crear/producto-simple?productId=${product.id}`
                           }
-                          className="px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-800"
+                          className="px-2 py-1 rounded bg-primary text-secondary hover:bg-secondary hover:text-primary"
                         >
                           Editar
                         </Link>

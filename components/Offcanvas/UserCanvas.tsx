@@ -6,6 +6,7 @@ import CrearUsuarioForm from "@/components/Offcanvas/form/CrearUsuarioForm";
 function UserCanvas() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const offcanvasRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -19,6 +20,7 @@ function UserCanvas() {
       document.removeEventListener("keydown", handleEscKey);
     };
   }, []);
+
   useEffect(() => {
     if (!offcanvasRef.current) {
       return;
@@ -45,13 +47,13 @@ function UserCanvas() {
       <Link
         href="#"
         onClick={handleMenuOpen}
-        className="menu-open-btn ease-in-up   rounded-sm bg-primary px-8 py-3 text-base font-medium text-dark shadow-btn transition duration-300 hover:bg-dark hover:text-white hover:shadow-btn-hover md:block md:px-9 lg:px-6 xl:px-9"
+        className="menu-open-btn ease-in-up rounded-sm bg-primary px-8 py-3 text-base font-medium text-secondary shadow-btn transition duration-300 hover:bg-secondary hover:text-primary hover:shadow-btn-hover md:block md:px-9 lg:px-6 xl:px-9"
       >
         Crear Usuario
       </Link>
       <div
         ref={offcanvasRef}
-        className={`offcanvas-menu fixed z-99 bg-black h-screen dark:border-strokedark dark:bg-form-strokedark top-20 right-0 p-6 w-2/3 md:w-1/3 ease-in-out duration-1000 shadow-md flex items-center ${
+        className={`offcanvas-menu fixed z-99 bg-primary h-screen dark:border-strokedark dark:bg-form-strokedark top-20 right-0 p-6 w-2/3 md:w-[430px] ease-in-out duration-1000 shadow-md flex items-center ${
           isMenuOpen ? "" : "translate-x-full"
         }`}
       >
@@ -75,14 +77,11 @@ function UserCanvas() {
             />
           </svg>
         </Link>
-        <div className="flex items-center flex-col">
-          <h1 className="text-white dark:text-bodydark text-2xl font-bold uppercase">
-            Crear Usuario
+        <div className="flex flex-col w-full mt-[-4rem]">
+          <h1 className="text-secondary text-2xl font-bold text-center mb-8">
+            Crear Nuevo Usuario
           </h1>
-          <p className="text-white pb-6 dark:text-bodydark">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          </p>
-          <CrearUsuarioForm />
+          <CrearUsuarioForm onClose={handleMenuClose} />
         </div>
       </div>
     </div>

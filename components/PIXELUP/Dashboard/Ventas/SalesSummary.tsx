@@ -27,6 +27,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
   setEndDate,
 }) => {
   const [filteredData, setFilteredData] = useState<SalesDataItem[]>([]);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
 
   useEffect(() => {
     if (salesData && salesData.length > 0) {
@@ -35,6 +36,10 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
         return date >= new Date(startDate) && date <= new Date(endDate);
       });
       setFilteredData(filtered);
+
+      // Calcular la suma de los montos filtrados
+      const total = filtered.reduce((sum, item) => sum + item.amount, 0);
+      setTotalAmount(total);
     }
   }, [startDate, endDate, salesData]);
 
@@ -55,14 +60,14 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
         data: filteredData.map((item) => item.amount),
         type: "line",
         itemStyle: {
-          color: "#FF0000", // Cambia el color de la línea aquí
+          color: "#242D33", // Cambia el color de la línea aquí
         },
       },
     ],
   };
 
   return (
-    <div className=" p-6 rounded shadow border m-4">
+    <div className="bg-gray-100 p-6 rounded-lg shadow-md mt-4">
       <h2 className="text-xl font-bold mb-4">Sales Summary</h2>
       <div className="flex space-x-4 mb-4">
         <div>
@@ -85,7 +90,16 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
         </div>
       </div>
       {filteredData.length > 0 ? (
-        <ReactECharts option={chartOptions} />
+        <>
+          <p className=" text-lg font-semibold text-right">
+            Total Sales Amount:{" "}
+            {totalAmount.toLocaleString("es-CL", {
+              style: "currency",
+              currency: "CLP",
+            })}
+          </p>
+          <ReactECharts option={chartOptions} />
+        </>
       ) : (
         <p>No data available for the selected date range.</p>
       )}

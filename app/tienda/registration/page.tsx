@@ -220,13 +220,13 @@ export default function Page() {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
                       className="size-6"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M2.036 12.315c1.429-5.386 7.433-8.779 12.82-7.35m3.316 3.316c2.343 2.343 2.343 6.14 0 8.485-2.344 2.344-6.141 2.344-8.485 0-2.344-2.344-2.344-6.141 0-8.485m-3.315 3.316c2.344-2.343 6.141-2.343 8.485 0"
                       />
                     </svg>
@@ -235,13 +235,13 @@ export default function Page() {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
                       className="size-6"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M15.182 11.818l-8.485 8.485m3.316-3.316c-1.42 1.429-3.717 1.427-5.146-.001-1.429-1.428-1.429-3.725-.001-5.146l8.485-8.485m3.316-3.316c5.386 1.429 8.779 7.433 7.35 12.82m-7.35-12.82c-5.386 1.429-8.779 7.433-7.35 12.82"
                       />
                     </svg>
@@ -270,13 +270,13 @@ export default function Page() {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
                       className="size-6"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M2.036 12.315c1.429-5.386 7.433-8.779 12.82-7.35m3.316 3.316c2.343 2.343 2.343 6.14 0 8.485-2.344 2.344-6.141 2.344-8.485 0-2.344-2.344-2.344-6.141 0-8.485m-3.315 3.316c2.344-2.343 6.141-2.343 8.485 0"
                       />
                     </svg>
@@ -285,13 +285,13 @@ export default function Page() {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      strokeWidth="1.5"
                       stroke="currentColor"
                       className="size-6"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M15.182 11.818l-8.485 8.485m3.316-3.316c-1.42 1.429-3.717 1.427-5.146-.001-1.429-1.428-1.429-3.725-.001-5.146l8.485-8.485m3.316-3.316c5.386 1.429 8.779 7.433 7.35 12.82m-7.35-12.82c-5.386 1.429-8.779 7.433-7.35 12.82"
                       />
                     </svg>

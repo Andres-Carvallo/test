@@ -69,8 +69,8 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
   }, [salesData]);
 
   return (
-    <div className="p-6 rounded shadow border m-4">
-      <h2 className="text-xl font-bold mb-4">Most Sold Products</h2>
+    <div className="bg-gray-100 p-6 rounded-lg shadow-md mt-4">
+      <h2 className="text-xl font-bold mb-4">Productos Vendidos por Fecha</h2>
       <div className="flex space-x-4 mb-4">
         <div>
           <label className="block text-gray-700 font-medium">Start Date</label>
@@ -119,7 +119,12 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
               >
                 <td className="py-2 border-b">{product.productName}</td>
                 <td className="py-2 border-b">{product.quantity}</td>
-                <td className="py-2 border-b">${product.amount.toFixed(2)}</td>
+                <td className="py-2 border-b">
+                  {product.amount.toLocaleString("es-CL", {
+                    style: "currency",
+                    currency: "CLP",
+                  })}
+                </td>
               </tr>
             ))}
           </tbody>

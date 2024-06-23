@@ -125,7 +125,7 @@ const ImageUploader: React.FC<any> = ({
       {skuImages.map((image: any, index: any) => (
         <div
           key={image.id}
-          className="min-w-[100px] h-[100px] relative"
+          className="min-w-[100px] h-[100px]  relative"
         >
           <img
             src={image.imageUrl}
@@ -189,7 +189,7 @@ const ImageUploader: React.FC<any> = ({
             <p className="mb-2 text-sm text-gray-500">
               <span className="font-semibold">Click to upload</span>
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 p-2">
               SVG, PNG, JPG or GIF (MAX. 800x400px)
             </p>
           </div>
