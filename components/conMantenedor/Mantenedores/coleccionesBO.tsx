@@ -464,7 +464,7 @@ function Colecciones() {
               </th>
               <th
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                className="px-6 hidden py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 BannerText
               </th>
@@ -504,7 +504,7 @@ function Colecciones() {
                     {collection.bannerTitle}
                   </div>
                 </td>
-                <td className="px-6 py-4 md:whitespace-nowrap">
+                <td className="px-6 py-4 md:whitespace-nowrap hidden">
                   <div className="text-sm text-gray-900">
                     {collection.bannerText}
                   </div>

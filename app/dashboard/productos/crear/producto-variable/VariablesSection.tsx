@@ -21,8 +21,9 @@ function VariationsComponente({
   selectedImages,
   handleImageGalleryChange,
   handleImageRemove,
+  variations,
+  setVariations,
 }: any) {
-  const [variations, setVariations] = useState<Variation[]>([]);
   const [variationImages, setVariationImages] = useState<any[]>([]); // Estado para las imágenes de la variación
   const [attributes, setAttributes] = useState<any[]>([]);
   const [currentAttributes, setCurrentAttributes] = useState({});
@@ -280,7 +281,7 @@ function VariationsComponente({
     index: number
   ) => {
     const { value } = e.target;
-    setVariations((prevVariations) => {
+    setVariations((prevVariations: any) => {
       const updatedVariations = [...prevVariations];
       updatedVariations[index].description = value;
       return updatedVariations;
@@ -289,7 +290,7 @@ function VariationsComponente({
 
   const handleMainImageChange = (image: any, index: number) => {
     console.log(" Image:", image); // Añadir este log para verificar la imagen
-    setVariations((prevVariations) => {
+    setVariations((prevVariations: any) => {
       const updatedVariations = [...prevVariations];
       updatedVariations[index].mainImage = image;
       return updatedVariations;
@@ -297,7 +298,7 @@ function VariationsComponente({
   };
 
   const handlePreviewImageChange = (image: any, index: number) => {
-    setVariations((prevVariations) => {
+    setVariations((prevVariations: any) => {
       const updatedVariations = [...prevVariations];
       updatedVariations[index].previewImage = image;
       return updatedVariations;
@@ -349,13 +350,13 @@ function VariationsComponente({
         </button>
       </div>
 
-      {variations.map((variation, index) => (
+      {variations.map((variation: any, index: any) => (
         <div
           key={index}
           className="p-4 border border-dotted border-dark bg-white rounded-xl shadow"
         >
           <div className="flex justify-between">
-            <h3 className="bg-primary text-black px-2 rounded-xl">
+            <h3 className="bg-primary text-white px-2 py-1 rounded">
               Variación {index + 1}
             </h3>
             <div className="flex gap-4 justify-end">

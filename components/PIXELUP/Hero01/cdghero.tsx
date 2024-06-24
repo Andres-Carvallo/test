@@ -35,7 +35,8 @@ const Hero: React.FC<HeroProps> = ({ HeroData }) => {
       );
 
       const bannerImage = productTypeResponse.data.banner;
-      setBannerData(bannerImage);
+      setBannerData(bannerImage.images);
+      console.log(bannerImage.images, "bannerImage");
     } catch (error) {
       console.error("Error al obtener los tipos de producto:", error);
       // Manejar el error según sea necesario
@@ -59,18 +60,18 @@ const Hero: React.FC<HeroProps> = ({ HeroData }) => {
             <img
               className="w-1/2 md:w-1/3 xl:w-2/4 object-cover object-center rounded mx-auto"
               alt="hero"
-              src={bannerData.images[0].mainImage.url}
+              src={bannerData[0].mainImage.url}
               style={{ borderRadius: "var(--radius)" }}
             />
             <div className="md:pl-4">
               <h4 className="text-primary text-lg md:text-xl mt-6 md:mt-0">
-                {bannerData.buttonText}
+                {bannerData[0].buttonText}
               </h4>
               <h1 className="mt-2 text-3xl md:text-4xl font-bold leading-tight text-foreground">
-                {bannerData.title}
+                {bannerData[0].title}
               </h1>
               <p className="text-base md:text-lg text-foreground py-3">
-                {bannerData.landingText}
+                {bannerData[0].landingText}
               </p>
             </div>
           </div>

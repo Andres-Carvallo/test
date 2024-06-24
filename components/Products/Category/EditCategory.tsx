@@ -188,7 +188,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
   };
 
   return (
-    <div className="relative p-4 flex justify-center">
+    <div className="shadow-md border border-primary rounded-lg p-4 bg-white my-6 overflow-x-auto">
       <div className="relative w-full bg-white rounded-lg sm:p-5">
         <div>
           <div className="pb-4 mb-4 rounded-t border-b sm:mb-5">
@@ -319,16 +319,25 @@ const EditCategory: React.FC<EditCategoryProps> = ({
               </div>
             </div>
             <div className="mb-4 flex justify-between ">
-              <button
-                type="submit"
-                className="bg-secondary hover:bg-primary-800 text-white font-medium rounded-lg px-5 py-2.5"
-              >
-                Guardar Cambios
-              </button>
-
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="bg-primary hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
+                >
+                  Guardar Cambios
+                </button>
+                <button
+                  data-modal-toggle="createProductModal"
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="bg-red-800 hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
+                >
+                  Cancelar
+                </button>
+              </div>
               <button
                 onClick={handleDeleteCategory}
-                className="bg-red-500 text-white font-medium rounded-lg px-5 py-2.5"
+                className="bg-red-800 text-white font-medium rounded-lg px-5 py-2.5"
               >
                 Eliminar Categoría
               </button>

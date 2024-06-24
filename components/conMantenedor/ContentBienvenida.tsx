@@ -74,16 +74,16 @@ function ContentBienvenida() {
     <section className="py-6">
       <div className=" text-[#333] p-8 font-[sans-serif]">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl  font-bold uppercase  font-sans text-dark">
+          <h2 className="text-3xl  font-bold uppercase font-oswald   text-dark">
             {bannerData?.title}
           </h2>
           <div className="mt-4">
-            <p className="text-base font-sans text-dark">
+            <p className="text-base  text-dark font-oswald">
               {bannerData?.contentText}
             </p>
           </div>
         </div>
-        <div className="flex max-w-[500px] mx-auto justify-between mt-12">
+        {/* <div className="flex max-w-[500px] mx-auto justify-between mt-12">
           <img
             src="/img/banners/icon_corazon.png"
             className=" h-20"
@@ -99,7 +99,7 @@ function ContentBienvenida() {
             className="h-20"
             alt=""
           />
-        </div>
+        </div> */}
       </div>
     </section>
   );

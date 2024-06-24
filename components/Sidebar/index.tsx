@@ -69,7 +69,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-10 flex h-screen w-[350px] flex-col overflow-y-hidden bg-primary duration-300 ease-linear lg:static lg:translate-x-0 ${
+      className={`absolute left-0 top-0 z-40 flex h-screen w-[350px] flex-col overflow-y-hidden bg-primary duration-300 ease-linear lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -107,9 +107,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       </div>
       {/* SIDEBAR HEADER */}
 
-      <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+      <div className="no-scrollbar flex flex-col  duration-300 ease-linear">
         {/* Sidebar Menu */}
-        <nav className="mt-4 py-4 px-4 lg:px-6">
+        <nav className="mt-4 fit-content py-4 px-4 lg:px-6">
           {/* Menu Group */}
           <div>
             <ul className="mb-6 flex flex-col gap-1.5">
@@ -192,7 +192,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         openGroup === "informes" ? "" : "hidden"
                       }`}
                     >
-                      <ul className="text-white list-disc ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
+                      <ul className="text-white  ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
                         <li>
                           <Link
                             href="/dashboard/ventas"
@@ -300,7 +300,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         openGroup === "productos" ? "" : "hidden"
                       }`}
                     >
-                      <ul className="text-white list-disc ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
+                      <ul className="text-white  ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
                         <li>
                           <Link
                             href="/dashboard/productos"
@@ -333,9 +333,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         </li>
                         <li>
                           <Link
-                            href="/dashboard/categoria"
+                            href="/dashboard/categorias"
                             className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
-                              pathname === "/" && "text-white"
+                              pathname === "/dashboard/categorias" && "text-red"
                             } `}
                           >
                             Crear Categoría
@@ -414,7 +414,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         openGroup === "content-block" ? "" : "hidden"
                       }`}
                     >
-                      <ul className="text-white list-disc ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
+                      <ul className="text-white  ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
                         <li>
                           <Link
                             href="/dashboard/stats"
@@ -499,7 +499,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         openGroup === "zona-repartos" ? "" : "hidden"
                       }`}
                     >
-                      <ul className="text-white list-disc ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
+                      <ul className="text-white  ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
                         <li>
                           <Link
                             href="/dashboard/zona-repartos"
@@ -583,7 +583,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         openGroup === "promociones" ? "" : "hidden"
                       }`}
                     >
-                      <ul className="text-white list-disc ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
+                      <ul className="text-white  ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
                         <li>
                           <Link
                             href="/dashboard/ofertas"
