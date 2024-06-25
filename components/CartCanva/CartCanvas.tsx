@@ -161,7 +161,7 @@ function CartCanvas() {
         {/* Contenido del carrito */}
         <div className="fixed top-0 left-0 w-full h-full z-[1000] before:fixed   before:w-full before:h-full before:bg-[rgba(0,0,0,0.5)] font-[sans-serif]">
           <div className="w-full  bg-white shadow-lg relative ml-auto h-screen z-50">
-            <div className="overflow-auto p-6 h-[calc(100vh-135px)]">
+            <div className="overflow-auto p-6 h-[calc(100vh-135px)] min-w-[390px]">
               <div className="flex justify-between">
                 <Link
                   href="#"
@@ -223,7 +223,13 @@ function CartCanvas() {
               <ul className="text-[#333] divide-y">
                 {/* Subtotal del carrito */}
                 <li className="flex flex-wrap gap-4 text-2xl font-bold">
-                  Subtotal <span className="ml-auto">${subtotalAmount}</span>
+                  Subtotal{" "}
+                  <span className="ml-auto">
+                    {new Intl.NumberFormat("es-CL", {
+                      style: "currency",
+                      currency: "CLP",
+                    }).format(subtotalAmount)}
+                  </span>
                   {/* .toLocaleString('es-CL') */}
                 </li>
                 {/*                 <li className="flex flex-wrap gap-4 text-md font-bold">

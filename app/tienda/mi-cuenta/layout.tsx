@@ -53,7 +53,7 @@ export default function RootLayout({
 
   // Si hay token y no se está cargando, mostrar el contenido
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark">
+    <div className="bg-gray-50">
       <div className="flex overflow-hidden">
         <div className="mx-auto w-full">{children}</div>
       </div>

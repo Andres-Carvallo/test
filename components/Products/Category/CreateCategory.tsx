@@ -125,7 +125,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
   };
 
   return (
-    <div className="shadow-md border border-primary rounded-lg p-4 bg-white my-6 overflow-x-auto">
+    <div className="shadow-md b rounded-lg p-4 bg-white my-6 overflow-x-auto">
       <div className="relative w-full bg-white rounded-lg sm:p-5">
         <div>
           <div className="pb-4 mb-4 rounded-t border-b sm:mb-5">

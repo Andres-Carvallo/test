@@ -44,7 +44,7 @@ const CategoriasPage: React.FC = () => {
       <div className=" mx-auto">
         <div className="flex  min-w-96  my-4 p-4 rounded-xl gap-6">
           <button
-            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary ${
+            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md ${
               activeTab === "create" ? "bg-primary text-white" : ""
             }`}
             onClick={() => handleTabChange("create")}
@@ -52,7 +52,7 @@ const CategoriasPage: React.FC = () => {
             Crear Categoría
           </button>
           <button
-            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary ${
+            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md ${
               activeTab === "edit" ? "bg-primary text-white" : ""
             }`}
             onClick={() => handleTabChange("edit")}

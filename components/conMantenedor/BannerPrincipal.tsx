@@ -48,10 +48,22 @@ const BannerPrincipal: React.FC = () => {
         setCurrentIndex(
           (prevIndex) => (prevIndex + 1) % bannerData.images.length
         );
-      }, 3000);
+      }, 5000); // Aumenta el tiempo del intervalo a 5000ms (5 segundos)
       return () => clearInterval(interval);
     }
   }, [bannerData]);
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? (bannerData?.images.length ?? 0) - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === (bannerData?.images.length ?? 0) - 1 ? 0 : prevIndex + 1
+    );
+  };
 
   if (loading) {
     return <div className="w-full text-center p-6">Loading...</div>;
@@ -71,12 +83,19 @@ const BannerPrincipal: React.FC = () => {
       className="w-full"
     >
       <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
-        <img
-          src={currentImage.mainImage.url}
-          alt={currentImage.title}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          {bannerData.images.map((image, index) => (
+            <img
+              key={index}
+              src={image.mainImage.url}
+              alt={image.title}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                index === currentIndex ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+        </div>
+        <div className="min-h-[400px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
           <h2 className="text-2xl font-semibold mb-2 uppercase">
             {currentImage.title}
           </h2>
@@ -89,6 +108,28 @@ const BannerPrincipal: React.FC = () => {
           >
             {currentImage.buttonText}
           </a>
+        </div>
+        <button
+          className="absolute left-4 top-1/2 transform cursor-pointer z-10 -translate-y-1/2 rounded text-white bg-primary bg-opacity-50 p-2"
+          onClick={handlePrev}
+        >
+          &#10094;
+        </button>
+        <button
+          className="absolute right-4 top-1/2 transform cursor-pointer z-10 -translate-y-1/2 text-white bg-primary rounded bg-opacity-50 p-2"
+          onClick={handleNext}
+        >
+          &#10095;
+        </button>
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {bannerData.images.map((_, index) => (
+            <div
+              key={index}
+              className={`w-3 h-3 rounded-full ${
+                index === currentIndex ? "bg-white" : "bg-gray-400"
+              }`}
+            />
+          ))}
         </div>
       </div>
     </section>

@@ -56,6 +56,9 @@ const ProductDetail: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [isBaseSku, setIsBaseSku] = useState(false);
   const [hasVariations, setHasVariations] = useState(Boolean);
+  const [enabledForDelivery, setEnabledForDelivery] = useState(false);
+  const [enabledForWithdrawal, setEnabledForWithdrawal] = useState(false);
+
   const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
   const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(
     null
@@ -104,7 +107,7 @@ const ProductDetail: React.FC = () => {
         key={thumbnail.id}
         src={thumbnail.imageUrl}
         alt="Miniatura"
-        className={`object-cover cursor-pointer ${
+        className={`object-cover cursor-pointer shadow-md ${
           selectedThumbnail === thumbnail.imageUrl
             ? "border-2 border-blue-500"
             : ""
@@ -137,7 +140,7 @@ const ProductDetail: React.FC = () => {
       const responseVariations = await response.json();
       if (responseVariations.code === 0) {
         const variations = responseVariations.skus;
-
+        console.log(variations, "variations");
         const variationsWithOffers = variations.map((variation: any) => ({
           ...variation,
           offers: variation.offers || [],
@@ -153,8 +156,10 @@ const ProductDetail: React.FC = () => {
         const baseSku = variations.find((sku: any) => sku.isBaseSku);
         if (baseSku) {
           setMainImageUrl(baseSku.mainImageUrl);
-          setDescription(baseSku.description);
+          setDescription(baseSku.product.description);
           setProductName(baseSku.product.name);
+          setEnabledForDelivery(baseSku.product.enabledForDelivery);
+          setEnabledForWithdrawal(baseSku.product.enabledForWithdrawal);
         }
         if (baseSku && baseSku.product && baseSku.product.productTypes) {
           setCategories(
@@ -290,7 +295,9 @@ const ProductDetail: React.FC = () => {
     }
     return null;
   };
-
+  const calculateDiscount = (originalPrice: any, offerPrice: any) => {
+    return ((originalPrice - offerPrice) / originalPrice) * 100;
+  };
   const fetchOffersForVariation = async (productId: string, skuId: string) => {
     try {
       const response = await fetch(
@@ -487,7 +494,7 @@ const ProductDetail: React.FC = () => {
                 </div>
                 {/* Imagen principal */}
                 <div
-                  className="w-[500px] h-[500px] bg-gray-100 flex items-center justify-center"
+                  className="w-[500px] h-[500px] bg-gray-100 flex items-center justify-center shadow-md"
                   style={{ borderRadius: "var(--radius)" }}
                 >
                   <img
@@ -508,8 +515,35 @@ const ProductDetail: React.FC = () => {
               </p>
 
               <div className="flex items-center space-x-4 my-4">
-                <div>
-                  <div className="rounded-lg bg-background flex py-2 px3">
+                {selectedVariation &&
+                selectedVariation.offers &&
+                selectedVariation.offers.length > 0 ? (
+                  <div className="flex items-center">
+                    <div className="rounded-lg bg-background flex py-2 px-3">
+                      <div className="flex flex-col">
+                        {" "}
+                        <span className="font-bold text-primary text-3xl line-through mr-4">
+                          ${selectedVariationPrice?.toLocaleString("es-CL")}
+                        </span>
+                        <span className="font-bold text-red-700 text-3xl mr-2">
+                          $
+                          {selectedVariation.offers[0].unitPrice.toLocaleString(
+                            "es-CL"
+                          )}
+                        </span>
+                      </div>
+                      <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
+                        Dcto.{" "}
+                        {calculateDiscount(
+                          selectedVariationPrice,
+                          selectedVariation.offers[0].unitPrice
+                        ).toFixed(2)}
+                        %
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-background flex py-2 px-3">
                     <span className="font-bold text-primary text-3xl">
                       {selectedVariationPrice !== null ? (
                         <span>
@@ -529,22 +563,7 @@ const ProductDetail: React.FC = () => {
                       )}
                     </span>
                   </div>
-                </div>
-                <div className="flex-1">
-                  {selectedVariation &&
-                    selectedVariation.offers &&
-                    selectedVariation.offers.length > 0 && (
-                      <p className="text-red-600">
-                        Precio Oferta: $
-                        {selectedVariation.offers[0].unitPrice.toLocaleString(
-                          "es-CL"
-                        )}
-                      </p>
-                    )}
-                  <p className="text-primary text-xl font-semibold">
-                    Dcto. 25%
-                  </p>
-                </div>
+                )}
               </div>
 
               <div className="mt-8">
@@ -555,6 +574,113 @@ const ProductDetail: React.FC = () => {
                   {description ||
                     "Femenina, encantadora y misteriosa. Es la hermosa Luna que rige sobre el mundo de las emociones y da ritmo a los ciclos de vida. Para las que amamos la luna y sus secretos."}
                 </p>
+                <div className="mt-10 flex flex-wrap">
+                  <div>
+                    <p>
+                      {enabledForDelivery ? (
+                        <div className="flex">
+                          <span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="size-6"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                              />
+                            </svg>
+                          </span>
+                          <small className="px-2 text-primary self-center">
+                            Disponible para Delivery
+                          </small>
+                        </div>
+                      ) : (
+                        <div className="flex">
+                          <span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="size-6"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                              />
+                            </svg>
+                          </span>
+
+                          <small className="px-2 text-red-800 self-center">
+                            Delivery No Disponible
+                          </small>
+                        </div>
+                      )}
+                    </p>
+                    <p>
+                      {enabledForWithdrawal ? (
+                        <div className="flex">
+                          <span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="size-6"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"
+                              />
+                            </svg>
+                          </span>
+                          <small className="px-2 text-primary self-center">
+                            Disponible para Retiro
+                          </small>
+                        </div>
+                      ) : (
+                        <div className="flex">
+                          <span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="size-6"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"
+                              />
+                            </svg>
+                          </span>
+
+                          <small className="px-2 text-red-800 self-center">
+                            Retiro No Disponible
+                          </small>
+                        </div>
+                      )}
+                    </p>
+                  </div>
+                  <div className=" w-auto">
+                    <img
+                      src="/img/pixelup/wplus.svg"
+                      className="h-10 px-2"
+                      alt="LogoWebpay"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4">
@@ -607,7 +733,7 @@ const ProductDetail: React.FC = () => {
                       onChange={(e) => setQuantity(parseInt(e.target.value))}
                       className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
                     >
-                      {Array.from({ length: 5 }, (_, i) => (
+                      {Array.from({ length: 10 }, (_, i) => (
                         <option
                           className="text-center"
                           key={i}
@@ -634,7 +760,7 @@ const ProductDetail: React.FC = () => {
                 </div>
                 <button
                   onClick={handleAddToCart}
-                  className={`h-14 px-6 py-2 font-semibold rounded-xl bg-primary hover:bg-secondary text-foreground ${
+                  className={`h-14 px-6 py-2 font-semibold rounded-xl bg-primary text-white hover:bg-secondary hover:text-primary ${
                     hasVariations &&
                     (!attributeSelected || !areAllAttributesSelected())
                       ? "bg-gray-400 cursor-not-allowed"

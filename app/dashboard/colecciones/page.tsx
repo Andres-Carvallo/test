@@ -10,7 +10,7 @@ export default function BannerHome() {
   return (
     <section className="gap-4 flex flex-col">
       <div
-        className="shadow-md border border-primary p-4 bg-white"
+        className=" p-4 "
         style={{ borderRadius: "var(--radius)" }}
       >
         {/* <h4 className="uppercase font-bold mb-4">Colecciones</h4> */}

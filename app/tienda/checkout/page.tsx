@@ -28,9 +28,20 @@ function Checkout() {
 
   const [deliveryType, setDeliveryType] = useState(""); // Valor predeterminado: entrega a domicilio
   const [deliveryTypeID, setDeliveryTypeID] = useState("");
-
+  const [itemAvailability, setItemAvailability] = useState<{
+    [key: string]: ItemAvailability;
+  }>({});
   const cartId = getCookie("cartId");
-
+  const setItemAvailabilityHandler = (
+    itemId: any,
+    enabledForDelivery: any,
+    enabledForWithdrawal: any
+  ) => {
+    setItemAvailability((prevState) => ({
+      ...prevState,
+      [itemId]: { enabledForDelivery, enabledForWithdrawal },
+    }));
+  };
   const [customer, setCustomer] = useState({
     cartId: cartId,
     deliveryTypeId: "",
@@ -47,7 +58,6 @@ function Checkout() {
   });
 
   const handleSubmitOrder = async () => {
-    // Validar campos vacíos
     if (
       !customer.customer.firstname ||
       !customer.customer.lastname ||
@@ -117,7 +127,6 @@ function Checkout() {
         };
         setCartItems(updatedCartItems);
 
-        // Actualizar la cantidad en la API
         const cartId = getCookie("cartId");
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
@@ -142,7 +151,6 @@ function Checkout() {
         };
         setCartItems(updatedCartItems);
 
-        // Actualizar la cantidad en la API
         const cartId = getCookie("cartId");
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
@@ -163,7 +171,6 @@ function Checkout() {
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`
       );
-      // Si la solicitud se completa con éxito, actualiza el estado del carrito eliminando el elemento correspondiente
       setCartItems((prevItems: any) =>
         prevItems.filter((item: any) => item.id !== itemId)
       );
@@ -200,11 +207,11 @@ function Checkout() {
   const handleRegionChange = (e: any) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
-    setSelectedCommune(""); // Reset selected commune when region changes
+    setSelectedCommune("");
     if (regionId) {
       fetchCommunes(regionId);
     } else {
-      setCommunes([]); // Reset communes if no region is selected
+      setCommunes([]);
     }
   };
 
@@ -219,27 +226,53 @@ function Checkout() {
       },
     });
   };
+  interface ItemAvailability {
+    enabledForDelivery: boolean;
+    enabledForWithdrawal: boolean;
+  }
+  const validateDeliveryOption = (option: any) => {
+    const invalidItems = cartItems.filter((item: any) => {
+      if (option === "HOME_DELIVERY")
+        return !itemAvailability[item.id]?.enabledForDelivery;
+      if (option === "WITHDRAWAL_FROM_STORE")
+        return !itemAvailability[item.id]?.enabledForWithdrawal;
+      return false;
+    });
+
+    if (invalidItems.length > 0) {
+      toast.error(
+        `Los siguientes productos no son elegibles para ${
+          option === "HOME_DELIVERY" ? "delivery" : "retiro"
+        }: ${invalidItems.map((item: any) => item.sku.product.name).join(", ")}`
+      );
+      return false;
+    }
+
+    return true;
+  };
 
   const handleChangeDeliveryType = async (newValue: any) => {
-    setDeliveryType(newValue);
+    if (validateDeliveryOption(newValue)) {
+      setDeliveryType(newValue);
 
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
-      );
-      const deliveryTypes = response.data.deliveryTypes;
-      const selectedDeliveryType = deliveryTypes.find(
-        (type: any) => type.code === newValue
-      );
-      if (selectedDeliveryType) {
-        setDeliveryTypeID(selectedDeliveryType.id);
-      } else {
-        console.error(
-          "No se encontró el deliveryType seleccionado en la respuesta de la API"
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
         );
+        const deliveryTypes = response.data.deliveryTypes;
+        const selectedDeliveryType = deliveryTypes.find(
+          (type: any) => type.code === newValue
+        );
+        if (selectedDeliveryType) {
+          setDeliveryTypeID(selectedDeliveryType.id);
+        } else {
+          console.error(
+            "No se encontró el deliveryType seleccionado en la respuesta de la API"
+          );
+        }
+      } catch (error) {
+        console.error("Error al obtener los tipos de entrega:", error);
       }
-    } catch (error) {
-      console.error("Error al obtener los tipos de entrega:", error);
     }
   };
 
@@ -348,6 +381,7 @@ function Checkout() {
                   incrementQuantity={incrementQuantity}
                   decrementQuantity={decrementQuantity}
                   removeItem={removeItem}
+                  setItemAvailability={setItemAvailabilityHandler}
                 />
               </div>
             </div>
@@ -454,7 +488,7 @@ function Checkout() {
                     htmlFor="addressLine1"
                     className="block mt-4"
                   >
-                    Direccion
+                    Dirección
                     <input
                       type="text"
                       id="addressLine1"
@@ -476,7 +510,7 @@ function Checkout() {
                     htmlFor="addressLine2"
                     className="block mt-4"
                   >
-                    Direccion 2
+                    Dirección 2
                     <input
                       type="text"
                       id="addressLine2"
@@ -512,7 +546,7 @@ function Checkout() {
                   <span className="sr-only">Info</span>
                   <div>
                     <span className="font-semibold">Delivery.</span> Solo
-                    apareceran las comunas que tengan disponibilidad de entrega.
+                    aparecerán las comunas que tengan disponibilidad de entrega.
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

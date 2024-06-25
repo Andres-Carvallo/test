@@ -437,7 +437,7 @@ function Colecciones() {
   return (
     <section>
       <Breadcrumb pageName="Colecciones" />
-      <div className="shadow-md border border-primary rounded-lg p-4 bg-white my-6 overflow-x-auto">
+      <div className="shadow-md  rounded-lg p-4 bg-white my-6 overflow-x-auto">
         <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
           Colecciones Creadas
         </h2>
@@ -561,7 +561,7 @@ function Colecciones() {
         </table>
       </div>
 
-      <div className="shadow-md border border-primary rounded-lg p-4 bg-white my-6">
+      <div className="shadow-md  rounded-lg p-4 bg-white my-6">
         <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
           {isEditing ? "Editar Colección" : "Crear Colección"}
         </h2>

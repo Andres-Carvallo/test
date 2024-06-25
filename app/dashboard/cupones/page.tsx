@@ -283,7 +283,7 @@ function CuponForm() {
     <section>
       <Breadcrumb pageName="Cupones" />
       <div
-        className="border border-primary p-4 bg-white my-6 overflow-x-auto"
+        className=" p-4 bg-white my-6 overflow-x-auto shadow-md"
         style={{ borderRadius: "var(--radius)" }}
       >
         <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">

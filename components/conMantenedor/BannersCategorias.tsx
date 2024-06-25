@@ -45,8 +45,8 @@ const BannersCategorias = () => {
         <div>
           <div className=" py-6 sm:py-8 lg:py-12">
             <div className="mx-auto max-w-screen-2xl px-4 md:px-8">
-              <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:mb-12 lg:text-3xl uppercase">
-                Categorías
+              <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:mb-12 lg:text-3xl ">
+                Categorías Destacadas
               </h2>
 
               <div className="flex flex-wrap gap-6 items-center align-middle justify-center">

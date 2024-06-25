@@ -82,7 +82,9 @@ export default function RootLayout({
 
               {/* <!-- ===== Main Content Start ===== --> */}
 
-              <div className="mx-auto p-6 w-full -z-1">{children} </div>
+              <div className="mx-auto p-6 w-full -z-1 bg-gray-50">
+                {children}{" "}
+              </div>
 
               {/* <!-- ===== Main Content End ===== --> */}
             </div>

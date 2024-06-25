@@ -8,32 +8,39 @@ import axios from "axios";
 import OfferCanvas from "@/components/Offcanvas/OfferCanvas";
 
 type Offer = {
-  id: string;
-  unitPrice: number;
-  startDate: Date;
-  endDate: Date;
+  [x: string]: any;
+  currencyCodeId: any;
+  unitPrice: any;
+  startDate: any;
+  endDate: any;
 };
 
 function DetalleOferta() {
   const { id } = useParams();
   const [sku, setSku] = useState<any[]>([]);
+  const [product, setProduct] = useState<any>(null);
   const [currentAttributes, setCurrentAttributes] = useState<
     Record<string, any[]>
   >({});
   const [currentPrices, setCurrentPrices] = useState<
     Record<string, number | null>
   >({});
-  const [variationsWithOffers, setVariationsWithOffers] = useState<any>([]);
+  const [variationsWithOffers, setVariationsWithOffers] = useState<any>({});
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
-  const [offerToEdit, setOfferToEdit] = useState<Offer | null>(null);
+  const [offerToEdit, setOfferToEdit] = useState<Offer | null>({
+    currencyCodeId: "",
+    unitPrice: 0,
+    startDate: undefined,
+    endDate: undefined,
+  });
 
   const handleVariationSelect = async (variation: any) => {
     setSelectedVariation(variation);
-    await fetchOffersForVariation(id as string, variation.id);
+    await fetchOffersForProduct(id as string, variation.id);
   };
 
   const handleDeleteOffer = (offerId: string) => {
@@ -43,10 +50,8 @@ function DetalleOferta() {
 
   const handleEditOffer = (offerId: string) => {
     const offer = offers.find((o) => o.id === offerId);
-    console.log("Editing offer:", offer); // Verifica la oferta que se está editando
     setOfferToEdit(offer || null);
     setIsOffcanvasOpen(true);
-    console.log("Offcanvas open:", isOffcanvasOpen); // Verifica si el Offcanvas se abre
   };
 
   const handleModalConfirm = async () => {
@@ -59,13 +64,12 @@ function DetalleOferta() {
             "Content-Type": "application/json",
           },
         };
-        const response = await axios.delete(
+        await axios.delete(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${selectedVariation.id}/offers/${offerToDelete}`,
           config
         );
-        console.log("Oferta eliminada con éxito:", response.data);
+        fetchOffersForProduct(id as string, selectedVariation.id);
         setShowModal(false);
-        fetchOffersForVariation(id as string, selectedVariation.id);
       } catch (error) {
         console.log("Error al eliminar la oferta:", error);
       }
@@ -85,16 +89,55 @@ function DetalleOferta() {
           "Content-Type": "application/json",
         },
       };
+
+      const formattedOffer = {
+        ...updatedOffer,
+        currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
+        startDate: updatedOffer?.startDate?.toISOString().split("T")[0],
+        endDate: updatedOffer?.endDate?.toISOString().split("T")[0],
+      };
+
       const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${selectedVariation.id}/offers/${updatedOffer.id}`,
-        updatedOffer,
+        `${
+          process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE
+        }/api/v1/products/${id}/skus/${
+          selectedVariation?.id || product?.skuId
+        }/offers/${updatedOffer.id}`,
+        formattedOffer,
         config
       );
       console.log("Oferta actualizada con éxito:", response.data);
-      fetchOffersForVariation(id as string, selectedVariation.id);
+      fetchOffersForProduct(
+        id as string,
+        selectedVariation?.id || product?.skuId
+      );
       setIsOffcanvasOpen(false);
     } catch (error) {
       console.log("Error al actualizar la oferta:", error);
+    }
+  };
+  const fetchPriceForProduct = async (productId: string, skuId: string) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      if (data.code === 0 && data.skuPricings.length > 0) {
+        return data.skuPricings[0].unitPrice;
+      } else {
+        console.error("Error al obtener el precio del producto:", data.message);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error al obtener el precio del producto:", error);
+      return null;
     }
   };
 
@@ -137,7 +180,6 @@ function DetalleOferta() {
         setVariationsWithOffers(offersByVariation);
 
         setSku(filteredVariations);
-        console.log("Variaciones:", filteredVariations);
       } else {
         console.error("Error fetching variations:", responseVariations.message);
       }
@@ -146,16 +188,11 @@ function DetalleOferta() {
     }
   };
 
-  useEffect(() => {
-    fetchVariations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const fetchOffersForVariation = async (productId: string, skuId: string) => {
+  const fetchProductDetails = async () => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -165,17 +202,62 @@ function DetalleOferta() {
       );
       const data = await response.json();
       if (data.code === 0) {
-        setOffers(data.skuOffers);
-        console.log("Ofertas:", data.skuOffers);
+        const fetchedProduct = data.product;
+        setProduct(fetchedProduct);
+
+        if (!fetchedProduct.hasVariations) {
+          const productPrice = await fetchPriceForProduct(
+            id as string,
+            fetchedProduct.skuId
+          );
+          setCurrentPrices((prevPrices) => ({
+            ...prevPrices,
+            [fetchedProduct.skuId]: productPrice,
+          }));
+        }
       } else {
-        console.error(
-          "Error al obtener las ofertas de la variación:",
-          data.message
-        );
+        console.error("Error fetching product details:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchProductDetails();
+    fetchVariations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  useEffect(() => {
+    if (product) {
+      fetchOffersForProduct(id as string, product.skuId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product]);
+
+  const fetchOffersForProduct = async (productId: string, skuId?: string) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const url = skuId
+        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers`
+        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/offers`;
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (data.code === 0) {
+        setOffers(data.skuOffers || data.offers);
+      } else {
+        console.error("Error al obtener las ofertas:", data.message);
         setOffers([]);
       }
     } catch (error) {
-      console.error("Error al obtener las ofertas de la variación:", error);
+      console.error("Error al obtener las ofertas:", error);
       setOffers([]);
     }
   };
@@ -290,105 +372,158 @@ function DetalleOferta() {
         <div className="flex flex-col md:flex-row items-center justify-center p-4">
           <div className="w-full md:w-2/3 flex flex-col items-center">
             <div className="flex flex-col items-center justify-center text-center text-4xl mt-2 mb-4">
-              {sku.length > 0 && <h3 key={sku[0].id}>{sku[0].product.name}</h3>}
+              {product && <h3>{product.name}</h3>}
             </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto max-w-[1500px] mx-auto">
-          <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <th className="px-2 py-2">Imagen</th>
-                <th className="px-2 py-2">Precio</th>
-                <th className="px-2 py-2">Atributos</th>
-                <th className="px-2 py-2">Oferta</th>
-                <th className="px-2 py-2">Crear/Editar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sku.map((item) => (
-                <tr
-                  key={item.id}
-                  className="dark:border-gray-700"
-                >
-                  <td className="px-2 py-2 border border-gray-300">
-                    <img
-                      className="w-14 h-14 object-cover mx-auto"
-                      alt={item.name}
-                      src={item.mainImageUrl}
-                    />
-                  </td>
-                  <td className="px-2 py-2 border border-gray-300">
-                    {currentPrices[item.id]?.toLocaleString("es-CL")
-                      ? `$${currentPrices[item.id]?.toLocaleString("es-CL")}`
-                      : "N/A"}
-                  </td>
-                  <td className="px-2 py-2 border border-gray-300 text-center">
-                    <div className="current-attributes">
-                      {currentAttributes[item.id]?.length ? (
-                        currentAttributes[item.id].map(
-                          (attribute, attrIndex) => (
-                            <div
-                              key={attrIndex}
-                              className="mt-1 flex flex-wrap justify-center uppercase"
-                            >
-                              <div className="bg-primary text-secondary px-1 py-0.5 rounded text-xs">
-                                {attribute.label}:{" "}
-                                <span className="font-bold">
-                                  {attribute.value}
-                                </span>
-                              </div>
-                            </div>
-                          )
-                        )
-                      ) : (
-                        <span>No hay atributos disponibles</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-2 py-2 border border-gray-300">
-                    {variationsWithOffers[item.id] ? "Sí" : "No"}
-                  </td>
-                  <td className="px-2 py-2 border border-gray-300">
-                    <div className="flex flex-wrap justify-center gap-4">
-                      {variationsWithOffers[item.id] ? (
-                        <button
-                          onClick={() => handleVariationSelect(item)}
-                          className="bg-primary text-white px-1 py-0.5 rounded hover:underline"
-                        >
-                          Editar
-                        </button>
-                      ) : null}
-
-                      <OfferCanvas
-                        itemId={selectedVariation?.product.id}
-                        //handleEditOffer={handleEditOffer}
-                        skuId={selectedVariation?.id}
-                        fetchVariations={fetchVariations}
-                        offerToEdit={offerToEdit}
-                        onSave={handleSaveOffer}
-                        isOpen={isOffcanvasOpen}
-                        onClose={() => setIsOffcanvasOpen(false)}
-                      />
-                    </div>
-                  </td>
+        {product && (
+          <div className="overflow-x-auto max-w-[1500px] mx-auto">
+            <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  <th className="px-2 py-2">Imagen</th>
+                  <th className="px-2 py-2">Precio Normal</th>
+                  <th className="px-2 py-2">Atributos</th>
+                  <th className="px-2 py-2">Oferta</th>
+                  <th className="px-2 py-2">Crear/Editar</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {product.hasVariations ? (
+                  sku.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="dark:border-gray-700"
+                    >
+                      <td className="px-2 py-2 border border-gray-300">
+                        <img
+                          className="w-14 h-14 object-cover mx-auto"
+                          alt={item.name}
+                          src={item.mainImageUrl}
+                        />
+                      </td>
+                      <td className="px-2 py-2 border border-gray-300">
+                        {currentPrices[item.id]?.toLocaleString("es-CL")
+                          ? `$${currentPrices[item.id]?.toLocaleString(
+                              "es-CL"
+                            )}`
+                          : "N/A"}
+                      </td>
+                      <td className="px-2 py-2 border border-gray-300 text-center">
+                        <div className="current-attributes">
+                          {currentAttributes[item.id]?.length ? (
+                            currentAttributes[item.id].map(
+                              (attribute, attrIndex) => (
+                                <div
+                                  key={attrIndex}
+                                  className="mt-1 flex flex-wrap justify-center uppercase"
+                                >
+                                  <div className="bg-primary text-secondary px-1 py-0.5 rounded text-xs">
+                                    {attribute.label}:{" "}
+                                    <span className="font-bold">
+                                      {attribute.value}
+                                    </span>
+                                  </div>
+                                </div>
+                              )
+                            )
+                          ) : (
+                            <span>No hay atributos disponibles</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 border border-gray-300">
+                        {variationsWithOffers[item.id] ? "Sí" : "No"}
+                      </td>
+                      <td className="px-2 py-2 border border-gray-300">
+                        <div className="flex flex-wrap justify-center gap-4">
+                          {variationsWithOffers[item.id] ? (
+                            <button
+                              onClick={() => handleVariationSelect(item)}
+                              className="bg-primary text-white px-1 py-0.5 rounded hover:underline"
+                            >
+                              Editar
+                            </button>
+                          ) : null}
+
+                          <OfferCanvas
+                            itemId={product.id}
+                            skuId={item.id}
+                            fetchVariations={fetchVariations}
+                            offerToEdit={offerToEdit}
+                            onSave={handleSaveOffer}
+                            isOpen={isOffcanvasOpen}
+                            onClose={() => setIsOffcanvasOpen(false)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td className="px-2 py-2 border border-gray-300">
+                      <img
+                        className="w-14 h-14 object-cover mx-auto"
+                        alt={product.name}
+                        src={product.previewImageUrl}
+                      />
+                    </td>
+                    <td className="px-2 py-2 border border-gray-300">
+                      {currentPrices[product.skuId] != null
+                        ? `$${currentPrices[product.skuId]?.toLocaleString(
+                            "es-CL"
+                          )}`
+                        : "N/A"}
+                    </td>
+                    <td className="px-2 py-2 border border-gray-300 text-center">
+                      <span>No hay atributos disponibles</span>
+                    </td>
+                    <td className="px-2 py-2 border border-gray-300">
+                      {variationsWithOffers[product.id] ? "Sí" : "No"}
+                    </td>
+                    <td className="px-2 py-2 border border-gray-300">
+                      <div className="flex flex-wrap justify-center gap-4">
+                        {variationsWithOffers[product.id] ? (
+                          <button
+                            onClick={() =>
+                              fetchOffersForProduct(id as string, product.skuId)
+                            }
+                            className="bg-primary text-white px-1 py-0.5 rounded hover:underline"
+                          >
+                            Ver Ofertas
+                          </button>
+                        ) : null}
+
+                        <OfferCanvas
+                          itemId={product.id}
+                          skuId={product.skuId}
+                          fetchVariations={fetchVariations}
+                          offerToEdit={offerToEdit}
+                          onSave={handleSaveOffer}
+                          isOpen={isOffcanvasOpen}
+                          onClose={() => setIsOffcanvasOpen(false)}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         <div className="w-full">
-          {selectedVariation && (
+          {(selectedVariation || (product && !product.hasVariations)) && (
             <div className="pb-6">
               <h2 className="text-center font-semibold uppercase py-6">
-                Ofertas de la variación{" "}
+                Ofertas Activas
               </h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
                   <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                      <th className="px-2 py-2">Precio</th>
+                      <th className="px-2 py-2">Precio Oferta</th>
                       <th className="px-2 py-2">Fecha de Inicio</th>
                       <th className="px-2 py-2">Fecha de Fin</th>
                       <th className="px-2 py-2">Acciones</th>

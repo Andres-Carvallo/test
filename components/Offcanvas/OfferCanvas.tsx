@@ -6,16 +6,16 @@ import OfferForm from "./form/OfferForm";
 type Offer = {
   id: string;
   unitPrice: number;
-  startDate: Date;
-  endDate: Date;
+  startDate: any;
+  endDate: any;
 };
 
 type OfferCanvasProps = {
   itemId: string;
   skuId: string;
-  fetchVariations: () => void;
-  offerToEdit?: Offer | null;
-  onSave: (updatedOffer: Offer) => void;
+  fetchVariations: any;
+  offerToEdit?: any;
+  onSave: any;
   isOpen: boolean;
   onClose: () => void;
 };
@@ -66,14 +66,14 @@ function OfferCanvas({
   const [unitPrice, setUnitPrice] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [currencyCode, setCurrencyCode] = useState("");
+  const [currencyCodeId, setCurrencyCodeId] = useState("");
 
   const handleMenuOpenCreate = () => {
     setIsMenuOpen(true);
     setUnitPrice("");
     setStartDate("");
     setEndDate("");
-    setCurrencyCode("");
+    setCurrencyCodeId("8ccc1abd-b35b-45ff-b814-b7c78fff3594"); // Default currencyCodeId
   };
 
   const handleMenuClose = () => {
@@ -127,18 +127,17 @@ function OfferCanvas({
             id={itemId}
             skuId={skuId}
             fetchVariations={fetchVariations}
-            handleMenuOpen={handleMenuOpen}
             handleMenuClose={handleMenuClose}
-            offerToEdit={offerToEdit} // Pasa la oferta a editar al formulario
-            onSave={onSave} // Pasa la función onSave para manejar la guardado
+            offerToEdit={offerToEdit}
+            onSave={onSave}
             unitPrice={unitPrice}
             setUnitPrice={setUnitPrice}
-            setEndDate={setEndDate}
             startDate={startDate}
             setStartDate={setStartDate}
             endDate={endDate}
-            currencyCode={currencyCode}
-            setCurrencyCode={setCurrencyCode}
+            setEndDate={setEndDate}
+            currencyCodeId={currencyCodeId}
+            setCurrencyCodeId={setCurrencyCodeId}
           />
         </div>
       </div>
