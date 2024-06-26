@@ -150,7 +150,7 @@ function AdminLoginForm() {
 }
 
 export default function App() {
-  const siteKey = process.env.RECAPTCHA_SITE_KEY;
+  const siteKey = process.env.RECAPTCHA_SITE_KEY || "";
   return (
     <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
       <AdminLoginForm />
