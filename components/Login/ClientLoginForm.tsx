@@ -1,20 +1,42 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { setCookie } from "cookies-next";
-export default function ClientLoginForm() {
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from "react-google-recaptcha-v3";
+
+function ClientLoginForm() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+
+    if (!executeRecaptcha) {
+      console.error("Execute recaptcha not yet available");
+      setLoading(false);
+      return;
+    }
 
     try {
+      const recaptchaToken = await executeRecaptcha("login");
+      setRecaptchaToken(recaptchaToken);
+
       const data = {
         email: e.target[0].value,
         password: e.target[1].value,
+        recaptchaToken: recaptchaToken, // Añadir el token de reCAPTCHA
       };
+
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/authentications?siteId=${SiteId}`,
@@ -26,86 +48,100 @@ export default function ClientLoginForm() {
         throw new Error("Error during login");
       }
 
-      const token = response.data.token;
+      const authToken = response.data.token;
 
       // Configurar la cookie para que expire en 45 minutos
-      setCookie("ClientTokenAuth", token, {
+      setCookie("ClientTokenAuth", authToken, {
         maxAge: 60 * 45, // 45 minutos en segundos
       });
 
       window.location.href = "/tienda";
     } catch (error) {
       console.error("Error during login:", error);
+      setError(
+        "Error de inicio de sesión. Por favor, verifica tus credenciales."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <div className=" mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
-        <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
-          <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
-            Ingresa a tu cuenta
-          </h3>
+    <div className="mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+      <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
+        <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
+          Ingresa a tu cuenta
+        </h3>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-8">
-              <label
-                htmlFor="email"
-                className="mb-3 block text-sm text-dark dark:text-white"
-              >
-                Your Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your Email"
-                className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
-              />
-            </div>
-            <div className="mb-8">
-              <label
-                htmlFor="password"
-                className="mb-3 block text-sm text-dark dark:text-white"
-              >
-                Your Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Enter your Password"
-                className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
-              />
-            </div>
-            <div className="mb-6">
-              <button
-                type="submit"
-                className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-secondary shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
-              >
-                Login
-              </button>
-            </div>
-          </form>
-          <p className="text-center text-base font-medium text-body-color">
-            ¿Aún no tienes cuenta?{" "}
-            <Link
-              href="/tienda/registration"
-              className="text-primary hover:underline"
+        {error && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+            role="alert"
+          >
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline"> {error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-8">
+            <label
+              htmlFor="email"
+              className="mb-3 block text-sm text-dark dark:text-white"
             >
-              Registrate
-            </Link>
-          </p>
-          <p className="text-center text-base font-medium text-body-color">
-            ¿Olvidaste tu Contraseña?{" "}
-            <Link
-              href="/tienda/recuperar-password"
-              className="text-primary hover:underline"
+              Tu Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Ingresa tu Email"
+              className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              required
+            />
+          </div>
+          <div className="mb-8">
+            <label
+              htmlFor="password"
+              className="mb-3 block text-sm text-dark dark:text-white"
             >
-              Recuperar Contraseña
-            </Link>
-          </p>
-        </div>
+              Tu Contraseña
+            </label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Ingresa tu Contraseña"
+              className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-secondary shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
+              disabled={loading}
+            >
+              {loading ? "Cargando..." : "Iniciar Sesión"}
+            </button>
+          </div>
+        </form>
+        <p className="text-center text-base font-medium text-body-color">
+          ¿Aún no tienes cuenta?{" "}
+          <Link
+            href="/tienda/registration"
+            className="text-primary hover:underline"
+          >
+            Registrate
+          </Link>
+        </p>
+        <p className="text-center text-base font-medium text-body-color">
+          ¿Olvidaste tu Contraseña?{" "}
+          <Link
+            href="/tienda/recuperar-password"
+            className="text-primary hover:underline"
+          >
+            Recuperar Contraseña
+          </Link>
+        </p>
       </div>
 
       {/* Indicador de carga */}
@@ -132,6 +168,15 @@ export default function ClientLoginForm() {
           </div>
         </div>
       )}
-    </>
+    </div>
+  );
+}
+
+export default function App() {
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <ClientLoginForm />
+    </GoogleReCaptchaProvider>
   );
 }

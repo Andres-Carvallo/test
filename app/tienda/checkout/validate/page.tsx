@@ -3,12 +3,12 @@ import Validate from "@/components/Checkout/Validate";
 import { Suspense } from "react";
 import Loader from "@/components/common/Loader";
 export const metadata: Metadata = {
-  title: "Pago OK",
-  description: "This is About Page for Startup Nextjs Template",
+  title: "Validando Pago",
+  description: "validando pago pixelup.xl",
   // other metadata
 };
 
-const Ok = () => {
+const Validando = () => {
   return (
     <div className="container py-16">
       <Validate />
@@ -19,7 +19,7 @@ const Ok = () => {
 const OkWithSuspense = () => {
   return (
     <Suspense fallback={<Loader />}>
-      <Ok />
+      <Validando />
     </Suspense>
   );
 };

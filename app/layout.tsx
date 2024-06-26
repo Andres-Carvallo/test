@@ -1,10 +1,9 @@
-import { Inter, Roboto_Mono, Kalam, Oswald, Lato } from "next/font/google";
+import { Roboto_Mono, Kalam, Oswald, Lato } from "next/font/google";
 import "./globals.css";
 import { APIContextProvider } from "@/app/Context/ProductTypeContext";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
-
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -59,7 +58,7 @@ export default function RootLayout({
         >
           <Providers>
             <Toaster />
-            <div className="min-h-screen ">{children}</div>
+            <div className="min-h-screen ">{children}</div>{" "}
           </Providers>
         </body>
       </APIContextProvider>
