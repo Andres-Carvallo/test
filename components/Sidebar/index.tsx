@@ -77,7 +77,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <div className="mt-8 flex items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
         <Link href="/">
           <img
-            src="/img/pixelup-white.png"
+            src="/img/Logo/logo-300x300-blanco.png"
             alt=""
             className="w-32 mt-2"
           />
@@ -417,22 +417,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       <ul className="text-white  ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
                         <li>
                           <Link
-                            href="/dashboard/stats"
+                            href="/dashboard/banner-home"
                             className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Componentes Home
+                            Home
                           </Link>
                         </li>
                         <li>
                           <Link
-                            href="/dashboard/stats"
+                            href="/dashboard/tienda"
                             className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Componentes Generales
+                            Tienda
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/about-us"
+                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                              pathname === "/" && "text-white"
+                            } `}
+                          >
+                            About
                           </Link>
                         </li>
                       </ul>
@@ -610,6 +620,34 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   </React.Fragment>
                 )}
               </SidebarLinkGroup>
+
+              {/* SEO */}
+
+              <li>
+                <Link
+                  href="/dashboard/SEO"
+                  className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                    pathname.includes("Contactos") &&
+                    "bg-graydark dark:bg-meta-4"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.5"
+                    stroke="currentColor"
+                    className="size-7"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                    />
+                  </svg>
+                  SEO
+                </Link>
+              </li>
               {/* Menu Item Promociones */}
 
               {/* Menu Item pedidos */}
@@ -776,6 +814,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   Usuarios
                 </Link>
               </li>
+
               {/* Menu Item Usuarios */}
 
               {/* Menu Item Settings */}
@@ -819,6 +858,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   Settings
                 </Link>
               </li>
+
               {/* Menu Item Settings */}
             </ul>
           </div>

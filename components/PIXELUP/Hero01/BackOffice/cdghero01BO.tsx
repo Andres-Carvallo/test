@@ -388,7 +388,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
               fill="currentColor"
             />
           </svg>
-          {loading ? "Loading..." : "Update Banner"}
+          {loading ? "Loading..." : "Actualizar Banner"}
         </button>
       </form>
     </section>

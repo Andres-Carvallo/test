@@ -4,6 +4,9 @@ import BannerPrincipalBO from "@/components/conMantenedor/Mantenedores/BannerPri
 import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTiendaBO";
 import BannersCategoriasBO from "@/components/conMantenedor/Mantenedores/BannersCategoriasBO";
 import Hero01BO from "@/components/PIXELUP/Hero01/BackOffice/Hero01BO";
+import Hero02BO from "@/components/PIXELUP/Hero02/BackOffice/Hero02BO";
+import FrasesBO from "@/components/PIXELUP/Frases/BackOffice/FrasesBO";
+import BannerPrincipalBO01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01";
 
 export default function BannerHome() {
   return (
@@ -15,28 +18,26 @@ export default function BannerHome() {
         <h4 className="uppercase font-bold mb-4">Banner Home</h4>
         <BannerPrincipalBO />
       </div>
-      {/* banner tienda */}
       <div
         className="shadow-md border border-primary mt-6 p-4 bg-white"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Banner Tienda</h4>
-        <BannerTiendaBO />
-      </div>
-      {/* banner categorias home */}
-      <div
-        className="shadow-md border border-primary mt-6 p-4 bg-white"
-        style={{ borderRadius: "var(--radius)" }}
-      >
-        <h4 className="uppercase font-bold mb-4">Banner Categorías Home</h4>
+        <h4 className="uppercase font-bold mb-4">Categoría</h4>
         <BannersCategoriasBO />
       </div>
       <div
         className="shadow-md border border-primary mt-6 p-4 bg-white"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Banner Hero</h4>
-        <Hero01BO />
+        <h4 className="uppercase font-bold mb-4">Banner About Me</h4>
+        <Hero02BO />
+      </div>
+      <div
+        className="shadow-md border border-primary mt-6 p-4 bg-white"
+        style={{ borderRadius: "var(--radius)" }}
+      >
+        <h4 className="uppercase font-bold mb-4">Frases</h4>
+        <FrasesBO />
       </div>
     </section>
   );

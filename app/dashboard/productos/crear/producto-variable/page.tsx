@@ -14,6 +14,7 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import TabCategory from "@/components/Products/Category/TabCategory";
 import CreateAtribute from "@/components/Products/CreateAtribute";
 import toast from "react-hot-toast";
+import StarCheckbox from "@/components/PIXELUP/Checkbox/StarCheckbox";
 
 interface ImageData {
   name: string;
@@ -55,6 +56,14 @@ const CrearProductoVariable: React.FC = () => {
       return null; // En caso de error, devuelve null
     }
   };
+  const handleCheckboxChange = () => {
+    setIsFeatured(!isFeatured);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      isFeatured: !prevFormData.isFeatured,
+    }));
+  };
+
   const fetchProducTypes = async () => {
     try {
       const token = getCookie("AdminTokenAuth");
@@ -103,6 +112,7 @@ const CrearProductoVariable: React.FC = () => {
     enabledForWithdrawal: false,
     hasVariations: true,
     hasFeaturedBaseSku: false,
+    isFeatured: false,
     measures: {
       length: 0,
       width: 0,
@@ -360,6 +370,7 @@ const CrearProductoVariable: React.FC = () => {
       enabledForWithdrawal: false,
       hasVariations: true,
       hasFeaturedBaseSku: false,
+      isFeatured: false,
       measures: {
         length: 1,
         width: 1,
@@ -643,11 +654,9 @@ const CrearProductoVariable: React.FC = () => {
                   />
                 </div>
                 <div className="mt-2 flex gap-2">
-                  <input
-                    type="checkbox"
-                    id="isFeatured"
-                    checked={isFeatured}
-                    onChange={(e) => setIsFeatured(e.target.checked)}
+                  <StarCheckbox
+                    isChecked={isFeatured}
+                    onChange={handleCheckboxChange}
                   />
                   <label htmlFor="isFeatured">Destacar Producto</label>
                 </div>

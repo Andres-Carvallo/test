@@ -3,8 +3,53 @@
 @tailwind utilities;
 
 body {
-  @apply font-lato;
+  @apply font-Montserrat;
 }
+
+h1{
+  @apply text-3xl;
+}
+
+h2{
+  @apply text-2xl;
+}
+
+h3{
+  @apply text-xl;
+}
+
+p{
+  @apply text-lg;
+}
+.editortexto ul{
+  @apply list-disc;
+}
+
+.editortexto ol{
+  @apply list-decimal;
+}
+
+.ql-editor ul, ol {
+  padding-left: 0.25rem;
+}
+
+.ql-indent-1 {
+  padding-left: 2.5rem;
+}
+.ql-indent-2 {
+  padding-left: 4rem;
+}
+.ql-indent-3 {
+  padding-left: 5.5rem;
+}
+.ql-indent-4 {
+  padding-left: 7rem;
+}
+
+
+
+
+
 
 @layer utilities {
   .text-balance {
@@ -13,48 +58,49 @@ body {
 }
 
 @layer base {
-  :root {
-    --background: 204 0% 100%;
-    --foreground: 204 0% 10%;
-    --card: 204 0% 100%;
-    --card-foreground: 204 0% 15%;
-    --popover: 204 0% 100%;
-    --popover-foreground: 204 95% 10%;
-    --primary: 204 17.2% 17.1%;
+
+  :root  {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 95% 10%;
+    --primary: 0 0% 30.2%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 204 10% 90%;
+    --secondary: 0 10% 90%;
     --secondary-foreground: 0 0% 0%;
-    --muted: 166 10% 95%;
-    --muted-foreground: 204 0% 40%;
-    --accent: 166 10% 90%;
-    --accent-foreground: 204 0% 15%;
+    --muted: 197, 67%, 73%;  /* -12 10% 95% */    
+    --muted-foreground: 0 0% 40%;
+    --accent: -38 10% 90%;
+    --accent-foreground: 0 0% 15%;
     --destructive: 0 50% 50%;
-    --destructive-foreground: 204 0% 100%;
-    --border: 204 20% 82%;
-    --input: 204 20% 50%;
-    --ring: 204 17.2% 17.1%;
-    --radius: 1rem;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 20% 82%;
+    --input: 0 20% 50%;
+    --ring: 0 0% 30.2%;
+    --radius: 0rem;
   }
-  .dark {
-    --background: 204 10% 10%;
-    --foreground: 204 0% 100%;
-    --card: 204 0% 10%;
-    --card-foreground: 204 0% 100%;
-    --popover: 204 10% 5%;
-    --popover-foreground: 204 0% 100%;
-    --primary: 204 17.2% 17.1%;
+  .dark  {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 95% 10%;
+    --primary: 0 0% 30.2%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 204 10% 20%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 166 10% 25%;
-    --muted-foreground: 204 0% 65%;
-    --accent: 166 10% 25%;
-    --accent-foreground: 204 0% 95%;
+    --secondary: 0 10% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 197, 67%, 73%;  /* -12 10% 95% */    
+    --muted-foreground: 0 0% 40%;
+    --accent: -38 10% 90%;
+    --accent-foreground: 0 0% 15%;
     --destructive: 0 50% 50%;
-    --destructive-foreground: 204 0% 100%;
-    --border: 204 20% 50%;
-    --input: 204 20% 50%;
-    --ring: 204 17.2% 17.1%;
-    --radius: 1rem;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 20% 82%;
+    --input: 0 20% 50%;
+    --ring: 0 0% 30.2%;
+    --radius: 0rem;
   }
 }

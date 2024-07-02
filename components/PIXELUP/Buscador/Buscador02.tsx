@@ -63,10 +63,7 @@ const Buscador = () => {
   }, [inputRef]);
 
   return (
-    <div
-      className="md:max-w-[130px] w-full"
-      ref={inputRef}
-    >
+    <div className="w-full md:max-w-[143px]" ref={inputRef}>
       <div className="relative">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -87,7 +84,7 @@ const Buscador = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar productos..."
+          placeholder="Buscar productos"
           className="w-full p-2 pl-7 border text-xs border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
           onFocus={() => query.trim() !== "" && setShowResults(true)}

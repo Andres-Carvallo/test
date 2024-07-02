@@ -6,6 +6,7 @@ import BannerTienda from "@/components/conMantenedor/BannerTienda";
 import Link from "next/link";
 import ProductCard from "@/components/PIXELUP/Productos03/ProductCard";
 import Loader from "@/components/common/Loader";
+import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCard01";
 
 const ProductGridShop = () => {
   const [loading, setLoading] = useState(true);
@@ -35,17 +36,30 @@ const ProductGridShop = () => {
       let data;
       if (urlProductTypeId) {
         if (urlProductTypeId === "ALL") {
-          data = await obtenerProductos(SiteId, pageNumber, PageSize);
+          data = await obtenerProductos(
+            SiteId,
+            pageNumber,
+            PageSize,
+            null,
+            false
+          );
         } else {
           data = await obtenerProductos(
             SiteId,
             pageNumber,
             PageSize,
-            urlProductTypeId
+            urlProductTypeId,
+            false
           );
         }
       } else {
-        data = await obtenerProductos(SiteId, pageNumber, PageSize);
+        data = await obtenerProductos(
+          SiteId,
+          pageNumber,
+          PageSize,
+          null,
+          false
+        );
       }
 
       // Actualiza el estado con la cantidad de productos por página y la cantidad de páginas
@@ -58,6 +72,7 @@ const ProductGridShop = () => {
       );
 
       setProducts(filteredProducts);
+      console.log(filteredProducts, "filas");
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -208,7 +223,13 @@ const ProductGridShop = () => {
                 name="productType"
                 onChange={(e) => handleChangeCategories(e.target.value)}
               >
-                <option value="ALL">Categorías</option>
+                <option
+                  value="ALL"
+                  disabled
+                >
+                  Categorías
+                </option>
+                <option value="ALL">Todos</option>
                 {productTypes.map((productType: any) => (
                   <option
                     key={productType.id}
@@ -263,86 +284,10 @@ const ProductGridShop = () => {
           </div>
         </div>
 
-        {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {products.map((producto: any) => {
-            const renderPrice = () => {
-              if (producto.hasVariations && producto.pricingRanges) {
-                const { minimumAmount, maximumAmount } =
-                  producto.pricingRanges[0];
-                return (
-                  <span className=" text-gray-900 dark:text-white">
-                    ${maximumAmount.toLocaleString("es-CL")} - $
-                    {minimumAmount.toLocaleString("es-CL")}
-                  </span>
-                );
-              }
-              if (producto.pricings) {
-                return (
-                  <span className=" text-gray-900 dark:text-white">
-                    ${producto.pricings[0].amount.toLocaleString("es-CL")}
-                  </span>
-                );
-              }
-              return null;
-            };
-
-            return (
-              <div
-                key={producto.id}
-                className="w-full bg-background p-4 shadow-xl rounded-lg"
-              >
-                <Link
-                  href={`/tienda/productos/${producto.id}`}
-                  className="group block overflow-hidden border shadow-sm rounded-lg"
-                >
-                  <div
-                    className="h-60 relative bg-background flex flex-col justify-between p-6 bg-cover bg-center"
-                    style={{
-                      backgroundImage: `url(${producto.previewImageUrl})`,
-                    }}
-                  >
-                    <p className="px-2 absolute top-1 py-1 mt-2 bg-primary text-secondary font-light text-xs text-center rounded-lg">
-                      {producto.productTypes[0].name}
-                    </p>
-                  </div>
-                </Link>
-                <div className="p-2 flex flex-col items-center">
-                  <h1 className="text-black dark:text-white text-center font-semibold mt-1">
-                    {producto.name}
-                  </h1>
-                  <h3 className="text-black hidden dark:text-white text-center text-xs mt-1">
-                    {producto.description.slice(0, 100)}
-                    {producto.description.length > 100 ? "..." : ""}
-                  </h3>
-                  <p className="text-center text-black font-xs font-base dark:text-white mt-1">
-                    {renderPrice()}
-                  </p>
-                  <div className="flex items-center justify-center">
-                    {producto.hasVariations ? (
-                      <Link
-                        href={`/tienda/productos/${producto.id}`}
-                        className="shadow text-center mt-4 py-2 px-4 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg"
-                      >
-                        Ver más detalles
-                      </Link>
-                    ) : (
-                      <button
-                        className="shadow mt-4 py-2 px-4 bg-primary hover:bg-secondary text-secondary hover:text-primary rounded-lg"
-                        onClick={() => addToCartHandler(producto.skuId, 1)}
-                      >
-                        Agregar al carrito
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div> */}
         <div className="flex w-full justify-center pt-6">
           <div className="flex flex-wrap max-w-[1500px] w-full justify-center gap-8 px-4">
             {products.map((product: any) => (
-              <ProductCard
+              <ProductCard01
                 key={product.id}
                 product={product}
                 addToCartHandler={addToCartHandler}

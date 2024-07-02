@@ -1,9 +1,10 @@
-import { Roboto_Mono, Kalam, Oswald, Lato } from "next/font/google";
+import { Inter, Roboto_Mono, Kalam, Oswald, Lato, Montserrat } from "next/font/google";
 import "./globals.css";
 import { APIContextProvider } from "@/app/Context/ProductTypeContext";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
+
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -21,11 +22,17 @@ const lato = Lato({
   weight: ["400"],
   variable: "--font-lato",
 });
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-Montserrat",
+});
 const oswald = Oswald({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-oswald",
 });
+
 
 export default function RootLayout({
   children,
@@ -54,11 +61,11 @@ export default function RootLayout({
         <Analytics />
 
         <body
-          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} `}
+          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} `}
         >
           <Providers>
             <Toaster />
-            <div className="min-h-screen ">{children}</div>{" "}
+            <div className="min-h-screen ">{children}</div>
           </Providers>
         </body>
       </APIContextProvider>

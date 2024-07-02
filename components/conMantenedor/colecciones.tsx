@@ -4,17 +4,67 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Loader from "../common/Loader";
+import ProductCard from "@/components/PIXELUP/ProductCards/ProductCard01";
 
 const Collection = () => {
   const [collectionData, setCollectionData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-  const { addToCartHandler, products, setProducts } = useAPI();
-  const [collectionProduct, setCollectionProduct] = useState<any | null>(null);
+  const { addToCartHandler } = useAPI();
+  const [collectionProduct, setCollectionProduct] = useState<any[]>([]);
   const { id } = useParams();
+
+  const fetchPriceForProduct = async (productId: string, skuId: string) => {
+    try {
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${siteId}`
+      );
+      const data = await response.json();
+      console.log(`Datos de precios para el producto ${productId} y SKU ${skuId}:`, data); // Log para verificar datos
+      return data;
+    } catch (error) {
+      console.error("Error al obtener el precio de la variación:", error);
+      return null;
+    }
+  };
+
+  const fetchSkusForProduct = async (productId: string) => {
+    try {
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus?siteId=${siteId}`
+      );
+      const data = await response.json();
+      console.log(`SKUs para el producto ${productId}:`, data); // Log para verificar datos de SKUs
+      return data;
+    } catch (error) {
+      console.error("Error al obtener los SKUs del producto:", error);
+      return null;
+    }
+  };
+
+  const getPriceForVariableProduct = async (product: any) => {
+    const skus = await fetchSkusForProduct(product.id);
+    if (skus && skus.skus && skus.skus.length > 0) {
+      const prices = await Promise.all(
+        skus.skus.map(async (sku: any) => {
+          const priceData = await fetchPriceForProduct(product.id, sku.id);
+          return priceData && priceData.skuPricings && priceData.skuPricings.length > 0
+            ? priceData.skuPricings[0].unitPrice
+            : null;
+        })
+      );
+      const validPrices = prices.filter((price) => price !== null);
+      const minimumAmount = Math.min(...validPrices);
+      const maximumAmount = Math.max(...validPrices);
+      console.log(`Rango de precios para producto variable ${product.id}:`, { minimumAmount, maximumAmount }); // Log para verificar rangos de precios
+      return { minimumAmount, maximumAmount };
+    }
+    return { minimumAmount: null, maximumAmount: null };
+  };
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -24,8 +74,26 @@ const Collection = () => {
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections/${id}?pageNumber=1&pageSize=50&siteId=${siteId}`
         );
         const collection = response.data.collection;
-        setCollectionProduct(collection.products);
         setCollectionData(collection);
+
+        // Log para verificar los productos recuperados
+        console.log("Productos recuperados de la colección:", collection.products);
+
+        // Fetch prices for each product
+        const productsWithPrices = await Promise.all(
+          collection.products.map(async (product: any) => {
+            if (product.hasVariations) {
+              const pricingRanges = await getPriceForVariableProduct(product);
+              return { ...product, pricingRanges: [pricingRanges] };
+            } else {
+              const priceData = await fetchPriceForProduct(product.id, product.skuId);
+              const price = priceData && priceData.skuPricings && priceData.skuPricings.length > 0 ? priceData.skuPricings[0].unitPrice : null;
+              return { ...product, pricings: [{ amount: price }] };
+            }
+          })
+        );
+
+        setCollectionProduct(productsWithPrices);
       } catch (error) {
         console.error("Error al obtener el contacto:", error);
         setError(error as Error);
@@ -67,74 +135,19 @@ const Collection = () => {
             </div>
           </div>
         )}
-        <div className="w-full mx-auto ">
-          <div className="p-4 mx-auto lg:max-w-6xl sm:max-w-full py-16">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 py-4 justify-items-center">
-              {collectionProduct.map((product: any) => (
-                <div
-                  key={product.id}
-                  className="w-80 bg-background p-4 shadow-xl"
-                  style={{ borderRadius: "var(--radius)" }}
-                >
-                  <div
-                    className=""
-                    style={{ borderRadius: "var(--radius)" }}
-                  >
-                    <Link
-                      href={`/tienda/productos/${product.id}`}
-                      className="group block overflow-hidden border shadow-sm"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <div
-                        className="h-60 relative bg-background flex flex-col justify-between p-6 bg-cover bg-center"
-                        style={{
-                          backgroundImage: `url(${product.previewImageUrl})`,
-                        }}
-                      >
-                        <p
-                          className="px-2 absolute top-1 py-1 mt-2 bg-primary text-secondary font-light text-xs text-center"
-                          style={{ borderRadius: "var(--radius)" }}
-                        >
-                          {product.productTypes[0].name}
-                        </p>
-                      </div>
-                    </Link>
-                  </div>
 
-                  <div className="p-2 flex flex-col items-center">
-                    <h1 className="text-black dark:text-white text-center font-semibold mt-1">
-                      {product.name}
-                    </h1>
-                    <h3 className="text-black dark:text-white text-center text-xs mt-1">
-                      {product.description.slice(0, 100)}
-                      {product.description.length > 100 ? "..." : ""}
-                    </h3>
-                    {/* <p className="text-center text-black font-xs font-semibold dark:text-white mt-1">
-              {renderPrice()}
-            </p> */}
-                    <div className="flex items-center justify-center">
-                      {product.hasVariations ? (
-                        <Link
-                          href={`/tienda/productos/${product.id}`}
-                          className="shadow text-center mt-4 py-2 px-4 bg-primary hover:bg-secondary text-secondary hover:text-primary"
-                          style={{ borderRadius: "var(--radius)" }}
-                        >
-                          Ver más detalles
-                        </Link>
-                      ) : (
-                        <button
-                          className="shadow mt-4 py-2 px-4 bg-primary hover:bg-secondary text-secondary hover:text-primary"
-                          style={{ borderRadius: "var(--radius)" }}
-                          onClick={() => addToCartHandler(product.skuId, 1)}
-                        >
-                          Agregar al carrito
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="flex w-full justify-center pt-6">
+          <div className="flex flex-wrap max-w-[1500px] w-full justify-center gap-8 px-4 py-8">
+            {collectionProduct.map((product: any) => {
+              console.log(`Producto ${product.id} con precio:`, product.pricings || product.pricingRanges); // Log para verificar precios pasados a ProductCard
+              return (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  addToCartHandler={addToCartHandler}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
