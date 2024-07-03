@@ -32,6 +32,7 @@ function Checkout() {
     [key: string]: ItemAvailability;
   }>({});
   const cartId = getCookie("cartId");
+
   const setItemAvailabilityHandler = (
     itemId: any,
     enabledForDelivery: any,

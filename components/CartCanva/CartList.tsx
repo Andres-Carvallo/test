@@ -1,12 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
-
+const noop = () => {};
 function CartList({
   cartItems,
   decrementQuantity,
   incrementQuantity,
   removeItem,
-  setItemAvailability,
+  setItemAvailability = noop,
 }: any) {
   const [updatedCartItems, setUpdatedCartItems] = useState<any[]>([]);
 

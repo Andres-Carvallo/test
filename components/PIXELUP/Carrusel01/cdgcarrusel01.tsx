@@ -61,7 +61,7 @@ const Carrusel01: React.FC<CarruselProps> = ({ CarruselData }) => {
   }, [autoplay]);
 
   return (
-    <div className="container mx-auto m-8 mt-16">
+    <div className="container mx-auto m-8 mt-16 max-w-7xl">
       <h1 className="mb-8 text-center text-3xl font-semibold text-primary sm:text-4xl">
         {titulo}
       </h1>
@@ -88,7 +88,7 @@ const Carrusel01: React.FC<CarruselProps> = ({ CarruselData }) => {
             href={`/tienda/productos/${detalle.id}`}
           >
             <div className="relative flex flex-col items-center">
-              <div className="absolute top-4 right-4 bg-primary text-secondary px-2 py-1 rounded-bl-lg">
+              <div className="absolute top-4 right-3 md:right-6 lg:right-0 bg-primary text-secondary px-2 py-1 rounded-bl-lg">
                 {etiqueta}
               </div>
               <img

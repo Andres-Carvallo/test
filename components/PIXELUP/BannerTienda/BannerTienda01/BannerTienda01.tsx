@@ -64,9 +64,12 @@ const BannerPrincipal = () => {
               <h2 className="sm:text-4xl text-2xl font-bold mb-6">
                 {bannerData.images[0].title}
               </h2>
-              <p className="text-lg text-center text-gray-200">
-                {bannerData.images[0].landingText}
-              </p>
+              <p
+                className="text-lg text-center text-gray-200"
+                dangerouslySetInnerHTML={{
+                  __html: bannerData.images[0].landingText,
+                }}
+              />
               <a
                 href={bannerData.images[0].buttonLink}
                 className="mt-8 hidden bg-transparent text-white text-base font-semibold py-2.5 px-6 border-2 border-white rounded hover:bg-white hover:text-black transition duration-300 ease-in-out"

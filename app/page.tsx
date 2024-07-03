@@ -16,31 +16,16 @@ import Frase02 from "@/components/PIXELUP/Frases/Frase02/Frase02";
 import Hero02 from "@/components/PIXELUP/Hero02/Hero02";
 import Footer01 from "@/components/PIXELUP/Footer01/Footer01";
 import Navbar02 from "@/components/PIXELUP/Navbar02/Navbar02";
-import Navbar03 from "@/components/PIXELUP/Navbar/Navbar03/Navbar03";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "PIXELUP.cl | SEO Rdy",
-  description: "Pixelup | SEO Rdy",
-  openGraph: {
-    title: "PIXELUP.cl | SEO Rdy1",
-    description: "Pixelup | SEO Rdy1",
-    url: "https://www.pixelup.cl",
-    type: "website",
-    images: [
-      {
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/img/pixelup.png`,
-        width: 500,
-        height: 500,
-        alt: "Pixelup Image",
-      },
-    ],
-  },
-};
 
 export default function Home() {
   return (
     <>
+      <title>PixelUP</title>
+      <meta
+        name="description"
+        content="My page description"
+      />
+
       <MarqueeTOP />
       {/* <Header /> */}
       {/* <Navbar01 /> */}

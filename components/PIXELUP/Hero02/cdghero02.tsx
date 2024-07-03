@@ -66,7 +66,7 @@ const Hero02: React.FC<Hero02Props> = ({ Hero02Data }) => {
     <div>
       <div className="px-6 lg:px-0 mt-24 flex justify-center">
         <div
-          className="relative w-full max-w-6xl h-[500px] bg-cover bg-center"
+          className="relative w-full max-w-7xl h-[500px] bg-cover bg-center"
           style={{ borderRadius: "var(--radius)" }}
         >
           <img
