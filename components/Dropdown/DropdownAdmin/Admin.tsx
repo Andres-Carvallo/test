@@ -19,7 +19,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/login");
+      router.push("/admin-login");
       return;
     }
 
@@ -28,7 +28,7 @@ export default function Page() {
       decodedToken = jwtDecode(token);
     } catch (error) {
       console.error("Error al decodificar el token:", error);
-      router.push("/login");
+      router.push("/admin-login");
       return;
     }
 
@@ -40,7 +40,7 @@ export default function Page() {
         setUserDataInfo(userData.user);
       } catch (error) {
         console.error("Error al obtener el usuario:", error);
-        router.push("/login");
+        router.push("/");
       }
     };
 
@@ -66,13 +66,13 @@ export default function Page() {
 
   const handleLogout = async () => {
     deleteCookie("AdminTokenAuth");
-    router.push("/login");
+    router.push("/");
   };
 
   return (
     <div style={{ position: "relative" }}>
       {!token && (
-        <Link href="/login">
+        <Link href="/tienda/login">
           <button
             id="loginButton"
             className="text-sm bg-gray-800 rounded-full text-white md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"

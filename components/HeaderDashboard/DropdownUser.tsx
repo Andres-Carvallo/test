@@ -37,7 +37,7 @@ const DropdownUser = () => {
         setUserDataInfo(userData.user);
       } catch (error) {
         console.error("Error al obtener el usuario:", error);
-        router.push("/login");
+        router.push("/");
       }
     };
 
