@@ -6,7 +6,7 @@ import BannerTienda from "@/components/conMantenedor/BannerTienda";
 import Link from "next/link";
 import ProductCard from "@/components/PIXELUP/Productos03/ProductCard";
 import Loader from "@/components/common/Loader";
-import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCard01";
+import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 
 const ProductGridShop = () => {
   const [loading, setLoading] = useState(true);

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router"; // Importa useRouter
 import { useTheme } from "next-themes";
-import ThemeToggler from "../Theme/ThemeToggler";
-import Buscador from "../Buscador/Buscador02";
+import ThemeToggler from "@/components/PIXELUP/Theme/ThemeToggler";
+import Buscador from "@/components/PIXELUP/Buscador/Buscador02";
 import CartCanvas from "@/components/CartCanva/CartCanvas";
 import axios from "axios";
 import { getCookie } from "cookies-next";

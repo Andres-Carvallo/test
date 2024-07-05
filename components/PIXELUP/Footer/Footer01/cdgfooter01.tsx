@@ -1,10 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Marquee from "react-fast-marquee";
 import Image from "next/image";
-import MailchimpForm from "../MailChimp/MailchimpForm";
+import MailchimpForm from "@/components/PIXELUP/MailChimp/MailchimpForm";
+import axios from "axios";
 
 interface FooterProps {
   FooterData: {
@@ -17,7 +19,27 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ FooterData }) => {
   const { titulo, subtitulo, parrafo, img } = FooterData;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [collections, setCollections] = useState<any[]>([]);
+  const fetchCollections = async () => {
+    try {
+      const siteid = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`
+      );
+      setCollections(response.data.collections);
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+      setError(error as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchCollections();
+  }, []);
   return (
     <footer className="bg-primary flex items-center justify-center w-full">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
@@ -86,61 +108,26 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   </li>
                 </ul>
               </div>
-              <div>
-                <h3 className="text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
-                  Colecciones
-                </h3>
-                <ul className="mt-4 space-y-2">
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Diosa Madre
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Sagradas
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Cosmos
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Nómadas
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Serpiente
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Tribu
-                    </a>
-                  </li>
-                </ul>
-              </div>
+
+              {collections.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
+                    Colecciones
+                  </h3>
+                  <ul className="mt-4 space-y-2">
+                    {collections.map((collection) => (
+                      <li key={collection.id}>
+                        <Link
+                          href={`/tienda/colecciones/${collection.id}`}
+                          className="text-base hover:underline"
+                        >
+                          {collection.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div>
                 <h3 className="text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
                   Colecciones

@@ -19,7 +19,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/admin-login");
+      router.push("/admin/login");
       return;
     }
 
@@ -28,7 +28,7 @@ export default function Page() {
       decodedToken = jwtDecode(token);
     } catch (error) {
       console.error("Error al decodificar el token:", error);
-      router.push("/admin-login");
+      router.push("/admin/login");
       return;
     }
 

@@ -2,10 +2,11 @@
 
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Marquee from "react-fast-marquee";
 import Image from "next/image";
+import axios from "axios";
 
 interface Footer03Props {
   Footer03Data: {
@@ -18,7 +19,27 @@ interface Footer03Props {
 
 const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
   const { titulo, subtitulo, parrafo, img } = Footer03Data;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [collections, setCollections] = useState<any[]>([]);
+  const fetchCollections = async () => {
+    try {
+      const siteid = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`
+      );
+      setCollections(response.data.collections);
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+      setError(error as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchCollections();
+  }, []);
   return (
     <div className="bg-background text-primary p-16 shadow-2xl border-t border-foreground/10">
       <div className="flex flex-col">
@@ -59,7 +80,7 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
             </a>
           </div>
 
-          <div className="w-36 m-4 flex flex-col ">
+          {/*           <div className="w-36 m-4 flex flex-col ">
             <h4 className="text-m leading-4 mb-2 font-bold">Tienda</h4>
             <a
               href="#"
@@ -85,7 +106,25 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
             >
               <p>Pulseras</p>
             </a>
-          </div>
+          </div> */}
+
+          {collections.length > 0 && (
+            <div className="w-36 m-4 flex flex-col">
+              <h4 className="text-m leading-4 mb-2 font-bold">Colecciones</h4>
+              <ul className="">
+                {collections.map((collection) => (
+                  <li key={collection.id}>
+                    <Link
+                      href={`/tienda/colecciones/${collection.id}`}
+                      className="hover:underline"
+                    >
+                      <p> {collection.title}</p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="w-36 m-4 flex flex-col ">
             <h4 className="text-m leading-4 mb-2 font-bold">Colecciones</h4>

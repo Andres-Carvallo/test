@@ -3,6 +3,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { setCookie } from "cookies-next";
+import Link from "next/link";
 import {
   GoogleReCaptchaProvider,
   useGoogleReCaptcha,
@@ -119,6 +120,15 @@ function AdminLoginForm() {
           </div>
           <div className="pb-20px"></div>
         </form>
+        <p className="text-center text-xs font-medium text-body-color">
+          ¿Olvidaste tu Contraseña?{" "}
+          <Link
+            href="/admin/recuperar-password"
+            className="text-primary hover:underline font-bold"
+          >
+            Recuperar Contraseña
+          </Link>
+        </p>
       </div>
 
       {/* Indicador de carga */}

@@ -8,10 +8,12 @@ import { HandlePriceSku } from "@/app/utils/HandlePriceSku";
 import { handleStockSku } from "@/app/utils/HandleStockSku";
 import ImageUploaderVariable from "./ImageUploaderVariable";
 import GalleryUpload2 from "@/components/Products/ImgUpload/GalleryUploadV2";
+import { useAPI } from "@/app/Context/ProductTypeContext";
+import toast from "react-hot-toast";
+import Loader from "@/components/common/Loader";
 const VariationForm: React.FC<any> = ({
   index,
   variation,
-  attributes,
   setVariations,
   fetchVariations,
   currentPrices,
@@ -29,6 +31,9 @@ const VariationForm: React.FC<any> = ({
 
   handleImageRemove,
 }) => {
+  const { fetchAttributes, attributes, setAttributes, loading, error } =
+    useAPI();
+
   const isEditMode = !!variation.id;
 
   const currentVariationIndex = index;
@@ -43,7 +48,9 @@ const VariationForm: React.FC<any> = ({
   );
 
   const searchParams = useSearchParams();
-
+  const [checkOfferChecked, setCheckOfferChecked] = useState(false);
+  const [alertStock, setAlertStock] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     // Cargar atributos actuales si está en modo edición
     if (isEditMode && currentAttributes[variation.id]) {
@@ -168,10 +175,42 @@ const VariationForm: React.FC<any> = ({
   };
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-
+    setIsLoading(true);
     const token = getCookie("AdminTokenAuth");
     const idVariable = searchParams.get("productVariableId");
     const currentVariation = variation;
+
+    // Inicializa un array para almacenar los mensajes de error
+    const errorMessages = [];
+
+    // Verificación de campos obligatorios y agregado de mensajes de error específicos
+    if (!isEditMode) {
+      if (!currentVariation.description) {
+        errorMessages.push("Descripción es obligatoria.");
+      }
+      if (!currentVariation.mainImage) {
+        errorMessages.push("Imagen principal es obligatoria.");
+      }
+      if (precioNormal === null || isNaN(precioNormal)) {
+        errorMessages.push("Precio es obligatorio y debe ser un número.");
+      }
+      if (stockQuantity === null || isNaN(stockQuantity)) {
+        errorMessages.push("Stock es obligatorio y debe ser un número.");
+      }
+      if (
+        attributePairs.length === 0 ||
+        attributePairs.some((attr) => !attr.id || !attr.value)
+      ) {
+        errorMessages.push("Cada atributo debe tener un ID y un valor.");
+      }
+    }
+
+    // Si hay mensajes de error, mostrar toasts y retornar
+    if (errorMessages.length > 0) {
+      errorMessages.forEach((msg) => toast.error(msg));
+      return;
+    }
+
     // Imagen por defecto
     const defaultPreviewImage = {
       name: "pixelup.cl",
@@ -185,6 +224,7 @@ const VariationForm: React.FC<any> = ({
         (!currentVariation.description || !currentVariation.mainImage)
       ) {
         console.error("Todos los campos son obligatorios.");
+        setIsLoading(false);
         return;
       }
       currentVariation.previewImage =
@@ -239,17 +279,25 @@ const VariationForm: React.FC<any> = ({
 
       if (idVariable && stockQuantity !== null) {
         try {
-          await handleStockSku(idVariable, variationId, stockQuantity);
+          await handleStockSku(
+            idVariable,
+            variationId,
+            stockQuantity,
+            alertStock
+          );
         } catch (error) {
           console.error("Error handling stock:", error);
         }
       } else {
         console.error("Invalid input parameters for stock handling.");
       }
-      for (const image of variation.selectedImages) {
-        console.log("Llamando a addProductImage con imagen:", image);
-        if (idVariable !== null) {
-          await addProductImage(idVariable, variationId, image);
+      // Verificación y recorrido de las imágenes seleccionadas
+      if (variation.selectedImages && Array.isArray(variation.selectedImages)) {
+        for (const image of variation.selectedImages) {
+          console.log("Llamando a addProductImage con imagen:", image);
+          if (idVariable !== null) {
+            await addProductImage(idVariable, variationId, image);
+          }
         }
       }
       // Manejar los atributos de la variación
@@ -320,36 +368,42 @@ const VariationForm: React.FC<any> = ({
       }
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsLoading(false); // Aquí detienes el loading al final, independientemente del resultado
     }
   };
-
+  if (isLoading) {
+    return <Loader />;
+  }
   return (
     <div className="mt-4">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="col-span-2">
-          <label htmlFor="description">Descripción</label>
-          <textarea
-            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-            name="description"
-            value={variation.description}
-            onChange={(e) => onDescriptionChange(e, currentVariationIndex)}
-          />
-        </div>
-        <div className="current-attributes">
-          <h3>Atributos Actuales:</h3>
-          {currentAttributes[variation.id]?.map(
-            (attribute: any, index: any) => (
-              <div
-                key={index}
-                className="mt-2 flex flex-wrap uppercase"
-              >
-                <div className="bg-primary text-white px-2 py-1 rounded text-xs">
-                  {attribute.label}:
-                  <span className="font-bold">{attribute.value}</span>
-                </div>
-              </div>
-            )
-          )}
+      <div className="w-full">
+        <label htmlFor="description">Descripción</label>
+        <textarea
+          className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+          name="description"
+          value={variation.description}
+          onChange={(e) => onDescriptionChange(e, currentVariationIndex)}
+        />
+      </div>
+      <div
+        style={{ borderRadius: "var(--radius)" }}
+        className="shadow  flex items-center p-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+        role="alert"
+      >
+        <svg
+          className="flex-shrink-0 inline w-4 h-4 me-3"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+        </svg>
+        <span className="sr-only">Info</span>
+        <div>
+          Agrega los atributos que tendra tu variacion,{" "}
+          <strong>como minimo debe tener 1.</strong>
         </div>
       </div>
 
@@ -430,7 +484,7 @@ const VariationForm: React.FC<any> = ({
           disabled={attributes.length === selectedAttributes.length}
           className="flex gap-2 bg-green-700 text-white px-4 py-2 rounded align-middle"
         >
-          Agregar Atributo
+          Atributos
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -448,145 +502,147 @@ const VariationForm: React.FC<any> = ({
         </button>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-4 border border-dark border-dotted rounded p-2">
-        <div className="mt-2 flex gap-2">
-          <input
-            type="checkbox"
-            id={`hasUnlimitedStock-${index}`}
-            checked={variation.hasUnlimitedStock}
-            onChange={(e) =>
-              setVariations((prevVariations: any) => {
-                const updatedVariations = [...prevVariations];
-                updatedVariations[currentVariationIndex].hasUnlimitedStock =
-                  e.target.checked;
-                return updatedVariations;
-              })
-            }
-          />
-          <label htmlFor={`hasUnlimitedStock-${index}`}>Stock ilimitado</label>
-        </div>
-        <div className="mt-2 flex gap-2">
-          <input
-            type="checkbox"
-            id={`hasStockNotifications-${index}`}
-            checked={variation.hasStockNotifications}
-            onChange={(e) =>
-              setVariations((prevVariations: any) => {
-                const updatedVariations = [...prevVariations];
-                updatedVariations[currentVariationIndex].hasStockNotifications =
-                  e.target.checked;
-                return updatedVariations;
-              })
-            }
-          />
-          <label htmlFor={`hasStockNotifications-${index}`}>
-            Notificaciones de stock
-          </label>
-        </div>
-      </div>
-      <div className="mt-4 grid grid-cols-1 space-y-2">
-        <div className=" border border-dashed border-dark/50 rounded-lg p-4">
-          <div className="grid grid-cols-1 gap-2">
-            <div>
-              <label htmlFor={`precioNormal_${index}`}>Precio Normal</label>
-              <input
-                type="number"
-                id={`precioNormal_${index}`}
-                name="precioNormal"
-                value={precioNormal !== null ? precioNormal : ""}
-                onChange={(e) => setPrecioNormal(Number(e.target.value))}
-                placeholder="Precio normal"
-                className="p-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-              />
-            </div>
-          </div>
-        </div>
-        <div className=" border border-dashed border-dark/50 rounded-lg p-4">
+      <div className="mt-4 grid grid-cols-1 space-y-8 ">
+        <div
+          className="shadow border  p-4"
+          style={{ borderRadius: "var(--radius)" }}
+        >
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label htmlFor={`stock_${index}`}>Stock</label>
+              <label className="font-normal ">Precio</label>
               <input
                 type="number"
-                id={`stock_${index}`}
-                name="precioNormal"
-                value={stockQuantity !== null ? stockQuantity : ""}
-                onChange={(e) => setStockQuantity(Number(e.target.value))}
-                placeholder="Stock"
-                className="p-2 py-2.5 w-full mt-1 text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                style={{ borderRadius: "var(--radius)" }}
+                value={precioNormal !== null ? precioNormal : ""}
+                onChange={(e) => setPrecioNormal(parseFloat(e.target.value))}
+                name="precioProducto"
                 required
               />
-
-              <div className=" hidden">
-                <label className="inline-flex items-center cursor-pointer pl-2">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                  />
-                  <div className="relative top-2 w-10 h-6 bg-background border-primary border  peer-focus:outline-1 peer-focus:ring-1 peer-focus:ring-primary dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-primary after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-secondary after:border-primary after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
-                  <span className="ms-3 mt-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                    Activar Alerta
-                  </span>
-                </label>
-              </div>
             </div>
             <div>
-              <label>
-                Alerta Stock{" "}
-                <span className="text-xs font-bold">( Proximamente )</span>{" "}
-              </label>
+              <label className="font-normal ">Stock</label>
               <input
                 type="number"
-                disabled
-                className="block mb-2 p-2.5 mt-1 w-full text-sm text-dark bg-gray-100 rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                name=""
-                id=""
+                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                style={{ borderRadius: "var(--radius)" }}
+                value={stockQuantity !== null ? stockQuantity : ""}
+                onChange={(e) => setStockQuantity(parseFloat(e.target.value))}
+                name="precioProducto"
+                required
               />
-              <p className="text-xs flex items-center gap-2">
-                <span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
-                    />
-                  </svg>
-                </span>
-                Recibirás una notificación por correo electrónico cuando el
-                stock alcance el umbral seleccionado.
-              </p>
             </div>
+          </div>
+
+          <div className="flex justify-between">
+            <label className="items-center cursor-pointer inline-flex pl-2">
+              <input
+                type="checkbox"
+                id={`hasStockNotifications-${index}`}
+                className="sr-only peer"
+                checked={variation.hasStockNotifications && checkOfferChecked}
+                onChange={(e) => {
+                  const isChecked = e.target.checked;
+                  setVariations((prevVariations: any) => {
+                    const updatedVariations = [...prevVariations];
+                    updatedVariations[
+                      currentVariationIndex
+                    ].hasStockNotifications = isChecked;
+                    return updatedVariations;
+                  });
+                  setCheckOfferChecked(isChecked);
+                }}
+              />
+
+              <div className="relative w-8 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-blue-400 dark:peer-focus:ring-blue-600 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-blue-500 after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-primary after:border-gray-300 after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-500 peer-checked:bg-gray-500" />
+
+              <span className="ms-3 text-base  text-gray-900 dark:text-gray-300">
+                Activar Alerta
+              </span>
+            </label>
+            <label className="items-center cursor-pointer inline-flex pl-2">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                id={`hasUnlimitedStock-${index}`}
+                checked={variation.hasUnlimitedStock}
+                onChange={(e) =>
+                  setVariations((prevVariations: any) => {
+                    const updatedVariations = [...prevVariations];
+                    updatedVariations[currentVariationIndex].hasUnlimitedStock =
+                      e.target.checked;
+                    return updatedVariations;
+                  })
+                }
+              />
+
+              <div className="relative w-8 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-blue-400 dark:peer-focus:ring-blue-600 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-blue-500 after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-primary after:border-gray-300 after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-500 peer-checked:bg-gray-500" />
+
+              <span className="ms-3 text-base  text-gray-900 dark:text-gray-300">
+                Stock Ilimitado
+              </span>
+            </label>
+          </div>
+        </div>
+        <div
+          className={`mt-4 bg-primary p-4 text-dark shadow border   ${
+            checkOfferChecked ? "" : " hidden"
+          }`}
+          style={{ borderRadius: "var(--radius)" }}
+        >
+          <div>
+            <label className="font-normal text-white">
+              Recibiras una alerta al alcanzar el stock minimo
+            </label>
+            <input
+              type="number"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
+              name="AlertadeStock"
+              value={alertStock !== null ? alertStock : ""}
+              onChange={(e) =>
+                setAlertStock(e.target.value ? parseFloat(e.target.value) : 0)
+              }
+              required
+            />
           </div>
         </div>
       </div>
-      <div>
-        {variation && variation.id ? (
-          <ImageUploaderVariable
-            productId={productId}
-            skuId={variation.id}
-            variationImages={variationImages}
-            fetchVariationImages={fetchVariationImages}
+
+      <div className="flex gap-2 mt-4">
+        <div className="w-48">
+          <h4>Imagen Principal</h4>
+          <ImageUpload
+            onImageChange={(image: any) => onMainImageChange(image, index)}
+            preloadedImageUrl={variation.mainImageUrl}
           />
-        ) : (
-          <GalleryUpload2
-            selectedImages={variation.selectedImages || []}
-            handleImageGalleryChange={handleImageGalleryChange}
-            handleImageRemove={(index) => {
-              handleImageGalleryChange(
-                variation.selectedImages.filter((_: any, i: any) => i !== index)
-              );
-            }}
-          />
-        )}
+        </div>
+        <div>
+          <h4>Galería de Imagenes</h4>
+          {variation && variation.id ? (
+            <ImageUploaderVariable
+              productId={productId}
+              skuId={variation.id}
+              variationImages={variationImages}
+              fetchVariationImages={fetchVariationImages}
+            />
+          ) : (
+            <GalleryUpload2
+              selectedImages={variation.selectedImages || []}
+              handleImageGalleryChange={handleImageGalleryChange}
+              handleImageRemove={(index) => {
+                handleImageGalleryChange(
+                  variation.selectedImages.filter(
+                    (_: any, i: any) => i !== index
+                  )
+                );
+              }}
+            />
+          )}
+        </div>
       </div>
       <div></div>
-      <div className="mt-2 grid grid-cols-2 gap-4 p-2 border border-dotted border-dark rounded">
+      {/* <div className="mt-2  grid grid-cols-2 gap-4 p-2 border border-dotted border-dark rounded">
         <ImageUpload
           label="Imagen Principal"
           onImageChange={(image: any) => onMainImageChange(image, index)}
@@ -599,7 +655,7 @@ const VariationForm: React.FC<any> = ({
             preloadedImageUrl={variation.previewImageUrl}
           />
         </div>
-      </div>
+      </div> */}
       <div className="mt-2 flex justify-between">
         <button
           className="bg-green-700 text-white px-4 py-2 rounded mt-4"
@@ -611,7 +667,7 @@ const VariationForm: React.FC<any> = ({
           onClick={onCloseForm}
           className="bg-red-700 text-white px-4 py-2 rounded mt-2"
         >
-          Minimizar Formulario
+          Minimizar Variación
         </button>
       </div>
     </div>

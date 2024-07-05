@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
-import { obtenerAtributos } from "@/app/utils/obtenerAtributos";
+import { useAPI } from "@/app/Context/ProductTypeContext";
 
 interface CreateAttributeProps {
   handleCloseModal: any;
   fetchData: any;
-}
-interface Attribute {
-  id: number;
-  name: string;
 }
 
 const CreateAtribute: React.FC<CreateAttributeProps> = ({
@@ -16,35 +12,15 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
   fetchData,
 }) => {
   const token = String(getCookie("AdminTokenAuth"));
-  const [attributes, setAtributes] = useState<Attribute[]>([]);
-  const [error, setError] = useState<Error | null>(null);
-  const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     statusCode: "ACTIVE",
   });
 
-  async function fetchAttributes() {
-    try {
-      const PageNumber = 1;
-      const PageSize = 10;
-      const token = getCookie("AdminTokenAuth");
-      const data = await obtenerAtributos(token, PageNumber, PageSize);
-
-      setAtributes(data.attributes);
-      setLoading(false);
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error);
-        setLoading(false);
-        console.error("An error occurred:", error.message);
-      } else {
-        setLoading(false);
-        console.error("An unknown error occurred:", error);
-      }
-    }
-  }
+  const { fetchAttributes, attributes, setAttributes, loading, error } =
+    useAPI();
 
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm(
@@ -66,6 +42,7 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
 
       if (response.ok) {
         fetchAttributes();
+        fetchData();
       } else {
         console.error("Error al eliminar el Atributo:", response.statusText);
       }
@@ -108,6 +85,7 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
 
   useEffect(() => {
     fetchAttributes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDescriptionChange = (
@@ -122,7 +100,6 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
 
   return (
     <div className="relative px-12 flex mt-[10%] justify-center ">
-      {/* Modal content */}
       <div className="relative p-4 grid grid-cols-1 sm:grid-cols-2 max-w-[45vw] min-w-[45vw] bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
         <div>
           <div className="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600 ">
@@ -182,7 +159,6 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
               </button>
 
               <button
-                data-modal-toggle="createProductModal"
                 type="button"
                 onClick={handleCloseModal}
                 className="bg-red-800 hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
@@ -220,7 +196,9 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
             </button>
           </div>
           <div className="max-h-48 overflow-y-auto">
-            {Array.isArray(attributes) &&
+            {loading && <p>Loading...</p>}
+            {error && <p>Error: {error.message}</p>}
+            {Array.isArray(attributes) && attributes.length > 0 ? (
               attributes.map((attribute) => (
                 <div
                   className="flex justify-between items-center border-b py-1 text-xs"
@@ -234,7 +212,10 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
                     X
                   </button>
                 </div>
-              ))}
+              ))
+            ) : (
+              <p>No attributes found</p>
+            )}
           </div>
         </div>
       </div>

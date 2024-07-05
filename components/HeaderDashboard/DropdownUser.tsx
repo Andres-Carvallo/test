@@ -16,7 +16,7 @@ const DropdownUser = () => {
 
   useEffect(() => {
     if (!token) {
-      router.push("/admin-login");
+      router.push("/admin/login");
       return;
     }
 
@@ -25,7 +25,7 @@ const DropdownUser = () => {
       decodedToken = jwtDecode<{ sub: string }>(token);
     } catch (error) {
       console.error("Error al decodificar el token:", error);
-      router.push("/admin-login");
+      router.push("/admin/login");
       return;
     }
 

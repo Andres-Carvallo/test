@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react";
 import { obtenerProductos } from "@/app/utils/obtenerProductos";
-import Carrusel01 from "./cdgcarrusel01";
+import Carrusel01 from "@/components/PIXELUP/Carrusel/Carrusel01/cdgcarrusel01";
 
 interface ProductType {
   [x: string]: /* eslint-disable @next/next/no-img-element */ any;

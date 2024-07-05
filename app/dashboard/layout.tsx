@@ -27,7 +27,7 @@ export default function RootLayout({
     const checkCookie = () => {
       const token = getCookie("AdminTokenAuth");
       if (!token) {
-        router.push("/admin-login"); // Redirigir al home si no hay token
+        router.push("/admin/login"); // Redirigir al home si no hay token
       } else {
         setLoading(false);
       }
@@ -51,7 +51,7 @@ export default function RootLayout({
   }
 
   if (!Token) {
-    router.push("/admin-login");
+    router.push("/admin/login");
   }
 
   if (Token) {
@@ -94,6 +94,6 @@ export default function RootLayout({
       </div>
     );
   } else {
-    router.push("/admin-login");
+    router.push("/admin/login");
   }
 }

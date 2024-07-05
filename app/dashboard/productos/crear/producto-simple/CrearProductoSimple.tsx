@@ -25,11 +25,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [precioNormal, setPrecioNormal] = useState<number | null>(null);
   const [stockQuantity, setStockQuantity] = useState<number | null>(null);
-  const [precioOferta, setPrecioOferta] = useState<number | null>(null);
-  const [offerPrice, setOfferPrice] = useState<number | null>(null);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [status, setStatus] = useState("");
+
   const [productId, setProductId] = useState<string | null>(null);
   const [skuId, setSkuId] = useState(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
@@ -40,17 +36,54 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
   const searchParams = useSearchParams(); // Utilizar useSearchParams para obtener parámetros de búsqueda
   const router = useRouter(); // Utilizar useRouter para redirigir si es necesario
+  const [destacado, setDestacado] = useState(false);
   const [skuImages, setSkuImages] = useState<any[]>([]);
-  const [alertStock, setAlertStock] = useState<number | null>(null);
-
+  const [alertStock, setAlertStock] = useState<number>(0);
   const [isFeatured, setIsFeatured] = useState(false);
 
+  const validateForm = () => {
+    let valid = true;
+
+    if (!formData.name) {
+      toast.error("El nombre del producto es requerido");
+      valid = false;
+    }
+    if (!formData.description) {
+      toast.error("La descripción del producto es requerida");
+      valid = false;
+    }
+
+    if (precioNormal === null) {
+      toast.error("El precio es requerido");
+      valid = false;
+    }
+    if (stockQuantity === null) {
+      toast.error("La cantidad de stock es requerida");
+      valid = false;
+    }
+    if (formData.productTypes.length === 0) {
+      toast.error("La categoría es requerida");
+      valid = false;
+    }
+    if (!formData.enabledForDelivery && !formData.enabledForWithdrawal) {
+      toast.error("Debe seleccionar al menos una opción: Delivery o Retiro");
+      valid = false;
+    }
+    if (!formData.mainImage.data) {
+      toast.error("La imagen principal es requerida");
+      valid = false;
+    }
+    return valid;
+  };
+
   const handleCheckboxChange = () => {
-    setIsFeatured(!isFeatured);
     setFormData((prevFormData) => ({
       ...prevFormData,
+      hasFeaturedBaseSku: !prevFormData.hasFeaturedBaseSku,
       isFeatured: !prevFormData.isFeatured,
     }));
+    setIsFeatured(!isFeatured);
+    setDestacado(!destacado);
   };
 
   const fetchImages = async (productId: any, skuId: any) => {
@@ -112,7 +145,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         data: "",
       },
     }));
-    setAlertStock(null);
+    setAlertStock(0);
     setCheckOfferChecked(false);
     setMainImage(null);
     setPreviewImage(null);
@@ -121,41 +154,12 @@ const CrearProductoSimple: React.FC = ({}) => {
     setSelectedImages([]);
     setSkuImages([]);
     setIsEditMode(false);
-    router.replace("/dashboard/productos/crear/producto-simple");
+    setIsFeatured(false);
+    setIsMainImageUploaded(false);
+    setIsPreviewImageUploaded(false);
+    router.replace(`${window.location.pathname}`);
   };
 
-  const fetchDestacado = async (productId: any, skuId: any) => {
-    try {
-      const token = getCookie("AdminTokenAuth");
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}`,
-
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (data.code === 0) {
-        setIsFeatured(data.sku.isFeatured);
-        // Extracción del stock de la primera skuInventory, si existe
-      } else {
-        console.error(
-          "Error al obtener el stock de la variación:",
-          data.message
-        );
-        return null; // En caso de error, devuelve null
-      }
-    } catch (error) {
-      console.error("Error al obtener el stock de la variación:", error);
-      return null; // En caso de error, devuelve null
-    }
-  };
-
-  // const fetchOffer = async (productId: any, skuId: any) => {
   //   try {
   //     const token = getCookie("AdminTokenAuth");
   //     const response = await fetch(
@@ -213,8 +217,9 @@ const CrearProductoSimple: React.FC = ({}) => {
   const fetchStock = async (productId: any, skuId: any) => {
     try {
       const token = getCookie("AdminTokenAuth");
+      const warehouseId = await getWarehouseId();
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=22a8401d-da05-49a8-958f-9ab93623582c`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -381,7 +386,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     enabledForWithdrawal: false,
     hasVariations: false,
     hasFeaturedBaseSku: false,
-    isFeatured: true,
+    isFeatured: false,
     measures: {
       length: 1,
       width: 1,
@@ -523,6 +528,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     quantity: number,
     minimumQuantity: number
   ) => {
+    console.log("addproductstock<<<");
     try {
       console.log("Obteniendo warehouseId");
       const warehouseId = await getWarehouseId();
@@ -534,11 +540,8 @@ const CrearProductoSimple: React.FC = ({}) => {
       const token = getCookie("AdminTokenAuth");
       const stockData: any = {
         warehouseId: warehouseId,
+        minimumQuantity: minimumQuantity,
         quantity: quantity,
-        minimumQuantity:
-          minimumQuantity && checkOfferChecked && alertStock !== null
-            ? alertStock
-            : 0,
       };
 
       console.log("Obteniendo inventarios existentes");
@@ -557,7 +560,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       let stockUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories`;
 
       if (existingInventories.data.skuInventories.length > 0) {
-        // Update existing stock
+        // Actualizar stock existente
         method = "PUT";
         stockUrl = `${stockUrl}/${existingInventories.data.skuInventories[0].id}`;
         console.log("Actualizando stock existente con URL:", stockUrl);
@@ -634,7 +637,24 @@ const CrearProductoSimple: React.FC = ({}) => {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
+
+    const dataToSend: any = { ...formData };
+
+    if (isEditMode && !isMainImageUploaded) {
+      delete dataToSend.mainImage;
+    }
+
     setIsLoading(true); // Mostrar el loader
+
+    if (!isEditMode && !validateForm()) {
+      setIsLoading(false);
+      toast.error("Por favor, corrige los errores antes de enviar");
+      return;
+    }
+
+    if (!alertStock) {
+      setAlertStock(0);
+    }
 
     try {
       const url = isEditMode
@@ -643,13 +663,14 @@ const CrearProductoSimple: React.FC = ({}) => {
 
       const method = isEditMode ? "PUT" : "POST";
       const token = getCookie("AdminTokenAuth");
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (!response.ok) {
@@ -657,6 +678,7 @@ const CrearProductoSimple: React.FC = ({}) => {
           "Error en la respuesta del servidor:",
           response.statusText
         );
+        toast.error("Error en la respuesta del servidor");
         setIsLoading(false); // Ocultar el loader
         return;
       }
@@ -670,6 +692,7 @@ const CrearProductoSimple: React.FC = ({}) => {
           console.error(
             "La respuesta no contiene el objeto 'product' esperado."
           );
+          toast.error("Error al crear el producto");
           setIsLoading(false); // Ocultar el loader
           return;
         }
@@ -681,12 +704,10 @@ const CrearProductoSimple: React.FC = ({}) => {
           console.log("Producto creado con ID:", id, "y SKU:", sku);
 
           if (stockQuantity !== null && alertStock !== null) {
-            console.log(
-              "Llamando a addProductStock con stockQuantity:",
-              stockQuantity
-            );
+            console.log("Llamando a addProductStock");
             await addProductStock(id, sku, stockQuantity, alertStock);
           }
+
           if (precioNormal !== null) {
             console.log("Llamando a addProductPricing");
             await addProductPricing(id, sku, precioNormal);
@@ -703,6 +724,7 @@ const CrearProductoSimple: React.FC = ({}) => {
           router.replace(`${window.location.pathname}?productId=${id}`);
         } else {
           console.error("Error al crear el producto: ID o SKU no válidos");
+          toast.error("Error al crear el producto: ID o SKU no válidos");
         }
       } else {
         // Caso de actualización
@@ -732,10 +754,14 @@ const CrearProductoSimple: React.FC = ({}) => {
             "Error al actualizar el producto:",
             responseData.message
           );
+          toast.error(
+            `Error al actualizar el producto: ${responseData.message}`
+          );
         }
       }
     } catch (error) {
       console.error("Error al enviar la solicitud:", error);
+      toast.error("Error al enviar la solicitud");
     } finally {
       setIsLoading(false); // Ocultar el loader al final
     }
@@ -770,6 +796,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         fetchPrice(productData.id, productData.skuId);
         fetchImages(productData.id, productData.skuId);
         setSkuId(productData.skuId);
+        setIsFeatured(productData.isFeatured);
 
         const selectedProductTypes = productData.productTypes.map(
           (productType: any) => ({
@@ -787,13 +814,13 @@ const CrearProductoSimple: React.FC = ({}) => {
           hasVariations: productData.hasVariations,
           productTypes: selectedProductTypes,
           isFeatured: productData.isFeatured,
+
           mainImage: isMainImageUploaded
             ? formData.mainImage
-            : { name: "", type: "", size: null, data: "" },
+            : (undefined as any),
           previewImage: isPreviewImageUploaded
             ? formData.previewImage
-            : { name: "", type: "", size: 0, data: "" },
-
+            : (undefined as any),
           measures: productData.measures || {
             length: null,
             width: null,
@@ -801,8 +828,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             weight: null,
           },
         });
-
-        setIsFeatured(productData.isFeatured); // Asegúrate de actualizar el estado de isFeatured
+        console.log(productData, "productData");
         setMainImage(productData.mainImageUrl);
         setPreviewImage(productData.previewImageUrl);
       } catch (error) {
@@ -840,9 +866,9 @@ const CrearProductoSimple: React.FC = ({}) => {
         <div className="md:col-span-4 lg:col-span-3 flex flex-col pb-8 ">
           <div className="border border-dashed border-dark/50 rounded-lg p-4 mb-4 block lg:hidden sticky top-24 bg-white z-50">
             <div style={{ borderRadius: "var(--radius)" }}>
-              <h1 className="mb-4 text-bold border-b border-dark uppercase">
+              <h3 className="mb-4 text-bold border-b border-dark uppercase">
                 {isEditMode ? "Editar Producto" : "Publicar"}
-              </h1>
+              </h3>
               <h3>
                 Estado:{" "}
                 <span className="text-dark font-bold pl-2">
@@ -980,73 +1006,78 @@ const CrearProductoSimple: React.FC = ({}) => {
                 }
               ></textarea>
             </div>
-            <div className="flex gap-6">
-              {" "}
-              <div className="my-2 space-x-4 w-[40%]">
-                <h3 className="text-md font-bold uppercase mb-2">
-                  Disponible para:
-                </h3>
-                <label htmlFor="enabledForDelivery">Delivery</label>
-                <input
-                  type="checkbox"
-                  id="enabledForDelivery"
-                  name="enabledForDelivery"
-                  checked={formData.enabledForDelivery}
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      [event.target.name]: event.target.checked,
-                    })
-                  }
-                />
-                <label htmlFor="enabledForWithdrawal">Retiro</label>
-                <input
-                  type="checkbox"
-                  id="enabledForWithdrawal"
-                  name="enabledForWithdrawal"
-                  checked={formData.enabledForWithdrawal}
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
-                      [event.target.name]: event.target.checked,
-                    })
-                  }
+
+            <div className="my-2 ">
+              <h3 className="text-md font-bold uppercase mb-2">
+                Disponible para:
+              </h3>
+              <div className="flex gap-4">
+                <label
+                  htmlFor="enabledForDelivery"
+                  className="shadow flex cursor-pointer gap-4 items-center bg-primary hover:bg-secondary p-2.5 text-secondary hover:text-primary font-medium "
+                >
+                  Delivery
+                  <input
+                    type="checkbox"
+                    id="enabledForDelivery"
+                    name="enabledForDelivery"
+                    checked={formData.enabledForDelivery}
+                    onChange={(event) =>
+                      setFormData({
+                        ...formData,
+                        [event.target.name]: event.target.checked,
+                      })
+                    }
+                  />
+                </label>
+
+                <label
+                  htmlFor="enabledForWithdrawal"
+                  className="shadow flex cursor-pointer gap-4 items-center bg-primary hover:bg-secondary p-2.5 text-secondary hover:text-primary font-medium "
+                >
+                  Retiro
+                  <input
+                    type="checkbox"
+                    className="cursor-pointer"
+                    id="enabledForWithdrawal"
+                    name="enabledForWithdrawal"
+                    checked={formData.enabledForWithdrawal}
+                    onChange={(event) =>
+                      setFormData({
+                        ...formData,
+                        [event.target.name]: event.target.checked,
+                      })
+                    }
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="flex w-full">
+              <div className="self-center mx-6">
+                <StarCheckbox
+                  isChecked={isFeatured}
+                  onChange={handleCheckboxChange}
                 />
               </div>
-              <div>
-                <label
-                  htmlFor="producotDestacado"
-                  className="font-normal "
+              <div
+                style={{ borderRadius: "var(--radius)" }}
+                className="shadow w-full flex items-center p-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+                role="alert"
+              >
+                <svg
+                  className="flex-shrink-0 inline w-4 h-4 me-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
                 >
-                  Producto Destacado
-                </label>
-                <div className="flex">
-                  <div className="self-center mx-6">
-                    <StarCheckbox
-                      isChecked={isFeatured}
-                      onChange={handleCheckboxChange}
-                    />
-                  </div>
-                  <div
-                    style={{ borderRadius: "var(--radius)" }}
-                    className="shadow flex items-center p-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
-                    role="alert"
-                  >
-                    <svg
-                      className="flex-shrink-0 inline w-4 h-4 me-3"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                    </svg>
-                    <span className="sr-only">Info</span>
-                    <div>
-                      Pincha la estrella para agregar al carrusel de Destacados
-                      de tu Home.
-                    </div>
-                  </div>
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  Pincha la estrella para agregar al carrusel de Destacados de
+                  tu Home.
                 </div>
               </div>
             </div>
@@ -1145,7 +1176,11 @@ const CrearProductoSimple: React.FC = ({}) => {
                   style={{ borderRadius: "var(--radius)" }}
                   name="AlertadeStock"
                   value={alertStock !== null ? alertStock : ""}
-                  onChange={(e) => setAlertStock(parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    setAlertStock(
+                      e.target.value ? parseFloat(e.target.value) : 0
+                    )
+                  }
                   required
                 />
               </div>
@@ -1347,9 +1382,9 @@ const CrearProductoSimple: React.FC = ({}) => {
             className="bg-white border border-dashed border-gray-600 p-4 mb-4 hidden lg:block sticky top-24"
             style={{ borderRadius: "var(--radius)" }}
           >
-            <h1 className="mb-4 text-bold border-b border-dark uppercase">
+            <h3 className="mb-4 text-bold border-b border-dark uppercase">
               {isEditMode ? "Editar Producto" : "Publicar"}
-            </h1>
+            </h3>
             <h3>
               Estado:{" "}
               <span className="text-dark font-bold pl-2">

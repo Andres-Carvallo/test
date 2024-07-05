@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
 
-function ImageUpload({ onImageChange, label, preloadedImageUrl }: any) {
+function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
   const [image, setImage] = useState<any>(null);
 
   useEffect(() => {
@@ -55,7 +55,6 @@ function ImageUpload({ onImageChange, label, preloadedImageUrl }: any) {
         />
         {image ? (
           <div>
-            <h1>{label}</h1>
             <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
               <img
                 src={image}
@@ -85,7 +84,6 @@ function ImageUpload({ onImageChange, label, preloadedImageUrl }: any) {
           </div>
         ) : (
           <div className="mt-2">
-            <h1>{label}</h1>
             <label className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10">
               <div className="flex flex-col justify-center items-center">
                 <svg

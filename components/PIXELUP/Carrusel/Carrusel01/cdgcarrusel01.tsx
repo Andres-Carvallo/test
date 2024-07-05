@@ -5,6 +5,7 @@ import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
 import Image from "next/image";
+import ProductCard02 from "@/components/PIXELUP/ProductCards/ProductCards02/ProductCard02";
 
 interface Productos {
   [x: string]: any;
@@ -80,7 +81,7 @@ const Carrusel01: React.FC<CarruselProps> = ({ CarruselData }) => {
         containerClass="carousel-container"
         /* removeArrowOnDeviceType={["tablet", "mobile"]} */
         dotListClass="custom-dot-list-style mt-16"
-        itemClass="px-2" // Reducido el padding horizontal
+        itemClass="px-2 py-12" // Reducido el padding horizontal
       >
         {Productos.map((detalle, index) => (
           <Link

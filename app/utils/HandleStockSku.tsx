@@ -55,7 +55,12 @@ const getInventoryId = async (id: any, skuId: any, warehouseId: any) => {
   }
 };
 
-export const handleStockSku = async (id: any, skuId: any, quantity: any) => {
+export const handleStockSku = async (
+  id: any,
+  skuId: any,
+  quantity: any,
+  minimumQuantity: any
+) => {
   try {
     const warehouseId = await getWarehouseId();
     if (!warehouseId) {
@@ -73,7 +78,7 @@ export const handleStockSku = async (id: any, skuId: any, quantity: any) => {
         {
           warehouseId: warehouseId,
           quantity: quantity,
-          minimumQuantity: 5,
+          minimumQuantity: minimumQuantity,
         },
         {
           headers: {
