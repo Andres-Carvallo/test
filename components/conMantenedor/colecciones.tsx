@@ -6,7 +6,7 @@ import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Loader from "../common/Loader";
-import ProductCard from "@/components/PIXELUP/ProductCards/ProductCard01";
+import ProductCard from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 
 const Collection = () => {
   const [collectionData, setCollectionData] = useState<any | null>(null);
@@ -23,7 +23,10 @@ const Collection = () => {
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${siteId}`
       );
       const data = await response.json();
-      console.log(`Datos de precios para el producto ${productId} y SKU ${skuId}:`, data); // Log para verificar datos
+      console.log(
+        `Datos de precios para el producto ${productId} y SKU ${skuId}:`,
+        data
+      ); // Log para verificar datos
       return data;
     } catch (error) {
       console.error("Error al obtener el precio de la variación:", error);
@@ -52,7 +55,9 @@ const Collection = () => {
       const prices = await Promise.all(
         skus.skus.map(async (sku: any) => {
           const priceData = await fetchPriceForProduct(product.id, sku.id);
-          return priceData && priceData.skuPricings && priceData.skuPricings.length > 0
+          return priceData &&
+            priceData.skuPricings &&
+            priceData.skuPricings.length > 0
             ? priceData.skuPricings[0].unitPrice
             : null;
         })
@@ -60,7 +65,10 @@ const Collection = () => {
       const validPrices = prices.filter((price) => price !== null);
       const minimumAmount = Math.min(...validPrices);
       const maximumAmount = Math.max(...validPrices);
-      console.log(`Rango de precios para producto variable ${product.id}:`, { minimumAmount, maximumAmount }); // Log para verificar rangos de precios
+      console.log(`Rango de precios para producto variable ${product.id}:`, {
+        minimumAmount,
+        maximumAmount,
+      }); // Log para verificar rangos de precios
       return { minimumAmount, maximumAmount };
     }
     return { minimumAmount: null, maximumAmount: null };
@@ -77,7 +85,10 @@ const Collection = () => {
         setCollectionData(collection);
 
         // Log para verificar los productos recuperados
-        console.log("Productos recuperados de la colección:", collection.products);
+        console.log(
+          "Productos recuperados de la colección:",
+          collection.products
+        );
 
         // Fetch prices for each product
         const productsWithPrices = await Promise.all(
@@ -86,8 +97,16 @@ const Collection = () => {
               const pricingRanges = await getPriceForVariableProduct(product);
               return { ...product, pricingRanges: [pricingRanges] };
             } else {
-              const priceData = await fetchPriceForProduct(product.id, product.skuId);
-              const price = priceData && priceData.skuPricings && priceData.skuPricings.length > 0 ? priceData.skuPricings[0].unitPrice : null;
+              const priceData = await fetchPriceForProduct(
+                product.id,
+                product.skuId
+              );
+              const price =
+                priceData &&
+                priceData.skuPricings &&
+                priceData.skuPricings.length > 0
+                  ? priceData.skuPricings[0].unitPrice
+                  : null;
               return { ...product, pricings: [{ amount: price }] };
             }
           })
@@ -103,6 +122,7 @@ const Collection = () => {
     };
     fetchCollections();
     return () => {};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (loading) {
@@ -139,7 +159,10 @@ const Collection = () => {
         <div className="flex w-full justify-center pt-6">
           <div className="flex flex-wrap max-w-[1500px] w-full justify-center gap-8 px-4 py-8">
             {collectionProduct.map((product: any) => {
-              console.log(`Producto ${product.id} con precio:`, product.pricings || product.pricingRanges); // Log para verificar precios pasados a ProductCard
+              console.log(
+                `Producto ${product.id} con precio:`,
+                product.pricings || product.pricingRanges
+              ); // Log para verificar precios pasados a ProductCard
               return (
                 <ProductCard
                   key={product.id}

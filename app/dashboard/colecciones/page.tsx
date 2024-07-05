@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import BannerPrincipalBO from "@/components/conMantenedor/Mantenedores/BannerPrincipalBO";
 import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTiendaBO";
 import BannersCategoriasBO from "@/components/conMantenedor/Mantenedores/BannersCategoriasBO";
-import Hero01BO from "@/components/PIXELUP/Hero01/BackOffice/Hero01BO";
+import Hero01BO from "@/components/PIXELUP/Hero/Hero01/BackOffice/Hero01BO";
 import ColeccionesBO from "../../../components/conMantenedor/Mantenedores/coleccionesBO";
 
 export default function BannerHome() {

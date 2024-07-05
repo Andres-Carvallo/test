@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import Buscador from "../Buscador/Buscador01";
-import ThemeToggler from "../Theme/ThemeToggler";
+import Buscador from "@/components/PIXELUP/Buscador/Buscador01";
+import ThemeToggler from "@/components/PIXELUP/Theme/ThemeToggler";
 import CartCanvas from "@/components/CartCanva/CartCanvas";
 import DropdownUser from "@/components/Dropdown/DropdownUser/DropdownUser";
 import DropdownAdmin from "@/components/Dropdown/DropdownAdmin/DropdownAdmin";

@@ -5,7 +5,7 @@ import axios from "axios";
 import { obtenerProductos } from "@/app/utils/obtenerProductos";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Link from "next/link";
-import ProductCard from "@/components/PIXELUP/ProductCards/ProductCard01";
+import ProductCard from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import { getCookie } from "cookies-next";
 import Marquee from "react-fast-marquee";
 interface Product {

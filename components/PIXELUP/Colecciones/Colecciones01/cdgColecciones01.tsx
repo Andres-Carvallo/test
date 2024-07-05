@@ -9,7 +9,7 @@ import ProductCard02 from "@/components/PIXELUP/ProductCards/ProductCards02/Prod
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 
-const Colecciones02 = () => {
+const Colecciones01: React.FC<any> = ({ CarruselData }) => {
   const [collectionData, setCollectionData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -226,4 +226,4 @@ const Colecciones02 = () => {
   );
 };
 
-export default Colecciones02;
+export default Colecciones01;
