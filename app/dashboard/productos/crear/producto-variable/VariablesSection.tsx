@@ -294,7 +294,7 @@ function VariationsComponente({
       ...variations,
       {
         description: "",
-        hasUnlimitedStock: true,
+        hasUnlimitedStock: false,
         hasStockNotifications: false,
         mainImage: null,
         previewImage: null,

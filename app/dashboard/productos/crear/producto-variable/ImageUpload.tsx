@@ -84,7 +84,7 @@ function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
           </div>
         ) : (
           <div className="mt-2">
-            <label className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10">
+            <label className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary rounded-lg cursor-pointer w-full z-10 p-2">
               <div className="flex flex-col justify-center items-center">
                 <svg
                   className="w-12 h-12 text-gray-400"
@@ -99,11 +99,11 @@ function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
-                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
                   <span className="font-semibold">Click to upload</span>
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  SVG, PNG, JPG or GIF (MAX. 800x400px)
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  SVG, PNG, JPG or GIF
                 </p>
               </div>
               <input

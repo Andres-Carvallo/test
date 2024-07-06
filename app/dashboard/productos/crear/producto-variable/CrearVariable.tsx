@@ -457,13 +457,12 @@ const CrearVariable: React.FC = () => {
     event.preventDefault();
 
     if (!isEditMode && !validateForm()) {
-      setIsLoading(false);
       toast.error("Por favor, corrige los errores antes de enviar");
+      setIsLoading(false);
       return;
     }
-
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const token = getCookie("AdminTokenAuth");
 
       const dataToSubmit = {
@@ -540,9 +539,11 @@ const CrearVariable: React.FC = () => {
           "producto Base Creado, Ahora puedes crear sus Variaciones!"
         );
       } else {
+        setIsLoading(false);
         console.error("Error al enviar la solicitud:", response.statusText);
       }
     } catch (error) {
+      setIsLoading(false);
       console.error("Error:", error);
     }
   };
@@ -800,7 +801,7 @@ const CrearVariable: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-8">
+              <div className="flex flex-wrap gap-2 mt-8">
                 <div>
                   <input
                     type="file"
@@ -812,7 +813,7 @@ const CrearVariable: React.FC = () => {
                     }
                   />
                   {mainImage ? (
-                    <div>
+                    <div className="w-48">
                       <label className="font-normal text-primary">
                         Imagen Principal
                       </label>
@@ -884,7 +885,7 @@ const CrearVariable: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex space-x-4 overflow-x-auto p-4">
+                <div className=" flex space-x-4 overflow-x-auto p-4">
                   {isEditMode ? (
                     <ImageUploader
                       productId={productId}

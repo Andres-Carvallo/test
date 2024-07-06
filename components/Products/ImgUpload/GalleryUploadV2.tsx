@@ -37,7 +37,7 @@ const GalleryUpload: React.FC<Props> = ({
       <label
         htmlFor="fileInput"
         style={{ borderRadius: "var(--radius)" }}
-        className={`shadow flex flex-col bg-white justify-center items-center mt-2 pt-2 pb-5 border border-dashed border-gray-600 cursor-pointer ${
+        className={`shadow flex flex-col bg-white justify-center items-center mt-2 pt-2 pb-5 border border-dashed border-gray-800 cursor-pointer ${
           selectedImages.length > 0 ? "md:w-1/4" : "md:w-full"
         } z-10`}
       >
