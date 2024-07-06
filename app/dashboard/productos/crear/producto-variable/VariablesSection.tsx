@@ -59,7 +59,6 @@ function VariationsComponente({
       }
 
       const data = await response.json();
-      console.log(data, "datito");
 
       if (data && data.skuImages) {
         setVariationImages(data.skuImages); // Actualiza el estado local con las imágenes obtenidas
@@ -84,6 +83,7 @@ function VariationsComponente({
       const data = await response.json();
       if (data.code === 0) {
         setAttributes(data.attributes);
+        return data.attributes;
       } else {
         console.error("Error fetching attributes:", data.message);
       }
@@ -459,6 +459,7 @@ function VariationsComponente({
               <VariationForm
                 variation={variation}
                 fetchVariations={fetchVariations}
+                fetchAttributes={fetchAttributes}
                 currentPrices={currentPrices}
                 currentStocks={currentStocks}
                 currentAttributes={currentAttributes}

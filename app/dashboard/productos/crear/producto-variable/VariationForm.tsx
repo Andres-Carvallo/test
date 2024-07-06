@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ImageUpload from "./ImageUpload";
-import Select from "react-select";
+import Select, { SingleValue } from "react-select";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import { useSearchParams } from "next/navigation";
@@ -28,11 +28,11 @@ const VariationForm: React.FC<any> = ({
   variationImages,
   fetchVariationImages,
   selectedImages,
+  fetchAttributes,
 
   handleImageRemove,
 }) => {
-  const { fetchAttributes, attributes, setAttributes, loading, error } =
-    useAPI();
+  const { attributes, setAttributes, loading, error } = useAPI();
 
   const isEditMode = !!variation.id;
 
@@ -51,19 +51,37 @@ const VariationForm: React.FC<any> = ({
   const [checkOfferChecked, setCheckOfferChecked] = useState(false);
   const [alertStock, setAlertStock] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
-    // Cargar atributos actuales si está en modo edición
-    if (isEditMode && currentAttributes[variation.id]) {
-      const loadedAttributes = currentAttributes[variation.id].map(
-        (attr: any) => ({
-          id: attr.attribute ? attr.attribute.id : "", // Verificar si attr.attribute está definido
-          value: attr.attribute ? attr.attribute.value : "", // Verificar si attr.attribute está definido
-        })
-      );
-      setAttributePairs(loadedAttributes);
-      setSelectedAttributes(loadedAttributes.map((attr: any) => attr.id));
-    }
-  }, [isEditMode, currentAttributes, variation.id]);
+    const loadAttributes = async () => {
+      try {
+        await fetchAttributes();
+
+        if (currentAttributes[variation.id]) {
+          const preloadedAttributes = currentAttributes[variation.id].map(
+            (attr: { label: any; value: any }) => {
+              const matchedAttribute = attributes.find(
+                (attribute: { name: any }) => attribute.name === attr.label
+              );
+              return {
+                id: matchedAttribute ? matchedAttribute.id : undefined,
+                value: attr.value,
+                label: attr.label, // Para uso futuro o visualización si es necesario
+              };
+            }
+          );
+          setAttributePairs(preloadedAttributes);
+          setSelectedAttributes(
+            preloadedAttributes.map((attr: { id: any }) => attr.id)
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching attributes:", error);
+      }
+    };
+    loadAttributes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAddAttributePair = () => {
     if (attributes.length === selectedAttributes.length) {
@@ -83,7 +101,10 @@ const VariationForm: React.FC<any> = ({
     setAttributePairs([...attributePairs, { id: "", value: "" }]);
   };
 
-  const handleSelectChange = (index: any, selectedOption: any) => {
+  const handleSelectChange = (
+    index: number,
+    selectedOption: SingleValue<{ value: string; label: any }>
+  ) => {
     const updatedPairs = attributePairs.map((pair, pairIndex) =>
       pairIndex === index
         ? { ...pair, id: selectedOption ? selectedOption.value : "" }
@@ -91,7 +112,6 @@ const VariationForm: React.FC<any> = ({
     );
 
     const oldAttributeId = attributePairs[index].id;
-
     let updatedSelectedAttributes = selectedAttributes.filter(
       (id) => id !== oldAttributeId
     );
@@ -121,15 +141,13 @@ const VariationForm: React.FC<any> = ({
     setSelectedAttributes(updatedSelectedAttributes);
   };
 
-  const handleInputChange = (index: any, newValue: any) => {
-    // Convertir el nuevo valor a mayúsculas y eliminar espacios y signos
+  const handleInputChange = (index: number, newValue: string) => {
     const sanitizedValue = newValue.toUpperCase().replace(/[^A-Z]/g, "");
-
-    // Actualizar los pares de atributos con el nuevo valor tratado
     const updatedPairs = [...attributePairs];
     updatedPairs[index].value = sanitizedValue;
     setAttributePairs(updatedPairs);
   };
+
   const handleImageGalleryChange = (newImages: string[]) => {
     setVariations((prevVariations: any) => {
       const updatedVariations = [...prevVariations];
@@ -449,11 +467,11 @@ const VariationForm: React.FC<any> = ({
                 className="fit-content min-w-[30%]"
                 options={attributes
                   .filter(
-                    (attribute: any) =>
+                    (attribute: { id: string }) =>
                       !selectedAttributes.includes(attribute.id) ||
                       attribute.id === pair.id
                   )
-                  .map((attribute: any) => ({
+                  .map((attribute: { id: any; name: any }) => ({
                     value: attribute.id,
                     label: attribute.name,
                   }))}
@@ -465,7 +483,8 @@ const VariationForm: React.FC<any> = ({
                     ? {
                         value: pair.id,
                         label: attributes.find(
-                          (attribute: any) => attribute.id === pair.id
+                          (attribute: { id: string }) =>
+                            attribute.id === pair.id
                         )?.name,
                       }
                     : null
