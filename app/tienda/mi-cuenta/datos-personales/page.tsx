@@ -251,7 +251,7 @@ const DatosPersonales: React.FC<any> = () => {
   };
 
   return (
-    <div className="pb-10 flex items-center justify-center relative bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+    <div className="pb-10 flex items-center justify-center relative ">
       <div className="relative z-10 mx-auto min-w-[400px] w-[90%] max-w-[800px] px-6 lg:px-8 py-20">
         <div
           className="bg-white shadow-xl"

@@ -27,7 +27,7 @@ export default function RootLayout({
     const checkCookie = () => {
       const token = getCookie("AdminTokenAuth");
       if (!token) {
-        router.push("/admin-login"); // Redirigir al home si no hay token
+        router.push("/admin/login"); // Redirigir al home si no hay token
       } else {
         setLoading(false);
       }
@@ -35,8 +35,12 @@ export default function RootLayout({
 
     checkCookie();
 
-    // Configurar un intervalo para verificar la cookie cada 45 minutos
-    const intervalId = setInterval(checkCookie, 2700000); // 45 minutos
+    const intervalDuration = parseInt(
+      process.env.NEXT_PUBLIC_INTERVAL_DURATION || "10800000",
+      10
+    );
+
+    const intervalId = setInterval(checkCookie, intervalDuration);
 
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
@@ -47,7 +51,7 @@ export default function RootLayout({
   }
 
   if (!Token) {
-    router.push("/admin-login");
+    router.push("/admin/login");
   }
 
   if (Token) {
@@ -78,7 +82,9 @@ export default function RootLayout({
 
               {/* <!-- ===== Main Content Start ===== --> */}
 
-              <div className="mx-auto p-6 w-full z-1">{children} </div>
+              <div className="mx-auto p-6 w-full -z-1 bg-gray-50">
+                {children}{" "}
+              </div>
 
               {/* <!-- ===== Main Content End ===== --> */}
             </div>
@@ -88,6 +94,6 @@ export default function RootLayout({
       </div>
     );
   } else {
-    router.push("/admin-login");
+    router.push("/admin/login");
   }
 }

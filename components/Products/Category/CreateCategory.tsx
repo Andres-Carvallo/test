@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { getCookie } from "cookies-next";
 
 interface CreateCategoryProps {
-  handleCloseModal: any;
+  handleCloseModal: any | null;
   fetchData: any;
 }
 
@@ -125,7 +125,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
   };
 
   return (
-    <div className="relative p-4 flex justify-center">
+    <div className="shadow-md b rounded-lg p-4 bg-white my-6 overflow-x-auto">
       <div className="relative w-full bg-white rounded-lg sm:p-5">
         <div>
           <div className="pb-4 mb-4 rounded-t border-b sm:mb-5">
@@ -236,12 +236,22 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                 </div>
               </div>
             </div>
-            <button
-              type="submit"
-              className="bg-secondary hover:bg-primary-800 text-white font-medium rounded-lg px-5 py-2.5"
-            >
-              Crear Categoría
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                className="bg-primary hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
+              >
+                Crear Categoría
+              </button>
+              <button
+                data-modal-toggle="createProductModal"
+                type="button"
+                onClick={handleCloseModal}
+                className="bg-red-800 hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
+              >
+                Cancelar
+              </button>
+            </div>
           </form>
         </div>
       </div>

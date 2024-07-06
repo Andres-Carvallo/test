@@ -28,8 +28,13 @@ export default function RootLayout({
 
     checkCookie();
 
-    // Configurar un intervalo para verificar la cookie cada 45 minutos
-    const intervalId = setInterval(checkCookie, 2700000); // 45 minutos
+    // Obtener la duración del intervalo desde la variable de entorno
+    const intervalDuration = parseInt(
+      process.env.NEXT_PUBLIC_INTERVAL_DURATION || "10800000",
+      10
+    );
+
+    const intervalId = setInterval(checkCookie, intervalDuration);
 
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
@@ -48,7 +53,7 @@ export default function RootLayout({
 
   // Si hay token y no se está cargando, mostrar el contenido
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark">
+    <div className="bg-gray-50">
       <div className="flex overflow-hidden">
         <div className="mx-auto w-full">{children}</div>
       </div>

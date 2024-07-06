@@ -44,16 +44,16 @@ const GalleryUpload: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-end">
+    <div className="flex flex-col md:flex-row md:items-end w-full">
       {/* Etiqueta label emulando el diseño del input */}
       <label
         htmlFor="fileInput"
         style={{ borderRadius: "var(--radius)" }}
-        className={`shadow flex flex-col bg-white justify-center items-center mt-2 pt-2 pb-2 border border-dashed border-gray-600 cursor-pointer ${
+        className={`shadow flex flex-col bg-white justify-center items-center mt-2 pt-2 pb-5 border border-dashed border-gray-600 cursor-pointer ${
           selectedImages.length > 0 ? "md:w-1/4" : "md:w-full"
         } z-10`}
       >
-        <div className="flex flex-col justify-center items-center p-2 text-center">
+        <div className="flex flex-col justify-center items-center  p-2 text-center w-full">
           <svg
             className="w-12 h-12 text-gray-400"
             fill="none"
@@ -67,10 +67,12 @@ const GalleryUpload: React.FC<Props> = ({
               d="M12 6v6m0 0v6m0-6h6m-6 0H6"
             />
           </svg>
-          <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-            <span className="font-semibold">Click to upload</span>
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          {selectedImages.length > 0 ? null : (
+            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
+              <span className="font-semibold">Click to upload</span>
+            </p>
+          )}
+          <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
             PNG, JPG or Webp (MAX. 1MB)
           </p>
         </div>
@@ -99,11 +101,11 @@ const GalleryUpload: React.FC<Props> = ({
             <img
               src={image}
               alt={`Image ${index}`}
-              className="w-16 h-16 object-cover rounded-md"
+              className="w-14 h-14 object-cover rounded-md"
             />
             <button
               onClick={() => handleRemoveImage(index)}
-              className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
+              className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -111,12 +113,12 @@ const GalleryUpload: React.FC<Props> = ({
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-5 h-5"
+                className="size-3"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  d="M6 18 18 6M6 6l12 12"
                 />
               </svg>
             </button>

@@ -67,7 +67,7 @@ export default function Page() {
     <div style={{ position: "relative" }}>
       {/* Condición para mostrar el botón de inicio de sesión */}
       {!Token && (
-        <Link href="/login">
+        <Link href="/tienda/login">
           <button
             id="loginButton"
             className="text-sm bg-gray-800 rounded-full text-white md:me-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"

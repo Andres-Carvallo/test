@@ -47,11 +47,12 @@ const ValidateComponent: React.FC<ValidateComponentProps> = ({
 
           console.log("Data sent successfully!");
           console.log(response);
+          router.push(`/tienda/checkout/ok/${orderId}`);
         } catch (error) {
           console.error("Error sending data:", error);
+          router.push(`/tienda/checkout/error?orderId=${orderId}`);
         } finally {
           setIsLoading(false);
-          router.push(`/tienda/checkout/ok/${orderId}`);
         }
       };
 

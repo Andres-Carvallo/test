@@ -38,7 +38,7 @@ const ProductList: React.FC = () => {
             return product;
           })
         );
-        console.log(productsWithStock, "productsWithStock");
+
         setProducts(productsWithStock);
         setLoading(false); // set loading to false after successful data fetch
       } catch (error) {

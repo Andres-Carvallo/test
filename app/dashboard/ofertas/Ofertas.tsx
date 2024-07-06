@@ -207,12 +207,7 @@ function Ofertas() {
               >
                 Producto
               </th>
-              <th
-                scope="col"
-                className="px-6 w-32 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell"
-              >
-                N° de Ofertas
-              </th>
+
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -235,11 +230,7 @@ function Ofertas() {
                     {offerProduct.name}
                   </div>
                 </td>
-                <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
-                  <div className="text-sm text-gray-900">
-                    {offerProduct.offers.length}
-                  </div>
-                </td>
+
                 <td className="px-6 py-4 md:whitespace-nowrap">
                   <div className="text-sm text-gray-900">
                     <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">

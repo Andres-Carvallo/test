@@ -9,13 +9,14 @@ import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
 import toast from "react-hot-toast";
 
 interface Product {
-  id: number;
+  [x: string]: string | undefined;
+  id: any;
   name: string;
   previewImageUrl: string;
-  productTypes: { id: number; name: string }[];
+  productTypes: any;
   price: string;
   statusCode: string;
-  hasVariations: boolean;
+  hasVariations: any;
 }
 
 interface Pagination {
@@ -128,7 +129,7 @@ export default function ProductPageBO() {
       // Extraer categorías únicas
       const uniqueCategories = new Set<string>();
       data.products.forEach((product) => {
-        product.productTypes.forEach((type) => {
+        product.productTypes.forEach((type: any) => {
           uniqueCategories.add(type.name);
         });
       });
@@ -178,7 +179,7 @@ export default function ProductPageBO() {
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (selectedCategories.size === 0 ||
         Array.from(selectedCategories).every((category) =>
-          product.productTypes.some((type) => type.name === category)
+          product.productTypes.some((type: any) => type.name === category)
         ))
   );
 
@@ -398,7 +399,7 @@ export default function ProductPageBO() {
                       {/* Detalles de cada producto */}
                       <td className="px-2 py-3 flex items-center justify-center align-middle">
                         <img
-                          src={product.previewImageUrl}
+                          src={product.mainImageUrl}
                           alt="User"
                           className="rounded-full h-9 w-9 object-cover"
                         />
@@ -408,7 +409,7 @@ export default function ProductPageBO() {
                       </td>
                       <td className="px-2 py-3">
                         <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
-                          {product.productTypes.map((category) => (
+                          {product.productTypes.map((category: any) => (
                             <button
                               key={category.id}
                               className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
@@ -419,7 +420,12 @@ export default function ProductPageBO() {
                         </div>
                       </td>
                       <td className="px-2 py-3">{product.price}</td>
-                      <td className="px-2 py-3">{product.statusCode}</td>
+                      <td className="px-2 py-3">
+                        {product.statusCode === "ACTIVE"
+                          ? "PUBLICADO"
+                          : product.statusCode}
+                      </td>
+
                       <td className="px-2 py-3 flex items-center justify-end space-x-2">
                         <button
                           onClick={() => showDeleteModal(product)}
@@ -433,7 +439,7 @@ export default function ProductPageBO() {
                               ? `/dashboard/productos/crear/producto-variable?productVariableId=${product.id}`
                               : `/dashboard/productos/crear/producto-simple?productId=${product.id}`
                           }
-                          className="px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-800"
+                          className="px-2 py-1 rounded bg-primary text-secondary hover:bg-secondary hover:text-primary"
                         >
                           Editar
                         </Link>

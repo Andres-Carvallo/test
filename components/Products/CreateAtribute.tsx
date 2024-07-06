@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
-import { obtenerAtributos } from "@/app/utils/obtenerAtributos";
+import { useAPI } from "@/app/Context/ProductTypeContext";
 
 interface CreateAttributeProps {
   handleCloseModal: any;
   fetchData: any;
-}
-interface Attribute {
-  id: number;
-  name: string;
 }
 
 const CreateAtribute: React.FC<CreateAttributeProps> = ({
@@ -16,35 +12,44 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
   fetchData,
 }) => {
   const token = String(getCookie("AdminTokenAuth"));
-  const [attributes, setAtributes] = useState<Attribute[]>([]);
-  const [error, setError] = useState<Error | null>(null);
-  const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     statusCode: "ACTIVE",
   });
 
-  async function fetchAttributes() {
-    try {
-      const PageNumber = 1;
-      const PageSize = 10;
-      const token = getCookie("AdminTokenAuth");
-      const data = await obtenerAtributos(token, PageNumber, PageSize);
+  const { fetchAttributes, attributes, setAttributes, loading, error } =
+    useAPI();
 
-      setAtributes(data.attributes);
-      setLoading(false);
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error);
-        setLoading(false);
-        console.error("An error occurred:", error.message);
+  const handleDelete = async (id: number) => {
+    const confirmed = window.confirm(
+      "¿Estás seguro de que deseas eliminar este atributo?"
+    );
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        fetchAttributes();
+        fetchData();
       } else {
-        setLoading(false);
-        console.error("An unknown error occurred:", error);
+        console.error("Error al eliminar el Atributo:", response.statusText);
       }
+    } catch (error) {
+      console.error("Error al enviar la solicitud:", error);
     }
-  }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,17 +68,14 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
       );
 
       if (response.ok) {
-        // El producto se creó exitosamente, puedes hacer alguna acción como cerrar el modal o mostrar un mensaje de éxito
         handleCloseModal();
         setFormData({
           name: "",
           description: "",
           statusCode: "ACTIVE",
         });
-        console.log("ok");
         fetchAttributes();
       } else {
-        // Si la solicitud no es exitosa, maneja el error según sea necesario
         console.error("Error al crear el Atributo:", response.statusText);
       }
     } catch (error) {
@@ -83,7 +85,9 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
 
   useEffect(() => {
     fetchAttributes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const handleDescriptionChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
@@ -96,12 +100,11 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
 
   return (
     <div className="relative px-12 flex mt-[10%] justify-center ">
-      {/* Modal content */}
       <div className="relative p-4 grid grid-cols-1 sm:grid-cols-2 max-w-[45vw] min-w-[45vw] bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
         <div>
           <div className="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600 ">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Crear Atributo
+              Crear / Eliminar Atributo
             </h3>
           </div>
           <form onSubmit={handleSubmit}>
@@ -150,29 +153,16 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
             <div className="items-center space-y-4 sm:flex sm:space-y-0 sm:space-x-4">
               <button
                 type="submit"
-                className="w-full sm:w-auto justify-center text-white inline-flex bg-secondary hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-secondary dark:focus:ring-primary-800"
+                className="bg-primary hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
               >
-                Crear Atributo
+                Atributos
               </button>
 
               <button
-                data-modal-toggle="createProductModal"
                 type="button"
                 onClick={handleCloseModal}
-                className="w-full justify-center sm:w-auto text-gray-500 inline-flex items-center bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-primary-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
+                className="bg-red-800 hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
               >
-                <svg
-                  className="mr-1 -ml-1 w-5 h-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
                 Cancelar
               </button>
             </div>
@@ -185,34 +175,48 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
             </h3>
             <button
               type="button"
-              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              className="text-gray-400 bg-primary hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
               onClick={handleCloseModal}
             >
               <svg
-                aria-hidden="true"
-                className="w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-4"
               >
                 <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
                 />
               </svg>
               <span className="sr-only">Close modal</span>
             </button>
           </div>
-          {Array.isArray(attributes) &&
-            attributes.map((attribute) => (
-              <h1
-                className="border-b py-1  text-xs"
-                key={attribute.id}
-              >
-                {attribute.name}
-              </h1>
-            ))}
+          <div className="max-h-48 overflow-y-auto">
+            {loading && <p>Loading...</p>}
+            {error && <p>Error: {error.message}</p>}
+            {Array.isArray(attributes) && attributes.length > 0 ? (
+              attributes.map((attribute) => (
+                <div
+                  className="flex justify-between items-center border-b py-1 text-xs"
+                  key={attribute.id}
+                >
+                  <span>{attribute.name}</span>
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleDelete(attribute.id)}
+                  >
+                    X
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p>No attributes found</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

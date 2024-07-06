@@ -15,6 +15,30 @@ export function APIContextProvider({ children, SiteId }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [totalItems, setTotalItems] = useState([]);
 
+  const [attributes, setAttributes] = useState([]);
+  const fetchAttributes = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes?pageNumber=1&pageSize=50`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        setAttributes(data.attributes);
+      } else {
+        console.error("Error fetching attributes:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching attributes:", error);
+    }
+  };
+
   const handleMenuOpen = () => {
     setIsMenuOpen(true);
   };
@@ -166,6 +190,9 @@ export function APIContextProvider({ children, SiteId }) {
         handleMenuClose,
         totalItems,
         setTotalItems,
+        fetchAttributes,
+        attributes,
+        setAttributes,
       }}
     >
       {children}

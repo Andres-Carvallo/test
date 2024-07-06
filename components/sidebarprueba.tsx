@@ -12,13 +12,13 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed top-6 left-6 bottom-6 flex flex-col gap-2.5 w-72 rounded-lg p-4 border border-white/20 bg-black/80 backdrop-blur-lg transition-all duration-500">
+    <aside className="fixed top-6  left-6 bottom-6 flex flex-col gap-2.5 w-72 rounded-lg p-4 border border-white/20 bg-black/80 backdrop-blur-lg transition-all duration-500">
       <header className="flex items-center h-18 pb-4 border-b border-white/20">
         <button className="w-13">
           <i className="ai-three-line-horizontal text-lg"></i>
         </button>
         <img
-          src="/img/pixelup-white.png"
+          src="/img/pixelup.png"
           className="h-20"
           alt="Logo"
         />

@@ -1,13 +1,10 @@
-import type { Metadata } from "next";
-import { Inter, Roboto_Mono, Kalam, Oswald, Lato } from "next/font/google";
+import { Inter, Roboto_Mono, Kalam, Oswald, Lato, Montserrat } from "next/font/google";
 import "./globals.css";
 import { APIContextProvider } from "@/app/Context/ProductTypeContext";
 import toast, { Toaster } from "react-hot-toast";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
-import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"] });
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -25,15 +22,17 @@ const lato = Lato({
   weight: ["400"],
   variable: "--font-lato",
 });
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-Montserrat",
+});
 const oswald = Oswald({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-oswald",
 });
-export const metadata: Metadata = {
-  title: "PixelUP - PRO",
-  description: "buff your bussiness",
-};
+
 
 export default function RootLayout({
   children,
@@ -42,26 +41,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <Script
+      <header>
+        <script
           async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GOOGLE_ANALYTICS_STREAM_ID}`}
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
         />
-
-        <Script id="google-analytics">
-          {`
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', ${process.env.GOOGLE_ANALYTICS_STREAM_ID}});
-  `}
-        </Script>
-      </head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
+          `,
+          }}
+        />
+      </header>
       <APIContextProvider SiteId={SiteId}>
         <Analytics />
 
         <body
-          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} `}
+          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} `}
         >
           <Providers>
             <Toaster />

@@ -83,7 +83,7 @@ const OrderReceipt: React.FC = () => {
         })
         .catch((err) => {
           console.error(err); // Verificar el error
-          setError("Failed to fetch order details");
+          setError("No se pudo obtener los detalles de la orden");
           setLoading(false);
         });
     }
@@ -111,11 +111,11 @@ const OrderReceipt: React.FC = () => {
   }
 
   if (!order) {
-    return <div className="text-center">Order not found</div>;
+    return <div className="text-center">Orden no encontrada</div>;
   }
 
   return (
-    <div className=" mx-auto flex w-full justify-center items-center  bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+    <div className="mx-auto flex w-full justify-center items-center bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
       <div
         className="max-w-6xl mx-auto px-10 bg-white shadow-md rounded-md my-20 py-10"
         id="order-receipt"
@@ -123,47 +123,52 @@ const OrderReceipt: React.FC = () => {
         <h1 className="text-3xl font-bold text-center text-primary">
           Detalle de tu Orden
         </h1>
-        <p className="text-center mb-12">Gracias por comprar con nostros!</p>
+        <p className="text-center mb-12">¡Gracias por comprar con nosotros!</p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="border p-4 rounded-md ">
-            <h2 className="text-lg font-semibold mb-4">Order Info</h2>
-
+            <h2 className="text-lg font-semibold mb-4">
+              Información de la Orden
+            </h2>
             <p>
-              <strong>Creation Date:</strong>{" "}
+              <strong>N° Orden:</strong> {order.correlative}
+            </p>
+            <p>
+              <strong>Fecha de Creación:</strong>{" "}
               {new Date(order.creationDate).toLocaleString()}
             </p>
             <p>
-              <strong>Status:</strong> {getStatusCodeText(order.statusCode)}
+              <strong>Estado:</strong> {getStatusCodeText(order.statusCode)}
             </p>
+
             {order.paymentMethod && (
               <p>
-                <strong>Payment Method:</strong> {order.paymentMethod}
+                <strong>Método de Pago:</strong> {order.paymentMethod}
               </p>
             )}
           </div>
           <div className="border p-4 rounded-md ">
-            <h2 className="text-lg font-semibold mb-4">Customer</h2>
+            <h2 className="text-lg font-semibold mb-4">Cliente</h2>
             <p>
-              <strong>Name:</strong> {order.customer.firstname}{" "}
+              <strong>Nombre:</strong> {order.customer.firstname}{" "}
               {order.customer.lastname}
             </p>
             <p>
               <strong>Email:</strong> {order.customer.email}
             </p>
             <p>
-              <strong>Phone number:</strong> {order.customer.phoneNumber}
+              <strong>Número de Teléfono:</strong> {order.customer.phoneNumber}
             </p>
           </div>
           <div className="border p-4 rounded-md ">
-            <h2 className="text-lg font-semibold mb-4">Address</h2>
+            <h2 className="text-lg font-semibold mb-4">Dirección</h2>
             <p>
-              <strong>Shipping Address:</strong>{" "}
+              <strong>Dirección de Envío:</strong>{" "}
               {order.shippingInfo.addressLine1},{" "}
               {order.shippingInfo.addressLine2}
             </p>
             <p>
-              <strong>Commune:</strong> {order.shippingInfo.commune.name},{" "}
+              <strong>Comuna:</strong> {order.shippingInfo.commune.name},{" "}
               {order.shippingInfo.commune.region.name}
             </p>
           </div>
@@ -171,7 +176,7 @@ const OrderReceipt: React.FC = () => {
 
         <div className="border p-4 rounded-md mb-6">
           <h2 className="text-lg font-semibold mb-4">
-            Items in your Shopping Cart
+            Artículos en tu Carrito de Compras
           </h2>
           {order.items.map((item) => (
             <div
@@ -186,7 +191,7 @@ const OrderReceipt: React.FC = () => {
                 />
                 <div>
                   <p className="font-semibold">{item.sku.product.name}</p>
-                  <p className="text-gray-500">Quantity: {item.quantity}</p>
+                  <p className="text-gray-500">Cantidad: {item.quantity}</p>
                 </div>
               </div>
               <p className="text-purple-700 font-semibold">
@@ -202,15 +207,15 @@ const OrderReceipt: React.FC = () => {
             <p className="text-lg">${order.totals.itemsAmount.toFixed(2)}</p>
           </div>
           <div className="flex justify-between items-center mb-2">
-            <p className="text-lg font-semibold">Shipping Charge:</p>
+            <p className="text-lg font-semibold">Cargo por Envío:</p>
             <p className="text-lg">${order.totals.shippingAmount.toFixed(2)}</p>
           </div>
           <div className="flex justify-between items-center mb-2">
-            <p className="text-lg font-semibold">Taxes:</p>
+            <p className="text-lg font-semibold">Impuestos:</p>
             <p className="text-lg">${order.totals.taxAmount.toFixed(2)}</p>
           </div>
           <div className="flex justify-between items-center mb-2">
-            <p className="text-lg font-semibold">Discount:</p>
+            <p className="text-lg font-semibold">Descuento:</p>
             <p className="text-lg">${order.totals.discountAmount.toFixed(2)}</p>
           </div>
           <div className="flex justify-between items-center">
@@ -221,8 +226,8 @@ const OrderReceipt: React.FC = () => {
           </div>
         </div>
 
-        <button className="bg-blue-500 text-white p-2 rounded-md shadow-md hover:bg-blue-600 focus:outline-none">
-          Download PDF
+        <button className="bg-blue-500 hidden text-white p-2 rounded-md shadow-md hover:bg-blue-600 focus:outline-none">
+          Descargar PDF
         </button>
       </div>
     </div>

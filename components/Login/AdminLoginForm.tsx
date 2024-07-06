@@ -1,21 +1,40 @@
 "use client";
+
 import { useState } from "react";
 import axios from "axios";
 import { setCookie } from "cookies-next";
+import Link from "next/link";
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from "react-google-recaptcha-v3";
 
-export default function AdminLoginForm() {
+function AdminLoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
+    if (!executeRecaptcha) {
+      console.error("Execute recaptcha not yet available");
+      setLoading(false);
+      return;
+    }
+
     try {
+      const token = await executeRecaptcha("login");
+      setRecaptchaToken(token);
+
       const data = {
         email: e.target[0].value,
         password: e.target[1].value,
+        recaptchaToken: token, // Añadir el token de reCAPTCHA
       };
 
       const response = await axios.post(
@@ -43,65 +62,73 @@ export default function AdminLoginForm() {
   };
 
   return (
-    <>
-      <div className=" mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
-        <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
-          <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
-            Ingresa a tu Panel de Administración
-          </h3>
+    <div className="mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+      <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
+        <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
+          Ingresa a tu Panel de Administración
+        </h3>
 
-          {error && (
-            <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-              role="alert"
+        {error && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+            role="alert"
+          >
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline"> {error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-8">
+            <label
+              htmlFor="email"
+              className="mb-3 block text-sm text-dark dark:text-white"
             >
-              <strong className="font-bold">Error:</strong>
-              <span className="block sm:inline"> {error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-8">
-              <label
-                htmlFor="email"
-                className="mb-3 block text-sm text-dark dark:text-white"
-              >
-                Tu Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Ingresa tu Email"
-                className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
-                required
-              />
-            </div>
-            <div className="mb-8">
-              <label
-                htmlFor="password"
-                className="mb-3 block text-sm text-dark dark:text-white"
-              >
-                Tu Contraseña
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Ingresa tu Contraseña"
-                className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
-                required
-              />
-            </div>
-            <div className="mb-6">
-              <button
-                type="submit"
-                className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-secondary shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
-                disabled={loading}
-              >
-                {loading ? "Cargando..." : "Iniciar Sesión"}
-              </button>
-            </div>
-          </form>
-        </div>
+              Tu Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Ingresa tu Email"
+              className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              required
+            />
+          </div>
+          <div className="mb-8">
+            <label
+              htmlFor="password"
+              className="mb-3 block text-sm text-dark dark:text-white"
+            >
+              Tu Contraseña
+            </label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Ingresa tu Contraseña"
+              className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <button
+              type="submit"
+              className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-secondary shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
+              disabled={loading}
+            >
+              {loading ? "Cargando..." : "Iniciar Sesión"}
+            </button>
+          </div>
+          <div className="pb-20px"></div>
+        </form>
+        <p className="text-center text-xs font-medium text-body-color">
+          ¿Olvidaste tu Contraseña?{" "}
+          <Link
+            href="/admin/recuperar-password"
+            className="text-primary hover:underline font-bold"
+          >
+            Recuperar Contraseña
+          </Link>
+        </p>
       </div>
 
       {/* Indicador de carga */}
@@ -128,6 +155,15 @@ export default function AdminLoginForm() {
           </div>
         </div>
       )}
-    </>
+    </div>
+  );
+}
+
+export default function App() {
+  const siteKey = process.env.RECAPTCHA_SITE_KEY || "";
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <AdminLoginForm />
+    </GoogleReCaptchaProvider>
   );
 }

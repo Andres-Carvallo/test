@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React from "react";
 
 const StarCheckbox = ({
   isChecked,
@@ -16,7 +16,9 @@ const StarCheckbox = ({
         className="absolute opacity-0 w-0 h-0"
       />
       <svg
-        className={`w-8 h-8 ${isChecked ? "text-yellow-500" : "text-gray-400"}`}
+        className={`w-10 h-10 ${
+          isChecked ? "text-yellow-500" : "text-gray-400"
+        }`}
         fill="currentColor"
         viewBox="0 0 20 20"
         xmlns="http://www.w3.org/2000/svg"

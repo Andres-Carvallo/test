@@ -134,7 +134,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
         {variationImages.map((image, index) => (
           <div
             key={image.id}
-            className="min-w-[100px] h-[100px] relative"
+            className="min-w-[80px] h-[80px] relative"
           >
             <img
               src={image.imageUrl}
@@ -181,10 +181,10 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
       {variationImages.length < 4 && (
         <label
           htmlFor="variationImageUpload"
-          className="min-w-[100px] h-[100px] flex justify-center items-center border border-dashed border-primary cursor-pointer"
+          className="min-w-[100px]  flex justify-center items-center border border-dashed border-primary cursor-pointer"
           style={{ borderRadius: "var(--radius)" }}
         >
-          <div className="flex flex-col justify-center items-center">
+          <div className="flex flex-col justify-center items-center p-3">
             <svg
               className="w-12 h-12 text-gray-400"
               fill="none"
@@ -198,11 +198,11 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"
               />
             </svg>
-            <p className="mb-2 text-sm text-gray-500">
+            <p className="mb-2 text-sm text-gray-500 text-center">
               <span className="font-semibold">Click to upload</span>
             </p>
-            <p className="text-xs text-gray-500">
-              SVG, PNG, JPG or GIF (MAX. 800x400px)
+            <p className="text-xs text-gray-500 text-center">
+              SVG, PNG, JPG or GIF
             </p>
           </div>
           <input

@@ -4,29 +4,28 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 
 type Offer = {
-  id: string | null;
-  unitPrice: number;
+  id: any;
+  unitPrice: any;
   startDate: any;
   endDate: any;
-  currencyCode: string;
+  currencyCodeId: any;
 };
 
 type OfferFormProps = {
   id: string;
   skuId: string;
-  fetchVariations: () => void;
+  fetchVariations: any;
   handleMenuClose: any;
-  handleMenuOpen: any;
   offerToEdit: any;
   onSave: any;
-  unitPrice: any;
-  startDate: any;
-  endDate: any;
-  currencyCode: any;
+  unitPrice: string;
+  startDate: string;
+  endDate: string;
+  currencyCodeId: string;
   setUnitPrice: any;
   setStartDate: any;
   setEndDate: any;
-  setCurrencyCode: any;
+  setCurrencyCodeId: any;
 };
 
 function OfferForm({
@@ -39,10 +38,10 @@ function OfferForm({
   unitPrice,
   startDate,
   endDate,
-  currencyCode,
+  currencyCodeId,
   setEndDate,
   setUnitPrice,
-  setCurrencyCode,
+  setCurrencyCodeId,
   setStartDate,
 }: OfferFormProps) {
   useEffect(() => {
@@ -59,7 +58,7 @@ function OfferForm({
           }
         );
 
-        setCurrencyCode(currencyResponse.data.currencyCodes[0].id);
+        setCurrencyCodeId(currencyResponse.data.currencyCodes[0].id);
       } catch (error) {
         console.error("Error fetching currency code:", error);
       }
@@ -72,8 +71,8 @@ function OfferForm({
     if (offerToEdit) {
       console.log("Offer to edit:", offerToEdit); // Verifica los datos de la oferta a editar
       setUnitPrice(offerToEdit.unitPrice.toString());
-      setStartDate(offerToEdit.startDate.substring(0, 10)); // Formatear fecha a "YYYY-MM-DD"
-      setEndDate(offerToEdit.endDate.substring(0, 10)); // Formatear fecha a "YYYY-MM-DD"
+      setStartDate(offerToEdit.startDate); // Formatear fecha a "YYYY-MM-DD"
+      setEndDate(offerToEdit.endDate); // Formatear fecha a "YYYY-MM-DD"
     } else {
       setUnitPrice("");
       setStartDate("");
@@ -86,9 +85,9 @@ function OfferForm({
     const updatedOffer: Offer = {
       id: offerToEdit ? offerToEdit.id : null,
       unitPrice: parseFloat(unitPrice),
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      currencyCode,
+      startDate,
+      endDate,
+      currencyCodeId,
     };
 
     try {
@@ -100,7 +99,7 @@ function OfferForm({
         },
       };
 
-      if (offerToEdit) {
+      if (offerToEdit && offerToEdit.id) {
         // Actualizar oferta existente
         const response = await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers/${offerToEdit.id}`,
@@ -172,7 +171,7 @@ function OfferForm({
           type="submit"
           className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
-          Crear Oferta
+          {offerToEdit ? "Actualizar Oferta" : "Crear Oferta"}
         </button>
       </div>
     </form>

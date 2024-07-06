@@ -28,9 +28,21 @@ function Checkout() {
 
   const [deliveryType, setDeliveryType] = useState(""); // Valor predeterminado: entrega a domicilio
   const [deliveryTypeID, setDeliveryTypeID] = useState("");
-
+  const [itemAvailability, setItemAvailability] = useState<{
+    [key: string]: ItemAvailability;
+  }>({});
   const cartId = getCookie("cartId");
 
+  const setItemAvailabilityHandler = (
+    itemId: any,
+    enabledForDelivery: any,
+    enabledForWithdrawal: any
+  ) => {
+    setItemAvailability((prevState) => ({
+      ...prevState,
+      [itemId]: { enabledForDelivery, enabledForWithdrawal },
+    }));
+  };
   const [customer, setCustomer] = useState({
     cartId: cartId,
     deliveryTypeId: "",
@@ -47,6 +59,18 @@ function Checkout() {
   });
 
   const handleSubmitOrder = async () => {
+    if (
+      !customer.customer.firstname ||
+      !customer.customer.lastname ||
+      !customer.customer.phoneNumber ||
+      !customer.customer.email ||
+      !customer.customer.addressLine1 ||
+      !customer.customer.communeId
+    ) {
+      toast.error("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
     const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
@@ -104,7 +128,6 @@ function Checkout() {
         };
         setCartItems(updatedCartItems);
 
-        // Actualizar la cantidad en la API
         const cartId = getCookie("cartId");
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
@@ -129,7 +152,6 @@ function Checkout() {
         };
         setCartItems(updatedCartItems);
 
-        // Actualizar la cantidad en la API
         const cartId = getCookie("cartId");
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
@@ -150,7 +172,6 @@ function Checkout() {
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`
       );
-      // Si la solicitud se completa con éxito, actualiza el estado del carrito eliminando el elemento correspondiente
       setCartItems((prevItems: any) =>
         prevItems.filter((item: any) => item.id !== itemId)
       );
@@ -187,11 +208,11 @@ function Checkout() {
   const handleRegionChange = (e: any) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
-    setSelectedCommune(""); // Reset selected commune when region changes
+    setSelectedCommune("");
     if (regionId) {
       fetchCommunes(regionId);
     } else {
-      setCommunes([]); // Reset communes if no region is selected
+      setCommunes([]);
     }
   };
 
@@ -206,27 +227,53 @@ function Checkout() {
       },
     });
   };
+  interface ItemAvailability {
+    enabledForDelivery: boolean;
+    enabledForWithdrawal: boolean;
+  }
+  const validateDeliveryOption = (option: any) => {
+    const invalidItems = cartItems.filter((item: any) => {
+      if (option === "HOME_DELIVERY")
+        return !itemAvailability[item.id]?.enabledForDelivery;
+      if (option === "WITHDRAWAL_FROM_STORE")
+        return !itemAvailability[item.id]?.enabledForWithdrawal;
+      return false;
+    });
+
+    if (invalidItems.length > 0) {
+      toast.error(
+        `Los siguientes productos no son elegibles para ${
+          option === "HOME_DELIVERY" ? "delivery" : "retiro"
+        }: ${invalidItems.map((item: any) => item.sku.product.name).join(", ")}`
+      );
+      return false;
+    }
+
+    return true;
+  };
 
   const handleChangeDeliveryType = async (newValue: any) => {
-    setDeliveryType(newValue);
+    if (validateDeliveryOption(newValue)) {
+      setDeliveryType(newValue);
 
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
-      );
-      const deliveryTypes = response.data.deliveryTypes;
-      const selectedDeliveryType = deliveryTypes.find(
-        (type: any) => type.code === newValue
-      );
-      if (selectedDeliveryType) {
-        setDeliveryTypeID(selectedDeliveryType.id);
-      } else {
-        console.error(
-          "No se encontró el deliveryType seleccionado en la respuesta de la API"
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
         );
+        const deliveryTypes = response.data.deliveryTypes;
+        const selectedDeliveryType = deliveryTypes.find(
+          (type: any) => type.code === newValue
+        );
+        if (selectedDeliveryType) {
+          setDeliveryTypeID(selectedDeliveryType.id);
+        } else {
+          console.error(
+            "No se encontró el deliveryType seleccionado en la respuesta de la API"
+          );
+        }
+      } catch (error) {
+        console.error("Error al obtener los tipos de entrega:", error);
       }
-    } catch (error) {
-      console.error("Error al obtener los tipos de entrega:", error);
     }
   };
 
@@ -237,8 +284,9 @@ function Checkout() {
   }, []);
 
   return (
-    <div className="pb-12">
-      <>
+    <>
+      <title>Checkout</title>
+      <div className="pb-12">
         <div className="flex flex-col items-center border-b bg-white py-4 sm:flex-row sm:px-10 lg:px-20 xl:px-32">
           <a
             href="#"
@@ -325,10 +373,8 @@ function Checkout() {
         </div>
         <div className="grid sm:px-10 lg:grid-cols-2 lg:px-20 xl:px-32">
           <div className="px-4 pt-8">
-            <p className="text-xl font-medium">Order Summary</p>
-            <p className="text-gray-400 mb-4">
-              Check your items. And select a suitable shipping method.
-            </p>
+            <p className="text-xl font-medium">Detalle Orden</p>
+            <p className="text-gray-400 mb-4">Listado de tu carrito</p>
             <div className="w-full  bg-white shadow-lg relative ml-auto h-auto">
               <div className="overflow-auto p-6 ">
                 <CartList
@@ -336,15 +382,14 @@ function Checkout() {
                   incrementQuantity={incrementQuantity}
                   decrementQuantity={decrementQuantity}
                   removeItem={removeItem}
+                  setItemAvailability={setItemAvailabilityHandler}
                 />
               </div>
             </div>
           </div>
           <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
-            <p className="text-xl font-medium">Payment Details</p>
-            <p className="text-gray-400">
-              Complete your order by providing your payment details.
-            </p>
+            <p className="text-xl font-medium">Datos Personales</p>
+            <p className="text-gray-400">Completa tus datos de entrega</p>
             <div className="">
               <div className="mt-10 bg-gray-50 px-4 pt-2 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
@@ -352,7 +397,7 @@ function Checkout() {
                     htmlFor="firstname"
                     className="block mt-4"
                   >
-                    First Name
+                    Nombre
                     <input
                       type="text"
                       id="firstname"
@@ -374,7 +419,7 @@ function Checkout() {
                     htmlFor="lastname"
                     className="block mt-4"
                   >
-                    Last Name
+                    Apellido
                     <input
                       type="text"
                       id="lastname"
@@ -398,7 +443,7 @@ function Checkout() {
                     htmlFor="phoneNumber"
                     className="block mt-4"
                   >
-                    Phone Number
+                    Teléfono
                     <input
                       type="text"
                       id="phoneNumber"
@@ -444,7 +489,7 @@ function Checkout() {
                     htmlFor="addressLine1"
                     className="block mt-4"
                   >
-                    Address Line 1
+                    Dirección
                     <input
                       type="text"
                       id="addressLine1"
@@ -466,7 +511,7 @@ function Checkout() {
                     htmlFor="addressLine2"
                     className="block mt-4"
                   >
-                    Address Line 2
+                    Dirección 2
                     <input
                       type="text"
                       id="addressLine2"
@@ -502,7 +547,7 @@ function Checkout() {
                   <span className="sr-only">Info</span>
                   <div>
                     <span className="font-semibold">Delivery.</span> Solo
-                    apareceran las comunas que tengan disponibilidad de entrega.
+                    aparecerán las comunas que tengan disponibilidad de entrega.
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -647,8 +692,8 @@ function Checkout() {
             </button>
           </div>
         </div>
-      </>
-    </div>
+      </div>
+    </>
   );
 }
 

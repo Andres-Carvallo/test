@@ -23,7 +23,7 @@ const Header = () => {
             className="text-2xl font-bold"
           >
             <img
-              src="/img/logo-1.png"
+              src="/img/pixelup.png"
               alt=""
               className="h-14"
             />

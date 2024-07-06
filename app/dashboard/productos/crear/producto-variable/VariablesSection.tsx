@@ -21,11 +21,12 @@ function VariationsComponente({
   selectedImages,
   handleImageGalleryChange,
   handleImageRemove,
+  variations,
+  setVariations,
 }: any) {
-  const [variations, setVariations] = useState<Variation[]>([]);
   const [variationImages, setVariationImages] = useState<any[]>([]); // Estado para las imágenes de la variación
   const [attributes, setAttributes] = useState<any[]>([]);
-  const [currentAttributes, setCurrentAttributes] = useState({});
+  const [currentAttributes, setCurrentAttributes] = useState<any>({});
   const [currentPrices, setCurrentPrices] = useState({});
   const [currentStocks, setCurrentStocks] = useState({});
 
@@ -58,7 +59,6 @@ function VariationsComponente({
       }
 
       const data = await response.json();
-      console.log(data, "datito");
 
       if (data && data.skuImages) {
         setVariationImages(data.skuImages); // Actualiza el estado local con las imágenes obtenidas
@@ -83,6 +83,7 @@ function VariationsComponente({
       const data = await response.json();
       if (data.code === 0) {
         setAttributes(data.attributes);
+        return data.attributes;
       } else {
         console.error("Error fetching attributes:", data.message);
       }
@@ -189,12 +190,40 @@ function VariationsComponente({
       return null; // En caso de error, devuelve null
     }
   };
-
-  const fetchStockForVariation = async (productId: any, skuId: any) => {
+  const getWarehouseId = async () => {
     try {
       const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (
+        response.data &&
+        response.data.warehouses &&
+        response.data.warehouses.length > 0
+      ) {
+        return response.data.warehouses[0].id; // Devuelve el id del primer almacén
+      } else {
+        console.error("No se encontraron almacenes.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error obteniendo almacén:", error);
+      return null;
+    }
+  };
+  const fetchStockForVariation = async (productId: any, skuId: any) => {
+    try {
+      const warehouseId = await getWarehouseId();
+      const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=22a8401d-da05-49a8-958f-9ab93623582c`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -265,7 +294,7 @@ function VariationsComponente({
       ...variations,
       {
         description: "",
-        hasUnlimitedStock: true,
+        hasUnlimitedStock: false,
         hasStockNotifications: false,
         mainImage: null,
         previewImage: null,
@@ -280,7 +309,7 @@ function VariationsComponente({
     index: number
   ) => {
     const { value } = e.target;
-    setVariations((prevVariations) => {
+    setVariations((prevVariations: any) => {
       const updatedVariations = [...prevVariations];
       updatedVariations[index].description = value;
       return updatedVariations;
@@ -289,7 +318,7 @@ function VariationsComponente({
 
   const handleMainImageChange = (image: any, index: number) => {
     console.log(" Image:", image); // Añadir este log para verificar la imagen
-    setVariations((prevVariations) => {
+    setVariations((prevVariations: any) => {
       const updatedVariations = [...prevVariations];
       updatedVariations[index].mainImage = image;
       return updatedVariations;
@@ -297,13 +326,20 @@ function VariationsComponente({
   };
 
   const handlePreviewImageChange = (image: any, index: number) => {
-    setVariations((prevVariations) => {
+    setVariations((prevVariations: any) => {
       const updatedVariations = [...prevVariations];
       updatedVariations[index].previewImage = image;
       return updatedVariations;
     });
   };
-  const handleDeleteVariation = async (skuId: string) => {
+  const handleDeleteVariation = async (skuId: string, index: number) => {
+    if (!skuId) {
+      // Si no hay ID, elimina la variación del estado local
+      setVariations((prevVariations: any) =>
+        prevVariations.filter((_: any, i: number) => i !== index)
+      );
+      return;
+    }
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const idVariable = searchParams.get("productVariableId");
@@ -349,15 +385,32 @@ function VariationsComponente({
         </button>
       </div>
 
-      {variations.map((variation, index) => (
+      {variations.map((variation: any, index: any) => (
         <div
           key={index}
           className="p-4 border border-dotted border-dark bg-white rounded-xl shadow"
         >
           <div className="flex justify-between">
-            <h3 className="bg-primary text-black px-2 rounded-xl">
-              Variación {index + 1}
-            </h3>
+            <div className="flex gap-2">
+              <h4 className="bg-primary text-xs uppercase text-white px-2 py-1 rounded">
+                N° {index + 1}
+              </h4>
+              <div className="current-attributes flex gap-2">
+                {currentAttributes[variation.id]?.map(
+                  (attribute: any, index: any) => (
+                    <h4
+                      key={index}
+                      className="bg-primary text-xs text-white px-2 py-1 rounded"
+                    >
+                      {attribute.label}:
+                      <span className="font-bold">
+                        {""} {attribute.value}
+                      </span>
+                    </h4>
+                  )
+                )}
+              </div>
+            </div>
             <div className="flex gap-4 justify-end">
               <button onClick={() => setCurrentVariationIndex(index)}>
                 {currentVariationIndex === index ? null : (
@@ -379,7 +432,10 @@ function VariationsComponente({
                   </div>
                 )}
               </button>
-              <button onClick={() => handleDeleteVariation(variation.id)}>
+
+              <button
+                onClick={() => handleDeleteVariation(variation.id, index)}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -403,6 +459,7 @@ function VariationsComponente({
               <VariationForm
                 variation={variation}
                 fetchVariations={fetchVariations}
+                fetchAttributes={fetchAttributes}
                 currentPrices={currentPrices}
                 currentStocks={currentStocks}
                 currentAttributes={currentAttributes}

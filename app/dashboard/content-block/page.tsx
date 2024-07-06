@@ -166,11 +166,11 @@ function ContentBlock() {
       <Breadcrumb pageName="Content Block" />
 
       <div className="flex flex-col gap-4">
-        <div className="border border-dashed border-dark/50 rounded-lg p-4 bg-white">
+        <div className="border border-solid border-primary rounded-lg p-4 bg-white">
           <h4 className="uppercase font-bold mb-4">Marquee TOP</h4>
-          <div className="border border-dashed border-dark/50 rounded-lg p-4 ">
+          <div className="border border-dashed border-primary rounded-lg p-4 ">
             <section>
-              <div className="flex items-center max-md:flex-col bg-dark text-white px-6 py-2 rounded font-[sans-serif]">
+              <div className="flex items-center max-md:flex-col bg-primary text-secondary px-6 py-2 rounded">
                 {/*  <div className="max-md:mt-4">
           <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
             {bannerData?.title}
@@ -218,13 +218,13 @@ function ContentBlock() {
               name="contentText"
               onChange={handleChangeMarquee}
               className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="contentText"
+              placeholder="Ingrese contenido..."
             />
 
             <button
               type="submit"
               disabled={loading}
-              className="text-white bg-dark hover:bg-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
+              className="text-secondary bg-primary hover:bg-secondary hover:text-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
             >
               <svg
                 aria-hidden="true"
@@ -245,27 +245,45 @@ function ContentBlock() {
                   fill="currentColor"
                 />
               </svg>
-              {loading ? "Loading..." : "Update"}
+              {loading ? "Loading..." : "Actualizar"}
             </button>
           </form>
         </div>
         {/* bienvenida */}
-        <div className="border border-dashed border-dark/50 rounded-lg p-4 bg-white">
+        <div className="border border-solid border-primary rounded-lg p-4 bg-white">
           <h4 className="uppercase font-bold mb-4">Mensaje bienvenida</h4>
-          <div className="border border-dashed border-dark/50 rounded-lg p-4 ">
-            <div className=" text-[#333] p-8 font-[sans-serif]">
-              <div className="max-w-2xl mx-auto text-center">
-                <h2 className="text-3xl  font-bold uppercase  font-sans text-dark">
-                  {welcomeData?.title}
-                </h2>
-                <div className="mt-4">
-                  <p className="text-base font-sans text-dark">
-                    {welcomeData?.contentText}
-                  </p>
-                </div>
-              </div>
-            </div>
+
+          <div className="p-6 border border-dashed border-primary">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
+            {welcomeData?.title}
+          </h1>
+          <div className="mt-4">
+            <p className="mt-4 text-center text-lg text-primary">
+              {welcomeData?.contentText}
+            </p>
           </div>
+{/*           <p className="text-center text-lg text-[#a68981]">
+            Te invito a conocerlas y encontrar la que resuene contigo.
+          </p> */}
+
+          <div className="flex justify-center items-center">
+
+{/*           <Marquee   autoFill style={{ width: "70%" }} speed={40}>
+            <div className="flex gap-6 py-2"> 
+            {LogoData.map((logos, index) => (
+            <img key={index} src={logos} alt="" className="h-24" />
+            ))}
+            </div>
+          </Marquee> */}
+          </div>
+        </div>
+    </div>
+
+
+
+
+
           <p className="text-xs flex items-center gap-2 mt-4">
             <span>
               <svg
@@ -295,19 +313,19 @@ function ContentBlock() {
               name="title"
               onChange={handleChangeWelcome}
               className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Title"
+              placeholder="Título"
             />
             <input
               type="text"
               name="contentText"
               onChange={handleChangeWelcome}
               className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="contentText"
+              placeholder="Texto"
             />
             <button
               type="submit"
               disabled={loading}
-              className="text-white bg-dark hover:bg-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
+              className="text-secondary bg-primary hover:bg-secondary hover:text-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
             >
               <svg
                 aria-hidden="true"
@@ -328,7 +346,7 @@ function ContentBlock() {
                   fill="currentColor"
                 />
               </svg>
-              {loading ? "Loading..." : "Update"}
+              {loading ? "Loading..." : "Actualizar"}
             </button>
           </form>
         </div>

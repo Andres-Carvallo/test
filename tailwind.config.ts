@@ -24,6 +24,7 @@ const config: Config = {
         robotoMono: ["var(--font-roboto-mono)", "monospace"],
         oswald: ["var(--font-oswald)", "sans-serif"],
         lato: ["var(--font-lato)", "sans-serif"],
+        Montserrat: ["var(--font-Montserrat)", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

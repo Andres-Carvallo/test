@@ -63,22 +63,19 @@ const Buscador = () => {
   }, [inputRef]);
 
   return (
-    <div
-      className="md:max-w-[130px] w-full"
-      ref={inputRef}
-    >
+    <div className="w-full md:max-w-[143px]" ref={inputRef}>
       <div className="relative">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          stroke-width="1.5"
+          strokeWidth="1.5"
           stroke="currentColor"
           className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500"
         >
           <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
           />
         </svg>
@@ -87,7 +84,7 @@ const Buscador = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar productos..."
+          placeholder="Buscar productos"
           className="w-full p-2 pl-7 border text-xs border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
           onFocus={() => query.trim() !== "" && setShowResults(true)}
