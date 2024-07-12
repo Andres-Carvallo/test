@@ -20,6 +20,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui"],
+        poppins: ["var(--font-poppins)", "sans-serif"],
         kalam: ["var(--font-kalam)", "cursive"],
         robotoMono: ["var(--font-roboto-mono)", "monospace"],
         oswald: ["var(--font-oswald)", "sans-serif"],
@@ -32,6 +33,7 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -88,11 +90,43 @@ const config: Config = {
           DEFAULT: "hsl(var(--botonsecundariolight))",
           foreground: "hsl(var(--botonsecundariolight-foreground))",
         },
+        verde: {
+          DEFAULT: "#7cffc4",
+          foreground: "#0000",
+        },
+        rosa: {
+          DEFAULT: "#ff0f74",
+          foreground: "#0000",
+        },
+        customGray: {
+          50: "rgba(128, 128, 128, 0.5)", // 50% opacity
+        },
+        dark: {
+          DEFAULT: "#111827",
+          50: "#f9fafb",
+          100: "#f3f4f6",
+          200: "#e5e7eb",
+          300: "#d1d5db",
+          400: "#9ca3af",
+          500: "#6b7280",
+          600: "#4b5563",
+          700: "#374151",
+          800: "#1f2937",
+          900: "#111827",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backdropBlur: {
+        xs: "2px",
+        sm: "4px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+        "2xl:": "24px",
       },
     },
   },

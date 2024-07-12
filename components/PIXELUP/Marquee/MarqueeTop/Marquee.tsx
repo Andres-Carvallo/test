@@ -10,7 +10,7 @@ function MarqueeTOP() {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
+      const bannerId = "3ceacd14-be7c-4342-a129-0bde85115cd1";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

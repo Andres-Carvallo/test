@@ -4,14 +4,17 @@ import { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from "react-google-recaptcha-v3";
 
-export default function Page() {
-  const router = useRouter(); // Usar useRouter para redirección
+function RegisterForm() {
+  const router = useRouter();
   const [regions, setRegions] = useState([]);
   const [communes, setCommunes] = useState<{ id: any }[]>([]);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCommune, setSelectedCommune] = useState("");
-
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -22,7 +25,7 @@ export default function Page() {
   const [errors, setErrors] = useState<string[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
-  const [emailExists, setEmailExists] = useState(false); // Nuevo estado para el modal
+  const [emailExists, setEmailExists] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -60,11 +63,11 @@ export default function Page() {
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
-    setSelectedCommune(""); // Reset selected commune when region changes
+    setSelectedCommune("");
     if (regionId) {
       fetchCommunes(regionId);
     } else {
-      setCommunes([]); // Reset communes if no region is selected
+      setCommunes([]);
     }
   };
 
@@ -83,7 +86,7 @@ export default function Page() {
   };
 
   const validatePhone = (phone: string) => {
-    const regex = /^[0-9]{9}$/; // Puedes ajustar esto según el formato que quieras validar
+    const regex = /^[0-9]{9}$/;
     return regex.test(phone);
   };
 
@@ -105,10 +108,22 @@ export default function Page() {
     return validationErrors.length === 0;
   };
 
-  const handleSubmit = (event: any) => {
-    event.preventDefault(); // Prevent the default form submission behavior
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
-    // Gather the form data from the input fields
+  const handleSubmit = async (event: any) => {
+    event.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    if (!executeRecaptcha) {
+      console.error("Execute recaptcha not yet available");
+      return;
+    }
+
+    const recaptchaToken = await executeRecaptcha("register");
+
     const formData = {
       firstname: firstname,
       lastname: lastname,
@@ -118,9 +133,9 @@ export default function Page() {
       phoneNumber: phone,
       communeId: selectedCommune,
       addressLine1: address,
+      recaptchaToken: recaptchaToken,
     };
 
-    // Send the data to the API or backend service
     const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers?siteId=${SiteId}`,
@@ -134,9 +149,8 @@ export default function Page() {
     )
       .then((response) => response.json())
       .then((data) => {
-        // Handle the response from the API or backend service
         if (data.code === 3) {
-          setEmailExists(true); // Mostrar el modal si el correo ya existe
+          setEmailExists(true);
         } else {
           setPassword("");
           setRepeatPassword("");
@@ -149,7 +163,6 @@ export default function Page() {
         }
       })
       .catch((error) => {
-        // Handle any errors that occur during the submission process
         console.error(error);
       });
   };
@@ -406,5 +419,14 @@ export default function Page() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <RegisterForm />
+    </GoogleReCaptchaProvider>
   );
 }

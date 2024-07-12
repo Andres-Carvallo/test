@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  @apply font-Montserrat;
+  @apply font-poppins;
 }
 
 h1 {

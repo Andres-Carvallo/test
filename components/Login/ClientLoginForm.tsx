@@ -124,7 +124,7 @@ function ClientLoginForm() {
             </button>
           </div>
         </form>
-        <p className="text-center text-base font-medium text-body-color">
+        <p className="text-center text-base  text-body-color text-[0.8rem]">
           ¿Aún no tienes cuenta?{" "}
           <Link
             href="/tienda/registration"
@@ -133,7 +133,7 @@ function ClientLoginForm() {
             Registrate
           </Link>
         </p>
-        <p className="text-center text-base font-medium text-body-color">
+        <p className="text-center text-base font-medium text-body-color text-[0.8rem]">
           ¿Olvidaste tu Contraseña?{" "}
           <Link
             href="/tienda/recuperar-password"

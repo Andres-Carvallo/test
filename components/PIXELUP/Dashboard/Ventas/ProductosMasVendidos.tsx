@@ -107,15 +107,15 @@ const ProductosMasVendidos: React.FC = () => {
   }, [token, sortOrder, currencyCodeId]);
 
   return (
-    <div className="flex flex-col items-center justify-center bg-gray-100 p-6 rounded-lg shadow-md">
+    <div className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black">
       {mostSoldProducts !== null ? (
         <>
-          <dt className="mb-2 text-xl font-extrabold">
+          <div className="text-sm font-medium border-b pb-2 mb-6">
             Productos más Vendidos
-          </dt>
+          </div>
           <div className="flex justify-center mb-4">
             <button
-              className={`mr-2 px-4 py-2 rounded ${
+              className={`mr-2 px-4 py-2 rounded text-[13px] ${
                 sortOrder === "amount"
                   ? "bg-primary text-white"
                   : "bg-gray-200 text-gray-700"
@@ -125,7 +125,7 @@ const ProductosMasVendidos: React.FC = () => {
               Ordenar por Monto
             </button>
             <button
-              className={`px-4 py-2 rounded ${
+              className={`px-4 py-2 rounded text-[13px] ${
                 sortOrder === "quantity"
                   ? "bg-primary text-white"
                   : "bg-gray-200 text-gray-700"

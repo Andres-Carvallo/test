@@ -166,7 +166,7 @@ function BannerSinFotoBO() {
     <>
       <div className="flex flex-col gap-4">
         {/* bienvenida */}
-        <div className="border border-solid border-primary rounded-lg p-4 bg-white">
+        <div className=" p-4 ">
           <div className="p-6 mt-2">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">

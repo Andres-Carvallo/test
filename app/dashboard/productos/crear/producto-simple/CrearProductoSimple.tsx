@@ -857,105 +857,164 @@ const CrearProductoSimple: React.FC = ({}) => {
     return <Loader />;
   }
   return (
-    <>
-      <Breadcrumb
-        pageName={isEditMode ? "Editar Producto" : "Crear Producto"}
-      />
-      <div className="grid grid-cols-1 md:grid-cols-4 px-4">
-        {/* Columna principal */}
-        <div className="md:col-span-4 lg:col-span-3 flex flex-col pb-8 ">
-          <div className="border border-dashed border-dark/50 rounded-lg p-4 mb-4 block lg:hidden sticky top-24 bg-white z-50">
-            <div style={{ borderRadius: "var(--radius)" }}>
-              <h3 className="mb-4 text-bold border-b border-dark uppercase">
-                {isEditMode ? "Editar Producto" : "Publicar"}
-              </h3>
-              <h3>
-                Estado:{" "}
-                <span className="text-dark font-bold pl-2">
-                  {isEditMode ? "Publicado" : "Borrador"}
-                </span>
-              </h3>
-
-              <div className="flex justify-between mt-4 flex-col gap-2">
-                <div className="hidden">
-                  <button
-                    className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                    style={{ borderRadius: "var(--radius)" }}
-                    type="button"
-                  >
-                    {isEditMode ? "Actualizar Borrador" : "Guardar Borrador"}
-                  </button>
-                </div>
-                <div>
-                  <button
-                    className="shadow block w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                    style={{ borderRadius: "var(--radius)" }}
-                    type="button"
-                    onClick={handleSubmit}
-                  >
-                    {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  <hr className="my-4" />
-                  <button
-                    type="button"
-                    id="createCategories"
-                    onClick={() => handleOpenModal("createCategoriesModal")}
-                    className="shadow flex gap-2 w-full text-left py-2 px-4 bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                    style={{ borderRadius: "var(--radius)" }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                      />
-                    </svg>{" "}
-                    Categorías
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeleteForm}
-                    style={{ borderRadius: "var(--radius)" }}
-                    className="shadow flex gap-2 w-full text-left py-2 px-4 bg-red-800 text-secondary hover:bg-secondary hover:text-primary"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                      />
-                    </svg>
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            </div>
+    <div className="relative pb-20">
+      <div className="w-[90%] mx-auto sticky backdrop-blur-md flex justify-center top-16 py-8">
+        <div className="flex w-full justify-between px-6">
+          <div className="bg-dark px-4 py-1 rounded text-white flex items-center gap-2">
+            Estado:{" "}
+            <span className="text-verde">
+              {isEditMode ? "Publicado" : "Borrador"}
+            </span>
           </div>
+          <div className="flex space-x-4">
+            <button
+              onClick={handleSubmit}
+              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-primary transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-gray-50 group"
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  className="w-5 h-5 text-rosa"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  className="w-5 h-5 text-verde"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
+              </span>
+            </button>
+            <button
+              id="createCategories"
+              onClick={() => handleOpenModal("createCategoriesModal")}
+              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-primary transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-gray-50 group"
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="{1.5}"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="white"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                Categorías
+              </span>
+            </button>
+            <button
+              onClick={handleDeleteForm}
+              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-primary transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-gray-50 group"
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="{1.5}"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="white"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                Cancelar
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* <Breadcrumb
+        pageName={isEditMode ? "Editar Producto" : "Crear Producto"}
+      /> */}
+
+      <div className="w-[95%] md:w-[80%] mx-auto  bg-white  rounded-md p-6">
+        {/* Columna principal */}
+        <div className=" flex flex-col pb-8 ">
           <div className="grid grid-cols-1 2xl:grid-cols-1 gap-2">
             <div
-              style={{ borderRadius: "var(--radius)" }}
-              className="shadow flex items-center p-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+              className="shadow rounded flex items-center p-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
               role="alert"
             >
               <svg
@@ -969,9 +1028,9 @@ const CrearProductoSimple: React.FC = ({}) => {
               </svg>
               <span className="sr-only">Info</span>
               <div>
-                <span className="font-semibold">SEO.</span> La información que
-                cargues en el Título, Descripción y Fotografía Principal, será
-                la que aparecerá en una búsqueda orgánica.
+                La información que cargues en el Título, Descripción y
+                Fotografía Principal, será la que aparecerá en una búsqueda
+                orgánica.
               </div>
             </div>
             <div>
@@ -982,8 +1041,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                 Nombre Producto
               </label>
               <input
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
+                className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
                 type="text"
                 name="nombreProducto"
                 value={formData.name}
@@ -995,8 +1053,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             <div className="">
               <label className="font-normal ">Descripción Producto</label>
               <textarea
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
+                className="shadow rounded block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
                 name="descripcionProducto"
                 cols={30}
                 rows={5}
@@ -1008,10 +1065,80 @@ const CrearProductoSimple: React.FC = ({}) => {
             </div>
 
             <div className="my-2 ">
-              <h3 className="text-md font-bold uppercase mb-2">
-                Disponible para:
-              </h3>
-              <div className="flex gap-4">
+              <label className="font-normal ">
+                Tipo de Entrega Disponible:
+              </label>
+              <form className="mt-5 w-full gap-2 flex mb-4">
+                <div className="relative w-full">
+                  <input
+                    className="peer hidden"
+                    id="radio_retiroTienda"
+                    type="radio"
+                    name="radio"
+                    value="WITHDRAWAL_FROM_STORE"
+                    //checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
+                    //onChange={() =>   handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")     }
+                  />
+                  <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                  <label
+                    className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded border border-gray-300 p-4"
+                    htmlFor="radio_retiroTienda"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                      />
+                    </svg>
+                    <div className="ml-5">
+                      <span className="mt-2 font-normal">Retiro en Tienda</span>
+                    </div>
+                  </label>
+                </div>
+                <div className="relative w-full ">
+                  <input
+                    className="peer hidden"
+                    id="radio_delivery"
+                    type="radio"
+                    name="radio"
+                    value="HOME_DELIVERY"
+                    //checked={deliveryType === "HOME_DELIVERY"}
+                    //onChange={() => handleChangeDeliveryType("HOME_DELIVERY")}
+                  />
+                  <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                  <label
+                    className="peer-checked:border-2  peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded border border-gray-300 p-4"
+                    htmlFor="radio_delivery"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                      />
+                    </svg>
+                    <div className="ml-5">
+                      <span className="mt-2 font-normal">Delivery</span>
+                    </div>
+                  </label>
+                </div>
+              </form>
+              <div className=" gap-4 hidden">
                 <label
                   htmlFor="enabledForDelivery"
                   className="shadow flex cursor-pointer gap-4 items-center bg-primary hover:bg-secondary p-2.5 text-secondary hover:text-primary font-medium "
@@ -1376,99 +1503,6 @@ const CrearProductoSimple: React.FC = ({}) => {
           </div> */}
         </div>
         {/* FIN COL PRINCIPAL */}
-        <div className="md:col-span-1 border-l mt-2 ml-4 pl-4 ">
-          {/* Contenido de la barra lateral */}
-          <div
-            className="bg-white border border-dashed border-gray-600 p-4 mb-4 hidden lg:block sticky top-24"
-            style={{ borderRadius: "var(--radius)" }}
-          >
-            <h3 className="mb-4 text-bold border-b border-dark uppercase">
-              {isEditMode ? "Editar Producto" : "Publicar"}
-            </h3>
-            <h3>
-              Estado:{" "}
-              <span className="text-dark font-bold pl-2">
-                {isEditMode ? "Publicado" : "Borrador"}
-              </span>
-            </h3>
-
-            <div className="flex justify-between mt-4 flex-col gap-2">
-              <div className="hidden">
-                <button
-                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
-                  style={{ borderRadius: "var(--radius)" }}
-                  type="button"
-                >
-                  {isEditMode ? "Actualizar Borrador" : "Guardar Borrador"}
-                </button>
-              </div>
-              <div>
-                <button
-                  className="shadow block w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
-                  style={{ borderRadius: "var(--radius)" }}
-                  type="button"
-                  onClick={handleSubmit}
-                >
-                  {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
-                </button>
-              </div>
-              <div className="space-y-2">
-                <hr className="my-4" />
-                <button
-                  type="button"
-                  id="createCategories"
-                  onClick={() => handleOpenModal("createCategoriesModal")}
-                  className="shadow flex gap-2 w-full text-left py-2 px-4 bg-black text-secondary hover:bg-secondary hover:text-primary"
-                  style={{ borderRadius: "var(--radius)" }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                    />
-                  </svg>{" "}
-                  Categorías
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteForm}
-                  style={{ borderRadius: "var(--radius)" }}
-                  className="shadow flex gap-2 w-full text-left py-2 px-4 bg-red-800 text-secondary hover:bg-secondary hover:text-primary"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                    />
-                  </svg>
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* FIN COL SIDEBAR */}
       </div>
 
       {/* MODALS */}
@@ -1497,7 +1531,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         />
       </div>
       {/* MODALS */}
-    </>
+    </div>
   );
 };
 

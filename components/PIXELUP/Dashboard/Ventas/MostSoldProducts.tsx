@@ -69,36 +69,40 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
   }, [salesData]);
 
   return (
-    <div className="bg-gray-100 p-6 rounded-lg shadow-md mt-4">
-      <h2 className="text-xl font-bold mb-4">Productos Vendidos por Fecha</h2>
+    <div className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4">
+      <div className="text-sm font-medium border-b pb-2 mb-6">
+        Productos Vendidos por Fecha
+      </div>
       <div className="flex space-x-4 mb-4">
         <div>
-          <label className="block text-gray-700 font-medium">Start Date</label>
+          <label className="block text-gray-700 font-medium">
+            Fecha Inicio
+          </label>
           <input
             type="date"
             value={startDateProducts}
             onChange={(e) => setStartDateProducts(e.target.value)}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-blue-400"
+            className="mt-1 block text-[14px] w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-blue-400"
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium">End Date</label>
+          <label className="block text-gray-700 font-medium">Fecha Fin</label>
           <input
             type="date"
             value={endDateProducts}
             onChange={(e) => setEndDateProducts(e.target.value)}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring p-2 border focus:ring-opacity-50 focus:ring-blue-400"
+            className="mt-1 block text-[14px] w-full border-gray-300 rounded-md shadow-sm focus:ring p-2 border focus:ring-opacity-50 focus:ring-blue-400"
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium">Order By</label>
+          <label className="block text-gray-700 font-medium">Ordenar</label>
           <select
             value={orderBy}
             onChange={(e) => setOrderBy(e.target.value)}
-            className="mt-1 block p-2 w-full border-gray-300 bg-white border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-400"
+            className="mt-1 block text-[14px] p-2 w-full border-gray-300 bg-white border rounded-md shadow-sm focus:ring focus:ring-opacity-50 focus:ring-blue-400"
           >
-            <option value="amount">Amount</option>
-            <option value="quantity">Quantity</option>
+            <option value="amount">Monto</option>
+            <option value="quantity">Cantidad</option>
           </select>
         </div>
       </div>
@@ -130,7 +134,9 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
           </tbody>
         </table>
       ) : (
-        <p>No hay productos en este rango de fechas.</p>
+        <p className="text-[14px] text-gray-600">
+          No hay productos en este rango de fechas.
+        </p>
       )}
     </div>
   );

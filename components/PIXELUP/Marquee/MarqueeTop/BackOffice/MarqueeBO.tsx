@@ -43,13 +43,13 @@ function MarqueeTOP() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
+      const bannerId = "3ceacd14-be7c-4342-a129-0bde85115cd1";
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
         {
-          title: marqueeData.title,
+          title: "pixelup",
           contentText: marqueeData.contentText,
         },
         {
@@ -80,14 +80,20 @@ function MarqueeTOP() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
-
+      const bannerId = "3ceacd14-be7c-4342-a129-0bde85115cd1";
+      const Token = getCookie("AdminTokenAuth");
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${Token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       const bannerImage = productTypeResponse.data.contentBlock;
-      console.log(productTypeResponse.data.contentBlock, "bannerImage");
+      console.log(productTypeResponse.data.contentBlock, "marqueeeeeeeee");
       setMarqueeData(bannerImage);
     } catch (error) {
       console.error("Error al obtener los tipos de producto:", error);
@@ -103,7 +109,7 @@ function MarqueeTOP() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
+      const bannerId = "3ceacd14-be7c-4342-a129-0bde85115cd1";
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
@@ -139,7 +145,7 @@ function MarqueeTOP() {
   const fetchWelcomeBanner = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
+      const bannerId = "492d9afe-33e1-434d-8ed5-84d0be111b0f";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -164,8 +170,8 @@ function MarqueeTOP() {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <div className="border border-solid border-primary rounded-lg p-4 bg-white">
-          <div className="border border-dashed border-primary rounded-lg p-4 ">
+        <div className=" ">
+          <div className="rounded-lg ">
             <section>
               <div className="flex items-center max-md:flex-col bg-primary text-secondary px-6 py-2 rounded">
                 {/*  <div className="max-md:mt-4">
@@ -179,7 +185,7 @@ function MarqueeTOP() {
               </div>
             </section>
           </div>
-          <p className="text-xs flex items-center gap-2 mt-4">
+          {/* <p className="text-xs flex items-center gap-2 mt-4 border-t pt-4">
             <span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -197,10 +203,10 @@ function MarqueeTOP() {
               </svg>
             </span>
             Lpsum dolor sit amet consectetur adipisicing elit.
-          </p>
+          </p> */}
           <form
             onSubmit={handleSubmitMarquee}
-            className="px-4 mx-auto mt-8"
+            className=" mx-auto mt-2 "
           >
             <input
               type="text"

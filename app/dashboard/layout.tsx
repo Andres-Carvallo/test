@@ -82,7 +82,7 @@ export default function RootLayout({
 
               {/* <!-- ===== Main Content Start ===== --> */}
 
-              <div className="mx-auto p-6 w-full -z-1 bg-gray-50">
+              <div className="mx-auto  w-full -z-1 bg-[#e9f0ee]">
                 {children}{" "}
               </div>
 

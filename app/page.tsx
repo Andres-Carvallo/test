@@ -4,7 +4,7 @@ import Stats01 from "@/components/Stats/Stats01";
 import HomeForm from "@/components/ContactForm/Home";
 import Collection01 from "@/components/Collections/Collection01";
 import Header from "@/components/Header/Header";
-import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
+import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
 import BannerPrincipal from "@/components/conMantenedor/BannerPrincipal";
 import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
 import Navbar01 from "@/components/PIXELUP/Navbar/Navbar01/Navbar01";
@@ -32,7 +32,7 @@ export default function Home() {
       <MarqueeTOP />
       {/* <Header /> */}
       {/* <Navbar01 /> */}
-      <Navbar04 />
+      <Navbar01 />
       {/* <Navbar03 /> */}
       <BannerPrincipal />
       <Colecciones01 />
@@ -42,7 +42,7 @@ export default function Home() {
       <Carrusel />
       <Hero02 />
       <Frase02 />
-      <Footer02 />
+      <Footer03 />
     </>
   );
 }
