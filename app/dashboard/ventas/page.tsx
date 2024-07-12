@@ -158,7 +158,7 @@ function StatsPage() {
   }, []); // Ejecuta solo al montar el componente
 
   return (
-    <div className="max-w-7xl mx-auto py-10 ">
+    <div className="max-w-7xl  py-10 mx-10 ">
       <div className=" flex items-center justify-center gap-4 ">
         <VentasTotalesAnuales />
         <PedidosTotales />
