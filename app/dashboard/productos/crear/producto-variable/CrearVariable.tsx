@@ -600,6 +600,7 @@ const CrearVariable: React.FC = () => {
   return (
     <>
       <Breadcrumb pageName="Crear producto" />
+      
       <div className="grid grid-cols-1 md:grid-cols-4 px-4">
         {/* Columna principal */}
         <div className="md:col-span-4 lg:col-span-3 flex flex-col pb-8 ">
@@ -1242,7 +1243,9 @@ const CrearVariable: React.FC = () => {
         </div>
         {/* FIN COL SIDEBAR */}
       </div>
+
       {/* MODALS */}
+      
       <div
         id="createCategoriesModal"
         tabIndex={-1}
@@ -1255,6 +1258,7 @@ const CrearVariable: React.FC = () => {
           fetchData={fetchProducTypes}
         />
       </div>
+      
       <div
         id="createAttributeModal"
         tabIndex={-1}

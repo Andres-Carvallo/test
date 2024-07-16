@@ -220,153 +220,121 @@ const BannersCategoriasBO = () => {
 
   return (
     <section id="banner" className="w-full">
-      <div>
-        {slidersData && (
-          <div className="flex items-center justify-center">
-            <div className="max-w-6xl mx-auto rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* COLGANTES */}
-                <div className="relative flex flex-col items-center w-full">
-                  <Link href="#" target="_blank" rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[500px] h-[500px] bg-cover bg-center mx-auto"
-                      style={{ backgroundImage: `url(${getDefaultBanner(0).mainImage.url})`, borderRadius: 'var(--radius)', backgroundPosition: 'center bottom' }}
-                    >
-                      <div className="w-full h-full flex items-end justify-start p-4" style={{ borderRadius: 'var(--radius)' }}>
-                        <h2 className="text-4xl font-bold text-white">{getDefaultBanner(0).title}</h2>
-                      </div>
-                    </div>
-                  </Link>
-                  {slidersData[0] && (
-
-                                      <button
-                                      className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                                      onClick={() => deleteSlider(slidersData[0].id)}
-                                      >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                        />
-                                      </svg>
-                                    </button>
-                  )}
-                </div>
-                {/* ANILLOS */}
-                <div className="relative flex flex-col items-center w-full">
-                  <Link href="#" target="_blank" rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[500px] h-[380px] bg-cover bg-center mx-auto"
-                      style={{ backgroundImage: `url(${getDefaultBanner(1).mainImage.url})`, borderRadius: 'var(--radius)' }}
-                    >
-                      <div className="w-full h-full flex items-end justify-end p-4" style={{ borderRadius: 'var(--radius)' }}>
-                        <h2 className="text-4xl font-bold text-white">{getDefaultBanner(1).title}</h2>
-                      </div>
-                    </div>
-                  </Link>
-                  {slidersData[1] && (
-                                      <button
-                                      className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                                      onClick={() => deleteSlider(slidersData[0].id)}
-                                      >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                        />
-                                      </svg>
-                                    </button>
-                  )}
-                </div>
-                {/* PULSERAS */}
-                <div className="relative flex flex-col items-center w-full">
-                  <Link href="#" target="_blank" rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[500px] h-[260px] bg-cover bg-center mx-auto"
-                      style={{ backgroundImage: `url(${getDefaultBanner(2).mainImage.url})`, borderRadius: 'var(--radius)' }}
-                    >
-                      <div className="w-full h-full flex items-start justify-start p-4" style={{ borderRadius: 'var(--radius)' }}>
-                        <h2 className="text-4xl font-bold text-white">{getDefaultBanner(2).title}</h2>
-                      </div>
-                    </div>
-                  </Link>
-                  {slidersData[2] && (
-                                      <button
-                                      className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                                      onClick={() => deleteSlider(slidersData[0].id)}
-                                      >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                        />
-                                      </svg>
-                                    </button>
-                  )}
-                </div>
-                {/* AROS */}
-                <div className="relative flex flex-col items-center w-full" style={{ marginTop: '-120px' }}>
-                  <Link href="#" target="_blank" rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[500px] h-[380px] bg-cover bg-center mx-auto"
-                      style={{ backgroundImage: `url(${getDefaultBanner(3).mainImage.url})`, borderRadius: 'var(--radius)' }}
-                    >
-                      <div className="w-full h-full flex items-end justify-end p-4" style={{ borderRadius: 'var(--radius)' }}>
-                        <h2 className="text-4xl font-bold text-white">{getDefaultBanner(3).title}</h2>
-                      </div>
-                    </div>
-                  </Link>
-                  {slidersData[3] && (
-                                      <button
-                                      className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                                      onClick={() => deleteSlider(slidersData[0].id)}
-                                      >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-6 h-6"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                        />
-                                      </svg>
-                                    </button>
-                  )}
-                </div>
+<div>
+{slidersData && (
+  <div className="flex items-center justify-center px-4 lg:px-0">
+    <div className="max-w-7xl mx-auto rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* COLGANTES */}
+        <div className="relative flex flex-col items-center w-full">
+          <div           
+            rel="noopener noreferrer"
+            className="w-full"
+          >
+            <div
+              className="w-[280px] h-[150px] md:w-[300px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-cover bg-center mx-auto"
+              style={{
+                backgroundImage: `url(${
+                  getDefaultBanner(0).mainImage.url
+                })`,
+                borderRadius: "var(--radius)",
+                backgroundPosition: "center bottom",
+              }}
+            >
+              <div
+                className="w-full h-full flex items-end justify-start p-4"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <h2 className="text-2xl md:text-4xl font-bold text-white">
+                  {getDefaultBanner(0).title}
+                </h2>
               </div>
             </div>
           </div>
-        )}
+        </div>
+        {/* ANILLOS */}
+        <div className="relative flex flex-col items-center w-full">
+          <div
+            rel="noopener noreferrer"
+            className="w-full"
+          >
+            <div
+              className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
+              style={{
+                backgroundImage: `url(${
+                  getDefaultBanner(1).mainImage.url
+                })`,
+                borderRadius: "var(--radius)",
+              }}
+            >
+              <div
+                className="w-full h-full flex items-end justify-end p-4"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <h2 className="text-2xl md:text-4xl font-bold text-white">
+                  {getDefaultBanner(1).title}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* PULSERAS */}
+        <div className="relative flex flex-col items-center w-full">
+          <div
+            rel="noopener noreferrer"
+            className="w-full"
+          >
+            <div
+              className="w-[280px] h-[150px] md:w-[300px] md:h-[260px] lg:w-[600px] lg:h-[360px] bg-cover bg-center mx-auto"
+              style={{
+                backgroundImage: `url(${
+                  getDefaultBanner(2).mainImage.url
+                })`,
+                borderRadius: "var(--radius)",
+              }}
+            >
+              <div
+                className="w-full h-full flex items-start justify-start p-4"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <h2 className="text-2xl md:text-4xl font-bold text-white">
+                  {getDefaultBanner(2).title}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* AROS */}
+        <div className="relative flex flex-col items-center w-full mt-0 md:mt-[-120px]">
+          <div
+            rel="noopener noreferrer"
+            className="w-full"
+          >
+            <div
+              className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
+              style={{
+                backgroundImage: `url(${
+                  getDefaultBanner(3).mainImage.url
+                })`,
+                borderRadius: "var(--radius)",
+              }}
+            >
+              <div
+                className="w-full h-full flex items-end justify-end p-4"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <h2 className="text-2xl md:text-4xl font-bold text-white">
+                  {getDefaultBanner(3).title}
+                </h2>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
+  </div>
+)}
+</div>
       <div className="mt-8">
         <h2 className="text-md uppercase font-semibold text-center mb-4">
           Agregar Nueva Categoria
@@ -593,6 +561,10 @@ const BannersCategoriasBO = () => {
         </form>
       </div>
     </section>
+
+
+
+
   );
 };
 

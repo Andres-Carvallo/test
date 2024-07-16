@@ -10,7 +10,7 @@ export default function BannerHome() {
   return (
     <section className="gap-4 flex flex-col">
       <div
-        className=" p-4 "
+        className="py-10 mx-10 "
         style={{ borderRadius: "var(--radius)" }}
       >
         {/* <h4 className="uppercase font-bold mb-4">Colecciones</h4> */}

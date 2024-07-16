@@ -39,9 +39,9 @@ const CategoriasPage: React.FC = () => {
     fetchProducTypes();
   });
   return (
-    <div>
+    <div className="py-10 mx-10">
       <Breadcrumb pageName="Categorías" />
-      <div className=" mx-auto">
+      <div className="">
         <div className="flex  min-w-96  my-4 p-4 rounded-xl gap-6">
           <button
             className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md ${

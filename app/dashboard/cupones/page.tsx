@@ -280,7 +280,7 @@ function CuponForm() {
   };
 
   return (
-    <section>
+    <section className=" mx-10 py-10">
       <Breadcrumb pageName="Cupones" />
       <div
         className=" p-4 bg-white my-6 overflow-x-auto shadow-md"

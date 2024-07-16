@@ -857,7 +857,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     return <Loader />;
   }
   return (
-    <div className="relative pb-20">
+    <div className="relative pb-20 ">
       <div className="w-[90%] mx-auto sticky backdrop-blur-md flex justify-center top-16 py-8">
         <div className="flex w-full justify-between px-6">
           <div className="bg-dark px-4 py-1 rounded text-white flex items-center gap-2">

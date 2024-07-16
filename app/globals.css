@@ -74,7 +74,7 @@ ol {
     --border: 0 20% 82%;
     --input: 0 20% 50%;
     --ring: 0 0% 0%;
-    --radius: 1rem;
+    --radius: 0rem;
   }
   .dark {
     --background: 0 10% 10%;
@@ -96,6 +96,6 @@ ol {
     --border: 0 20% 50%;
     --input: 0 20% 50%;
     --ring: 0 0% 0%;
-    --radius: 1rem;
+    --radius: 0rem;
   }
 }

@@ -184,7 +184,7 @@ export default function ProductPageBO() {
   );
 
   return (
-    <section className="w-full">
+    <section className="w-full py-10 mx-auto ">
       <div className="dark:bg-gray-900 p-3 sm:p-5 relative">
         <div className="mx-auto w-full px-2">
           {/* Start coding here */}

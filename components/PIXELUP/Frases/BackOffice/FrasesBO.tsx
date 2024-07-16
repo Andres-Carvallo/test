@@ -93,7 +93,7 @@ function FrasesBO() {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <div className="border border-solid border-primary rounded-lg p-4 bg-white">
+        <div className=" rounded-lg p-4 bg-white">
 {/*           <div className="border border-dashed border-primary rounded-lg p-4 ">
             <section>
               <div className="flex items-center max-md:flex-col bg-primary text-secondary px-6 py-2 rounded">

@@ -601,7 +601,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Ofertas
+                            - Ofertas
                           </Link>
                         </li>
                         <li>
@@ -611,7 +611,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Cupones
+                            - Cupones
                           </Link>
                         </li>
                       </ul>

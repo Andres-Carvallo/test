@@ -191,10 +191,10 @@ function Ofertas() {
   );
 
   return (
-    <section>
+    <section className=" mx-10 py-10">
       <Breadcrumb pageName="Ofertas" />
 
-      <div className=" border border-primary rounded-lg p-4 bg-white my-6 overflow-x-auto">
+      <div className=" rounded-lg p-4 bg-white my-6 overflow-x-auto">
         <h2 className="text-center text-2xl font-bold mb-4 uppercase">
           Ofertas Creadas
         </h2>

@@ -166,8 +166,8 @@ function BannerSinFotoBO() {
     <>
       <div className="flex flex-col gap-4">
         {/* bienvenida */}
-        <div className=" p-4 ">
-          <div className="p-6 mt-2">
+        <div className=" ">
+          <div className=" mt-2">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
                 {welcomeData?.title}
@@ -192,7 +192,7 @@ function BannerSinFotoBO() {
 
           <form
             onSubmit={handleSubmitWelcomeBanner}
-            className="px-4 mx-auto mt-8"
+            className=" mx-auto mt-8"
           >
             {" "}
             <input
