@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import ProductList01 from "@/components/Products/ProductList01";
 import Testimonial01 from "@/components/Testimonials/Testimonial01";
 import Stats01 from "@/components/Stats/Stats01";
@@ -20,20 +21,78 @@ import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01";
 import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
 
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const defaultImage = `${siteUrl}/img/pixelup.png`; // Ruta de la imagen predeterminada
+
 export default function Home() {
   return (
     <>
-      <title>PixelUP</title>
-      <meta
-        name="description"
-        content="My page description"
-      />
+      <head>
+        <title>PixelUP</title>
+
+        <meta
+          name="description"
+          content="Una nueva plataforma para emprendedores y Pymes"
+        />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        />
+        <meta
+          name="keywords"
+          content="pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl"
+        />
+        <meta
+          httpEquiv="Content-Language"
+          content="es"
+        />
+        <meta
+          name="author"
+          content="PixelUP"
+        />
+        <meta
+          name="publisher"
+          content="PixelUP"
+        />
+        <link
+          rel="icon"
+          href="/favicon.ico"
+          sizes="any"
+        />
+        <link
+          rel="canonical"
+          href={siteUrl}
+        />
+        <meta
+          name="robots"
+          content="index, follow"
+        />
+
+        {/* Open Graph tags */}
+        <meta
+          property="og:title"
+          content="PixelUP"
+        />
+        <meta
+          property="og:description"
+          content="Una nueva plataforma para emprendedores y Pymes"
+        />
+        <meta
+          property="og:image"
+          content={defaultImage}
+        />
+        <meta
+          property="og:url"
+          content={siteUrl}
+        />
+        <meta
+          property="og:type"
+          content="website"
+        />
+      </head>
 
       <MarqueeTOP />
-      {/* <Header /> */}
-      {/* <Navbar01 /> */}
       <Navbar01 />
-      {/* <Navbar03 /> */}
       <BannerPrincipal />
       <Colecciones01 />
       <BannerSinFoto />
