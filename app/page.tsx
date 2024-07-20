@@ -30,11 +30,7 @@ const canonicalUrl = "http://pixelup.cl/planes";
 const defaultImage = `${siteUrl}/img/avatardefault.jpg`; // Ruta de la imagen predeterminada
 
 export default function Home() {
-  const [seoData, setSeoData] = useState({
-    title: null,
-    description: null,
-    ogImage: null,
-  });
+  const [seoData, setSeoData] = useState<any>({});
 
   useEffect(() => {
     const fetchBannerData = async () => {
@@ -63,10 +59,10 @@ export default function Home() {
   return (
     <>
       <head>
-        <title>{seoData.title}</title>
+        {seoData.title && <title>{seoData.title}</title>}
         <meta
           name="description"
-          content={seoData.description ?? ""}
+          content={seoData.description}
         />
         <meta
           name="viewport"
@@ -105,15 +101,15 @@ export default function Home() {
         {/* Open Graph tags */}
         <meta
           property="og:title"
-          content={seoData.title ?? ""}
+          content={seoData.title}
         />
         <meta
           property="og:description"
-          content={seoData.description ?? ""}
+          content={seoData.description}
         />
         <meta
           property="og:image"
-          content={seoData.ogImage ?? ""}
+          content={seoData.ogImage}
         />
         <meta
           property="og:url"
