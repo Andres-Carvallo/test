@@ -18,7 +18,7 @@ function CartList({
     async function fetchProductDetails(productId: string, itemId: string) {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=586b6573-f223-44bd-849a-caac59c4999a`
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
         );
         const data = await response.json();
         const { enabledForDelivery, enabledForWithdrawal } = data.product;

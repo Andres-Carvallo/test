@@ -45,9 +45,8 @@ const ProductoSimple: React.FC<Product> = () => {
     const fetchProductImages = async () => {
       try {
         if (products) {
-          const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${products.skuId}/images?siteId=${SiteId}`
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${products.skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
           );
           const data = await response.json();
           setProductImages(data.skuImages);

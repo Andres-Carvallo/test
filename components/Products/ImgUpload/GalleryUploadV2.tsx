@@ -20,7 +20,24 @@ const GalleryUpload: React.FC<Props> = ({
     const totalImages = selectedImages.length + files.length;
 
     if (totalImages <= 4) {
-      handleImageGalleryChange([...selectedImages, ...files]);
+      const updatedImages: any[] = [];
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          updatedImages.push({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: result, // Guardar la cadena completa base64 con el prefijo
+            file: file, // Guardar el objeto File original para poder usar URL.createObjectURL
+          });
+          if (updatedImages.length === files.length) {
+            handleImageGalleryChange([...selectedImages, ...updatedImages]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     } else {
       setIsModalOpen(true);
     }
@@ -85,7 +102,7 @@ const GalleryUpload: React.FC<Props> = ({
             className="relative"
           >
             <img
-              src={URL.createObjectURL(image)}
+              src={image.data} // Usar la cadena completa base64 con el prefijo
               alt={`Image ${index}`}
               className="w-14 h-14 object-cover rounded-md"
             />

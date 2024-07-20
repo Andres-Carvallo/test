@@ -31,7 +31,7 @@ function FrasesBO() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "9f05622d-6a8a-45df-94bb-5f209022fe85";
+      const bannerId = "e8c37b79-cdcc-4674-bca5-3782d569b3d7";
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
@@ -68,7 +68,7 @@ function FrasesBO() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "9f05622d-6a8a-45df-94bb-5f209022fe85";
+      const bannerId = "e8c37b79-cdcc-4674-bca5-3782d569b3d7";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -85,7 +85,6 @@ function FrasesBO() {
     }
   };
 
-
   useEffect(() => {
     fetchMarquee();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,7 +93,7 @@ function FrasesBO() {
     <>
       <div className="flex flex-col gap-4">
         <div className=" rounded-lg p-4 bg-white">
-{/*           <div className="border border-dashed border-primary rounded-lg p-4 ">
+          {/*           <div className="border border-dashed border-primary rounded-lg p-4 ">
             <section>
               <div className="flex items-center max-md:flex-col bg-primary text-secondary px-6 py-2 rounded">
                  <div className="max-md:mt-4">
@@ -108,19 +107,18 @@ function FrasesBO() {
               </div>
             </section>
           </div> */}
-<section>
-<div className=" flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
-  {/*  <div className="max-md:mt-4">
+          <section>
+            <div className=" flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
+              {/*  <div className="max-md:mt-4">
     <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
       {bannerData?.title}
     </h3>
   </div>*/}
-  <p className="m-4 text-2xl font-semibold flex-1 italic">
-  « {marqueeData?.contentText} »
-  </p>
-</div>
-</section>
-
+              <p className="m-4 text-2xl font-semibold flex-1 italic">
+                « {marqueeData?.contentText} »
+              </p>
+            </div>
+          </section>
 
           <form
             onSubmit={handleSubmitMarquee}
@@ -141,26 +139,25 @@ function FrasesBO() {
               className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Ingrese contenido..."
             />
-<section>
-<div className=" flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
-  {/*  <div className="max-md:mt-4">
+            <section>
+              <div className=" flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
+                {/*  <div className="max-md:mt-4">
     <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
       {bannerData?.title}
     </h3>
   </div>*/}
-  <p className="m-4 text-2xl font-semibold flex-1 italic">
-  « {marqueeData?.title} »
-  </p>
-</div>
-</section>
-<input
+                <p className="m-4 text-2xl font-semibold flex-1 italic">
+                  « {marqueeData?.title} »
+                </p>
+              </div>
+            </section>
+            <input
               type="text"
               name="title"
               onChange={handleChangeMarquee}
               className=" w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Title"
             />
-
 
             <button
               type="submit"
@@ -189,8 +186,6 @@ function FrasesBO() {
               {loading ? "Loading..." : "Actualizar"}
             </button>
           </form>
-
-          
         </div>
       </div>
     </>

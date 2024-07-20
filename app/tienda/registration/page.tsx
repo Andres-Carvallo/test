@@ -423,7 +423,8 @@ function RegisterForm() {
 }
 
 export default function App() {
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+  const siteKey = process.env.RECAPTCHA_PUBLIC_SITE_KEY || "";
+
   return (
     <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
       <RegisterForm />

@@ -33,7 +33,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
         };
 
         fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
             method: "POST",
             headers: {
@@ -65,7 +65,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
 
   const handleClearImage = (imageId: any) => {
     fetch(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         method: "DELETE",
         headers: {
@@ -100,7 +100,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
         };
 
         fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
 
           {
             method: "PUT",

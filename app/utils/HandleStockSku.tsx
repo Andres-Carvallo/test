@@ -6,7 +6,7 @@ const token = String(getCookie("AdminTokenAuth"));
 const getWarehouseId = async () => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -35,7 +35,7 @@ const getInventoryId = async (id: any, skuId: any, warehouseId: any) => {
   try {
     const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?siteId=${SiteId}&warehouseId=${warehouseId}`
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
     );
     if (
       response.data &&
@@ -74,7 +74,7 @@ export const handleStockSku = async (
     if (inventoryId) {
       // Realizar PUT si existe inventoryId
       response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories/${inventoryId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories/${inventoryId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           warehouseId: warehouseId,
           quantity: quantity,
@@ -90,7 +90,7 @@ export const handleStockSku = async (
     } else {
       // Realizar POST si no existe inventoryId
       response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           warehouseId: warehouseId,
           quantity: quantity,

@@ -53,12 +53,13 @@ const CrearProductoSimple: React.FC = ({}) => {
       valid = false;
     }
 
-    if (precioNormal === null) {
-      toast.error("El precio es requerido");
+    if (precioNormal === null || precioNormal <= 1) {
+      toast.error("El precio es requerido y debe ser mayor a 1");
       valid = false;
     }
-    if (stockQuantity === null) {
-      toast.error("La cantidad de stock es requerida");
+
+    if (stockQuantity === null || stockQuantity <= 1) {
+      toast.error("La cantidad de stock es requerido y debe ser mayor a 1");
       valid = false;
     }
     if (formData.productTypes.length === 0) {
@@ -90,7 +91,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
 
         {
           headers: {
@@ -194,12 +195,12 @@ const CrearProductoSimple: React.FC = ({}) => {
   const fetchProducTypes = async () => {
     try {
       const token = getCookie("AdminTokenAuth");
-      const SiteId = process.env.NEXT_PUBLIC_API_SITEID;
+
       const PageNumber = 1;
       const PageSize = 100;
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?siteId=${SiteId}&pageNumber=${PageNumber}&pageSize=${PageSize}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?pageNumber=${PageNumber}&pageSize=${PageSize}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -219,7 +220,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       const token = getCookie("AdminTokenAuth");
       const warehouseId = await getWarehouseId();
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -255,7 +256,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   ) => {
     try {
       const token = getCookie("AdminTokenAuth");
-      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -278,7 +279,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -411,7 +412,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -464,7 +465,7 @@ const CrearProductoSimple: React.FC = ({}) => {
 
         // Verificar si ya existe un precio para el SKU
         const existingPricingsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -474,7 +475,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         );
 
         let method = "POST";
-        let pricingUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings`;
+        let pricingUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
         let data = {
           currencyCodeId: currencyCodeId,
           unitPrice: precioNormal,
@@ -546,7 +547,7 @@ const CrearProductoSimple: React.FC = ({}) => {
 
       console.log("Obteniendo inventarios existentes");
       const existingInventories = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?warehouseId=${warehouseId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -557,7 +558,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       console.log("Inventarios existentes:", existingInventories.data);
 
       let method = "POST";
-      let stockUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories`;
+      let stockUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       if (existingInventories.data.skuInventories.length > 0) {
         // Actualizar stock existente
@@ -613,7 +614,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       };
       const token = getCookie("AdminTokenAuth");
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         formattedImage,
         {
           headers: {
@@ -658,8 +659,8 @@ const CrearProductoSimple: React.FC = ({}) => {
 
     try {
       const url = isEditMode
-        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}`
-        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products`;
+        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       const method = isEditMode ? "PUT" : "POST";
       const token = getCookie("AdminTokenAuth");
@@ -782,7 +783,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       try {
         const token = getCookie("AdminTokenAuth");
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -858,18 +859,18 @@ const CrearProductoSimple: React.FC = ({}) => {
   }
   return (
     <div className="relative pb-20 ">
-      <div className="w-[90%] mx-auto sticky backdrop-blur-md flex justify-center top-16 py-8">
+      <div className="w-[90%] mx-auto sticky backdrop-blur-md flex justify-center top-16 py-8 z-50">
         <div className="flex w-full justify-between px-6">
-          <div className="bg-dark px-4 py-1 rounded text-white flex items-center gap-2">
+          <div className=" px-4 py-1 border-dark border rounded text-dark flex items-center gap-2">
             Estado:{" "}
-            <span className="text-verde">
+            <span className="text-rosa">
               {isEditMode ? "Publicado" : "Borrador"}
             </span>
           </div>
           <div className="flex space-x-4">
             <button
               onClick={handleSubmit}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-primary transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-gray-50 group"
+              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
             >
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
@@ -911,7 +912,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             <button
               id="createCategories"
               onClick={() => handleOpenModal("createCategoriesModal")}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-primary transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-gray-50 group"
+              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
             >
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
@@ -962,7 +963,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             </button>
             <button
               onClick={handleDeleteForm}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-primary transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-gray-50 group"
+              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
             >
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
@@ -1068,55 +1069,26 @@ const CrearProductoSimple: React.FC = ({}) => {
               <label className="font-normal ">
                 Tipo de Entrega Disponible:
               </label>
-              <form className="mt-5 w-full gap-2 flex mb-4">
+
+              <div className="mt-5 w-full gap-2 flex mb-4 -z-1">
                 <div className="relative w-full">
                   <input
                     className="peer hidden"
-                    id="radio_retiroTienda"
-                    type="radio"
-                    name="radio"
-                    value="WITHDRAWAL_FROM_STORE"
-                    //checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
-                    //onChange={() =>   handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")     }
+                    id="checkbox_delivery"
+                    type="checkbox"
+                    name="enabledForDelivery"
+                    checked={formData.enabledForDelivery}
+                    onChange={(event) =>
+                      setFormData({
+                        ...formData,
+                        [event.target.name]: event.target.checked,
+                      })
+                    }
                   />
                   <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
                   <label
                     className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded border border-gray-300 p-4"
-                    htmlFor="radio_retiroTienda"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-6 h-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                      />
-                    </svg>
-                    <div className="ml-5">
-                      <span className="mt-2 font-normal">Retiro en Tienda</span>
-                    </div>
-                  </label>
-                </div>
-                <div className="relative w-full ">
-                  <input
-                    className="peer hidden"
-                    id="radio_delivery"
-                    type="radio"
-                    name="radio"
-                    value="HOME_DELIVERY"
-                    //checked={deliveryType === "HOME_DELIVERY"}
-                    //onChange={() => handleChangeDeliveryType("HOME_DELIVERY")}
-                  />
-                  <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
-                  <label
-                    className="peer-checked:border-2  peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded border border-gray-300 p-4"
-                    htmlFor="radio_delivery"
+                    htmlFor="checkbox_delivery"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1137,36 +1109,11 @@ const CrearProductoSimple: React.FC = ({}) => {
                     </div>
                   </label>
                 </div>
-              </form>
-              <div className=" gap-4 hidden">
-                <label
-                  htmlFor="enabledForDelivery"
-                  className="shadow flex cursor-pointer gap-4 items-center bg-primary hover:bg-secondary p-2.5 text-secondary hover:text-primary font-medium "
-                >
-                  Delivery
+                <div className="relative w-full">
                   <input
+                    className="peer hidden"
+                    id="checkbox_withdrawal"
                     type="checkbox"
-                    id="enabledForDelivery"
-                    name="enabledForDelivery"
-                    checked={formData.enabledForDelivery}
-                    onChange={(event) =>
-                      setFormData({
-                        ...formData,
-                        [event.target.name]: event.target.checked,
-                      })
-                    }
-                  />
-                </label>
-
-                <label
-                  htmlFor="enabledForWithdrawal"
-                  className="shadow flex cursor-pointer gap-4 items-center bg-primary hover:bg-secondary p-2.5 text-secondary hover:text-primary font-medium "
-                >
-                  Retiro
-                  <input
-                    type="checkbox"
-                    className="cursor-pointer"
-                    id="enabledForWithdrawal"
                     name="enabledForWithdrawal"
                     checked={formData.enabledForWithdrawal}
                     onChange={(event) =>
@@ -1176,7 +1123,30 @@ const CrearProductoSimple: React.FC = ({}) => {
                       })
                     }
                   />
-                </label>
+                  <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                  <label
+                    className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded border border-gray-300 p-4"
+                    htmlFor="checkbox_withdrawal"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                      />
+                    </svg>
+                    <div className="ml-5">
+                      <span className="mt-2 font-normal">Retiro en Tienda</span>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -1267,7 +1237,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                     onChange={(e) =>
                       setStockQuantity(parseFloat(e.target.value))
                     }
-                    name="precioProducto"
+                    name="stockProducto"
                     required
                   />
                 </div>

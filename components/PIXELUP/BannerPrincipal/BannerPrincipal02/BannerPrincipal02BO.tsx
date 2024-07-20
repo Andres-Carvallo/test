@@ -46,10 +46,10 @@ const BannerPrincipalBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "900a5ae4-8224-4758-84a4-c7f728d73f38";
+      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
 
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -119,7 +119,7 @@ const BannerPrincipalBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "900a5ae4-8224-4758-84a4-c7f728d73f38";
+      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
 
       if (isAddingImage) {
         // Realizar una solicitud POST para crear una nueva imagen
@@ -133,7 +133,7 @@ const BannerPrincipalBO: React.FC = () => {
         };
 
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           newData,
           {
             headers: {
@@ -157,7 +157,7 @@ const BannerPrincipalBO: React.FC = () => {
         }
 
         await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           updatedData,
           {
             headers: {
@@ -181,9 +181,9 @@ const BannerPrincipalBO: React.FC = () => {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
 
-      const bannerId = "900a5ae4-8224-4758-84a4-c7f728d73f38";
+      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -385,7 +385,7 @@ const BannerPrincipalBO: React.FC = () => {
               </h3>
               <label
                 htmlFor="mainImage"
-                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed  rounded-lg cursor-pointer w-full z-10"
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg

@@ -102,7 +102,7 @@ function OfferForm({
       if (offerToEdit && offerToEdit.id) {
         // Actualizar oferta existente
         const response = await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers/${offerToEdit.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers/${offerToEdit.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           updatedOffer,
           config
         );
@@ -110,7 +110,7 @@ function OfferForm({
       } else {
         // Crear nueva oferta
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           updatedOffer,
           config
         );

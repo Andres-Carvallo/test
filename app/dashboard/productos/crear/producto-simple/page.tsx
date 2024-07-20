@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 const CrearProductoSimplePage = () => {
   return (
-    <div>
+    <div className="pb-20">
       <CrearProductoSimple />
     </div>
   );

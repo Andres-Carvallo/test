@@ -3,32 +3,42 @@ import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import ContentBienvenida from "@/components/conMantenedor/ContentBienvenida";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Marquee from "react-fast-marquee";
 import { getCookie } from "cookies-next";
 import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTiendaBO";
 import { Content } from "next/font/google";
 
 function BannerSinFotoBO() {
   const [loading, setLoading] = useState(false);
-  const [bannerDataMarquee, setBannerDataMarquee] = useState<any | null>(null);
-  const [marqueeData, setMarqueeData] = useState({
-    title: "hola",
-    contentText: "",
-  });
+
   const [welcomeData, setWelcomeData] = useState({
     title: "",
     contentText: "",
   });
-  const handleChangeMarquee = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = event.target;
-    setMarqueeData({
-      ...marqueeData,
-      [name]: value,
-    });
-  };
+  const fetchWelcomeBanner = async () => {
+    try {
+      setLoading(true); // Mostrar el indicador de carga
+      const bannerId = "0a109d60-29c9-428f-b03c-60316cebd34d";
 
+      const Token = getCookie("AdminTokenAuth");
+      const productTypeResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${Token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const bannerImage = productTypeResponse.data.contentBlock;
+      setWelcomeData(bannerImage);
+    } catch (error) {
+      console.error("Error al obtener los tipos de producto:", error);
+      // Manejar el error según sea necesario
+    } finally {
+      setLoading(false); // Ocultar el indicador de carga
+    }
+  };
   const handleChangeWelcome = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -38,65 +48,6 @@ function BannerSinFotoBO() {
       [name]: value,
     });
   };
-  const handleSubmitMarquee = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
-    try {
-      setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
-      // Enviar los datos al endpoint
-      const token = getCookie("AdminTokenAuth");
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
-        {
-          title: marqueeData.title,
-          contentText: marqueeData.contentText,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      // Limpiar el formulario después de enviar los datos
-      setMarqueeData({
-        title: "",
-        contentText: "",
-      });
-
-      // Manejar cualquier otra lógica necesaria después del envío exitoso
-
-      console.log("Datos enviados con éxito:", marqueeData);
-      fetchMarquee();
-    } catch (error) {
-      console.error("Error al enviar los datos:", error);
-      // Manejar el error según sea necesario
-    } finally {
-      setLoading(false); // Ocultar el indicador de carga
-    }
-  };
-
-  const fetchMarquee = async () => {
-    try {
-      setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
-
-      const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-
-      const bannerImage = productTypeResponse.data.contentBlock;
-      console.log(productTypeResponse.data.contentBlock, "bannerImage");
-      setMarqueeData(bannerImage);
-    } catch (error) {
-      console.error("Error al obtener los tipos de producto:", error);
-      // Manejar el error según sea necesario
-    } finally {
-      setLoading(false); // Ocultar el indicador de carga
-    }
-  };
 
   const handleSubmitWelcomeBanner = async (
     event: React.FormEvent<HTMLFormElement>
@@ -104,11 +55,11 @@ function BannerSinFotoBO() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
+      const bannerId = "0a109d60-29c9-428f-b03c-60316cebd34d";
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: welcomeData.title,
           contentText: welcomeData.contentText,
@@ -137,28 +88,7 @@ function BannerSinFotoBO() {
     }
   };
 
-  const fetchWelcomeBanner = async () => {
-    try {
-      setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
-
-      const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-
-      const bannerImage = productTypeResponse.data.contentBlock;
-      console.log(productTypeResponse.data.contentBlock, "bannerImage");
-      setWelcomeData(bannerImage);
-    } catch (error) {
-      console.error("Error al obtener los tipos de producto:", error);
-      // Manejar el error según sea necesario
-    } finally {
-      setLoading(false); // Ocultar el indicador de carga
-    }
-  };
-
   useEffect(() => {
-    fetchMarquee();
     fetchWelcomeBanner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial

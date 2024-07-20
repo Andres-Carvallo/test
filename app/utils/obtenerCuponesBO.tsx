@@ -7,7 +7,7 @@ export const obtenerCuponesBO = async (
 ) => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons?&pageNumber=${PageNumber}&pageSize=${PageSize}&statusCode=ACTIVE`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons?&pageNumber=${PageNumber}&pageSize=${PageSize}&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

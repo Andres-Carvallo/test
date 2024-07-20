@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 const inicioDashboard = () => {
   return (
-    <div className="text-gray-600 body-font min-h-[85vh]">
+    <div className="text-gray-600 body-font min-h-[85vh] p-10">
       <Breadcrumb pageName="Inicio" />
       <div className="flex flex-col ">
         <div className="flex justify-center mt-20">

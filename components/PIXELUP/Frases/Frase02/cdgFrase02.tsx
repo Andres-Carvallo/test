@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -11,7 +10,7 @@ function Frase02() {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "9f05622d-6a8a-45df-94bb-5f209022fe85";
+      const bannerId = "e8c37b79-cdcc-4674-bca5-3782d569b3d7";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -32,18 +31,18 @@ function Frase02() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial
   return (
-<section>
-<div className="m-16 flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
-  {/*  <div className="max-md:mt-4">
+    <section>
+      <div className="m-16 flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
+        {/*  <div className="max-md:mt-4">
     <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
       {bannerData?.title}
     </h3>
   </div>*/}
-  <p className="text-2xl font-semibold flex-1 italic">
-  « {bannerData?.title} »
-  </p>
-</div>
-</section>
+        <p className="text-2xl font-semibold flex-1 italic">
+          « {bannerData?.title} »
+        </p>
+      </div>
+    </section>
   );
 }
 

@@ -158,41 +158,44 @@ function StatsPage() {
   }, []); // Ejecuta solo al montar el componente
 
   return (
-    <div className="max-w-7xl mx-auto  py-10  ">
-      <div className=" flex items-center justify-center gap-4 ">
-        <VentasTotalesAnuales />
-        <PedidosTotales />
-      </div>
-      <div className="mt-4">
-        <VentasMensuales />
-      </div>
-      <div className="grid grid-cols-3 gap-4 mt-4">
-        <div className="col-span-2">
-          <CompareSales />
+    <div className="mx-10">
+      {" "}
+      <div className="max-w-7xl mx-auto  py-10  ">
+        <div className=" flex items-center justify-center gap-4 ">
+          <VentasTotalesAnuales />
+          <PedidosTotales />
         </div>
-        <div>
-          <ProductosMasVendidos />
+        <div className="mt-4">
+          <VentasMensuales />
         </div>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="col-span-2">
+            <CompareSales />
+          </div>
+          <div>
+            <ProductosMasVendidos />
+          </div>
+        </div>
+
+        <MostSoldProducts
+          salesData={mostSoldProducts}
+          startDateProducts={startDateProducts}
+          endDateProducts={endDateProducts}
+          setStartDateProducts={setStartDateProducts}
+          setEndDateProducts={setEndDateProducts}
+          fetchMostSoldProducts={() =>
+            fetchMostSoldProducts(startDateProducts, endDateProducts)
+          }
+        />
+
+        <SalesSummary
+          salesData={salesSummary}
+          startDate={startDate}
+          endDate={endDate}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+        />
       </div>
-
-      <MostSoldProducts
-        salesData={mostSoldProducts}
-        startDateProducts={startDateProducts}
-        endDateProducts={endDateProducts}
-        setStartDateProducts={setStartDateProducts}
-        setEndDateProducts={setEndDateProducts}
-        fetchMostSoldProducts={() =>
-          fetchMostSoldProducts(startDateProducts, endDateProducts)
-        }
-      />
-
-      <SalesSummary
-        salesData={salesSummary}
-        startDate={startDate}
-        endDate={endDate}
-        setStartDate={setStartDate}
-        setEndDate={setEndDate}
-      />
     </div>
   );
 }

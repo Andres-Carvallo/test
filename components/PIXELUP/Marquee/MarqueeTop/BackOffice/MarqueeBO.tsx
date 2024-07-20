@@ -43,11 +43,11 @@ function MarqueeTOP() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "3ceacd14-be7c-4342-a129-0bde85115cd1";
+      const bannerId = "483f6151-a82f-47de-bc18-8d25aa2cf85e";
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: "pixelup",
           contentText: marqueeData.contentText,
@@ -80,10 +80,10 @@ function MarqueeTOP() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "3ceacd14-be7c-4342-a129-0bde85115cd1";
+      const bannerId = "483f6151-a82f-47de-bc18-8d25aa2cf85e";
       const Token = getCookie("AdminTokenAuth");
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${Token}`,

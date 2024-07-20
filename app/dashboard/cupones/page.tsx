@@ -286,9 +286,9 @@ function CuponForm() {
         className=" p-4 bg-white my-6 overflow-x-auto shadow-md"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
-          Cupones Activos
-        </h2>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Cupones Activos</div>
+        </div>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">
             <tr>
@@ -397,7 +397,7 @@ function CuponForm() {
           </tbody>
         </table>
       </div>
-      <div>
+      <div className="p-4 bg-white">
         <form
           onSubmit={(e) => handleSubmit(e)}
           className="space-y-4"
