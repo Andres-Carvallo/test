@@ -66,7 +66,7 @@ export default function Home() {
         <title>{seoData.title}</title>
         <meta
           name="description"
-          content={seoData.description}
+          content={seoData.description ?? ""}
         />
         <meta
           name="viewport"
@@ -105,15 +105,15 @@ export default function Home() {
         {/* Open Graph tags */}
         <meta
           property="og:title"
-          content={seoData.title}
+          content={seoData.title ?? ""}
         />
         <meta
           property="og:description"
-          content={seoData.description}
+          content={seoData.description ?? ""}
         />
         <meta
           property="og:image"
-          content={seoData.ogImage}
+          content={seoData.ogImage ?? ""}
         />
         <meta
           property="og:url"
