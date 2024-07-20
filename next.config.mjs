@@ -13,6 +13,10 @@ const nextConfig = {
             key: "X-Robots-Tag",
             value: "index, follow", // Cambia esto según tus necesidades
           },
+          {
+            key: "Cache-Control",
+            value: "no-store, max-age=0, must-revalidate",
+          },
         ],
       },
     ];
