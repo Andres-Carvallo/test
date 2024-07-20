@@ -1,6 +1,7 @@
 // app/page.js
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Head from "next/head";
 import ProductList01 from "@/components/Products/ProductList01";
 import Testimonial01 from "@/components/Testimonials/Testimonial01";
 import Stats01 from "@/components/Stats/Stats01";
@@ -26,6 +27,9 @@ import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
 const siteUrl = "http://pixelup.cl";
 const canonicalUrl = "http://pixelup.cl/planes";
 
+export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
+export const revalidate = 60; // Revalida cada 60 segundos
+
 async function fetchBannerData() {
   const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
   const response = await axios.get(
@@ -46,6 +50,7 @@ export const metadata = async () => {
     return {
       title: bannerImage.images[0].title,
       description: bannerImage.images[0].landingText,
+      ogImage: bannerImage.images[0].mainImage.url,
       openGraph: {
         title: bannerImage.images[0].title,
         description: bannerImage.images[0].landingText,
@@ -57,7 +62,6 @@ export const metadata = async () => {
             alt: bannerImage.images[0].title,
           },
         ],
-        ogImage: bannerImage.images[0].mainImage.url, // Agregar la propiedad ogImage aquí
       },
     };
   } catch (error) {
@@ -76,7 +80,6 @@ export const metadata = async () => {
             alt: defaultSeoData.title,
           },
         ],
-        ogImage: defaultSeoData.ogImage, // Agregar la propiedad ogImage aquí también
       },
     };
   }
@@ -86,7 +89,7 @@ export default async function Page() {
   const seoData = await metadata();
   return (
     <>
-      <head>
+      <Head>
         <title>{seoData.title}</title>
         <meta
           name="description"
@@ -137,7 +140,7 @@ export default async function Page() {
         />
         <meta
           property="og:image"
-          content={seoData.openGraph.ogImage}
+          content={seoData.ogImage}
         />
         <meta
           property="og:url"
@@ -147,7 +150,7 @@ export default async function Page() {
           property="og:type"
           content="website"
         />
-      </head>
+      </Head>
 
       <MarqueeTOP />
       <Navbar01 />
