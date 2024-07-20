@@ -1,4 +1,7 @@
-import { useEffect } from "react";
+"use client";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Head from "next/head";
 import ProductList01 from "@/components/Products/ProductList01";
 import Testimonial01 from "@/components/Testimonials/Testimonial01";
 import Stats01 from "@/components/Stats/Stats01";
@@ -20,20 +23,50 @@ import Footer03 from "@/components/PIXELUP/Footer/Footer03/Footer03";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01";
 import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
+import { getCookie } from "cookies-next";
 
 const siteUrl = "http://pixelup.cl";
 const canonicalUrl = "http://pixelup.cl/planes";
 const defaultImage = `${siteUrl}/img/avatardefault.jpg`; // Ruta de la imagen predeterminada
 
 export default function Home() {
+  const [seoData, setSeoData] = useState({
+    title: "PixelUP Title",
+    description: "Una nueva plataforma para emprendedores y Pymes!",
+    ogImage: defaultImage,
+  });
+
+  useEffect(() => {
+    const fetchBannerData = async () => {
+      try {
+        const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
+
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+
+        const bannerImage = response.data.banner;
+        console.log(bannerImage, "bannerimage123123");
+        setSeoData({
+          title: bannerImage.images[0].title,
+          description: bannerImage.images[0].landingText,
+          ogImage: bannerImage.images[0].mainImage.url,
+        });
+      } catch (error) {
+        console.error("Error fetching banner data:", error);
+      }
+    };
+
+    fetchBannerData();
+  }, []);
+
   return (
     <>
       <head>
-        <title>PixelUP Title</title>
-
+        <title>{seoData.title}</title>
         <meta
           name="description"
-          content="Una nueva plataforma para emprendedores y Pymes!"
+          content={seoData.description}
         />
         <meta
           name="viewport"
@@ -70,10 +103,17 @@ export default function Home() {
         />
 
         {/* Open Graph tags */}
-
+        <meta
+          property="og:title"
+          content={seoData.title}
+        />
+        <meta
+          property="og:description"
+          content={seoData.description}
+        />
         <meta
           property="og:image"
-          content={defaultImage}
+          content={seoData.ogImage}
         />
         <meta
           property="og:url"
