@@ -74,7 +74,7 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="es">
       <header>
         <script
           async

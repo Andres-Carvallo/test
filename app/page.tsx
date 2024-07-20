@@ -40,19 +40,19 @@ export async function generateMetadata() {
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
     );
 
-    const bannerImage = response.data.banner;
+    const bannerImage = response.data.banner.images[0];
     return {
-      title: bannerImage.images[0].title,
-      description: bannerImage.images[0].landingText,
+      title: bannerImage.title || defaultSeoData.title,
+      description: bannerImage.landingText || defaultSeoData.description,
       openGraph: {
-        title: bannerImage.images[0].title,
-        description: bannerImage.images[0].landingText,
+        title: bannerImage.title || defaultSeoData.title,
+        description: bannerImage.landingText || defaultSeoData.description,
         images: [
           {
-            url: bannerImage.images[0].mainImage.url,
+            url: bannerImage.mainImage.url || defaultSeoData.ogImage,
             width: 800,
             height: 600,
-            alt: bannerImage.images[0].title,
+            alt: bannerImage.title || defaultSeoData.title,
           },
         ],
       },
@@ -81,6 +81,51 @@ export async function generateMetadata() {
 export default function Home() {
   return (
     <>
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        />
+        <meta
+          name="keywords"
+          content="pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl"
+        />
+        <meta
+          httpEquiv="Content-Language"
+          content="es"
+        />
+        <meta
+          name="author"
+          content="PixelUP"
+        />
+        <meta
+          name="publisher"
+          content="PixelUP"
+        />
+        <link
+          rel="icon"
+          href="/favicon.ico"
+          sizes="any"
+        />
+        <link
+          rel="canonical"
+          href={canonicalUrl}
+        />
+        <meta
+          name="robots"
+          content="index, follow"
+        />
+
+        <meta
+          property="og:url"
+          content={siteUrl}
+        />
+        <meta
+          property="og:type"
+          content="website"
+        />
+      </head>
+
       <MarqueeTOP />
       <Navbar01 />
       <BannerPrincipal />
