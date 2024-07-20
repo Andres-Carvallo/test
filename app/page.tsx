@@ -22,7 +22,7 @@ import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/Colecc
 import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-const defaultImage = `${siteUrl}/img/pixelup.png`; // Ruta de la imagen predeterminada
+const defaultImage = `${siteUrl}/img/avatardefault.jpg`; // Ruta de la imagen predeterminada
 
 export default function Home() {
   return (
