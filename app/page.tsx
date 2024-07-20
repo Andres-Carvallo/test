@@ -21,18 +21,19 @@ import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01";
 import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
 
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const siteUrl = "http://pixelup.cl";
+const canonicalUrl = "http://pixelup.cl/planes";
 const defaultImage = `${siteUrl}/img/avatardefault.jpg`; // Ruta de la imagen predeterminada
 
 export default function Home() {
   return (
     <>
       <head>
-        <title>PixelUP</title>
+        <title>PixelUP Title</title>
 
         <meta
           name="description"
-          content="Una nueva plataforma para emprendedores y Pymes"
+          content="Una nueva plataforma para emprendedores y Pymes!"
         />
         <meta
           name="viewport"
@@ -61,7 +62,7 @@ export default function Home() {
         />
         <link
           rel="canonical"
-          href={siteUrl}
+          href={canonicalUrl}
         />
         <meta
           name="robots"
@@ -69,14 +70,7 @@ export default function Home() {
         />
 
         {/* Open Graph tags */}
-        <meta
-          property="og:title"
-          content="PixelUP"
-        />
-        <meta
-          property="og:description"
-          content="Una nueva plataforma para emprendedores y Pymes"
-        />
+
         <meta
           property="og:image"
           content={defaultImage}
