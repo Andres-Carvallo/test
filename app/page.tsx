@@ -1,7 +1,6 @@
 // app/page.js
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Head from "next/head";
 import ProductList01 from "@/components/Products/ProductList01";
 import Testimonial01 from "@/components/Testimonials/Testimonial01";
 import Stats01 from "@/components/Stats/Stats01";
@@ -27,7 +26,15 @@ import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
 const siteUrl = "http://pixelup.cl";
 const canonicalUrl = "http://pixelup.cl/planes";
 
-export async function generateMetadata() {
+async function fetchBannerData() {
+  const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
+  const response = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+  );
+  return response.data.banner;
+}
+
+export const metadata = async () => {
   const defaultSeoData = {
     title: "PixelUP Title",
     description: "Una nueva plataforma para emprendedores y Pymes!",
@@ -35,24 +42,19 @@ export async function generateMetadata() {
   };
 
   try {
-    const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-    );
-
-    const bannerImage = response.data.banner.images[0];
+    const bannerImage = await fetchBannerData();
     return {
-      title: bannerImage.title || defaultSeoData.title,
-      description: bannerImage.landingText || defaultSeoData.description,
+      title: bannerImage.images[0].title,
+      description: bannerImage.images[0].landingText,
       openGraph: {
-        title: bannerImage.title || defaultSeoData.title,
-        description: bannerImage.landingText || defaultSeoData.description,
+        title: bannerImage.images[0].title,
+        description: bannerImage.images[0].landingText,
         images: [
           {
-            url: bannerImage.mainImage.url || defaultSeoData.ogImage,
+            url: bannerImage.images[0].mainImage.url,
             width: 800,
             height: 600,
-            alt: bannerImage.title || defaultSeoData.title,
+            alt: bannerImage.images[0].title,
           },
         ],
       },
@@ -76,12 +78,18 @@ export async function generateMetadata() {
       },
     };
   }
-}
+};
 
-export default function Home() {
+export default async function Page() {
+  const seoData = await metadata();
   return (
     <>
       <head>
+        <title>{seoData.title}</title>
+        <meta
+          name="description"
+          content={seoData.description}
+        />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
@@ -116,6 +124,19 @@ export default function Home() {
           content="index, follow"
         />
 
+        {/* Open Graph tags */}
+        <meta
+          property="og:title"
+          content={seoData.title}
+        />
+        <meta
+          property="og:description"
+          content={seoData.description}
+        />
+        <meta
+          property="og:image"
+          content={seoData.ogImage}
+        />
         <meta
           property="og:url"
           content={siteUrl}

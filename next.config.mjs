@@ -4,6 +4,7 @@ const nextConfig = {
     RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY, // Disponible tanto en el servidor como en el cliente
     RECAPTCHA_PUBLIC_SITE_KEY: process.env.RECAPTCHA_PUBLIC_SITE_KEY,
   },
+  reactStrictMode: true,
   async headers() {
     return [
       {
@@ -15,7 +16,7 @@ const nextConfig = {
           },
           {
             key: "Cache-Control",
-            value: "no-store, max-age=0, must-revalidate",
+            value: "public, s-maxage=1, stale-while-revalidate=59",
           },
         ],
       },
