@@ -31,9 +31,9 @@ const defaultImage = `${siteUrl}/img/avatardefault.jpg`; // Ruta de la imagen pr
 
 export default function Home() {
   const [seoData, setSeoData] = useState({
-    title: "PixelUP Title",
-    description: "Una nueva plataforma para emprendedores y Pymes!",
-    ogImage: defaultImage,
+    title: null,
+    description: null,
+    ogImage: null,
   });
 
   useEffect(() => {
