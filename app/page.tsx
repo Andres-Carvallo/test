@@ -1,4 +1,4 @@
-"use client";
+// app/page.js
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Head from "next/head";
@@ -23,104 +23,64 @@ import Footer03 from "@/components/PIXELUP/Footer/Footer03/Footer03";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01";
 import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
-import { getCookie } from "cookies-next";
 
 const siteUrl = "http://pixelup.cl";
 const canonicalUrl = "http://pixelup.cl/planes";
-const defaultImage = `${siteUrl}/img/avatardefault.jpg`; // Ruta de la imagen predeterminada
+
+export async function generateMetadata() {
+  const defaultSeoData = {
+    title: "PixelUP Title",
+    description: "Una nueva plataforma para emprendedores y Pymes!",
+    ogImage: "http://pixelup.cl/img/avatardefault.jpg",
+  };
+
+  try {
+    const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+    );
+
+    const bannerImage = response.data.banner;
+    return {
+      title: bannerImage.images[0].title,
+      description: bannerImage.images[0].landingText,
+      openGraph: {
+        title: bannerImage.images[0].title,
+        description: bannerImage.images[0].landingText,
+        images: [
+          {
+            url: bannerImage.images[0].mainImage.url,
+            width: 800,
+            height: 600,
+            alt: bannerImage.images[0].title,
+          },
+        ],
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching banner data:", error);
+    return {
+      title: defaultSeoData.title,
+      description: defaultSeoData.description,
+      openGraph: {
+        title: defaultSeoData.title,
+        description: defaultSeoData.description,
+        images: [
+          {
+            url: defaultSeoData.ogImage,
+            width: 800,
+            height: 600,
+            alt: defaultSeoData.title,
+          },
+        ],
+      },
+    };
+  }
+}
 
 export default function Home() {
-  const [seoData, setSeoData] = useState<any>({});
-
-  useEffect(() => {
-    const fetchBannerData = async () => {
-      try {
-        const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
-
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-
-        const bannerImage = response.data.banner;
-        console.log(bannerImage, "bannerimage123123");
-        setSeoData({
-          title: bannerImage.images[0].title,
-          description: bannerImage.images[0].landingText,
-          ogImage: bannerImage.images[0].mainImage.url,
-        });
-      } catch (error) {
-        console.error("Error fetching banner data:", error);
-      }
-    };
-
-    fetchBannerData();
-  }, []);
-
   return (
     <>
-      <head>
-        {seoData.title && <title>{seoData.title}</title>}
-        <meta
-          name="description"
-          content={seoData.description}
-        />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <meta
-          name="keywords"
-          content="pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl"
-        />
-        <meta
-          httpEquiv="Content-Language"
-          content="es"
-        />
-        <meta
-          name="author"
-          content="PixelUP"
-        />
-        <meta
-          name="publisher"
-          content="PixelUP"
-        />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-          sizes="any"
-        />
-        <link
-          rel="canonical"
-          href={canonicalUrl}
-        />
-        <meta
-          name="robots"
-          content="index, follow"
-        />
-
-        {/* Open Graph tags */}
-        <meta
-          property="og:title"
-          content={seoData.title}
-        />
-        <meta
-          property="og:description"
-          content={seoData.description}
-        />
-        <meta
-          property="og:image"
-          content={seoData.ogImage}
-        />
-        <meta
-          property="og:url"
-          content={siteUrl}
-        />
-        <meta
-          property="og:type"
-          content="website"
-        />
-      </head>
-
       <MarqueeTOP />
       <Navbar01 />
       <BannerPrincipal />
