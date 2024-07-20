@@ -14,10 +14,6 @@ const nextConfig = {
             key: "X-Robots-Tag",
             value: "index, follow", // Cambia esto según tus necesidades
           },
-          {
-            key: "Cache-Control",
-            value: "public, s-maxage=1, stale-while-revalidate=59",
-          },
         ],
       },
     ];
