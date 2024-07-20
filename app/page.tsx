@@ -57,6 +57,7 @@ export const metadata = async () => {
             alt: bannerImage.images[0].title,
           },
         ],
+        ogImage: bannerImage.images[0].mainImage.url, // Agregar la propiedad ogImage aquí
       },
     };
   } catch (error) {
@@ -75,6 +76,7 @@ export const metadata = async () => {
             alt: defaultSeoData.title,
           },
         ],
+        ogImage: defaultSeoData.ogImage, // Agregar la propiedad ogImage aquí también
       },
     };
   }
@@ -135,7 +137,7 @@ export default async function Page() {
         />
         <meta
           property="og:image"
-          content={seoData.ogImage}
+          content={seoData.openGraph.ogImage}
         />
         <meta
           property="og:url"
