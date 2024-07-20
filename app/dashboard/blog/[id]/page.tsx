@@ -1,6 +1,7 @@
+"use client";
 /* eslint-disable @next/next/no-img-element */
-import { GetServerSideProps } from "next";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
 interface Post {
   id: string;
@@ -9,11 +10,43 @@ interface Post {
   detailImage: string;
 }
 
-interface PostDetailProps {
-  post: Post;
-}
+const PostDetail: React.FC = () => {
+  const { id } = useParams();
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-const PostDetail: React.FC<PostDetailProps> = ({ post }) => {
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const response = await fetch(`/api/posts/${id}`);
+        const data = await response.json();
+        setPost(data.article);
+      } catch (error) {
+        console.error("Error fetching post", error);
+        setError("Failed to fetch post. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPost();
+    }
+  }, [id]);
+
+  if (loading) {
+    return <div className="text-center mt-8">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center mt-8 text-red-500">{error}</div>;
+  }
+
+  if (!post) {
+    return <div className="text-center mt-8">Post not found</div>;
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
@@ -25,29 +58,10 @@ const PostDetail: React.FC<PostDetailProps> = ({ post }) => {
         />
       )}
       <div className="prose">
-        <p>{post.detailContent}</p>
+        <div dangerouslySetInnerHTML={{ __html: post.detailContent }} />
       </div>
     </div>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { id } = context.params!;
-  const siteID = process.env.NEXT_PUBLIC_API_URL_SITEID;
-  try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/articles/${id}?siteId=${siteID}`
-    );
-    return {
-      props: {
-        post: response.data,
-      },
-    };
-  } catch (error) {
-    return {
-      notFound: true,
-    };
-  }
 };
 
 export default PostDetail;
