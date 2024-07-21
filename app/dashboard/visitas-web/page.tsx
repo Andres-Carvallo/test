@@ -280,10 +280,7 @@ const StatsPage: React.FC = () => {
         </div>
         <div className="bg-white p-4 rounded-lg shadow text-center col-span-1">
           <h3 className="text-lg font-medium">Bounce Rate</h3>
-          <Pie
-            className="mx-auto p-8"
-            data={pieChartData}
-          />
+          <Pie data={pieChartData} />
           <p className="text-gray-600 mb-2 text-xs">
             <strong>Tasa de Rebote:</strong> Porcentaje de visitantes que
             abandonan tu sitio web después de ver solo una página. Un alto
