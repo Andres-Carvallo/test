@@ -30,7 +30,7 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           method: "DELETE",
           headers: {
@@ -56,7 +56,7 @@ const CreateAtribute: React.FC<CreateAttributeProps> = ({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           method: "POST",
           headers: {

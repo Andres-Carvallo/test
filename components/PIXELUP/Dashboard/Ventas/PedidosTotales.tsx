@@ -17,7 +17,7 @@ const PedidosTotales: React.FC = () => {
       };
 
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders?pageNumber=1&pageSize=50&statusCode=PAYMENT_COMPLETED`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders?pageNumber=1&pageSize=50&statusCode=PAYMENT_COMPLETED&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         config
       );
 

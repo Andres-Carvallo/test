@@ -67,12 +67,11 @@ const CrearVariable: React.FC = () => {
   const fetchProducTypes = async () => {
     try {
       const token = getCookie("AdminTokenAuth");
-      const SiteId = process.env.NEXT_PUBLIC_API_SITEID;
       const PageNumber = 1;
       const PageSize = 100;
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?siteId=${SiteId}&pageNumber=${PageNumber}&pageSize=${PageSize}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?pageNumber=${PageNumber}&pageSize=${PageSize}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -80,6 +79,7 @@ const CrearVariable: React.FC = () => {
           },
         }
       );
+      console.log(productTypeResponse.data.productTypes, "tiposde ");
 
       setProductType(productTypeResponse.data.productTypes);
     } catch (error) {
@@ -268,7 +268,7 @@ const CrearVariable: React.FC = () => {
       const PageSize = 100;
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types&pageNumber=${PageNumber}&pageSize=${PageSize}?`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?pageNumber=${PageNumber}&pageSize=${PageSize}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

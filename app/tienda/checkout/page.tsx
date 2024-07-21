@@ -65,7 +65,7 @@ function Checkout() {
       !customer.customer.phoneNumber ||
       !customer.customer.email ||
       !customer.customer.addressLine1 ||
-      !customer.customer.communeId
+      (deliveryType !== "WITHDRAWAL_FROM_STORE" && !customer.customer.communeId)
     ) {
       toast.error("Por favor, completa todos los campos requeridos.");
       return;
@@ -85,7 +85,10 @@ function Checkout() {
           email: customer.customer.email,
           addressLine1: customer.customer.addressLine1,
           addressLine2: customer.customer.addressLine2,
-          communeId: customer.customer.communeId,
+          communeId:
+            deliveryType === "WITHDRAWAL_FROM_STORE"
+              ? process.env.NEXT_PUBLIC_DEFAULT_COMMUNE_ID
+              : customer.customer.communeId,
         },
       }
     );
@@ -197,7 +200,11 @@ function Checkout() {
     try {
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?hasShippingZones=true`
+        `${
+          process.env.NEXT_PUBLIC_API_URL_CLIENTE
+        }/api/v1/countries/${Pais}/regions/${regionId}/communes${
+          deliveryType === "HOME_DELIVERY" ? "?hasShippingZones=true" : ""
+        }`
       );
       setCommunes(response.data.communes);
     } catch (error) {
@@ -550,7 +557,7 @@ function Checkout() {
                     aparecerán las comunas que tengan disponibilidad de entrega.
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                {/* <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="RegionId"
                     className="block"
@@ -563,6 +570,7 @@ function Checkout() {
                         handleRegionChange(event);
                       }}
                       className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
+                      disabled={deliveryType === "WITHDRAWAL_FROM_STORE"}
                     >
                       <option>Selecciona Región</option>
                       {regions.map((region: any) => (
@@ -586,7 +594,7 @@ function Checkout() {
                       onChange={(event) => {
                         handleCommuneChange(event);
                       }}
-                      disabled={!selectedRegion}
+                      disabled={deliveryType === "WITHDRAWAL_FROM_STORE"}
                       className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
                     >
                       <option>Selecciona Comuna</option>
@@ -600,7 +608,59 @@ function Checkout() {
                       ))}
                     </select>
                   </label>
-                </div>
+                </div> */}
+                {deliveryType !== "WITHDRAWAL_FROM_STORE" && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <label
+                      htmlFor="RegionId"
+                      className="block"
+                    >
+                      Región
+                      <select
+                        id="region"
+                        value={selectedRegion}
+                        onChange={(event) => {
+                          handleRegionChange(event);
+                        }}
+                        className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
+                      >
+                        <option>Selecciona Región</option>
+                        {regions.map((region: any) => (
+                          <option
+                            key={region.id}
+                            value={region.id}
+                          >
+                            {region.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label
+                      htmlFor="communeId"
+                      className="block"
+                    >
+                      Comuna
+                      <select
+                        id="commune"
+                        value={selectedCommune}
+                        onChange={(event) => {
+                          handleCommuneChange(event);
+                        }}
+                        className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                      >
+                        <option>Selecciona Comuna</option>
+                        {communes.map((commune: any) => (
+                          <option
+                            key={commune.id}
+                            value={commune.id}
+                          >
+                            {commune.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
               </div>
 
               <form className="mt-5 grid gap-2">

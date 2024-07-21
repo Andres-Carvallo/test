@@ -1,14 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 
 interface Variation {
   id: string;
-  product: { id: string; name: string; productTypes: { name: string }[] };
+  product: {
+    id: string;
+    description: any;
+  };
   isBaseSku: boolean;
   mainImageUrl: string;
   description: string;
@@ -130,7 +133,7 @@ const ProductDetail01: React.FC = () => {
     }
   }, [id]);
 
-  const fetchVariations = async () => {
+  const fetchVariations = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -139,7 +142,6 @@ const ProductDetail01: React.FC = () => {
       const responseVariations = await response.json();
       if (responseVariations.code === 0) {
         const variations = responseVariations.skus;
-        console.log(variations, "variations");
         const variationsWithOffers = variations.map((variation: any) => ({
           ...variation,
           offers: variation.offers || [],
@@ -147,19 +149,20 @@ const ProductDetail01: React.FC = () => {
 
         setVariations(variationsWithOffers);
 
-        const isBaseSku = variations.some(
-          (variation: any) => variation.isBaseSku
-        );
-        setHasVariations(variations.length > 1);
-
         const baseSku = variations.find((sku: any) => sku.isBaseSku);
         if (baseSku) {
           setMainImageUrl(baseSku.mainImageUrl);
-          setDescription(baseSku.product.description);
           setProductName(baseSku.product.name);
           setEnabledForDelivery(baseSku.product.enabledForDelivery);
           setEnabledForWithdrawal(baseSku.product.enabledForWithdrawal);
+          setDescription(baseSku.product.description);
+
+          // Establece la descripción del producto base solo si no hay una variación seleccionada
+          if (!selectedVariation) {
+            setDescription(baseSku.product.description);
+          }
         }
+
         if (baseSku && baseSku.product && baseSku.product.productTypes) {
           setCategories(
             baseSku.product.productTypes.map((type: any) => type.name)
@@ -210,13 +213,13 @@ const ProductDetail01: React.FC = () => {
           setMinPrice("No disponible");
           setMaxPrice("No disponible");
         }
-        setIsLoading(false); // En caso de error, detener el loading
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error fetching variations:", error);
-      setIsLoading(false); // En caso de error, detener el loading
+      setIsLoading(false);
     }
-  };
+  }, [id, selectedVariation]);
 
   const groupAttributesByLabel = (attributesByVariation: {
     [key: string]: any[];
@@ -251,12 +254,25 @@ const ProductDetail01: React.FC = () => {
     });
 
     if (matchingVariation) {
+      setSelectedVariation(matchingVariation);
       setSelectedVariationPrice(currentPrices[matchingVariation.id] ?? null);
       setIsBaseSku(matchingVariation.isBaseSku);
+      setMainImageUrl(matchingVariation.mainImageUrl || mainImageUrl);
+      setDescription(matchingVariation.description); // Usar la descripción de la variación seleccionada
     } else {
+      setSelectedVariation(null);
       setSelectedVariationPrice(null);
+      setMainImageUrl("");
+      setDescription(""); // Limpiar la descripción cuando no haya una variación seleccionada
     }
-  }, [selectedAttributes, variations, currentPrices]);
+    updateDisabledAttributes();
+  }, [
+    selectedAttributes,
+    variations,
+    currentPrices,
+    mainImageUrl,
+    hasVariations,
+  ]);
 
   const fetchAttributesForVariation = async (variationId: string) => {
     try {

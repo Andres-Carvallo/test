@@ -22,7 +22,7 @@ const ProductosMasVendidos: React.FC = () => {
   const fetchCurrencyCode = async (token: string): Promise<string | null> => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -61,7 +61,7 @@ const ProductosMasVendidos: React.FC = () => {
         };
 
         // Construye la URL con las fechas y orden por defecto
-        const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/most-selled-products?startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currentCurrencyCodeId}&orderBy=${orderBy}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/most-selled-products?startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currentCurrencyCodeId}&orderBy=${orderBy}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
         // Realiza la solicitud GET
         const response = await axios.get(url, config);
