@@ -180,7 +180,7 @@ const StatsPage: React.FC = () => {
     series: Object.values(cityCounts),
     options: {
       chart: {
-        type: "bar",
+        type: "bar" as const,
         height: 350,
         zoom: {
           enabled: true,
@@ -216,7 +216,7 @@ const StatsPage: React.FC = () => {
     series: Object.values(deviceCounts),
     options: {
       chart: {
-        type: "bar",
+        type: "bar" as const,
         height: 350,
         zoom: {
           enabled: true,
@@ -252,7 +252,7 @@ const StatsPage: React.FC = () => {
     series: Object.values(browserCounts),
     options: {
       chart: {
-        type: "bar",
+        type: "bar" as const,
         height: 350,
         zoom: {
           enabled: true,
@@ -288,7 +288,7 @@ const StatsPage: React.FC = () => {
     series: Object.values(sourceCounts),
     options: {
       chart: {
-        type: "bar",
+        type: "bar" as const,
         height: 350,
         zoom: {
           enabled: true,
@@ -324,7 +324,7 @@ const StatsPage: React.FC = () => {
     series: Object.values(mediumCounts),
     options: {
       chart: {
-        type: "bar",
+        type: "bar" as const,
         height: 350,
         zoom: {
           enabled: true,
