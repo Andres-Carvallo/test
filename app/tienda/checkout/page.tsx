@@ -394,11 +394,11 @@ function Checkout() {
               </div>
             </div>
           </div>
-          <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
+          <div className="mt-10 bg-gray-100 px-4 pt-8 lg:mt-0">
             <p className="text-xl font-medium">Datos Personales</p>
             <p className="text-gray-400">Completa tus datos de entrega</p>
             <div className="">
-              <div className="mt-10 bg-gray-50 px-4 pt-2 lg:mt-0">
+              <div className="mt-10  px-4 pt-2 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="firstname"
@@ -491,7 +491,7 @@ function Checkout() {
                     />
                   </label>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1">
                   <label
                     htmlFor="addressLine1"
                     className="block mt-4"
@@ -518,7 +518,7 @@ function Checkout() {
                     htmlFor="addressLine2"
                     className="block mt-4"
                   >
-                    Dirección 2
+                    Indicaciones Extras
                     <input
                       type="text"
                       id="addressLine2"
@@ -537,26 +537,7 @@ function Checkout() {
                     />
                   </label>
                 </div>
-                <div
-                  style={{ borderRadius: "var(--radius)" }}
-                  className="shadow flex items-center p-4 my-2 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
-                  role="alert"
-                >
-                  <svg
-                    className="flex-shrink-0 inline w-4 h-4 me-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                  </svg>
-                  <span className="sr-only">Info</span>
-                  <div>
-                    <span className="font-semibold">Delivery.</span> Solo
-                    aparecerán las comunas que tengan disponibilidad de entrega.
-                  </div>
-                </div>
+
                 {/* <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="RegionId"
@@ -609,58 +590,6 @@ function Checkout() {
                     </select>
                   </label>
                 </div> */}
-                {deliveryType !== "WITHDRAWAL_FROM_STORE" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <label
-                      htmlFor="RegionId"
-                      className="block"
-                    >
-                      Región
-                      <select
-                        id="region"
-                        value={selectedRegion}
-                        onChange={(event) => {
-                          handleRegionChange(event);
-                        }}
-                        className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
-                      >
-                        <option>Selecciona Región</option>
-                        {regions.map((region: any) => (
-                          <option
-                            key={region.id}
-                            value={region.id}
-                          >
-                            {region.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label
-                      htmlFor="communeId"
-                      className="block"
-                    >
-                      Comuna
-                      <select
-                        id="commune"
-                        value={selectedCommune}
-                        onChange={(event) => {
-                          handleCommuneChange(event);
-                        }}
-                        className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                      >
-                        <option>Selecciona Comuna</option>
-                        {communes.map((commune: any) => (
-                          <option
-                            key={commune.id}
-                            value={commune.id}
-                          >
-                            {commune.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-                )}
               </div>
 
               <form className="mt-5 grid gap-2">
@@ -743,6 +672,78 @@ function Checkout() {
                   </label>
                 </div>
               </form>
+              <div
+                style={{ borderRadius: "var(--radius)" }}
+                className="shadow flex items-center p-4 my-2 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+                role="alert"
+              >
+                <svg
+                  className="flex-shrink-0 inline w-4 h-4 me-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  <span className="font-semibold">Delivery.</span> Solo
+                  aparecerán las comunas que tengan disponibilidad de entrega.
+                </div>
+              </div>
+              {deliveryType !== "WITHDRAWAL_FROM_STORE" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <label
+                    htmlFor="RegionId"
+                    className="block"
+                  >
+                    Región
+                    <select
+                      id="region"
+                      value={selectedRegion}
+                      onChange={(event) => {
+                        handleRegionChange(event);
+                      }}
+                      className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
+                    >
+                      <option>Selecciona Región</option>
+                      {regions.map((region: any) => (
+                        <option
+                          key={region.id}
+                          value={region.id}
+                        >
+                          {region.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label
+                    htmlFor="communeId"
+                    className="block"
+                  >
+                    Comuna
+                    <select
+                      id="commune"
+                      value={selectedCommune}
+                      onChange={(event) => {
+                        handleCommuneChange(event);
+                      }}
+                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                    >
+                      <option>Selecciona Comuna</option>
+                      {communes.map((commune: any) => (
+                        <option
+                          key={commune.id}
+                          value={commune.id}
+                        >
+                          {commune.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
             </div>
             <button
               onClick={handleSubmitOrder}
