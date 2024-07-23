@@ -15,7 +15,6 @@ function MarqueeTOP() {
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      console.log(productTypeResponse.data.contentBlock, "marqueeeeeeeee55");
       const bannerImage = productTypeResponse.data.contentBlock;
       setBannerData(bannerImage);
     } catch (error) {

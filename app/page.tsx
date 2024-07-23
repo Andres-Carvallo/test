@@ -1,7 +1,6 @@
 // app/page.js
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Head from "next/head";
 import ProductList01 from "@/components/Products/ProductList01";
 import Testimonial01 from "@/components/Testimonials/Testimonial01";
 import Stats01 from "@/components/Stats/Stats01";
@@ -89,7 +88,7 @@ export default async function Page() {
   const seoData = await metadata();
   return (
     <>
-      <Head>
+      <head>
         <title>{seoData.title}</title>
         <meta
           name="description"
@@ -150,7 +149,7 @@ export default async function Page() {
           property="og:type"
           content="website"
         />
-      </Head>
+      </head>
 
       <MarqueeTOP />
       <Navbar01 />

@@ -14,8 +14,6 @@ export default function DetalleProductos() {
       <BannerTienda />
 
       <ProductDetail />
-
-      <Stars />
     </section>
   );
 }

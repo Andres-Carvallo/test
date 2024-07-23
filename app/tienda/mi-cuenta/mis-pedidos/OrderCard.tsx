@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
+import Loader from "@/components/common/Loader";
 
 interface Order {
   id: number;
@@ -14,6 +15,14 @@ interface Order {
   totals: {
     totalAmount: number;
   };
+}
+
+interface ProductReview {
+  id: string;
+  name: string;
+  reviewId: string | null;
+  score: number | null;
+  comments: string | null;
 }
 
 interface OrderDataProps {
@@ -30,6 +39,8 @@ interface OrderDataState {
 
 export default function OrderData() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState<number>(0);
+  const [totalReviewsCount, setTotalReviewsCount] = useState<number>(0);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
@@ -54,11 +65,13 @@ export default function OrderData() {
   };
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchOrdersAndReviews = async () => {
       try {
         const id = decodeToken?.sub;
         const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-        const response = await axios.get(
+
+        // Fetch orders
+        const responseOrders = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/orders?siteId=${siteId}&pageNumber=1&pageSize=50`,
           {
             headers: {
@@ -67,10 +80,46 @@ export default function OrderData() {
           }
         );
 
-        if (response.data.code === 0) {
-          setOrders(response.data.orders);
+        if (responseOrders.data.code === 0) {
+          setOrders(responseOrders.data.orders);
         } else {
           setError("Failed to fetch orders. Please try again.");
+        }
+
+        // Fetch pending reviews
+        const responsePendingReviews = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/products?pageNumber=1&pageSize=50&siteId=${siteId}&hasValorations=false`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (responsePendingReviews.data.code === 0) {
+          setPendingReviewsCount(
+            responsePendingReviews.data.purchasedProducts.length
+          );
+        } else {
+          setError("Failed to fetch pending reviews. Please try again.");
+        }
+
+        // Fetch total reviews
+        const responseTotalReviews = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/products?pageNumber=1&pageSize=50&siteId=${siteId}&hasValorations=true`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (responseTotalReviews.data.code === 0) {
+          setTotalReviewsCount(
+            responseTotalReviews.data.purchasedProducts.length
+          );
+        } else {
+          setError("Failed to fetch total reviews. Please try again.");
         }
       } catch (err) {
         setError("An error occurred. Please try again.");
@@ -79,10 +128,10 @@ export default function OrderData() {
       }
     };
 
-    fetchOrders();
+    fetchOrdersAndReviews();
   }, [decodeToken?.sub]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loader />;
   if (error) return <p>{error}</p>;
 
   return (
@@ -102,7 +151,7 @@ export default function OrderData() {
                 style={{ borderRadius: "50%" }}
               />
               <p className="text-m text-gray-700">
-                5 productos esperan tu opinión
+                {pendingReviewsCount} productos esperan tu opinión
               </p>
             </div>
             <Link
@@ -111,6 +160,32 @@ export default function OrderData() {
               style={{ borderRadius: "var(--radius)" }}
             >
               Calificar
+            </Link>
+          </div>
+        </div>
+
+        <div
+          className="border overflow-hidden shadow-md mb-4"
+          style={{ borderRadius: "var(--radius)" }}
+        >
+          <div className="bg-white p-4 flex justify-between items-center">
+            <div className="flex items-center">
+              <img
+                src="https://images.vexels.com/media/users/3/134165/isolated/preview/435c122f8420a57fd38d06a30292f2bb-icono-de-estrella-plana-68.png"
+                alt="Total Reviews"
+                className="w-12 h-12 object-cover mr-4"
+                style={{ borderRadius: "50%" }}
+              />
+              <p className="text-m text-gray-700">
+                Has realizado {totalReviewsCount} calificaciones
+              </p>
+            </div>
+            <Link
+              href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
+              className="px-4 py-2 bg-primary text-secondary hover:bg-secondary hover:text-primary transition duration-300"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              Ver Calificaciones
             </Link>
           </div>
         </div>
@@ -124,7 +199,6 @@ export default function OrderData() {
           >
             <div className="bg-white p-4">
               <p className="text-sm text-gray-700">
-                {" "}
                 {formatDateToChileanTime(order.creationDate)}
               </p>
             </div>
