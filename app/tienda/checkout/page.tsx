@@ -10,10 +10,12 @@ import AutoSubmitForm from "@/components/Checkout/AutoSubmitForm";
 import CartList from "@/components/CartCanva/CartList";
 import { useRouter } from "next/navigation";
 import { Customer, ItemAvailability } from "@/types/types";
+import { jwtDecode } from "jwt-decode";
 
 const Checkout: React.FC = () => {
   const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
   const [communes, setCommunes] = useState<{ id: string; name: string }[]>([]);
+  const [enabledCommunes, setEnabledCommunes] = useState<string[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [selectedCommune, setSelectedCommune] = useState<string>("");
   const {
@@ -67,8 +69,46 @@ const Checkout: React.FC = () => {
   };
 
   const [customer, setCustomer] = useState<Customer>(initialCustomerState);
+  const Token = getCookie("ClientTokenAuth");
+  const decodeToken = Token ? jwtDecode(Token) : null;
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      // Fetch customer data if logged in
+      const fetchCustomerData = async () => {
+        try {
+          const id = decodeToken?.sub;
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: { Authorization: `Bearer ${isLoggedIn}` },
+            }
+          );
+          console.log("Customer data fetched:", response.data);
+          setCustomer((prevState) => ({
+            ...prevState,
+            customer: {
+              firstname: response.data.customer.firstname,
+              lastname: response.data.customer.lastname,
+              phoneNumber: response.data.customer.phoneNumber,
+              email: response.data.customer.email,
+              addressLine1: response.data.customer.addressLine1,
+              addressLine2: response.data.customer.addressLine2,
+              communeId: response.data.customer.commune.id,
+            },
+          }));
+        } catch (error) {
+          console.error("Error fetching customer data:", error);
+        }
+      };
+
+      fetchCustomerData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
 
   const handleSubmitOrder = async () => {
+    console.log("Submitting order with customer data:", customer);
     if (
       !isLoggedIn &&
       (!customer.customer?.firstname ||
@@ -83,6 +123,17 @@ const Checkout: React.FC = () => {
       return;
     }
 
+    const communeIdToCheck = useDifferentShippingAddress
+      ? selectedCommune
+      : customer.customer?.communeId;
+
+    if (!enabledCommunes.includes(communeIdToCheck || "")) {
+      toast.error(
+        "La comuna seleccionada no está habilitada para despacho. Por favor, selecciona otra dirección."
+      );
+      return;
+    }
+
     const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
     const orderData = {
       cartId: customer.cartId,
@@ -93,7 +144,7 @@ const Checkout: React.FC = () => {
             shippingInfo: {
               addressLine1: customer.customer?.addressLine1,
               addressLine2: customer.customer?.addressLine2,
-              communeId: customer.customer?.communeId,
+              communeId: selectedCommune,
             },
           }
         : !isLoggedIn
@@ -136,7 +187,7 @@ const Checkout: React.FC = () => {
         deleteCookie("cartId");
         setCustomer(initialCustomerState);
       }
-      console.log("ok", response.data);
+      console.log("Order confirmation response:", response.data);
     } catch (error) {
       toast.error("Error al confirmar la compra. Por favor, intenta de nuevo.");
       console.error("Error al confirmar la compra:", error);
@@ -229,7 +280,13 @@ const Checkout: React.FC = () => {
           deliveryType === "HOME_DELIVERY" ? "?hasShippingZones=true" : ""
         }`
       );
-      setCommunes(response.data.communes);
+      const communesData = response.data.communes;
+      setCommunes(communesData);
+      if (deliveryType === "HOME_DELIVERY") {
+        setEnabledCommunes(communesData.map((commune: any) => commune.id));
+      } else {
+        setEnabledCommunes([]);
+      }
     } catch (error) {
       console.error("Error fetching communes:", error);
     }
@@ -243,6 +300,7 @@ const Checkout: React.FC = () => {
       fetchCommunes(regionId);
     } else {
       setCommunes([]);
+      setEnabledCommunes([]);
     }
   };
 
@@ -439,7 +497,9 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
                       disabled={!!isLoggedIn}
                     />
                   </label>
@@ -462,7 +522,9 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
                       disabled={!!isLoggedIn}
                     />
                   </label>
@@ -487,7 +549,9 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
                       disabled={!!isLoggedIn}
                     />
                   </label>
@@ -510,7 +574,9 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
                       disabled={!!isLoggedIn}
                     />
                   </label>
@@ -535,7 +601,9 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
                       disabled={!!isLoggedIn}
                     />
                   </label>
@@ -558,7 +626,9 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
                       disabled={!!isLoggedIn}
                     />
                   </label>
@@ -651,7 +721,7 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-white"
                     />
                   </label>
                   <label
@@ -673,7 +743,7 @@ const Checkout: React.FC = () => {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-white"
                     />
                   </label>
                 </div>
