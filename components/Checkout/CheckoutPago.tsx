@@ -91,7 +91,7 @@ function CheckoutPago() {
   const handleSubmitOrder = async () => {
     try {
       const paymentGatewayResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/payment-gateways?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&statusCode=ACTIVE`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/payment-gateways?statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       const paymentGateways = paymentGatewayResponse.data.paymentGateways;
       const activePaymentGatewayId = paymentGateways[0].id; // Supongamos que tomamos el primer medio de pago

@@ -175,7 +175,7 @@ const VariationForm: React.FC<any> = ({
         };
         const token = getCookie("AdminTokenAuth");
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/images`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           formattedImage,
           {
             headers: {
@@ -266,7 +266,7 @@ const VariationForm: React.FC<any> = ({
 
       if (isEditMode) {
         variationResponse = await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${currentVariation.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${currentVariation.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           variationData,
           {
             headers: {
@@ -278,7 +278,7 @@ const VariationForm: React.FC<any> = ({
         variationId = currentVariation.id;
       } else {
         variationResponse = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           variationData,
           {
             headers: {
@@ -327,7 +327,7 @@ const VariationForm: React.FC<any> = ({
       if (variationId && attributePairs.length > 0) {
         for (const attribute of attributePairs) {
           if (attribute.id && attribute.value) {
-            const attributeUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes/${attribute.id}`;
+            const attributeUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes/${attribute.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
             try {
               const existingAttributeResponse = await axios.get(attributeUrl, {
                 headers: {
@@ -348,7 +348,7 @@ const VariationForm: React.FC<any> = ({
                 );
               } else if (existingAttributeResponse.status === 404) {
                 await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes`,
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
                   { attributeId: attribute.id, value: attribute.value },
                   {
                     headers: {
@@ -361,7 +361,7 @@ const VariationForm: React.FC<any> = ({
             } catch (error: any) {
               if (error.response && error.response.status === 404) {
                 await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes`,
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
                   { attributeId: attribute.id, value: attribute.value },
                   {
                     headers: {

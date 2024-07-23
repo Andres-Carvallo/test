@@ -56,7 +56,7 @@ function StatsPage() {
   const fetchCurrencyCode = async (token: any) => {
     try {
       const currencyResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -100,7 +100,7 @@ function StatsPage() {
       };
 
       // Construye la URL con las fechas
-      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/sales-summary?statusCode=PAYMENT_COMPLETED&startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currentCurrencyCodeId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/sales-summary?statusCode=PAYMENT_COMPLETED&startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currentCurrencyCodeId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       // Realiza la solicitud GET
       const response = await axios.get(url, config);
@@ -126,7 +126,7 @@ function StatsPage() {
       };
 
       // Construye la URL con las fechas y orden por defecto
-      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/most-selled-products?startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currencyCodeId}&orderBy=amount`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/most-selled-products?startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currencyCodeId}&orderBy=amount&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       // Realiza la solicitud GET
       const response = await axios.get(url, config);
@@ -158,39 +158,44 @@ function StatsPage() {
   }, []); // Ejecuta solo al montar el componente
 
   return (
-    <div>
-      <div className="grid grid-cols-3 gap-4">
-        <VentasTotalesAnuales />
-        <PedidosTotales />
-        <VentasMensuales />
-      </div>
-      <div className="grid grid-cols-3 gap-4 mt-4">
-        <div className="col-span-2">
-          <CompareSales />
+    <div className="mx-10">
+      {" "}
+      <div className="max-w-7xl mx-auto  py-10  ">
+        <div className=" flex items-center justify-center gap-4 ">
+          <VentasTotalesAnuales />
+          <PedidosTotales />
         </div>
-        <div>
-          <ProductosMasVendidos />
+        <div className="mt-4">
+          <VentasMensuales />
         </div>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="col-span-2">
+            <CompareSales />
+          </div>
+          <div>
+            <ProductosMasVendidos />
+          </div>
+        </div>
+
+        <MostSoldProducts
+          salesData={mostSoldProducts}
+          startDateProducts={startDateProducts}
+          endDateProducts={endDateProducts}
+          setStartDateProducts={setStartDateProducts}
+          setEndDateProducts={setEndDateProducts}
+          fetchMostSoldProducts={() =>
+            fetchMostSoldProducts(startDateProducts, endDateProducts)
+          }
+        />
+
+        <SalesSummary
+          salesData={salesSummary}
+          startDate={startDate}
+          endDate={endDate}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+        />
       </div>
-
-      <MostSoldProducts
-        salesData={mostSoldProducts}
-        startDateProducts={startDateProducts}
-        endDateProducts={endDateProducts}
-        setStartDateProducts={setStartDateProducts}
-        setEndDateProducts={setEndDateProducts}
-        fetchMostSoldProducts={() =>
-          fetchMostSoldProducts(startDateProducts, endDateProducts)
-        }
-      />
-
-      <SalesSummary
-        salesData={salesSummary}
-        startDate={startDate}
-        endDate={endDate}
-        setStartDate={setStartDate}
-        setEndDate={setEndDate}
-      />
     </div>
   );
 }

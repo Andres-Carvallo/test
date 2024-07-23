@@ -110,7 +110,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types/${categoryIdToUpdate}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types/${categoryIdToUpdate}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           method: "PUT",
           headers: {
@@ -160,7 +160,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
     try {
       // Realizar la llamada a la API para eliminar la categoría
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types/${selectedCategoryId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types/${selectedCategoryId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           method: "DELETE",
           headers: {

@@ -16,12 +16,12 @@ const CategoriasPage: React.FC = () => {
   const fetchProducTypes = async () => {
     try {
       const token = getCookie("AdminTokenAuth");
-      const SiteId = process.env.NEXT_PUBLIC_API_SITEID;
+
       const PageNumber = 1;
       const PageSize = 100;
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?siteId=${SiteId}&pageNumber=${PageNumber}&pageSize=${PageSize}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?pageNumber=${PageNumber}&pageSize=${PageSize}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -29,19 +29,24 @@ const CategoriasPage: React.FC = () => {
           },
         }
       );
-
+      console.log(
+        productTypeResponse.data.productTypes,
+        "productTypeResponse.data.productTypes"
+      );
       setProductType(productTypeResponse.data.productTypes);
     } catch (error) {
-      console.error("Error al obtener los tipos de producto:", error);
+      console.error("Error al obtener los tipos de producto: er2", error);
     }
   };
+
   useEffect(() => {
     fetchProducTypes();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
-    <div>
+    <div className="py-10 mx-10">
       <Breadcrumb pageName="Categorías" />
-      <div className=" mx-auto">
+      <div className="">
         <div className="flex  min-w-96  my-4 p-4 rounded-xl gap-6">
           <button
             className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md ${

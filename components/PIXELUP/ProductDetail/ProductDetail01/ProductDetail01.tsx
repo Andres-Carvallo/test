@@ -1,14 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-
+import Stars from "@/components/Products/Detail/Stars";
 interface Variation {
   id: string;
-  product: { id: string; name: string; productTypes: { name: string }[] };
+  product: {
+    id: string;
+    description: any;
+  };
   isBaseSku: boolean;
   mainImageUrl: string;
   description: string;
@@ -57,11 +60,19 @@ const ProductDetail01: React.FC = () => {
   const [hasVariations, setHasVariations] = useState(Boolean);
   const [enabledForDelivery, setEnabledForDelivery] = useState(false);
   const [enabledForWithdrawal, setEnabledForWithdrawal] = useState(false);
-
   const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
   const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(
     null
   );
+  const [isAddToCartDisabled, setIsAddToCartDisabled] = useState(false);
+
+  const [reviewAverageScore, setReviewAverageScore] = useState<number | null>(
+    null
+  );
+  const [totalReviews, setTotalReviews] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { addToCartHandler } = useAPI();
+  const { id } = useParams();
 
   const fetchThumbnails = async (productId: string, skuId: string) => {
     try {
@@ -69,7 +80,6 @@ const ProductDetail01: React.FC = () => {
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       const data = await response.json();
-
       if (data.code === 0) {
         const mainThumbnail = { id: "main", imageUrl: mainImageUrl };
         const allThumbnails = [mainThumbnail, ...data.skuImages];
@@ -96,11 +106,6 @@ const ProductDetail01: React.FC = () => {
   };
 
   const renderThumbnails = () => {
-    const thumbnailCount = thumbnails.length; // Número de miniaturas
-    const containerWidth = 500; // Ancho del contenedor principal de la imagen
-    const thumbnailWidth =
-      thumbnailCount > 0 ? Math.floor(containerWidth / thumbnailCount) : 20; // Ancho de cada miniatura
-
     return thumbnails.map((thumbnail) => (
       <img
         key={thumbnail.id}
@@ -111,18 +116,11 @@ const ProductDetail01: React.FC = () => {
             ? "border-2 border-blue-500"
             : ""
         }`}
-        style={{
-          width: "80px",
-          height: "80px",
-          borderRadius: "var(--radius)",
-        }}
+        style={{ width: "80px", height: "80px", borderRadius: "var(--radius)" }}
         onClick={() => handleThumbnailClick(thumbnail.imageUrl)}
       />
     ));
   };
-
-  const { addToCartHandler } = useAPI();
-  const { id } = useParams();
 
   useEffect(() => {
     if (id) {
@@ -130,7 +128,7 @@ const ProductDetail01: React.FC = () => {
     }
   }, [id]);
 
-  const fetchVariations = async () => {
+  const fetchVariations = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(
@@ -139,7 +137,6 @@ const ProductDetail01: React.FC = () => {
       const responseVariations = await response.json();
       if (responseVariations.code === 0) {
         const variations = responseVariations.skus;
-        console.log(variations, "variations");
         const variationsWithOffers = variations.map((variation: any) => ({
           ...variation,
           offers: variation.offers || [],
@@ -147,19 +144,21 @@ const ProductDetail01: React.FC = () => {
 
         setVariations(variationsWithOffers);
 
-        const isBaseSku = variations.some(
-          (variation: any) => variation.isBaseSku
-        );
-        setHasVariations(variations.length > 1);
-
         const baseSku = variations.find((sku: any) => sku.isBaseSku);
         if (baseSku) {
           setMainImageUrl(baseSku.mainImageUrl);
-          setDescription(baseSku.product.description);
           setProductName(baseSku.product.name);
           setEnabledForDelivery(baseSku.product.enabledForDelivery);
           setEnabledForWithdrawal(baseSku.product.enabledForWithdrawal);
+          setDescription(baseSku.product.description); // Actualización aquí
+          setReviewAverageScore(baseSku.product.reviewAverageScore);
+          setTotalReviews(baseSku.product.totalReviews);
+
+          if (!selectedVariation) {
+            setDescription(baseSku.product.description); // Actualización aquí
+          }
         }
+
         if (baseSku && baseSku.product && baseSku.product.productTypes) {
           setCategories(
             baseSku.product.productTypes.map((type: any) => type.name)
@@ -210,13 +209,13 @@ const ProductDetail01: React.FC = () => {
           setMinPrice("No disponible");
           setMaxPrice("No disponible");
         }
-        setIsLoading(false); // En caso de error, detener el loading
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error fetching variations:", error);
-      setIsLoading(false); // En caso de error, detener el loading
+      setIsLoading(false);
     }
-  };
+  }, [id, selectedVariation]);
 
   const groupAttributesByLabel = (attributesByVariation: {
     [key: string]: any[];
@@ -251,20 +250,36 @@ const ProductDetail01: React.FC = () => {
     });
 
     if (matchingVariation) {
+      setSelectedVariation(matchingVariation);
       setSelectedVariationPrice(currentPrices[matchingVariation.id] ?? null);
       setIsBaseSku(matchingVariation.isBaseSku);
+      setMainImageUrl(matchingVariation.mainImageUrl || mainImageUrl);
+      // Mostrar la descripción basada en isBaseSku
+      if (matchingVariation.isBaseSku) {
+        setDescription(matchingVariation.product.description);
+      } else {
+        setDescription(matchingVariation.description);
+      }
     } else {
+      setSelectedVariation(null);
       setSelectedVariationPrice(null);
+      setMainImageUrl("");
+      setDescription("");
     }
-  }, [selectedAttributes, variations, currentPrices]);
+    updateDisabledAttributes();
+  }, [
+    selectedAttributes,
+    variations,
+    currentPrices,
+    mainImageUrl,
+    hasVariations,
+  ]);
 
   const fetchAttributesForVariation = async (variationId: string) => {
     try {
-      const token = getCookie("AdminTokenAuth");
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-
       const responseData = await response.json();
       if (responseData.code === 0) {
         return responseData.skuAttributes.map((skuAttribute: any) => ({
@@ -294,9 +309,11 @@ const ProductDetail01: React.FC = () => {
     }
     return null;
   };
+
   const calculateDiscount = (originalPrice: any, offerPrice: any) => {
     return ((originalPrice - offerPrice) / originalPrice) * 100;
   };
+
   const fetchOffersForVariation = async (productId: string, skuId: string) => {
     try {
       const response = await fetch(
@@ -335,34 +352,6 @@ const ProductDetail01: React.FC = () => {
       return newAttributes;
     });
   };
-
-  useEffect(() => {
-    const matchingVariation = variations.find((variation) => {
-      return Object.keys(selectedAttributes).every((key) => {
-        const attribute = variation.attributes.find(
-          (attr) => attr.label === key
-        );
-        return attribute && attribute.value === selectedAttributes[key];
-      });
-    });
-
-    if (matchingVariation) {
-      setSelectedVariation(matchingVariation);
-      setMainImageUrl(matchingVariation.mainImageUrl || mainImageUrl);
-      setDescription(matchingVariation.description);
-    } else {
-      setSelectedVariation(null);
-      setMainImageUrl("");
-      setDescription("");
-    }
-    updateDisabledAttributes();
-  }, [
-    selectedAttributes,
-    variations,
-    mainImageUrl,
-    currentPrices,
-    hasVariations,
-  ]);
 
   const updateDisabledAttributes = () => {
     const disabledAttrs: { [key: string]: boolean[] } = {};
@@ -410,19 +399,10 @@ const ProductDetail01: React.FC = () => {
     }
   };
 
-  const [isAddToCartDisabled, setIsAddToCartDisabled] = useState(false);
-  const [image, setImage] = useState(1);
-  const [selectedSize, setSelectedSize] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const handleSizeChange = (size: any) => {
-    setSelectedSize(size);
-  };
-
   const areAllAttributesSelected = () => {
     if (!variations.length) return false;
     const requiredAttributes = Object.keys(currentAttributes);
     const selectedAttributesKeys = Object.keys(selectedAttributes);
-
     return requiredAttributes.every((attr) =>
       selectedAttributesKeys.includes(attr)
     );
@@ -512,8 +492,30 @@ const ProductDetail01: React.FC = () => {
               <h2 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
                 {productName}
               </h2>
-              <p className="text-gray-500 text-sm">
+
+              <p className="text-gray-500 text-sm flex gap-3">
                 Categoría: {categories.join(", ")}
+                {reviewAverageScore !== null && totalReviews !== null && (
+                  <span className="flex items-center ml-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < reviewAverageScore
+                            ? "text-yellow-500"
+                            : "text-gray-300"
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
+                      </svg>
+                    ))}
+                    <span className="ml-1 text-gray-600">
+                      {reviewAverageScore} ({totalReviews})
+                    </span>
+                  </span>
+                )}
               </p>
 
               <div className="flex items-center space-x-4 my-4">
@@ -619,7 +621,6 @@ const ProductDetail01: React.FC = () => {
                               />
                             </svg>
                           </span>
-
                           <small className="px-2 text-red-800 self-center">
                             Delivery No Disponible
                           </small>
@@ -667,7 +668,6 @@ const ProductDetail01: React.FC = () => {
                               />
                             </svg>
                           </span>
-
                           <small className="px-2 text-red-800 self-center">
                             Retiro No Disponible
                           </small>
@@ -782,6 +782,10 @@ const ProductDetail01: React.FC = () => {
             </div>
           </div>
         )}
+        <Stars
+          reviewAverageScore={reviewAverageScore}
+          totalReviews={totalReviews}
+        />
       </div>
     </>
   );

@@ -87,7 +87,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           method: "POST",
           headers: {

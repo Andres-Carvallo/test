@@ -10,11 +10,13 @@ const CompararVentas: React.FC = () => {
   const [percentageChange, setPercentageChange] = useState<number | null>(null);
 
   return (
-    <div className="bg-gray-100 p-6 rounded-lg shadow-md">
+    <div className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black">
       <title>Comparar Ventas</title>
       <section className="dark:bg-gray-900">
+        <div className="text-sm font-medium border-b pb-2">
+          Comparar Ciclos de Venta
+        </div>
         <div className="max-w-screen-xl px-4 py-8 mx-auto text-center  lg:px-6">
-          <h2 className="text-2xl font-bold mb-4">Comparar Ciclos de Venta</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-gray-700 font-medium">
@@ -24,7 +26,7 @@ const CompararVentas: React.FC = () => {
                 type="date"
                 value={startDate1}
                 onChange={(e) => setStartDate1(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
+                className="mt-1 block text-[14px] w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
               />
             </div>
             <div>
@@ -35,7 +37,7 @@ const CompararVentas: React.FC = () => {
                 type="date"
                 value={endDate1}
                 onChange={(e) => setEndDate1(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
+                className="mt-1 block text-[14px] w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
               />
             </div>
             <div>
@@ -46,7 +48,7 @@ const CompararVentas: React.FC = () => {
                 type="date"
                 value={startDate2}
                 onChange={(e) => setStartDate2(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
+                className="mt-1 block w-full text-[14px] border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
               />
             </div>
             <div>
@@ -57,7 +59,7 @@ const CompararVentas: React.FC = () => {
                 type="date"
                 value={endDate2}
                 onChange={(e) => setEndDate2(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
+                className="mt-1 block w-full text-[14px] border-gray-300 rounded-md shadow-sm p-2 border focus:ring focus:ring-opacity-50 focus:ring-primary"
               />
             </div>
           </div>
@@ -70,10 +72,12 @@ const CompararVentas: React.FC = () => {
                     currency: "CLP",
                   })
                 ) : (
-                  <p>No data.</p>
+                  <span className="text-gray-400 text-[14px] font-light ">
+                    No hay data para fechas selecionadas
+                  </span>
                 )}
               </dt>
-              <dd className="font-light text-gray-500 dark:text-gray-400">
+              <dd className="font-light text-gray-700 ">
                 Ventas del Primer Mes
               </dd>
             </div>
@@ -85,10 +89,12 @@ const CompararVentas: React.FC = () => {
                     currency: "CLP",
                   })
                 ) : (
-                  <p>No data.</p>
+                  <span className="text-gray-400 text-[14px] font-light ">
+                    No hay data para fechas selecionadas
+                  </span>
                 )}
               </dt>
-              <dd className="font-light text-gray-500 dark:text-gray-400">
+              <dd className="font-light text-gray-700 dark:text-gray-700">
                 Ventas del Segundo Mes
               </dd>
             </div>

@@ -23,10 +23,7 @@ const Collection = () => {
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${siteId}`
       );
       const data = await response.json();
-      console.log(
-        `Datos de precios para el producto ${productId} y SKU ${skuId}:`,
-        data
-      ); // Log para verificar datos
+
       return data;
     } catch (error) {
       console.error("Error al obtener el precio de la variación:", error);
@@ -83,12 +80,6 @@ const Collection = () => {
         );
         const collection = response.data.collection;
         setCollectionData(collection);
-
-        // Log para verificar los productos recuperados
-        console.log(
-          "Productos recuperados de la colección:",
-          collection.products
-        );
 
         // Fetch prices for each product
         const productsWithPrices = await Promise.all(
@@ -159,10 +150,6 @@ const Collection = () => {
         <div className="flex w-full justify-center pt-6">
           <div className="flex flex-wrap max-w-[1500px] w-full justify-center gap-8 px-4 py-8">
             {collectionProduct.map((product: any) => {
-              console.log(
-                `Producto ${product.id} con precio:`,
-                product.pricings || product.pricingRanges
-              ); // Log para verificar precios pasados a ProductCard
               return (
                 <ProductCard
                   key={product.id}

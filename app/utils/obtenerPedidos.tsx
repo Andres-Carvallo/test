@@ -7,7 +7,7 @@ export const obtenerPedidos = async (
 ) => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders?pageNumber=${PageNumber}&pageSize=${PageSize}`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders?pageNumber=${PageNumber}&pageSize=${PageSize}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -5,6 +5,7 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import { obtenerZonasRepartosBO } from "@/app/utils/obtenerZonasRepartosBO";
 import { getCookie } from "cookies-next";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 interface Zone {
   id: string;
@@ -43,6 +44,7 @@ function ZonasRepartos() {
     statusCode: "ACTIVE",
     communes: [],
   });
+
   useEffect(() => {
     const fetchCurrencyCode = async () => {
       try {
@@ -63,19 +65,39 @@ function ZonasRepartos() {
         }));
       } catch (error) {
         console.error("Error fetching currency code:", error);
+        toast.error("Error al obtener el código de moneda.");
       }
     };
 
     fetchCurrencyCode();
   }, []);
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+
+    // Validación básica
+    if (!zoneData.name) {
+      toast.error("El nombre de la zona es obligatorio.");
+      return;
+    }
+    if (!zoneData.description) {
+      toast.error("La descripción de la zona es obligatoria.");
+      return;
+    }
+    if (zoneData.amount <= 1) {
+      toast.error("El costo de despacho debe ser mayor que 1.");
+      return;
+    }
+    if (selectedCommunes.length === 0) {
+      toast.error("Debe agregar al menos una comuna.");
+      return;
+    }
+
     try {
       const token = getCookie("AdminTokenAuth");
       let response;
-      // Obtener currencyCodeId
       const currencyResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -84,18 +106,17 @@ function ZonasRepartos() {
         }
       );
       const currencyCodeId = currencyResponse.data.currencyCodes[0].id;
-      // Actualizar el estado con currencyCodeId
       setZoneData((prevData) => ({
         ...prevData,
         currencyCodeId: currencyCodeId,
       }));
+
       if (isEditing) {
-        // Si está editando, usar PUT en lugar de POST
         response = await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${zoneData.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${zoneData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
             id: zoneData.id,
-            currencyCodeId: currencyCodeId, // Usar el currencyCodeId actualizado
+            currencyCodeId: currencyCodeId,
             name: zoneData.name,
             description: zoneData.description,
             amount: parseInt(zoneData.amount.toString()),
@@ -109,11 +130,12 @@ function ZonasRepartos() {
             },
           }
         );
+        toast.success("Zona actualizada exitosamente.");
       } else {
         response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
-            currencyCodeId: currencyCodeId, // Usar el currencyCodeId actualizado
+            currencyCodeId: currencyCodeId,
             name: zoneData.name,
             description: zoneData.description,
             amount: parseInt(zoneData.amount.toString()),
@@ -127,11 +149,9 @@ function ZonasRepartos() {
             },
           }
         );
+        toast.success("Zona creada exitosamente.");
       }
-      console.log(
-        isEditing ? "Zona actualizada:" : "Zona creada:",
-        response.data
-      );
+
       fetchZonas();
       setIsEditing(false);
       setZoneData({
@@ -143,10 +163,8 @@ function ZonasRepartos() {
         statusCode: "ACTIVE",
         communes: [],
       });
-      setSelectedCommunes([]); // También puedes vaciar cualquier otro estado relacionado con los campos del formulario
+      setSelectedCommunes([]);
       setSelectedRegion("");
-
-      // Aquí puedes manejar la respuesta según sea necesario
     } catch (error) {
       console.error(
         "Error al",
@@ -154,7 +172,9 @@ function ZonasRepartos() {
         "la zona:",
         error
       );
-      // Aquí puedes manejar el error según sea necesario
+      toast.error(
+        "Error al " + (isEditing ? "actualizar" : "crear") + " la zona."
+      );
     }
   };
 
@@ -168,10 +188,11 @@ function ZonasRepartos() {
 
       const data = await obtenerZonasRepartosBO(PageNumber, PageSize, token);
       setZonas(data.shippingZones);
-      setLoading(false); // set loading to false after successful data fetch
+      setLoading(false);
     } catch (error) {
-      setLoading(false); // set loading to false in case of error
-      setError(error as Error); // set error state if an error occurs
+      setLoading(false);
+      setError(error as Error);
+      toast.error("Error al obtener las zonas de reparto.");
     }
   };
 
@@ -184,6 +205,7 @@ function ZonasRepartos() {
       setRegions(response.data.regions);
     } catch (error) {
       console.error("Error fetching regions:", error);
+      toast.error("Error al obtener las regiones.");
     }
   };
 
@@ -203,6 +225,7 @@ function ZonasRepartos() {
       setCommunes(response.data.communes);
     } catch (error) {
       console.error("Error fetching communes:", error);
+      toast.error("Error al obtener las comunas.");
     }
   };
 
@@ -219,11 +242,11 @@ function ZonasRepartos() {
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
-    setSelectedCommune(""); // Reset selected commune when region changes
+    setSelectedCommune("");
     if (regionId) {
       fetchCommunes(regionId);
     } else {
-      setCommunes([]); // Reset communes if no region is selected
+      setCommunes([]);
     }
   };
 
@@ -238,8 +261,6 @@ function ZonasRepartos() {
         (commune) => commune.id === selectedCommune
       );
       if (selectedCommuneObj) {
-        // Check if selectedCommuneObj is not undefined
-        // Check if the commune is already selected
         const isCommuneAlreadySelected = selectedCommunes.some(
           (c: { id: string; name: string }) => c.id === selectedCommuneObj.id
         );
@@ -252,6 +273,7 @@ function ZonasRepartos() {
       }
     }
   };
+
   const removeCommune = (communeId: string) => {
     setSelectedCommunes((prevCommunes) =>
       prevCommunes.filter((commune) => commune.id !== communeId)
@@ -281,20 +303,20 @@ function ZonasRepartos() {
       setIsEditing(true);
       setZoneData({
         id: zone.id,
-        currencyCodeId: currencyCodeId, // Ensure currencyCodeId is fetched correctly
+        currencyCodeId: currencyCodeId,
         name: zone.name,
         description: zone.description,
         amount: zone.amount,
-        statusCode: zone.statusCode, // Add statusCode if it's part of your data structure
+        statusCode: zone.statusCode,
         communes: zone.communes.map((commune: any) => ({
           id: commune.id,
           name: commune.name,
         })),
       });
-      setSelectedCommunes(zone.communes); // Use zone.communes instead of zoneData.communes
+      setSelectedCommunes(zone.communes);
     } catch (error) {
       console.error("Error editing zone:", error);
-      // Handle error appropriately, such as setting an error state
+      toast.error("Error al editar la zona.");
     }
   };
 
@@ -302,7 +324,7 @@ function ZonasRepartos() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${zoneId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${zoneId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -311,7 +333,7 @@ function ZonasRepartos() {
         }
       );
       console.log("Zona eliminada:", response.data);
-      fetchZonas(); // Vuelve a cargar las zonas después de eliminar una
+      fetchZonas();
       setIsEditing(false);
       setZoneData({
         id: null,
@@ -322,19 +344,22 @@ function ZonasRepartos() {
         statusCode: "ACTIVE",
         communes: [],
       });
-      setSelectedCommunes([]); // También puedes vaciar cualquier otro estado relacionado con los campos del formulario
+      setSelectedCommunes([]);
       setSelectedRegion("");
+      toast.success("Zona eliminada exitosamente.");
     } catch (error) {
       console.error("Error al eliminar la zona:", error);
+      toast.error("Error al eliminar la zona.");
     }
   };
+
   return (
-    <section>
+    <section className="p-10">
       <Breadcrumb pageName="Zonas de Repartos" />
       <div className="shadow-md  rounded-lg p-4 bg-white my-6 overflow-x-auto">
-        <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
-          Zonas Activas
-        </h2>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Zonas Activas</div>
+        </div>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">
             <tr>
@@ -438,15 +463,16 @@ function ZonasRepartos() {
       </div>
 
       <div className="shadow-md  rounded-lg p-4 bg-white my-6">
-        <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
-          {isEditing ? "Editar Zona de Reparto" : "Crear Zona de Reparto"}
-        </h2>
-
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>
+            {isEditing ? "Editar Zona de Reparto" : "Crear Zona de Reparto"}
+          </div>
+        </div>
         <div>
           {isEditing && (
             <button
               onClick={() => {
-                setIsEditing(false); // Cambiar isEditing a false al hacer clic en el botón
+                setIsEditing(false);
                 setZoneData({
                   id: null,
                   currencyCodeId: "",
@@ -455,10 +481,10 @@ function ZonasRepartos() {
                   amount: 0,
                   statusCode: "ACTIVE",
                   communes: [],
-                }); // Restablecer los datos de la zona
-                setSelectedCommunes([]); // Restablecer las comunas seleccionadas
+                });
+                setSelectedCommunes([]);
               }}
-              className="bg-dark w-full uppercase text-primary hover:bg-primary hover:text-dark  font-bold py-2 px-4 rounded flex-wrap mt-4"
+              className="bg-dark w-full uppercase text-white hover:bg-primary   font-bold py-2 px-4 rounded flex-wrap mt-4"
             >
               Cancelar Edición
             </button>
@@ -466,9 +492,9 @@ function ZonasRepartos() {
         </div>
         <div>
           <label className="block mt-4">
-            <h3 className="font-normal text-primary">
-              Nombre Zona <span className="text-primary">*</span>
-            </h3>
+            <h4 className="font-normal text-primary">
+              Nombre Zona<span className="text-primary">*</span>
+            </h4>
             <input
               type="text"
               id="ZoneName"
@@ -494,15 +520,6 @@ function ZonasRepartos() {
               style={{ borderRadius: "var(--radius)" }}
             ></textarea>
           </label>
-          {/*           <div className="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" style={{ borderRadius: 'var(--radius)' }}    role="alert">
-            <div className="flex">
-            <div className="py-1"><svg className="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
-          <div>
-            <p className="font-bold">Costo de despacho</p>
-            <p className="text-sm">El costo de despacho es para la zona a crear</p>
-          </div>
-          </div>
-        </div> */}
 
           <div
             style={{ borderRadius: "var(--radius)" }}
@@ -608,13 +625,10 @@ function ZonasRepartos() {
           </button>
         </div>
         <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2 uppercase py-4">
-            Comunas Seleccionadas:
-          </h3>
+          <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+            <div>Comunas Seleccionadas:</div>
+          </div>
           <div>
-            {/* Aquí puedes mostrar las comunas seleccionadas */}
-            {/* Por ejemplo, puedes mapear un array de las comunas seleccionadas y mostrarlas */}
-            {/* Ejemplo: */}
             {selectedCommunes.map((commune) => (
               <div
                 key={commune.id}

@@ -20,7 +20,7 @@ export const HandleStockSkuPut = async (
     // Realizar la solicitud PUT utilizando el inventoryId
     const token = String(getCookie("AdminTokenAuth"));
     const response = await axios.put(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories/${inventoryId}`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories/${inventoryId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         warehouseId: warehouseId,
         quantity: quantity,
@@ -48,7 +48,7 @@ const getInventoryId = async (id: string, skuId: string) => {
   try {
     const token = String(getCookie("AdminTokenAuth"));
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -72,7 +72,7 @@ const getWarehouseId = async () => {
   try {
     const token = String(getCookie("AdminTokenAuth"));
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -6,7 +6,7 @@ const token = getCookie("AdminTokenAuth");
 const getPricingId = async (id: any, skuId: any) => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -34,7 +34,7 @@ const getPricingId = async (id: any, skuId: any) => {
 const getWarehouseId = async () => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -62,7 +62,7 @@ const getWarehouseId = async () => {
 const getCurrencyCodeId = async () => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -109,7 +109,7 @@ export const HandlePriceSku = async (
         return;
       }
       const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings/${pricingId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings/${pricingId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           warehouseId: warehouseId,
           currencyCodeId: currencyCodeId,
@@ -137,7 +137,7 @@ export const HandlePriceSku = async (
       }
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           currencyCodeId: currencyCodeId,
           unitPrice: precioNormal,

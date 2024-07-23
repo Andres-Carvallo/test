@@ -1,7 +1,7 @@
-import ProductDetail02 from "@/components/PIXELUP/ProductDetail/ProductDetail02/ProductDetail02";
+import ProductDetail01 from "@/components/PIXELUP/ProductDetail/ProductDetail01/ProductDetail01";
 
 const ProductDetail: React.FC = () => {
-  return <ProductDetail02 />;
+  return <ProductDetail01 />;
 };
 
 export default ProductDetail;

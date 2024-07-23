@@ -45,7 +45,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
 
   const chartOptions = {
     title: {
-      text: "Sales Summary",
+      text: "Detalle Ventas",
     },
     tooltip: {},
     xAxis: {
@@ -67,8 +67,11 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
   };
 
   return (
-    <div className="bg-gray-100 p-6 rounded-lg shadow-md mt-4">
-      <h2 className="text-xl font-bold mb-4">Sales Summary</h2>
+    <div className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4">
+      <div className="text-sm font-medium border-b pb-2 mb-6">
+        Detalle Ventas por rango de fechas
+      </div>
+
       <div className="flex space-x-4 mb-4">
         <div>
           <label className="block text-gray-700 font-medium">Start Date</label>
@@ -91,7 +94,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       </div>
       {filteredData.length > 0 ? (
         <>
-          <p className=" text-lg font-semibold text-right">
+          <p className="text-sm font-medium  pb-2  text-end">
             Total Sales Amount:{" "}
             {totalAmount.toLocaleString("es-CL", {
               style: "currency",

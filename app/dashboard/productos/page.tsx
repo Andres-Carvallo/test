@@ -151,7 +151,7 @@ export default function ProductPageBO() {
     try {
       const token = getCookie("AdminTokenAuth");
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -184,7 +184,7 @@ export default function ProductPageBO() {
   );
 
   return (
-    <section className="w-full">
+    <section className="w-full py-10 mx-auto h-[85vh]">
       <div className="dark:bg-gray-900 p-3 sm:p-5 relative">
         <div className="mx-auto w-full px-2">
           {/* Start coding here */}
@@ -541,7 +541,7 @@ export default function ProductPageBO() {
             >
               &#8203;
             </span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div className="inline-block align-bottom bg-white  rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
               <div>
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                   <svg

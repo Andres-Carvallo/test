@@ -24,12 +24,12 @@ const BannerPrincipal01: React.FC = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
-      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-
+      console.log(response.data.banner, "banner xxxx");
       setBannerData(response.data.banner);
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
@@ -79,7 +79,10 @@ const BannerPrincipal01: React.FC = () => {
   const multipleImages = bannerData.images.length > 1;
 
   return (
-    <section id="banner" className="w-full">
+    <section
+      id="banner"
+      className="w-full"
+    >
       <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:z-10">
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           {bannerData.images.map((image, index) => (
@@ -94,7 +97,7 @@ const BannerPrincipal01: React.FC = () => {
           ))}
         </div>
         <div className=" min-h-[400px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-{/*           <h2 className="text-2xl font-semibold mb-2 uppercase">
+          {/*           <h2 className="text-2xl font-semibold mb-2 uppercase">
             {currentImage.title}
           </h2>
           <p className="text-md text-center text-gray-200">

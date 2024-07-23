@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
+import Loader from "@/components/common/Loader";
 
 const DetallePago = () => {
   const { id } = useParams();
@@ -35,12 +36,12 @@ const DetallePago = () => {
     fetchOrder();
   }, [id]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loader />;
   if (error) return <p>{error}</p>;
   if (!order) return <p>No order found.</p>;
 
   return (
-    <div className="flex  justify-center p-4 md:p-8   bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+    <div className="flex  justify-center p-4 md:p-8  bg-gray-100">
       <div
         className="w-full max-w-6xl min-h-[600px] bg-white p-6 md:p-8 shadow-md relative my-16"
         style={{ borderRadius: "var(--radius)" }}

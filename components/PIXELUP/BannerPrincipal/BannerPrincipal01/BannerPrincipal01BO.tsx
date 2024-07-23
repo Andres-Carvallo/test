@@ -46,7 +46,7 @@ const BannerPrincipalBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerId = "900a5ae4-8224-4758-84a4-c7f728d73f38";
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
@@ -417,7 +417,7 @@ const BannerPrincipalBO: React.FC = () => {
               </h3>
               <label
                 htmlFor="mainImage"
-                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed  rounded-lg cursor-pointer w-full z-10"
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg

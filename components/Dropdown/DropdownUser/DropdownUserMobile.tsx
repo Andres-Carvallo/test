@@ -22,7 +22,6 @@ const DropdownUserMobile = () => {
 
         const userDataInfo = userData.customer;
         setUserDataInfo(userDataInfo);
-        console.log(userDataInfo, "user");
       } catch (error) {
         console.error("Error al obtener el usuario: " + error);
       }

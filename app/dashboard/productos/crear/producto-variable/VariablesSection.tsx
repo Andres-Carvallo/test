@@ -44,7 +44,7 @@ function VariationsComponente({
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           method: "GET",
           headers: {
@@ -72,7 +72,7 @@ function VariationsComponente({
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes?pageNumber=1&pageSize=50`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/attributes?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -108,7 +108,7 @@ function VariationsComponente({
       const searchParams = new URLSearchParams(window.location.search);
       const idVariable = searchParams.get("productVariableId");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus?statusCode=ACTIVE`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus?statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -164,7 +164,7 @@ function VariationsComponente({
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -194,7 +194,7 @@ function VariationsComponente({
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -223,7 +223,7 @@ function VariationsComponente({
       const warehouseId = await getWarehouseId();
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -257,7 +257,7 @@ function VariationsComponente({
       const token = getCookie("AdminTokenAuth");
       const searchParams = new URLSearchParams(window.location.search);
       const productVariableId = searchParams.get("productVariableId");
-      const attributesUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productVariableId}/skus/${variationId}/attributes`;
+      const attributesUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productVariableId}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       const response = await fetch(attributesUrl, {
         method: "GET",
@@ -346,7 +346,7 @@ function VariationsComponente({
       const token = getCookie("AdminTokenAuth");
 
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${skuId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${skuId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             "Content-Type": "application/json",

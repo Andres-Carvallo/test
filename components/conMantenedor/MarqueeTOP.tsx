@@ -10,16 +10,16 @@ function MarqueeTOP() {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "2541cec4-4a60-4e1a-af81-511db74a5332";
+      const bannerId = "483f6151-a82f-47de-bc18-8d25aa2cf85e";
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-
+      console.log(productTypeResponse.data.contentBlock, "marqueeeeeeeee123");
       const bannerImage = productTypeResponse.data.contentBlock;
       setBannerData(bannerImage);
     } catch (error) {
-      console.error("Error al obtener los tipos de producto:", error);
+      console.error("Error al obtener marquetop:", error);
       // Manejar el error según sea necesario
     } finally {
       setLoading(false); // Ocultar el indicador de carga

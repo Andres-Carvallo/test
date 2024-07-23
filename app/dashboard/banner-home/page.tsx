@@ -12,48 +12,66 @@ import BannerSinFotoBO from "@/components/PIXELUP/BannerSinFoto/BackOffice/Banne
 
 export default function BannerHome() {
   return (
-    <section className="gap-4 flex flex-col">
+    <section className="gap-4 flex flex-col py-10 mx-10">
       <div
-        className="shadow-md border border-primary p-4 bg-white"
+        className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Marquee</h4>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Barra Superior</div>
+          <div>/ Home</div>
+        </div>
         <MarqueeTOP />
       </div>
       <div
-        className="shadow-md border border-primary p-4 bg-white"
+        className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Banner Bienvenida</h4>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Mensaje Bienvendia</div>
+          <div>/ Home</div>
+        </div>
         <BannerSinFotoBO />
       </div>
       <div
-        className="shadow-md border border-primary p-4 bg-white"
+        className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Banner Home</h4>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Banner</div>
+          <div>/ Home</div>
+        </div>
         <BannerPrincipalBO />
       </div>
 
       <div
-        className="shadow-md border border-primary mt-6 p-4 bg-white"
+        className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Categoría</h4>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Categoría</div>
+          <div>/ Home</div>
+        </div>
         <BannersCategoriasBO />
       </div>
       <div
-        className="shadow-md border border-primary mt-6 p-4 bg-white"
+        className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Banner About Me</h4>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>About Us</div>
+          <div>/ Home</div>
+        </div>
         <Hero02BO />
       </div>
       <div
-        className="shadow-md border border-primary mt-6 p-4 bg-white"
+        className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h4 className="uppercase font-bold mb-4">Frases</h4>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Frases</div>
+          <div>/ Home</div>
+        </div>
         <FrasesBO />
       </div>
     </section>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Loader from "@/components/common/Loader";
+import CardDataStats from "../../StatsBox/CardDataStats01";
 
 interface Sale {
   amount: number;
@@ -15,7 +16,7 @@ const VentasTotalesAnuales: React.FC = () => {
   const fetchCurrencyCode = async (token: string): Promise<string | null> => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -46,7 +47,7 @@ const VentasTotalesAnuales: React.FC = () => {
         },
       };
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/sales-summary?startDate=${startDate}&endDate=${endDate}&statusCode=PAYMENT_COMPLETED&currencyCodeId=${currentCurrencyCodeId}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/sales-summary?startDate=${startDate}&endDate=${endDate}&statusCode=PAYMENT_COMPLETED&currencyCodeId=${currentCurrencyCodeId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
       const response = await axios.get(url, config);
 
       const sales: Sale[] = response.data.sales;
@@ -80,18 +81,31 @@ const VentasTotalesAnuales: React.FC = () => {
   }, [token, currencyCodeId]);
 
   return (
-    <div className="flex flex-col h-60 items-center justify-center bg-gray-100 p-6 rounded-lg shadow-md">
+    <div className="flex flex-col items-center justify-center w-full ">
       {totalYearlySales !== null ? (
         <>
-          <dt className="mb-2 text-xl md:text-4xl font-extrabold">
-            {totalYearlySales.toLocaleString("es-CL", {
+          <CardDataStats
+            title="Ventas Totales en el Año"
+            total={totalYearlySales.toLocaleString("es-CL", {
               style: "currency",
               currency: "CLP",
             })}
-          </dt>
-          <dd className="font-light text-gray-500 dark:text-gray-400">
-            Ventas Totales en el Año
-          </dd>
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </CardDataStats>
         </>
       ) : (
         <Loader />

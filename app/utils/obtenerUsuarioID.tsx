@@ -3,7 +3,7 @@ import axios from "axios";
 export const obtenerUsuarioPorID = async (id: any, token: any) => {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${id}`,
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -1,129 +1,129 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Link from "next/link"
+import Link from "next/link";
 import Marquee from "react-fast-marquee";
 import Image from "next/image";
 
 interface BannerSinFotoProps {
-    BannerSinFotoData: {
-      titulo: string;
-      parrafo: string;
-      IconosData:string[];
+  BannerSinFotoData: {
+    titulo: string;
+    parrafo: string;
+    IconosData: string[];
+  };
+}
+
+const BannerSinFoto: React.FC<BannerSinFotoProps> = ({ BannerSinFotoData }) => {
+  const { titulo, parrafo, IconosData } = BannerSinFotoData;
+
+  const [loading, setLoading] = useState(false);
+  const [bannerData, setBannerData] = useState<any | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const fetchBannerHome = async () => {
+    try {
+      setLoading(true); // Mostrar el indicador de carga
+      const bannerId = "0a109d60-29c9-428f-b03c-60316cebd34d";
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || null;
+      const WelcomeResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${siteId}`
+      );
+
+      const bannerImage = WelcomeResponse.data.contentBlock;
+      setBannerData(bannerImage);
+    } catch (error) {
+      console.error("Error al obtener los tipos de producto:", error);
+      // Manejar el error según sea necesario
+    } finally {
+      setLoading(false); // Ocultar el indicador de carga
     }
   };
 
+  useEffect(() => {
+    fetchBannerHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Debería ejecutarse solo en el montaje inicial
 
-  const BannerSinFoto:React.FC<BannerSinFotoProps> = ({BannerSinFotoData})  => {
-    const { titulo, parrafo, IconosData} = BannerSinFotoData;
+  if (loading) {
+    return (
+      <section className="bg-white dark:bg-gray-900 w-full ">
+        <div className="container px-6 py-10 mx-auto animate-pulse">
+          <h1 className="w-48 h-2 mx-auto bg-gray-200 rounded-lg dark:bg-gray-700" />
 
+          <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+          <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg sm:w-80 dark:bg-gray-700" />
 
+          <div className="grid grid-cols-1 gap-8 mt-8 xl:mt-12 xl:gap-12 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="w-full ">
+              <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
 
+              <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+              <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+            </div>
 
+            <div className="w-full ">
+              <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
 
-    const [loading, setLoading] = useState(false);
-    const [bannerData, setBannerData] = useState<any | null>(null);
-    const [error, setError] = useState<Error | null>(null);
-    const fetchBannerHome = async () => {
-      try {
-        setLoading(true); // Mostrar el indicador de carga
-        const bannerId = "4d3ecc4f-9e2a-4295-9c77-80fc1fc16ec0";
-  
-        const productTypeResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-  
-        const bannerImage = productTypeResponse.data.contentBlock;
-        setBannerData(bannerImage);
-      } catch (error) {
-        console.error("Error al obtener los tipos de producto:", error);
-        // Manejar el error según sea necesario
-      } finally {
-        setLoading(false); // Ocultar el indicador de carga
-      }
-    };
-  
-    useEffect(() => {
-      fetchBannerHome();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Debería ejecutarse solo en el montaje inicial
-  
-    if (loading) {
-      return (
-        <section className="bg-white dark:bg-gray-900 w-full ">
-          <div className="container px-6 py-10 mx-auto animate-pulse">
-            <h1 className="w-48 h-2 mx-auto bg-gray-200 rounded-lg dark:bg-gray-700" />
-  
-            <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
-            <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg sm:w-80 dark:bg-gray-700" />
-  
-            <div className="grid grid-cols-1 gap-8 mt-8 xl:mt-12 xl:gap-12 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="w-full ">
-                <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
-  
-                <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
-                <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
-              </div>
-  
-              <div className="w-full ">
-                <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
-  
-                <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
-                <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
-              </div>
-  
-              <div className="w-full ">
-                <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
-  
-                <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
-                <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
-              </div>
+              <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+              <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+            </div>
+
+            <div className="w-full ">
+              <div className="w-full h-64 bg-gray-300 rounded-lg md:h-72 dark:bg-gray-600" />
+
+              <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+              <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
             </div>
           </div>
-        </section>
-      );
-    }
-  
-    if (error) {
-      return <div>Error: {error.message}</div>;
-    }
-    return (
+        </div>
+      </section>
+    );
+  }
 
-        <div className="p-6 mt-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
-            {bannerData?.title}
-          </h1>
-          <div className="mt-4">
-            <p className="mt-4 text-center text-lg text-primary">
-              {bannerData?.contentText}
-            </p>
-          </div>
-{/*           <p className="text-center text-lg text-[#a68981]">
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+  return (
+    <div className="p-6 mt-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
+          {bannerData?.title}
+        </h1>
+        <div className="mt-4">
+          <p className="mt-4 text-center text-lg text-primary">
+            {bannerData?.contentText}
+          </p>
+        </div>
+        {/*           <p className="text-center text-lg text-[#a68981]">
             Te invito a conocerlas y encontrar la que resuene contigo.
           </p> */}
 
-          <div className="flex justify-center items-center">
-
-{/*           <Marquee   autoFill style={{ width: "70%" }} speed={40}>
+        <div className="flex justify-center items-center">
+          {/*           <Marquee   autoFill style={{ width: "70%" }} speed={40}>
             <div className="flex gap-6 py-2"> 
             {LogoData.map((logos, index) => (
             <img key={index} src={logos} alt="" className="h-24" />
             ))}
             </div>
           </Marquee> */}
-                <div className="grid grid-cols-2 items-center justify-center rounded-md bg-background py-12 sm:grid-cols-6 ">
-  {IconosData.map((icono, index) => (
-    <div key={index} className="flex items-center justify-center">
-    <img src={icono} alt="" className="max-w-full sm:max-w-[80%]" style={{ borderRadius: 'var(--radius)' }}/>
-    </div>
-    ))}
-</div>
+          <div className="grid grid-cols-2 items-center justify-center rounded-md bg-background py-12 sm:grid-cols-6 ">
+            {IconosData.map((icono, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-center"
+              >
+                <img
+                  src={icono}
+                  alt=""
+                  className="max-w-full sm:max-w-[80%]"
+                  style={{ borderRadius: "var(--radius)" }}
+                />
+              </div>
+            ))}
           </div>
         </div>
+      </div>
     </div>
+  );
+};
 
-        );
-    };
-        
-    export default BannerSinFoto;
+export default BannerSinFoto;

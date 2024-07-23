@@ -68,10 +68,12 @@ function Ofertas() {
   }, []);
 
   useEffect(() => {
-    const productosConOfertaIds = productosConOFerta.map(
-      (product) => product.id
-    );
-    setProductosConOfertaIds(productosConOfertaIds);
+    if (productosConOFerta) {
+      const productosConOfertaIds = productosConOFerta.map(
+        (product) => product.id
+      );
+      setProductosConOfertaIds(productosConOfertaIds);
+    }
   }, [productosConOFerta]);
 
   const filterDropdownRef = useRef(null);
@@ -191,77 +193,81 @@ function Ofertas() {
   );
 
   return (
-    <section>
+    <section className=" mx-10 py-10">
       <Breadcrumb pageName="Ofertas" />
 
-      <div className=" border border-primary rounded-lg p-4 bg-white my-6 overflow-x-auto">
-        <h2 className="text-center text-2xl font-bold mb-4 uppercase">
-          Ofertas Creadas
-        </h2>
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Producto
-              </th>
-
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Categorías
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Editar
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {productosConOFerta.map((offerProduct: any) => (
-              <tr key={offerProduct.id}>
-                <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
-                  <div className="text-sm text-gray-900">
-                    {offerProduct.name}
-                  </div>
-                </td>
-
-                <td className="px-6 py-4 md:whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
-                    <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
-                      {offerProduct.productTypes.map((category: any) => (
-                        <button
-                          key={category.id}
-                          className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
-                        >
-                          {category.name}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4">
-                  <Link href={`/dashboard/ofertas/${offerProduct.id}`}>
-                    <div className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded">
-                      Editar Ofertas
-                    </div>
-                  </Link>
-                </td>
+      <div className=" rounded-lg p-4 bg-white my-6 overflow-x-auto">
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Ofertas Creadas</div>
+        </div>
+        {productosConOFerta && productosConOFerta.length > 0 ? (
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Producto
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Categorías
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Editar
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {productosConOFerta.map((offerProduct: any) => (
+                <tr key={offerProduct.id}>
+                  <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
+                    <div className="text-sm text-gray-900">
+                      {offerProduct.name}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 md:whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
+                        {offerProduct.productTypes.map((category: any) => (
+                          <button
+                            key={category.id}
+                            className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
+                          >
+                            {category.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4">
+                    <Link href={`/dashboard/ofertas/${offerProduct.id}`}>
+                      <div className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded">
+                        Editar Ofertas
+                      </div>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-center text-lg text-gray-600">
+            No hay productos en oferta
+          </div>
+        )}
       </div>
-      <section className="border border-primary rounded-lg p-4 bg-white my-6 overflow-x-auto">
+      <section className=" rounded-lg p-4 bg-white my-6 overflow-x-auto">
         <div className=" p-3 sm:p-5 relative">
-          <h1 className="text-center text-2xl font-bold mb-4 uppercase">
-            Todos los Productos
-          </h1>{" "}
+          <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+            <div>Todos los productos</div>
+          </div>
           <div className="mx-auto w-full px-2">
             <div className="">
               <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">

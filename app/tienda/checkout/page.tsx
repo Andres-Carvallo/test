@@ -9,12 +9,15 @@ import toast, { Toaster } from "react-hot-toast";
 import AutoSubmitForm from "@/components/Checkout/AutoSubmitForm";
 import CartList from "@/components/CartCanva/CartList";
 import { useRouter } from "next/navigation";
+import { Customer, ItemAvailability } from "@/types/types";
+import { jwtDecode } from "jwt-decode";
 
-function Checkout() {
-  const [regions, setRegions] = useState([]);
-  const [communes, setCommunes] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [selectedCommune, setSelectedCommune] = useState("");
+const Checkout: React.FC = () => {
+  const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
+  const [communes, setCommunes] = useState<{ id: string; name: string }[]>([]);
+  const [enabledCommunes, setEnabledCommunes] = useState<string[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [selectedCommune, setSelectedCommune] = useState<string>("");
   const {
     cartItems,
     setCartItems,
@@ -26,84 +29,35 @@ function Checkout() {
 
   const router = useRouter();
 
-  const [deliveryType, setDeliveryType] = useState(""); // Valor predeterminado: entrega a domicilio
-  const [deliveryTypeID, setDeliveryTypeID] = useState("");
+  const [deliveryType, setDeliveryType] = useState<string>(""); // Valor predeterminado: entrega a domicilio
+  const [deliveryTypeID, setDeliveryTypeID] = useState<string>("");
   const [itemAvailability, setItemAvailability] = useState<{
     [key: string]: ItemAvailability;
   }>({});
-  const cartId = getCookie("cartId");
+  const cartId = getCookie("cartId") as string | undefined;
 
   const setItemAvailabilityHandler = (
-    itemId: any,
-    enabledForDelivery: any,
-    enabledForWithdrawal: any
+    itemId: string,
+    enabledForDelivery: boolean,
+    enabledForWithdrawal: boolean
   ) => {
     setItemAvailability((prevState) => ({
       ...prevState,
       [itemId]: { enabledForDelivery, enabledForWithdrawal },
     }));
   };
-  const [customer, setCustomer] = useState({
-    cartId: cartId,
+
+  const isLoggedIn = getCookie("ClientTokenAuth") as string | undefined;
+  const [useDifferentShippingAddress, setUseDifferentShippingAddress] =
+    useState<boolean>(false);
+
+  const initialCustomerState: Customer = {
+    cartId: cartId || "",
     deliveryTypeId: "",
     useDifferentShippingAddress: false,
-    customer: {
-      firstname: "",
-      lastname: "",
-      phoneNumber: "",
-      email: "",
-      addressLine1: "",
-      addressLine2: "",
-      communeId: "",
-    },
-  });
-
-  const handleSubmitOrder = async () => {
-    if (
-      !customer.customer.firstname ||
-      !customer.customer.lastname ||
-      !customer.customer.phoneNumber ||
-      !customer.customer.email ||
-      !customer.customer.addressLine1 ||
-      !customer.customer.communeId
-    ) {
-      toast.error("Por favor, completa todos los campos requeridos.");
-      return;
-    }
-
-    const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
-      {
-        cartId: customer.cartId,
-        deliveryTypeId: deliveryTypeID,
-        useDifferentShippingAddress: false,
-        customer: {
-          firstname: customer.customer.firstname,
-          lastname: customer.customer.lastname,
-          phoneNumber: customer.customer.phoneNumber,
-          email: customer.customer.email,
-          addressLine1: customer.customer.addressLine1,
-          addressLine2: customer.customer.addressLine2,
-          communeId: customer.customer.communeId,
-        },
-      }
-    );
-
-    if (response.data) {
-      const idOrder = response.data.order.id;
-      console.log("idOrder", idOrder);
-      router.push(`/tienda/checkout/pago?orderId=${idOrder}`);
-      setCookie("idOrder", idOrder);
-      setCartItems([]);
-      setCartData({});
-      setTotalItems(null);
-      deleteCookie("cartId");
-      setCustomer({
-        cartId: "",
-        deliveryTypeId: "",
-        useDifferentShippingAddress: false,
-        customer: {
+    customer: isLoggedIn
+      ? null
+      : {
           firstname: "",
           lastname: "",
           phoneNumber: "",
@@ -112,9 +66,132 @@ function Checkout() {
           addressLine2: "",
           communeId: "",
         },
-      });
+  };
+
+  const [customer, setCustomer] = useState<Customer>(initialCustomerState);
+  const Token = getCookie("ClientTokenAuth");
+  const decodeToken = Token ? jwtDecode(Token) : null;
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      // Fetch customer data if logged in
+      const fetchCustomerData = async () => {
+        try {
+          const id = decodeToken?.sub;
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: { Authorization: `Bearer ${isLoggedIn}` },
+            }
+          );
+          console.log("Customer data fetched:", response.data);
+          setCustomer((prevState) => ({
+            ...prevState,
+            customer: {
+              firstname: response.data.customer.firstname,
+              lastname: response.data.customer.lastname,
+              phoneNumber: response.data.customer.phoneNumber,
+              email: response.data.customer.email,
+              addressLine1: response.data.customer.addressLine1,
+              addressLine2: response.data.customer.addressLine2,
+              communeId: response.data.customer.commune.id,
+            },
+          }));
+        } catch (error) {
+          console.error("Error fetching customer data:", error);
+        }
+      };
+
+      fetchCustomerData();
     }
-    console.log("ok", response.data);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
+
+  const handleSubmitOrder = async () => {
+    console.log("Submitting order with customer data:", customer);
+    if (
+      !isLoggedIn &&
+      (!customer.customer?.firstname ||
+        !customer.customer?.lastname ||
+        !customer.customer?.phoneNumber ||
+        !customer.customer?.email ||
+        !customer.customer?.addressLine1 ||
+        (deliveryType !== "WITHDRAWAL_FROM_STORE" &&
+          !customer.customer?.communeId))
+    ) {
+      toast.error("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
+    const communeIdToCheck = useDifferentShippingAddress
+      ? selectedCommune
+      : customer.customer?.communeId;
+
+    if (!enabledCommunes.includes(communeIdToCheck || "")) {
+      toast.error(
+        "La comuna seleccionada no está habilitada para despacho. Por favor, selecciona otra dirección."
+      );
+      return;
+    }
+
+    const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+    const orderData = {
+      cartId: customer.cartId,
+      deliveryTypeId: deliveryTypeID,
+      useDifferentShippingAddress,
+      ...(isLoggedIn && useDifferentShippingAddress
+        ? {
+            shippingInfo: {
+              addressLine1: customer.customer?.addressLine1,
+              addressLine2: customer.customer?.addressLine2,
+              communeId: selectedCommune,
+            },
+          }
+        : !isLoggedIn
+        ? {
+            customer: {
+              firstname: customer.customer?.firstname,
+              lastname: customer.customer?.lastname,
+              phoneNumber: customer.customer?.phoneNumber,
+              email: customer.customer?.email,
+              addressLine1: customer.customer?.addressLine1,
+              addressLine2: customer.customer?.addressLine2,
+              communeId:
+                deliveryType === "WITHDRAWAL_FROM_STORE"
+                  ? process.env.NEXT_PUBLIC_DEFAULT_COMMUNE_ID
+                  : customer.customer?.communeId,
+            },
+          }
+        : {}),
+    };
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
+        orderData,
+        isLoggedIn
+          ? {
+              headers: { Authorization: `Bearer ${isLoggedIn}` },
+            }
+          : {}
+      );
+
+      if (response.data) {
+        const idOrder = response.data.order.id;
+        console.log("idOrder", idOrder);
+        router.push(`/tienda/checkout/pago?orderId=${idOrder}`);
+        setCookie("idOrder", idOrder);
+        setCartItems([]);
+        setCartData({});
+        setTotalItems(0);
+        deleteCookie("cartId");
+        setCustomer(initialCustomerState);
+      }
+      console.log("Order confirmation response:", response.data);
+    } catch (error) {
+      toast.error("Error al confirmar la compra. Por favor, intenta de nuevo.");
+      console.error("Error al confirmar la compra:", error);
+    }
   };
 
   const incrementQuantity = async (itemId: string) => {
@@ -128,7 +205,7 @@ function Checkout() {
         };
         setCartItems(updatedCartItems);
 
-        const cartId = getCookie("cartId");
+        const cartId = getCookie("cartId") as string;
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`,
@@ -152,7 +229,7 @@ function Checkout() {
         };
         setCartItems(updatedCartItems);
 
-        const cartId = getCookie("cartId");
+        const cartId = getCookie("cartId") as string;
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`,
@@ -168,8 +245,8 @@ function Checkout() {
   const removeItem = async (itemId: string) => {
     try {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const cartId = getCookie("cartId");
-      const response = await axios.delete(
+      const cartId = getCookie("cartId") as string;
+      await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`
       );
       setCartItems((prevItems: any) =>
@@ -193,19 +270,29 @@ function Checkout() {
     }
   };
 
-  const fetchCommunes = async (regionId: any) => {
+  const fetchCommunes = async (regionId: string) => {
     try {
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?hasShippingZones=true`
+        `${
+          process.env.NEXT_PUBLIC_API_URL_CLIENTE
+        }/api/v1/countries/${Pais}/regions/${regionId}/communes${
+          deliveryType === "HOME_DELIVERY" ? "?hasShippingZones=true" : ""
+        }`
       );
-      setCommunes(response.data.communes);
+      const communesData = response.data.communes;
+      setCommunes(communesData);
+      if (deliveryType === "HOME_DELIVERY") {
+        setEnabledCommunes(communesData.map((commune: any) => commune.id));
+      } else {
+        setEnabledCommunes([]);
+      }
     } catch (error) {
       console.error("Error fetching communes:", error);
     }
   };
 
-  const handleRegionChange = (e: any) => {
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
     setSelectedCommune("");
@@ -213,10 +300,11 @@ function Checkout() {
       fetchCommunes(regionId);
     } else {
       setCommunes([]);
+      setEnabledCommunes([]);
     }
   };
 
-  const handleCommuneChange = (e: any) => {
+  const handleCommuneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const communeId = e.target.value;
     setSelectedCommune(communeId);
     setCustomer({
@@ -227,11 +315,8 @@ function Checkout() {
       },
     });
   };
-  interface ItemAvailability {
-    enabledForDelivery: boolean;
-    enabledForWithdrawal: boolean;
-  }
-  const validateDeliveryOption = (option: any) => {
+
+  const validateDeliveryOption = (option: string) => {
     const invalidItems = cartItems.filter((item: any) => {
       if (option === "HOME_DELIVERY")
         return !itemAvailability[item.id]?.enabledForDelivery;
@@ -252,7 +337,7 @@ function Checkout() {
     return true;
   };
 
-  const handleChangeDeliveryType = async (newValue: any) => {
+  const handleChangeDeliveryType = async (newValue: string) => {
     if (validateDeliveryOption(newValue)) {
       setDeliveryType(newValue);
 
@@ -375,8 +460,8 @@ function Checkout() {
           <div className="px-4 pt-8">
             <p className="text-xl font-medium">Detalle Orden</p>
             <p className="text-gray-400 mb-4">Listado de tu carrito</p>
-            <div className="w-full  bg-white shadow-lg relative ml-auto h-auto">
-              <div className="overflow-auto p-6 ">
+            <div className="w-full bg-white shadow-lg relative ml-auto h-auto">
+              <div className="overflow-auto p-6">
                 <CartList
                   cartItems={cartItems}
                   incrementQuantity={incrementQuantity}
@@ -387,11 +472,11 @@ function Checkout() {
               </div>
             </div>
           </div>
-          <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
+          <div className="mt-10 bg-gray-100 px-4 pt-8 lg:mt-0">
             <p className="text-xl font-medium">Datos Personales</p>
             <p className="text-gray-400">Completa tus datos de entrega</p>
             <div className="">
-              <div className="mt-10 bg-gray-50 px-4 pt-2 lg:mt-0">
+              <div className="mt-10 px-4 pt-2 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <label
                     htmlFor="firstname"
@@ -402,7 +487,7 @@ function Checkout() {
                       type="text"
                       id="firstname"
                       name="firstname"
-                      value={customer.customer.firstname}
+                      value={customer.customer?.firstname || ""}
                       onChange={(e) =>
                         setCustomer({
                           ...customer,
@@ -412,7 +497,10 @@ function Checkout() {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
+                      disabled={!!isLoggedIn}
                     />
                   </label>
                   <label
@@ -424,7 +512,7 @@ function Checkout() {
                       type="text"
                       id="lastname"
                       name="lastname"
-                      value={customer.customer.lastname}
+                      value={customer.customer?.lastname || ""}
                       onChange={(e) =>
                         setCustomer({
                           ...customer,
@@ -434,7 +522,10 @@ function Checkout() {
                           },
                         })
                       }
-                      className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
+                      disabled={!!isLoggedIn}
                     />
                   </label>
                 </div>
@@ -448,7 +539,7 @@ function Checkout() {
                       type="text"
                       id="phoneNumber"
                       name="phoneNumber"
-                      value={customer.customer.phoneNumber}
+                      value={customer.customer?.phoneNumber || ""}
                       onChange={(e) =>
                         setCustomer({
                           ...customer,
@@ -458,7 +549,10 @@ function Checkout() {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
+                      disabled={!!isLoggedIn}
                     />
                   </label>
                   <label
@@ -470,7 +564,7 @@ function Checkout() {
                       type="text"
                       id="email"
                       name="email"
-                      value={customer.customer.email}
+                      value={customer.customer?.email || ""}
                       onChange={(e) =>
                         setCustomer({
                           ...customer,
@@ -480,11 +574,14 @@ function Checkout() {
                           },
                         })
                       }
-                      className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
+                      disabled={!!isLoggedIn}
                     />
                   </label>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1">
                   <label
                     htmlFor="addressLine1"
                     className="block mt-4"
@@ -494,7 +591,7 @@ function Checkout() {
                       type="text"
                       id="addressLine1"
                       name="addressLine1"
-                      value={customer.customer.addressLine1}
+                      value={customer.customer?.addressLine1 || ""}
                       onChange={(e) =>
                         setCustomer({
                           ...customer,
@@ -504,19 +601,22 @@ function Checkout() {
                           },
                         })
                       }
-                      className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
+                      disabled={!!isLoggedIn}
                     />
                   </label>
                   <label
                     htmlFor="addressLine2"
                     className="block mt-4"
                   >
-                    Dirección 2
+                    Indicaciones Extras
                     <input
                       type="text"
                       id="addressLine2"
                       name="addressLine2"
-                      value={customer.customer.addressLine2}
+                      value={customer.customer?.addressLine2 || ""}
                       onChange={(e) =>
                         setCustomer({
                           ...customer,
@@ -526,82 +626,128 @@ function Checkout() {
                           },
                         })
                       }
-                      className="block w-full rounded-md  border-dark/50 border p-1 mt-1"
+                      className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                        isLoggedIn ? "bg-gray-200" : "bg-white"
+                      }`}
+                      disabled={!!isLoggedIn}
                     />
                   </label>
                 </div>
-                <div
-                  style={{ borderRadius: "var(--radius)" }}
-                  className="shadow flex items-center p-4 my-2 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
-                  role="alert"
-                >
-                  <svg
-                    className="flex-shrink-0 inline w-4 h-4 me-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                  </svg>
-                  <span className="sr-only">Info</span>
-                  <div>
-                    <span className="font-semibold">Delivery.</span> Solo
-                    aparecerán las comunas que tengan disponibilidad de entrega.
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <label
-                    htmlFor="RegionId"
-                    className="block"
-                  >
-                    Región
-                    <select
-                      id="region"
-                      value={selectedRegion}
-                      onChange={(event) => {
-                        handleRegionChange(event);
-                      }}
-                      className="block w-full rounded-md text-sm  border-dark/50 border p-2 mt-1 bg-white"
-                    >
-                      <option>Selecciona Región</option>
-                      {regions.map((region: any) => (
-                        <option
-                          key={region.id}
-                          value={region.id}
-                        >
-                          {region.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label
-                    htmlFor="communeId"
-                    className="block"
-                  >
-                    Comuna
-                    <select
-                      id="commune"
-                      value={selectedCommune}
-                      onChange={(event) => {
-                        handleCommuneChange(event);
-                      }}
-                      disabled={!selectedRegion}
-                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                    >
-                      <option>Selecciona Comuna</option>
-                      {communes.map((commune: any) => (
-                        <option
-                          key={commune.id}
-                          value={commune.id}
-                        >
-                          {commune.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
               </div>
+
+              {isLoggedIn && (
+                <label className="block mt-4">
+                  <input
+                    type="checkbox"
+                    checked={useDifferentShippingAddress}
+                    onChange={() =>
+                      setUseDifferentShippingAddress(
+                        !useDifferentShippingAddress
+                      )
+                    }
+                  />
+                  <span className="ml-2">Enviar a una dirección diferente</span>
+                </label>
+              )}
+
+              {useDifferentShippingAddress && (
+                <div className="mt-5 grid gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <label
+                      htmlFor="RegionId"
+                      className="block"
+                    >
+                      Región
+                      <select
+                        id="region"
+                        value={selectedRegion}
+                        onChange={(event) => {
+                          handleRegionChange(event);
+                        }}
+                        className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                      >
+                        <option>Selecciona Región</option>
+                        {regions.map((region) => (
+                          <option
+                            key={region.id}
+                            value={region.id}
+                          >
+                            {region.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label
+                      htmlFor="communeId"
+                      className="block"
+                    >
+                      Comuna
+                      <select
+                        id="commune"
+                        value={selectedCommune}
+                        onChange={(event) => {
+                          handleCommuneChange(event);
+                        }}
+                        className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                      >
+                        <option>Selecciona Comuna</option>
+                        {communes.map((commune) => (
+                          <option
+                            key={commune.id}
+                            value={commune.id}
+                          >
+                            {commune.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <label
+                    htmlFor="differentAddressLine1"
+                    className="block mt-4"
+                  >
+                    Dirección
+                    <input
+                      type="text"
+                      id="differentAddressLine1"
+                      name="differentAddressLine1"
+                      value={customer.customer?.addressLine1 || ""}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            addressLine1: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-white"
+                    />
+                  </label>
+                  <label
+                    htmlFor="differentAddressLine2"
+                    className="block mt-4"
+                  >
+                    Indicaciones Extras
+                    <input
+                      type="text"
+                      id="differentAddressLine2"
+                      name="differentAddressLine2"
+                      value={customer.customer?.addressLine2 || ""}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            addressLine2: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-white"
+                    />
+                  </label>
+                </div>
+              )}
 
               <form className="mt-5 grid gap-2">
                 <div className="relative">
@@ -657,7 +803,7 @@ function Checkout() {
                   />
                   <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
                   <label
-                    className="peer-checked:border-2  peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                    className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
                     htmlFor="radio_delivery"
                   >
                     <svg
@@ -683,6 +829,26 @@ function Checkout() {
                   </label>
                 </div>
               </form>
+              <div
+                style={{ borderRadius: "var(--radius)" }}
+                className="shadow flex items-center p-4 my-2 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+                role="alert"
+              >
+                <svg
+                  className="flex-shrink-0 inline w-4 h-4 me-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  <span className="font-semibold">Delivery.</span> Solo
+                  aparecerán las comunas que tengan disponibilidad de entrega.
+                </div>
+              </div>
             </div>
             <button
               onClick={handleSubmitOrder}
@@ -695,6 +861,6 @@ function Checkout() {
       </div>
     </>
   );
-}
+};
 
 export default Checkout;

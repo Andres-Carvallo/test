@@ -104,7 +104,7 @@ function Colecciones() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -125,7 +125,7 @@ function Colecciones() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -179,7 +179,7 @@ function Colecciones() {
       if (isEditing && editingCollectionId) {
         // Actualizar la colección existente
         const response = await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${editingCollectionId}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${editingCollectionId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           data,
           {
             headers: {
@@ -238,7 +238,7 @@ function Colecciones() {
       } else {
         // Crear nueva colección
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           data,
           {
             headers: {
@@ -302,7 +302,7 @@ function Colecciones() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${collectionID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${collectionID}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -321,7 +321,7 @@ function Colecciones() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${collectionID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${collectionID}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -46,10 +46,10 @@ const BannerPrincipalBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
 
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -119,7 +119,7 @@ const BannerPrincipalBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
 
       if (isAddingImage) {
         // Realizar una solicitud POST para crear una nueva imagen
@@ -133,7 +133,7 @@ const BannerPrincipalBO: React.FC = () => {
         };
 
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           newData,
           {
             headers: {
@@ -157,7 +157,7 @@ const BannerPrincipalBO: React.FC = () => {
         }
 
         await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           updatedData,
           {
             headers: {
@@ -181,9 +181,9 @@ const BannerPrincipalBO: React.FC = () => {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
 
-      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -278,7 +278,7 @@ const BannerPrincipalBO: React.FC = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-  {/*         <h2 className="text-2xl font-semibold mb-2">{formData.title}</h2>
+          {/*         <h2 className="text-2xl font-semibold mb-2">{formData.title}</h2>
           <p className="text-md text-center text-gray-200">
             {formData.landingText}
           </p>
@@ -297,7 +297,7 @@ const BannerPrincipalBO: React.FC = () => {
           className="shadow bg-green-500 hover:bg-green-700 w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap"
           style={{ borderRadius: "var(--radius)" }}
         >
-          Agregar Imagen
+          Agregar Banner
         </button>
         <button
           type="button"
@@ -305,7 +305,7 @@ const BannerPrincipalBO: React.FC = () => {
           className="shadow bg-red-500 hover:bg-red-700 w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap ml-4"
           style={{ borderRadius: "var(--radius)" }}
         >
-          Borrar Imagen
+          Borrar Banner
         </button>
       </div>
       <div className="flex justify-center items-center mt-8">
@@ -326,20 +326,19 @@ const BannerPrincipalBO: React.FC = () => {
         onSubmit={handleSubmit}
         className="px-4 mx-auto mt-8"
       >
-
-          <div>
-            <h3 className="font-normal text-primary">
-              Link de destino <span className="text-primary">*</span>
-            </h3>
-            <input
-              type="text"
-              name="buttonLink"
-              value={formData.buttonLink}
-              onChange={handleChange}
-              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Button Link"
-            />
-          </div>
+        <div>
+          <h3 className="font-normal text-primary">
+            Link de destino <span className="text-primary">*</span>
+          </h3>
+          <input
+            type="text"
+            name="buttonLink"
+            value={formData.buttonLink}
+            onChange={handleChange}
+            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
+            placeholder="Button Link"
+          />
+        </div>
 
         <div>
           <input
@@ -386,7 +385,7 @@ const BannerPrincipalBO: React.FC = () => {
               </h3>
               <label
                 htmlFor="mainImage"
-                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-dark/50 rounded-lg cursor-pointer w-full z-10"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed  rounded-lg cursor-pointer w-full z-10"
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg
@@ -442,7 +441,7 @@ const BannerPrincipalBO: React.FC = () => {
           {loading
             ? "Loading..."
             : isAddingImage
-            ? "Crear Imagen"
+            ? "Crear Banner"
             : "Actualizar"}
         </button>
       </form>

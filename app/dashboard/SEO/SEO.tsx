@@ -3,21 +3,8 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import dynamic from "next/dynamic";
-import "react-quill/dist/quill.snow.css";
 
-// Cargar react-quill dinámicamente para evitar problemas de SSR (Server-Side Rendering)
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-
-interface BannerAboutProps {
-  BannerAboutBOData: {
-    BannerId: string;
-    BannerImageId: string;
-  };
-}
-
-const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
-  const { BannerId, BannerImageId } = BannerAboutBOData;
+const Hero: React.FC = ({}) => {
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
   const [formDataHero, setFormDataHero] = useState<any>({
@@ -49,11 +36,11 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "a6f03d95-678b-4475-88f0-c4bfaecca6cd";
-      const bannerImageId = "9eb5f5bf-ccbe-480b-9332-062e171722ee";
+      const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
+      const bannerImageId = "331ed6d7-1011-4513-ac87-75a6c8a98517";
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,7 +50,6 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
       );
 
       const bannerImage = productTypeResponse.data.bannerImages;
-      console.log(bannerImage, "bannerimage");
       setBannerData(bannerImage);
       setFormDataHero({
         title: bannerImage[0].title,
@@ -86,15 +72,11 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormDataHero({ ...formDataHero, [name]: value });
-  };
-
-  const handleEditorChange = (value: string) => {
-    if (value.length <= MAX_CHARACTERS) {
-      setFormDataHero({ ...formDataHero, landingText: value });
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,11 +95,11 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
         delete updatedDataWithoutImage.mainImage;
       }
 
-      // Send updated data to the server
-      const bannerId = "a6f03d95-678b-4475-88f0-c4bfaecca6cd";
-      const bannerImageId = "9eb5f5bf-ccbe-480b-9332-062e171722ee";
+      // Enviar los datos actualizados al servidor
+      const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
+      const bannerImageId = "331ed6d7-1011-4513-ac87-75a6c8a98517";
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         updatedDataWithoutImage,
         {
           headers: {
@@ -127,11 +109,11 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
         }
       );
 
-      // Optionally, you can refetch the banner data to ensure it's updated
+      // Opcionalmente, puedes volver a obtener los datos del banner para asegurarte de que estén actualizados
       fetchBannerHome();
     } catch (error) {
-      console.error("Error updating banner:", error);
-      // Handle error
+      console.error("Error actualizando el banner:", error);
+      // Manejar el error según sea necesario
     } finally {
       setLoading(false); // Ocultar el indicador de carga
     }
@@ -214,20 +196,17 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
     >
       <div>
         {bannerData && (
-          <div className="grid grid-cols-2  justify-center">
+          <div className="grid grid-cols-2 justify-center">
             <div>
-              {" "}
               <img
                 src={bannerData[0].mainImage.url}
                 alt="Banner Image"
-                className=" w-[200px] object-cover"
+                className="w-[200px] object-cover"
               />
             </div>
             <div>
-              <h1 className="sm:text-4xl text-2xl ">{bannerData[0].title}</h1>
-              <p className="text-lg text-center ">
-                {bannerData[0].landingText}
-              </p>
+              <h1 className="sm:text-4xl text-2xl">{bannerData[0].title}</h1>
+              <p className="text-lg text-center">{bannerData[0].landingText}</p>
             </div>
           </div>
         )}
@@ -261,15 +240,17 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
           value={formDataHero.mainImageLink}
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-        />{" "}
+        />
         <h3 className="font-normal text-primary">Descripción</h3>
-        <input
+        <textarea
+          name="landingText"
           value={formDataHero.landingText}
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
           placeholder="Landing Text"
           onKeyDown={handleKeyDown}
+          rows={4}
         />
         <div className="text-right text-sm text-gray-600">
           {formDataHero.landingText.length}/{MAX_CHARACTERS}
@@ -290,8 +271,8 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
             </svg>
             <span className="sr-only">Info</span>
             <div>
-              <span className="font-medium">Limite Alcanzado!</span> Los
-              caracteres extras no seran mostrados.
+              <span className="font-medium">¡Límite alcanzado!</span> Los
+              caracteres extras no serán mostrados.
             </div>
           </div>
         )}
@@ -373,7 +354,7 @@ const Hero: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
         <button
           type="submit"
           disabled={loading}
-          className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+          className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6"
           style={{ borderRadius: "var(--radius)" }}
         >
           <svg

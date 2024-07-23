@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { setCookie } from "cookies-next";
@@ -15,6 +15,12 @@ function ClientLoginForm() {
   const [recaptchaToken, setRecaptchaToken] = useState("");
 
   const { executeRecaptcha } = useGoogleReCaptcha();
+
+  useEffect(() => {
+    if (!executeRecaptcha) {
+      console.error("Execute recaptcha not yet available");
+    }
+  }, [executeRecaptcha]);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -124,7 +130,7 @@ function ClientLoginForm() {
             </button>
           </div>
         </form>
-        <p className="text-center text-base font-medium text-body-color">
+        <p className="text-center text-base  text-body-color text-[0.8rem]">
           ¿Aún no tienes cuenta?{" "}
           <Link
             href="/tienda/registration"
@@ -133,7 +139,7 @@ function ClientLoginForm() {
             Registrate
           </Link>
         </p>
-        <p className="text-center text-base font-medium text-body-color">
+        <p className="text-center text-base font-medium text-body-color text-[0.8rem]">
           ¿Olvidaste tu Contraseña?{" "}
           <Link
             href="/tienda/recuperar-password"
@@ -173,7 +179,8 @@ function ClientLoginForm() {
 }
 
 export default function App() {
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+  const siteKey = process.env.RECAPTCHA_PUBLIC_SITE_KEY || "";
+
   return (
     <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
       <ClientLoginForm />

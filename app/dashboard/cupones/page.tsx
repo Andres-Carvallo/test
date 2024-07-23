@@ -133,7 +133,7 @@ function CuponForm() {
     try {
       const token = getCookie("AdminTokenAuth");
       const currencyResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -173,7 +173,7 @@ function CuponForm() {
       if (editingCuponId) {
         // Update existing cupon if editing
         await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${editingCuponId}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${editingCuponId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           cupon,
           {
             headers: {
@@ -186,7 +186,7 @@ function CuponForm() {
       } else {
         // Create new cupon if not editing
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           cupon,
           {
             headers: {
@@ -211,7 +211,7 @@ function CuponForm() {
 
       // Realizar la solicitud GET para obtener el detalle del cupón
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${cupon.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${cupon.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -254,7 +254,7 @@ function CuponForm() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${couponId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/discount-coupons/${couponId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -280,15 +280,15 @@ function CuponForm() {
   };
 
   return (
-    <section>
+    <section className=" mx-10 py-10">
       <Breadcrumb pageName="Cupones" />
       <div
         className=" p-4 bg-white my-6 overflow-x-auto shadow-md"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <h2 className="mb-8 text-center text-2xl font-bold text-dark md:mb-12 lg:text-3xl uppercase">
-          Cupones Activos
-        </h2>
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Cupones Activos</div>
+        </div>
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-100">
             <tr>
@@ -397,7 +397,7 @@ function CuponForm() {
           </tbody>
         </table>
       </div>
-      <div>
+      <div className="p-4 bg-white">
         <form
           onSubmit={(e) => handleSubmit(e)}
           className="space-y-4"

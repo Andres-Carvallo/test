@@ -65,7 +65,7 @@ function DetalleOferta() {
           },
         };
         await axios.delete(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${selectedVariation.id}/offers/${offerToDelete}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${selectedVariation.id}/offers/${offerToDelete}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           config
         );
         fetchOffersForProduct(id as string, selectedVariation.id);
@@ -120,7 +120,7 @@ function DetalleOferta() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -145,7 +145,7 @@ function DetalleOferta() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus?statusCode=ACTIVE`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus?statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -192,7 +192,7 @@ function DetalleOferta() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -240,8 +240,8 @@ function DetalleOferta() {
     try {
       const token = getCookie("AdminTokenAuth");
       const url = skuId
-        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers`
-        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/offers`;
+        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       const response = await fetch(url, {
         headers: {
@@ -269,7 +269,7 @@ function DetalleOferta() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -289,7 +289,7 @@ function DetalleOferta() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -322,7 +322,7 @@ function DetalleOferta() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/attributes`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -69,7 +69,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-40 flex h-screen w-[350px] flex-col overflow-y-hidden bg-primary duration-300 ease-linear lg:static lg:translate-x-0 ${
+      className={`absolute left-0 top-0 z-40 flex h-screen w-[300px] flex-col overflow-y-hidden bg-primary duration-300 ease-linear lg:static lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -77,7 +77,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <div className="mt-8 flex items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
         <Link href="/">
           <img
-            src="/img/Logo/logo-300x300-blanco.png"
+            src="/img/pixelup-white.png"
             alt=""
             className="w-32 mt-2"
           />
@@ -116,8 +116,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <li>
                 <Link
                   href="/dashboard/"
-                  className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
-                    pathname.includes("Contactos") &&
+                  className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                    pathname.includes("/dashboard") &&
                     "bg-graydark dark:bg-meta-4"
                   }`}
                 >
@@ -127,7 +127,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
-                    className="size-7"
+                    className="size-6"
                   >
                     <path
                       strokeLinecap="round"
@@ -145,7 +145,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <Link
                       href="#"
-                      className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold  text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                      className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal  text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                         open && "bg-graydark dark:bg-meta-4"
                       }`}
                       onClick={(e) => {
@@ -159,7 +159,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         viewBox="0 0 24 24"
                         strokeWidth="1.5"
                         stroke="currentColor"
-                        className="size-7"
+                        className="size-6"
                       >
                         <path
                           strokeLinecap="round"
@@ -196,21 +196,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <li>
                           <Link
                             href="/dashboard/ventas"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-normal text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Ventas
+                            - Ventas
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/visitas-web"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-normal text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Visitas Web
+                            - Visitas Web
                           </Link>
                         </li>
                       </ul>
@@ -224,7 +224,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <li>
                 <Link
                   href="/dashboard/pedidos"
-                  className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                  className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                     pathname.includes("pedidos") && "bg-graydark dark:bg-meta-4"
                   }`}
                 >
@@ -234,7 +234,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="currentColor"
-                    className="size-7"
+                    className="size-6"
                   >
                     <path
                       strokeLinecap="round"
@@ -253,7 +253,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <Link
                       href="#"
-                      className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                      className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                         open && "bg-graydark dark:bg-meta-4"
                       }`}
                       onClick={(e) => {
@@ -267,7 +267,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         viewBox="0 0 24 24"
                         strokeWidth="1.5"
                         stroke="currentColor"
-                        className="size-7"
+                        className="size-6"
                       >
                         <path
                           strokeLinecap="round"
@@ -304,51 +304,51 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <li>
                           <Link
                             href="/dashboard/productos"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Lista de Productos
+                            - Lista de Productos
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/productos/crear/producto-simple"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Cargar producto simple
+                            - Cargar producto simple
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/productos/crear/producto-variable"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Cargar producto variable
+                            - Cargar producto variable
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/categorias"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/dashboard/categorias" && "text-red"
                             } `}
                           >
-                            Crear Categoría
+                            - Crear Categoría
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/colecciones"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Crear Colección
+                            - Crear Colección
                           </Link>
                         </li>
                       </ul>
@@ -367,7 +367,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <Link
                       href="#"
-                      className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                      className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-nromal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                         open && "bg-graydark dark:bg-meta-4"
                       }`}
                       onClick={(e) => {
@@ -381,7 +381,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         viewBox="0 0 24 24"
                         strokeWidth="1.5"
                         stroke="currentColor"
-                        className="size-7"
+                        className="size-6"
                       >
                         <path
                           strokeLinecap="round"
@@ -418,31 +418,31 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <li>
                           <Link
                             href="/dashboard/banner-home"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Home
+                            - Home
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/tienda"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Tienda
+                            - Tienda
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/about-us"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            About
+                            - About
                           </Link>
                         </li>
                       </ul>
@@ -462,7 +462,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <Link
                       href="#"
-                      className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                      className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                         open && "bg-graydark dark:bg-meta-4"
                       }`}
                       onClick={(e) => {
@@ -476,7 +476,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         viewBox="0 0 24 24"
                         strokeWidth="1.5"
                         stroke="currentColor"
-                        className="size-7"
+                        className="size-6"
                       >
                         <path
                           strokeLinecap="round"
@@ -513,21 +513,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <li>
                           <Link
                             href="/dashboard/zona-repartos"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Zonas Personalizadas
+                            - Zonas Personalizadas
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/starken"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Starken
+                            - Starken
                           </Link>
                         </li>
                       </ul>
@@ -546,7 +546,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   <React.Fragment>
                     <Link
                       href="#"
-                      className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                      className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal  text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                         open && "bg-graydark dark:bg-meta-4"
                       }`}
                       onClick={(e) => {
@@ -560,7 +560,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         viewBox="0 0 24 24"
                         strokeWidth="1.5"
                         stroke="currentColor"
-                        className="size-7"
+                        className="size-6"
                       >
                         <path
                           strokeLinecap="round"
@@ -597,21 +597,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <li>
                           <Link
                             href="/dashboard/ofertas"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Ofertas
+                            - Ofertas
                           </Link>
                         </li>
                         <li>
                           <Link
                             href="/dashboard/cupones"
-                            className={`text-lg group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
                           >
-                            Cupones
+                            - Cupones
                           </Link>
                         </li>
                       </ul>
@@ -626,7 +626,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <li>
                 <Link
                   href="/dashboard/SEO"
-                  className={`text-lg group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-semibold text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                  className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                     pathname.includes("Contactos") &&
                     "bg-graydark dark:bg-meta-4"
                   }`}
@@ -635,14 +635,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
-                    strokeWidth="1.5"
+                    strokeWidth={1.5}
                     stroke="currentColor"
-                    className="size-7"
+                    className="size-6"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                      d="m6.115 5.19.319 1.913A6 6 0 0 0 8.11 10.36L9.75 12l-.387.775c-.217.433-.132.956.21 1.298l1.348 1.348c.21.21.329.497.329.795v1.089c0 .426.24.815.622 1.006l.153.076c.433.217.956.132 1.298-.21l.723-.723a8.7 8.7 0 0 0 2.288-4.042 1.087 1.087 0 0 0-.358-1.099l-1.33-1.108c-.251-.21-.582-.299-.905-.245l-1.17.195a1.125 1.125 0 0 1-.98-.314l-.295-.295a1.125 1.125 0 0 1 0-1.591l.13-.132a1.125 1.125 0 0 1 1.3-.21l.603.302a.809.809 0 0 0 1.086-1.086L14.25 7.5l1.256-.837a4.5 4.5 0 0 0 1.528-1.732l.146-.292M6.115 5.19A9 9 0 1 0 17.18 4.64M6.115 5.19A8.965 8.965 0 0 1 12 3c1.929 0 3.716.607 5.18 1.64"
                     />
                   </svg>
                   SEO
@@ -818,11 +818,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* Menu Item Usuarios */}
 
               {/* Menu Item Settings */}
-              <li className="hidden">
+              <li className="">
                 <Link
-                  href="/dashboard/settings"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-primary duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes("settings") &&
+                  href="/dashboard/opciones-de-cuenta"
+                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                    pathname.includes("/dashboard/opciones-de-cuenta") &&
                     "bg-graydark dark:bg-meta-4"
                   }`}
                 >
@@ -855,7 +855,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       </clipPath>
                     </defs>
                   </svg>
-                  Settings
+                  Configuración
                 </Link>
               </li>
 
