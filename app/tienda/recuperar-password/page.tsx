@@ -1,6 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import toast from "react-hot-toast";
 
 function Page() {
   const [email, setEmail] = useState("");
@@ -10,6 +13,9 @@ function Page() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState("");
+  const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
 
   const handleEmailSubmit = async (e: any) => {
     e.preventDefault();
@@ -21,21 +27,28 @@ function Page() {
       return;
     }
 
+    if (!executeRecaptcha) {
+      console.error("Execute recaptcha not yet available");
+      return;
+    }
+
+    const recaptchaToken = await executeRecaptcha("recover_password");
+
     try {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/recoveries?siteId=${SiteId}`,
-        { email }
+        { email, recaptchaToken }
       );
 
       if (response.data.code === 0) {
         setRecoveryId(response.data.recovery.id);
-        setMessage("Check your email for the recovery code.");
+        setMessage("Revise su correo electrónico para obtener el código de recuperación.");
       } else {
         setError("Failed to initiate recovery. Please try again.");
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError("Se produjo un error. Por favor inténte de nuevo.");
     }
   };
 
@@ -45,12 +58,12 @@ function Page() {
     setMessage("");
 
     if (!securityCode || !newPassword || !confirmNewPassword) {
-      setError("All fields are required");
+      setError("Todos los campos son requeridos");
       return;
     }
 
     if (newPassword !== confirmNewPassword) {
-      setError("Passwords do not match");
+      setError("Las contraseñas no coinciden");
       return;
     }
 
@@ -62,21 +75,22 @@ function Page() {
       );
 
       if (response.data.code === 0) {
-        setMessage("Password reset successfully");
+        toast.success("Contraseña recuperada con éxito");
+        router.push("/tienda/login");
         setSecurityCode("");
         setNewPassword("");
         setConfirmNewPassword("");
       } else {
-        setError("Failed to reset password. Please try again.");
+        setError("Error al restablecer la contraseña. Por favor intente de nuevo.");
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError("Se produjo un error. Por favor intente de nuevo.");
     }
   };
 
   return (
     <div>
-      <div className=" mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+      <div className="mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
         <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
           <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
             Recuperar Contraseña
@@ -92,7 +106,7 @@ function Page() {
                   <input
                     type="email"
                     name="email"
-                    placeholder="Enter your Email"
+                    placeholder="Ingresa tu mail"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
@@ -122,7 +136,7 @@ function Page() {
                   <input
                     type="text"
                     name="securityCode"
-                    placeholder="Security Code"
+                    placeholder="Código de seguridad"
                     value={securityCode}
                     onChange={(e) => setSecurityCode(e.target.value)}
                     className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
@@ -132,7 +146,7 @@ function Page() {
                   <input
                     type="password"
                     name="newPassword"
-                    placeholder="New Password"
+                    placeholder="Nueva Contraseña"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
@@ -142,7 +156,7 @@ function Page() {
                   <input
                     type="password"
                     name="confirmNewPassword"
-                    placeholder="Confirm New Password"
+                    placeholder="Confirmar Nueva Contraseña"
                     value={confirmNewPassword}
                     onChange={(e) => setConfirmNewPassword(e.target.value)}
                     className="w-full rounded-sm border border-stroke bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:text-body-color-dark dark:shadow-two dark:focus:border-primary dark:focus:shadow-none"
@@ -155,9 +169,9 @@ function Page() {
                 <div className="mb-6">
                   <button
                     type="submit"
-                    className="flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-secondary shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
+                    className="mt-4 flex w-full items-center justify-center rounded-sm bg-primary px-9 py-4 text-base font-medium text-secondary shadow-submit duration-300 hover:bg-primary/90 dark:shadow-submit-dark"
                   >
-                    Reset Password
+                    Restablecer Contraseña
                   </button>
                 </div>
               </form>
@@ -169,4 +183,12 @@ function Page() {
   );
 }
 
-export default Page;
+export default function App() {
+  const siteKey = process.env.RECAPTCHA_PUBLIC_SITE_KEY || "";
+
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <Page />
+    </GoogleReCaptchaProvider>
+  );
+}

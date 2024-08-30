@@ -82,7 +82,7 @@ const ValidateComponent: React.FC<ValidateComponentProps> = ({
                 fill="currentFill"
               />
             </svg>
-            <span className="sr-only">Loading...</span>
+            <span className="sr-only">Cargando...</span>
           </div>
         </div>
         <h1 className="text-2xl font-semibold mb-2">Validando el pago</h1>

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
-import Loader from "@/components/common/Loader";
+import Loader from "@/components/common/Loader-t";
 
 interface Order {
   id: number;
@@ -139,54 +139,74 @@ export default function OrderData() {
       <div className="max-w-6xl mx-auto">
         {/* Nuevo bloque para mostrar la sección de opiniones */}
         <div
-          className="border overflow-hidden shadow-md mb-4"
+          className="mx-4 lg:mx-0 border overflow-hidden shadow-md mb-4"
           style={{ borderRadius: "var(--radius)" }}
         >
           <div className="bg-white p-4 flex justify-between items-center">
-            <div className="flex items-center">
-              <img
-                src="https://images.vexels.com/media/users/3/134165/isolated/preview/435c122f8420a57fd38d06a30292f2bb-icono-de-estrella-plana-68.png"
-                alt="Opinion"
-                className="w-12 h-12 object-cover mr-4"
-                style={{ borderRadius: "50%" }}
-              />
-              <p className="text-m text-gray-700">
-                {pendingReviewsCount} productos esperan tu opinión
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 w-full">
+              <div className="flex items-center gap-4 w-full">
+                <svg
+                  className="w-6 h-6 text-yellow-500 ml-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
+                </svg>
+                <p className="text-m text-gray-700">
+                  {pendingReviewsCount <= 1 ? (
+                    <p className="text-m text-gray-700">
+                      {pendingReviewsCount} producto espera tu opinión
+                    </p>
+                  ) : (
+                    <p className="text-m text-gray-700">
+                      {pendingReviewsCount} productos esperan tu opinión
+                    </p>
+                  )}
+                </p>
+              </div>
+              <div className=" flex justify-end ">
+                <Link
+                  href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
+                  className="px-4 py-2 bg-primary text-secondary w-full md:w-auto mt-4 md:mt-0 hover:bg-secondary hover:text-primary transition duration-300"
+                  style={{ borderRadius: "var(--radius)" }}
+                >
+                  Calificar
+                </Link>
+              </div>
             </div>
-            <Link
-              href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
-              className="px-4 py-2 bg-primary text-secondary hover:bg-secondary hover:text-primary transition duration-300"
-              style={{ borderRadius: "var(--radius)" }}
-            >
-              Calificar
-            </Link>
           </div>
         </div>
-
         <div
-          className="border overflow-hidden shadow-md mb-4"
+          className="mx-4 lg:mx-0 border overflow-hidden shadow-md mb-4"
           style={{ borderRadius: "var(--radius)" }}
         >
           <div className="bg-white p-4 flex justify-between items-center">
-            <div className="flex items-center">
-              <img
-                src="https://images.vexels.com/media/users/3/134165/isolated/preview/435c122f8420a57fd38d06a30292f2bb-icono-de-estrella-plana-68.png"
-                alt="Total Reviews"
-                className="w-12 h-12 object-cover mr-4"
-                style={{ borderRadius: "50%" }}
-              />
-              <p className="text-m text-gray-700">
-                Has realizado {totalReviewsCount} calificaciones
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 w-full">
+              <div className="flex items-center gap-4 w-full">
+                <svg
+                  className="w-6 h-6 text-yellow-500 ml-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
+                </svg>
+                <p className="text-m text-gray-700">
+                  Has realizado {totalReviewsCount} calificaciones
+                </p>
+              </div>
+
+              <div className=" flex justify-end ">
+                <Link
+                  href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
+                  className="px-4 py-2 bg-primary text-secondary w-full md:w-auto mt-4 md:mt-0 hover:bg-secondary hover:text-primary transition duration-300"
+                  style={{ borderRadius: "var(--radius)" }}
+                >
+                  Ver Calificaciones
+                </Link>
+              </div>
             </div>
-            <Link
-              href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
-              className="px-4 py-2 bg-primary text-secondary hover:bg-secondary hover:text-primary transition duration-300"
-              style={{ borderRadius: "var(--radius)" }}
-            >
-              Ver Calificaciones
-            </Link>
           </div>
         </div>
 
@@ -194,7 +214,7 @@ export default function OrderData() {
         {orders.map((order, index) => (
           <div
             key={index}
-            className="border overflow-hidden shadow-md mb-4"
+            className="mx-4 lg:mx-0 border overflow-hidden shadow-md mb-4"
             style={{ borderRadius: "var(--radius)" }}
           >
             <div className="bg-white p-4">

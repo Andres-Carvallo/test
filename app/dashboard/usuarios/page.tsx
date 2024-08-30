@@ -10,13 +10,13 @@ export const metadata: Metadata = {
 
 const UsuariosPage = () => {
   return (
-    <>
+    <section className="p-10">
       <Breadcrumb pageName="Usuarios" />
 
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-10 min-h-screen">
         <TableUsers />
       </div>
-    </>
+    </section>
   );
 };
 

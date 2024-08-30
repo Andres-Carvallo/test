@@ -13,6 +13,9 @@ const DropdownUser = () => {
   const token = getCookie("ClientTokenAuth")?.toString();
 
   const [userDataInfo, setUserDataInfo] = useState<UserData>();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const trigger = useRef<any>(null);
+  const dropdown = useRef<any>(null);
 
   useEffect(() => {
     if (!token) {
@@ -49,9 +52,9 @@ const DropdownUser = () => {
     window.location.href = "/tienda/login";
   };
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const trigger = useRef<any>(null);
-  const dropdown = useRef<any>(null);
+  const handleOptionClick = () => {
+    setDropdownOpen(false);
+  };
 
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
@@ -138,6 +141,7 @@ const DropdownUser = () => {
           <li>
             <Link
               href="/tienda/mi-cuenta/datos-personales"
+              onClick={handleOptionClick}
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
             >
               <svg
@@ -164,6 +168,7 @@ const DropdownUser = () => {
           <li>
             <Link
               href="/tienda/mi-cuenta/mis-pedidos"
+              onClick={handleOptionClick}
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
             >
               <svg
@@ -185,7 +190,10 @@ const DropdownUser = () => {
           </li>
         </ul>
         <button
-          onClick={handleLogout}
+          onClick={() => {
+            handleLogout();
+            handleOptionClick();
+          }}
           className="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
         >
           <svg

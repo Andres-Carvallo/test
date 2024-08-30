@@ -1,19 +1,23 @@
-/* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
 import { useAPI } from "@/app/Context/ProductTypeContext";
+import toast from "react-hot-toast";
 
 interface EditCategoryProps {
   handleCloseModal: any;
   fetchData: any;
+  switchToCreateTab: any;
 }
 
 const EditCategory: React.FC<EditCategoryProps> = ({
   handleCloseModal,
   fetchData,
+  switchToCreateTab,
 }) => {
   const { productType, setProductType } = useAPI();
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -75,6 +79,10 @@ const EditCategory: React.FC<EditCategoryProps> = ({
     }
   };
 
+  const handleChangeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategoryId(e.target.value);
+  };
+
   const handleRemoveImage = () => {
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -89,6 +97,11 @@ const EditCategory: React.FC<EditCategoryProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!selectedCategoryId || isDeleting) {
+      return;
+    }
+
     const authToken = getCookie("AdminTokenAuth");
     const categoryIdToUpdate = selectedCategoryId;
 
@@ -125,8 +138,6 @@ const EditCategory: React.FC<EditCategoryProps> = ({
         throw new Error("Error al enviar los datos.");
       }
 
-      console.log("Datos enviados correctamente:", requestData);
-
       setFormData({
         name: "",
         description: "",
@@ -146,19 +157,17 @@ const EditCategory: React.FC<EditCategoryProps> = ({
       setProductType(updatedCategories);
       setSelectedCategoryId("");
       handleCloseModal();
-      fetchData(); // Llamamos a fetchData después de enviar el formulario
+      fetchData();
+      toast.success("Categoría actualizada correctamente");
     } catch (error) {
       console.error("Error:", error);
+      toast.error("Ocurrió un error al actualizar la categoría.");
     }
   };
 
-  const handleChangeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCategoryId(e.target.value);
-  };
-
   const handleDeleteCategory = async () => {
+    setIsDeleting(true);
     try {
-      // Realizar la llamada a la API para eliminar la categoría
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types/${selectedCategoryId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -171,24 +180,56 @@ const EditCategory: React.FC<EditCategoryProps> = ({
       );
 
       if (!response.ok) {
-        throw new Error("Error al eliminar la categoría.");
+        if (response.status === 409) {
+          toast.error("Error: esta categoría está asociada a un producto.");
+        } else {
+          throw new Error("Error al eliminar la categoría.");
+        }
+        return;
       }
 
-      // Actualizar el estado y la lista de categorías después de eliminar la categoría
       const updatedCategories = productType.filter(
         (category: any) => category.id !== selectedCategoryId
       );
       setProductType(updatedCategories);
       setSelectedCategoryId("");
+      setFormData({
+        name: "",
+        description: "",
+        previewImage: "",
+        previewImageName: "",
+        previewImageType: "",
+        previewImageSize: 0,
+        imageLoaded: false,
+        base64Data: "",
+      });
       handleCloseModal();
-      fetchData(); // Llamamos a fetchData después de eliminar la categoría
+      switchToCreateTab();
+      fetchData();
+      toast.success("Categoría eliminada correctamente");
     } catch (error) {
       console.error("Error:", error);
+      toast.error("Ocurrió un error al eliminar la categoría.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
+  const showDeleteModal = () => {
+    setIsDeleteModalVisible(true);
+  };
+
+  const hideDeleteModal = () => {
+    setIsDeleteModalVisible(false);
+  };
+
+  const confirmDeleteCategory = () => {
+    handleDeleteCategory();
+    hideDeleteModal();
+  };
+
   return (
-    <div className="shadow-md  rounded-lg p-4 bg-white my-6 overflow-x-auto">
+    <div className="shadow-md rounded-lg p-4 bg-white my-6 overflow-x-auto">
       <div className="relative w-full bg-white rounded-lg sm:p-5">
         <div>
           <div className="pb-4 mb-4 rounded-t border-b sm:mb-5">
@@ -231,7 +272,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="w-full gap-4">
                 <div>
                   <label htmlFor="description">Descripción</label>
                   <textarea
@@ -240,86 +281,14 @@ const EditCategory: React.FC<EditCategoryProps> = ({
                     value={formData.description}
                     onChange={handleChange}
                     rows={4}
-                    className="block w-full min-h-52 p-2.5 text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
+                    className="block w-full min-h-28 p-2.5 text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
                     placeholder="Descripción Categoría"
                   />
                 </div>
-                <div className="flex flex-col justify-center mt-6 items-center w-full relative border border-dashed border-gray-300 rounded-lg p-5">
-                  {formData.imageLoaded ? (
-                    <div className="w-full h-40 relative">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="absolute inset-0 overflow-hidden rounded-lg ">
-                          <img
-                            src={formData.previewImage}
-                            alt="Preview"
-                            className="w-full  object-cover rounded-lg"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          className="absolute top-0 right-0 m-2 text-red-600  bg-white rounded-xl p-2"
-                          onClick={handleRemoveImage}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <label
-                      htmlFor="previewImage"
-                      className="cursor-pointer"
-                    >
-                      <div className="flex flex-col justify-center items-center">
-                        <svg
-                          className="w-12 h-12 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold uppercase">
-                            Click para Cargar Foto
-                          </span>
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          SVG, PNG, JPG o GIF (MAX. 1MB)
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        id="previewImage"
-                        name="previewImage"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        accept="image/*"
-                      />
-                    </label>
-                  )}
-                </div>
               </div>
             </div>
-            <div className="mb-4 flex justify-between ">
-              <div className="flex gap-3">
+            <div className="mb-4 w-full flex gap-3 justify-between flex-wrap">
+              <div className="flex gap-3 w-fit">
                 <button
                   type="submit"
                   className="bg-primary hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
@@ -327,7 +296,6 @@ const EditCategory: React.FC<EditCategoryProps> = ({
                   Guardar Cambios
                 </button>
                 <button
-                  data-modal-toggle="createProductModal"
                   type="button"
                   onClick={handleCloseModal}
                   className="bg-red-800 hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
@@ -335,16 +303,85 @@ const EditCategory: React.FC<EditCategoryProps> = ({
                   Cancelar
                 </button>
               </div>
-              <button
-                onClick={handleDeleteCategory}
-                className="bg-red-800 text-white font-medium rounded-lg px-5 py-2.5"
-              >
-                Eliminar Categoría
-              </button>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={showDeleteModal}
+                  className="bg-red-800 text-white font-medium rounded-lg px-5 py-2.5"
+                >
+                  Eliminar Categoría
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </div>
+
+      {isDeleteModalVisible && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div>
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <svg
+                    className="h-6 w-6 text-red-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </div>
+                <div className="mt-3 text-center sm:mt-5">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Eliminar Categoría
+                  </h3>
+                  <div className="mt-2">
+                    <p>¿Estás seguro de que deseas eliminar esta categoría?</p>
+                    <p className="text-sm text-red-500 uppercase mt-2">
+                      Esta acción no se puede deshacer.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse justify-between">
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                  onClick={hideDeleteModal}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={confirmDeleteCategory}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Loader from "../common/Loader";
 import ProductCard from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
+import ProductCard02 from "../PIXELUP/ProductCards/ProductCards02/ProductCard02";
 
 const Collection = () => {
   const [collectionData, setCollectionData] = useState<any | null>(null);
@@ -70,6 +71,26 @@ const Collection = () => {
     }
     return { minimumAmount: null, maximumAmount: null };
   };
+  const fetchStockForProduct = async (productId: string, skuId: string) => {
+    try {
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${siteId}`
+      );
+      const data = await response.json();
+      if (data.code === 0 && data.skuInventories.length > 0) {
+        return data.skuInventories.reduce(
+          (acc: number, inventory: any) => acc + inventory.quantity,
+          0
+        );
+      } else {
+        return 0;
+      }
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      return 0;
+    }
+  };
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -78,15 +99,24 @@ const Collection = () => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections/${id}?pageNumber=1&pageSize=50&siteId=${siteId}`
         );
+
         const collection = response.data.collection;
+        const activeProducts = collection.products.filter(
+          (product: any) => product.statusCode === "ACTIVE"
+        );
         setCollectionData(collection);
 
-        // Fetch prices for each product
-        const productsWithPrices = await Promise.all(
-          collection.products.map(async (product: any) => {
+        // Fetch prices and stock for each product
+        const productsWithDetails = await Promise.all(
+          activeProducts.map(async (product: any) => {
+            let stock = null;
+            if (!product.hasVariations && product.skuId) {
+              stock = await fetchStockForProduct(product.id, product.skuId);
+            }
+
             if (product.hasVariations) {
               const pricingRanges = await getPriceForVariableProduct(product);
-              return { ...product, pricingRanges: [pricingRanges] };
+              return { ...product, pricingRanges: [pricingRanges], stock };
             } else {
               const priceData = await fetchPriceForProduct(
                 product.id,
@@ -98,12 +128,12 @@ const Collection = () => {
                 priceData.skuPricings.length > 0
                   ? priceData.skuPricings[0].unitPrice
                   : null;
-              return { ...product, pricings: [{ amount: price }] };
+              return { ...product, pricings: [{ amount: price }], stock };
             }
           })
         );
 
-        setCollectionProduct(productsWithPrices);
+        setCollectionProduct(productsWithDetails);
       } catch (error) {
         console.error("Error al obtener el contacto:", error);
         setError(error as Error);
@@ -112,7 +142,6 @@ const Collection = () => {
       }
     };
     fetchCollections();
-    return () => {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -127,6 +156,10 @@ const Collection = () => {
   return (
     <>
       <title>{collectionData.bannerTitle}</title>
+      <meta
+        name="description"
+        content={collectionData.bannerText}
+      />
       <div className="z-10">
         {collectionData && (
           <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
@@ -147,14 +180,16 @@ const Collection = () => {
           </div>
         )}
 
-        <div className="flex w-full justify-center pt-6">
-          <div className="flex flex-wrap max-w-[1500px] w-full justify-center gap-8 px-4 py-8">
+        <div className="flex justify-center mx-auto px-4 pt-20 pb-40">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px]">
             {collectionProduct.map((product: any) => {
               return (
-                <ProductCard
+                <ProductCard02
                   key={product.id}
                   product={product}
                   addToCartHandler={addToCartHandler}
+                  isOnSale={product.offers && product.offers.length > 0}
+                  stock={product.stock}
                 />
               );
             })}

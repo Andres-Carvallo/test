@@ -13,6 +13,8 @@ export interface CustomerDetails {
   addressLine1?: string;
   addressLine2?: string;
   communeId?: string;
+  communeName?: string;
+  regionName?: string;
 }
 
 export interface Customer {

@@ -8,6 +8,7 @@ import {
   GoogleReCaptchaProvider,
   useGoogleReCaptcha,
 } from "react-google-recaptcha-v3";
+import toast from "react-hot-toast";
 
 function RegisterForm() {
   const router = useRouter();
@@ -39,7 +40,7 @@ function RegisterForm() {
     try {
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       setRegions(response.data.regions);
     } catch (error) {
@@ -52,7 +53,7 @@ function RegisterForm() {
       const token = getCookie("AdminTokenAuth");
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       setCommunes(response.data.communes);
     } catch (error) {
@@ -86,7 +87,7 @@ function RegisterForm() {
   };
 
   const validatePhone = (phone: string) => {
-    const regex = /^[0-9]{9}$/;
+    const regex = /^\+?[0-9]{9,11}$/; /* El signo + es opcional */
     return regex.test(phone);
   };
 
@@ -159,7 +160,8 @@ function RegisterForm() {
           setFirstname("");
           setLastname("");
           setPhone("");
-          router.push("/tienda");
+          router.push("/tienda/login");
+          toast.success("Cuenta creada exitosamente");
         }
       })
       .catch((error) => {
@@ -183,7 +185,7 @@ function RegisterForm() {
                 Crear cuenta
               </h1>
               <p className="text-gray-500 text-center text-base font-medium leading-6">
-                Let’s get started with your 30 days free trial
+                Completa con tus datos personales
               </p>
             </div>
             <div className="flex space-x-4 mb-6">
@@ -240,7 +242,12 @@ function RegisterForm() {
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M2.036 12.315c1.429-5.386 7.433-8.779 12.82-7.35m3.316 3.316c2.343 2.343 2.343 6.14 0 8.485-2.344 2.344-6.141 2.344-8.485 0-2.344-2.344-2.344-6.141 0-8.485m-3.315 3.316c2.344-2.343 6.141-2.343 8.485 0"
+                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                       />
                     </svg>
                   ) : (
@@ -255,7 +262,7 @@ function RegisterForm() {
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M15.182 11.818l-8.485 8.485m3.316-3.316c-1.42 1.429-3.717 1.427-5.146-.001-1.429-1.428-1.429-3.725-.001-5.146l8.485-8.485m3.316-3.316c5.386 1.429 8.779 7.433 7.35 12.82m-7.35-12.82c-5.386 1.429-8.779 7.433-7.35 12.82"
+                        d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"
                       />
                     </svg>
                   )}
@@ -290,7 +297,12 @@ function RegisterForm() {
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M2.036 12.315c1.429-5.386 7.433-8.779 12.82-7.35m3.316 3.316c2.343 2.343 2.343 6.14 0 8.485-2.344 2.344-6.141 2.344-8.485 0-2.344-2.344-2.344-6.141 0-8.485m-3.315 3.316c2.344-2.343 6.141-2.343 8.485 0"
+                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                       />
                     </svg>
                   ) : (
@@ -305,7 +317,7 @@ function RegisterForm() {
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M15.182 11.818l-8.485 8.485m3.316-3.316c-1.42 1.429-3.717 1.427-5.146-.001-1.429-1.428-1.429-3.725-.001-5.146l8.485-8.485m3.316-3.316c5.386 1.429 8.779 7.433 7.35 12.82m-7.35-12.82c-5.386 1.429-8.779 7.433-7.35 12.82"
+                        d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"
                       />
                     </svg>
                   )}
@@ -329,6 +341,18 @@ function RegisterForm() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                onKeyDown={(e) => {
+                  // Permitir solo números, el signo +, la tecla Backspace y las flechas izquierda y derecha
+                  if (
+                    (e.key === "+" && e.currentTarget.value.includes("+")) || // Solo permitir un signo +
+                    (!/^[0-9+]$/.test(e.key) && // Permitir solo números y +
+                      e.key !== "Backspace" && // Permitir Backspace
+                      e.key !== "ArrowLeft" && // Permitir flecha izquierda
+                      e.key !== "ArrowRight") // Permitir flecha derecha
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
                 className="shadow w-full h-12 text-gray-900 placeholder:text-gray-400 text-lg font-normal leading-7 border-gray-300 border focus:outline-none px-4"
                 placeholder="Teléfono"
                 style={{ borderRadius: "var(--radius)" }}

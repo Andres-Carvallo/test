@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import CrearUsuarioForm from "@/components/Offcanvas/form/CrearUsuarioForm";
 
-function UserCanvas() {
+function UserCanvas({ fetchData }: any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const offcanvasRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +81,10 @@ function UserCanvas() {
           <h1 className="text-secondary text-2xl font-bold text-center mb-8">
             Crear Nuevo Usuario
           </h1>
-          <CrearUsuarioForm onClose={handleMenuClose} />
+          <CrearUsuarioForm
+            onClose={handleMenuClose}
+            fetchData={fetchData}
+          />
         </div>
       </div>
     </div>

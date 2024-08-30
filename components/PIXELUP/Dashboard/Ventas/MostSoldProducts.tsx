@@ -67,7 +67,13 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [salesData]);
-
+  useEffect(() => {
+    // Solo hacer el fetch si ambas fechas están definidas al montar el componente
+    if (startDateProducts && endDateProducts) {
+      fetchMostSoldProducts(startDateProducts, endDateProducts, orderBy);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4">
       <div className="text-sm font-medium border-b pb-2 mb-6">
@@ -107,32 +113,34 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
         </div>
       </div>
       {filteredData.length > 0 ? (
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="py-2 border-b">Product Name</th>
-              <th className="py-2 border-b">Quantity Sold</th>
-              <th className="py-2 border-b">Total Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((product, index) => (
-              <tr
-                key={index}
-                className="text-center"
-              >
-                <td className="py-2 border-b">{product.productName}</td>
-                <td className="py-2 border-b">{product.quantity}</td>
-                <td className="py-2 border-b">
-                  {product.amount.toLocaleString("es-CL", {
-                    style: "currency",
-                    currency: "CLP",
-                  })}
-                </td>
+        <div className="h-64 overflow-y-auto">
+          <table className="min-w-full bg-white">
+            <thead>
+              <tr>
+                <th className="py-2 border-b">Nombre del Producto</th>
+                <th className="py-2 border-b">Cantidad Vendida</th>
+                <th className="py-2 border-b">Monto Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredData.map((product, index) => (
+                <tr
+                  key={index}
+                  className="text-center"
+                >
+                  <td className="py-2 border-b">{product.productName}</td>
+                  <td className="py-2 border-b">{product.quantity}</td>
+                  <td className="py-2 border-b">
+                    {product.amount.toLocaleString("es-CL", {
+                      style: "currency",
+                      currency: "CLP",
+                    })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>{" "}
+        </div>
       ) : (
         <p className="text-[14px] text-gray-600">
           No hay productos en este rango de fechas.

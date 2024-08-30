@@ -213,142 +213,161 @@ const BannersCategoriasBO = () => {
     );
   }, []);
 
-  const defaultImage = "https://i0.wp.com/ayuda.marketplace.paris.cl/wp-content/uploads/2024/02/placeholder.png?fit=1200%2C800&ssl=1";
+  const defaultImage =
+    "https://i0.wp.com/ayuda.marketplace.paris.cl/wp-content/uploads/2024/02/placeholder.png?fit=1200%2C800&ssl=1";
   const getDefaultBanner = (index: number) => {
-    return slidersData && slidersData[index] ? slidersData[index] : { mainImage: { url: defaultImage }, title: 'Titulo por defecto' };
+    return slidersData && slidersData[index]
+      ? slidersData[index]
+      : { mainImage: { url: defaultImage }, title: "Titulo por defecto" };
   };
 
   return (
-    <section id="banner" className="w-full">
-<div>
-{slidersData && (
-  <div className="flex items-center justify-center px-4 lg:px-0">
-    <div className="max-w-7xl mx-auto rounded-lg">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* COLGANTES */}
-        <div className="relative flex flex-col items-center w-full">
-          <div           
-            rel="noopener noreferrer"
-            className="w-full"
-          >
-            <div
-              className="w-[280px] h-[150px] md:w-[300px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-cover bg-center mx-auto"
-              style={{
-                backgroundImage: `url(${
-                  getDefaultBanner(0).mainImage.url
-                })`,
-                borderRadius: "var(--radius)",
-                backgroundPosition: "center bottom",
-              }}
-            >
-              <div
-                className="w-full h-full flex items-end justify-start p-4"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <h2 className="text-2xl md:text-4xl font-bold text-white">
-                  {getDefaultBanner(0).title}
-                </h2>
+    <section
+      id="banner"
+      className="w-full"
+    >
+      <div>
+        {slidersData && (
+          <div className="flex items-center justify-center px-4 lg:px-0">
+            <div className="max-w-7xl mx-auto rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* COLGANTES */}
+                <div className="relative flex flex-col items-center w-full">
+                  <div
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <div
+                      className="w-[280px] h-[150px] md:w-[300px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-cover bg-center mx-auto"
+                      style={{
+                        backgroundImage: `url(${
+                          getDefaultBanner(0).mainImage.url
+                        })`,
+                        borderRadius: "var(--radius)",
+                        backgroundPosition: "center bottom",
+                      }}
+                    >
+                      <div
+                        className="w-full h-full flex items-end justify-start p-4"
+                        style={{ borderRadius: "var(--radius)" }}
+                      >
+                        <h2 className="text-2xl md:text-4xl font-bold text-white">
+                          {getDefaultBanner(0).title}
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* ANILLOS */}
+                <div className="relative flex flex-col items-center w-full">
+                  <div
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <div
+                      className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
+                      style={{
+                        backgroundImage: `url(${
+                          getDefaultBanner(1).mainImage.url
+                        })`,
+                        borderRadius: "var(--radius)",
+                      }}
+                    >
+                      <div
+                        className="w-full h-full flex items-end justify-end p-4"
+                        style={{ borderRadius: "var(--radius)" }}
+                      >
+                        <h2 className="text-2xl md:text-4xl font-bold text-white">
+                          {getDefaultBanner(1).title}
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* PULSERAS */}
+                <div className="relative flex flex-col items-center w-full">
+                  <div
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <div
+                      className="w-[280px] h-[150px] md:w-[300px] md:h-[260px] lg:w-[600px] lg:h-[360px] bg-cover bg-center mx-auto"
+                      style={{
+                        backgroundImage: `url(${
+                          getDefaultBanner(2).mainImage.url
+                        })`,
+                        borderRadius: "var(--radius)",
+                      }}
+                    >
+                      <div
+                        className="w-full h-full flex items-start justify-start p-4"
+                        style={{ borderRadius: "var(--radius)" }}
+                      >
+                        <h2 className="text-2xl md:text-4xl font-bold text-white">
+                          {getDefaultBanner(2).title}
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* AROS */}
+                <div className="relative flex flex-col items-center w-full mt-0 md:mt-[-120px]">
+                  <div
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <div
+                      className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
+                      style={{
+                        backgroundImage: `url(${
+                          getDefaultBanner(3).mainImage.url
+                        })`,
+                        borderRadius: "var(--radius)",
+                      }}
+                    >
+                      <div
+                        className="w-full h-full flex items-end justify-end p-4"
+                        style={{ borderRadius: "var(--radius)" }}
+                      >
+                        <h2 className="text-2xl md:text-4xl font-bold text-white">
+                          {getDefaultBanner(3).title}
+                        </h2>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        {/* ANILLOS */}
-        <div className="relative flex flex-col items-center w-full">
-          <div
-            rel="noopener noreferrer"
-            className="w-full"
-          >
-            <div
-              className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
-              style={{
-                backgroundImage: `url(${
-                  getDefaultBanner(1).mainImage.url
-                })`,
-                borderRadius: "var(--radius)",
-              }}
-            >
-              <div
-                className="w-full h-full flex items-end justify-end p-4"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <h2 className="text-2xl md:text-4xl font-bold text-white">
-                  {getDefaultBanner(1).title}
-                </h2>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* PULSERAS */}
-        <div className="relative flex flex-col items-center w-full">
-          <div
-            rel="noopener noreferrer"
-            className="w-full"
-          >
-            <div
-              className="w-[280px] h-[150px] md:w-[300px] md:h-[260px] lg:w-[600px] lg:h-[360px] bg-cover bg-center mx-auto"
-              style={{
-                backgroundImage: `url(${
-                  getDefaultBanner(2).mainImage.url
-                })`,
-                borderRadius: "var(--radius)",
-              }}
-            >
-              <div
-                className="w-full h-full flex items-start justify-start p-4"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <h2 className="text-2xl md:text-4xl font-bold text-white">
-                  {getDefaultBanner(2).title}
-                </h2>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* AROS */}
-        <div className="relative flex flex-col items-center w-full mt-0 md:mt-[-120px]">
-          <div
-            rel="noopener noreferrer"
-            className="w-full"
-          >
-            <div
-              className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
-              style={{
-                backgroundImage: `url(${
-                  getDefaultBanner(3).mainImage.url
-                })`,
-                borderRadius: "var(--radius)",
-              }}
-            >
-              <div
-                className="w-full h-full flex items-end justify-end p-4"
-                style={{ borderRadius: "var(--radius)" }}
-              >
-                <h2 className="text-2xl md:text-4xl font-bold text-white">
-                  {getDefaultBanner(3).title}
-                </h2>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
-    </div>
-  </div>
-)}
-</div>
       <div className="mt-8">
         <h2 className="text-md uppercase font-semibold text-center mb-4">
           Agregar Nueva Categoria
         </h2>
-        <div className="flex items-center p-4 mb-4 text-sm text-yellow-800 border border-yellow-300 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 dark:border-yellow-800" role="alert">
-          <svg className="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+        <div
+          className="flex items-center p-4 mb-4 text-sm text-yellow-800 border border-yellow-300 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 dark:border-yellow-800"
+          role="alert"
+        >
+          <svg
+            className="flex-shrink-0 inline w-4 h-4 me-3"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
           </svg>
           <span className="sr-only">Info</span>
           <div>
-            <span className="font-medium">Atención!</span> Componente de 4 categorías.
+            <span className="font-medium">Atención!</span> Componente de 4
+            categorías.
           </div>
         </div>
-        <form onSubmit={SliderSubmit} className="mx-auto">
+        <form
+          onSubmit={SliderSubmit}
+          className="mx-auto"
+        >
           <div>
             <label htmlFor="categorySelect">
               <h3 className="font-normal text-primary">
@@ -364,7 +383,10 @@ const BannersCategoriasBO = () => {
             >
               <option value="">Seleccione una categoría</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
+                <option
+                  key={category.id}
+                  value={category.id}
+                >
                   {category.name}
                 </option>
               ))}
@@ -538,10 +560,10 @@ const BannersCategoriasBO = () => {
                       />
                     </svg>
                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold">Click to upload</span>
+                      <span className="font-semibold">Subir Imagen</span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      SVG, PNG, JPG or GIF (MAX. 800x400px)
+                    PNG, JPG o Webp (800x800px)
                     </p>
                   </div>
                 </label>
@@ -561,10 +583,6 @@ const BannersCategoriasBO = () => {
         </form>
       </div>
     </section>
-
-
-
-
   );
 };
 

@@ -2,56 +2,85 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { obtenerProductos } from "@/app/utils/obtenerProductos";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Link from "next/link";
-import ProductCard from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
-import { getCookie } from "cookies-next";
-import Marquee from "react-fast-marquee";
+import ProductCard02 from "../ProductCards/ProductCards02/ProductCard02";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
+
 interface Product {
   id: string;
   skuId: string;
   stock?: any;
   // Otros campos que puedan estar en el producto
 }
+
 const Destacados01: React.FC = () => {
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState<Error | null>(null);
   const { addToCartHandler } = useAPI();
   const [products, setProducts] = useState<Product[]>([]);
+  const [autoplay, setAutoplay] = useState(true);
 
+  const fetchStockForVariation = async (productId: string, skuId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const data = await response.json();
+      let stock = 0;
+      if (data.code === 0 && data.skuInventories.length > 0) {
+        stock = data.skuInventories.reduce(
+          (acc: number, inventory: any) => acc + inventory.quantity,
+          0
+        );
+      }
+
+      return stock;
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      return 0;
+    }
+  };
   useEffect(() => {
     const fetchProductosConStock = async () => {
       try {
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-        const PageNumber = 1;
-        const PageSize = 20;
-
-        const productosData = await obtenerProductos(
-          SiteId,
-          PageNumber,
-          PageSize,
-          null,
-          true
+        const productosData = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50&isFeatured=true&siteId=${SiteId}`
         );
+
         const productsWithStock = await Promise.all(
-          productosData.products.map(async (product: Product) => {
-            const inventoryQ = await getInventoryId(product.id, product.skuId);
-            product.stock = inventoryQ;
-            return product;
+          productosData.data.products.map(async (producto: any) => {
+            if (!producto.hasVariations && producto.skuId) {
+              const stock = await fetchStockForVariation(
+                producto.id,
+                producto.skuId
+              );
+
+              return { ...producto, stock } as any;
+            }
+            return { ...producto, stock: null } as any;
           })
         );
 
         setProducts(productsWithStock);
-        setLoading(false); // set loading to false after successful data fetch
+        setLoading(false);
       } catch (error) {
-        setLoading(false); // set loading to false in case of error
-        setError(error as Error); // set error state if an error occurs
+        setLoading(false);
+        setError(error as Error);
       }
     };
     fetchProductosConStock();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAutoplay(!autoplay);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [autoplay]);
 
   if (loading) {
     return (
@@ -81,42 +110,123 @@ const Destacados01: React.FC = () => {
     return <div>Error: {error.message}</div>;
   }
 
-  return (
-    <section className="w-full mx-auto ">
-      <div className="flex flex-col p-4 mx-auto lg:max-w-7xl sm:max-w-full py-16 justify-center items-center">
-        <h2 className="text-4xl font-extrabold text-primary mb-12 text-center">
-          Destacados
-        </h2>
-        <div className="flex w-full  flex-wrap max-w-[1000px] justify-center items-center gap-8 px-4 ">
-          <Marquee
-            pauseOnHover={true}
-            speed={50}
+  const responsive = {
+    superLargeDesktop: {
+      breakpoint: { max: 4000, min: 3000 },
+      items: 4,
+    },
+    desktop: {
+      breakpoint: { max: 3000, min: 1024 },
+      items: 4,
+    },
+    tablet: {
+      breakpoint: { max: 1024, min: 464 },
+      items: 2,
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1,
+    },
+  };
+
+  const CustomButtonGroupAsArrows = ({
+    next,
+    previous,
+  }: {
+    next?: () => void;
+    previous?: () => void;
+  }) => {
+    return (
+      <div className="absolute inset-y-0 -left-5 -right-5 flex items-center justify-between px-4 pointer-events-none">
+        <button
+          className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
+          onClick={previous}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
           >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="p-4"
-              >
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  addToCartHandler={addToCartHandler}
-                />
-              </div>
-            ))}
-          </Marquee>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5 8.25 12l7.5-7.5"
+            />
+          </svg>
+        </button>
+        <button
+          className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
+          onClick={next}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m8.25 4.5 7.5 7.5-7.5 7.5"
+            />
+          </svg>
+        </button>
       </div>
-      <div className="flex font-extrabold justify-center mt-2 item-center ">
+    );
+  };
+
+  const showArrows = products.length > 4;
+  return (
+    <div className="container mx-auto m-8 mt-16 max-w-7xl relative">
+      <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
+        Destacados
+      </h1>
+      <Carousel
+        swipeable={true}
+        draggable={true}
+        ssr={true}
+        showDots={false}
+        responsive={responsive}
+        infinite={true}
+        autoPlay={autoplay}
+        arrows={false}
+        autoPlaySpeed={10000}
+        keyBoardControl={true}
+        customTransition="all .5s"
+        transitionDuration={500}
+        containerClass="carousel-container relative"
+        removeArrowOnDeviceType={["tablet", "mobile"]}
+        dotListClass="custom-dot-list-style mt-16"
+        itemClass="px-2 py-12"
+        customButtonGroup={
+          showArrows ? <CustomButtonGroupAsArrows /> : undefined
+        }
+        renderButtonGroupOutside={true}
+      >
+        {products.map((product: any) => (
+          <ProductCard02
+            key={product.id}
+            product={product}
+            addToCartHandler={addToCartHandler}
+            isOnSale={product.offers && product.offers.length > 0}
+            stock={product.stock}
+          />
+        ))}
+      </Carousel>
+      <div className="flex items-center justify-center">
         <Link
-          href="/tienda"
-          className={`shadow bg-primary hover:bg-secondary text-secondary hover:text-primary font-bold py-3 px-12`}
-          style={{ borderRadius: "var(--radius)" }}
+          className="px-4 cursor-pointer py-2 mt-2 tracking-wide text-secondary capitalize transition-colors duration-300 transform bg-primary hover:scale-105 rounded"
+          href="/tienda/"
         >
           Ir a Tienda
         </Link>
       </div>
-    </section>
+    </div>
   );
 };
 

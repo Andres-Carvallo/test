@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import Loader from "@/components/common/Loader";
+import Loader from "@/components/common/Loader-t";
 
 interface Product {
   productId: string;
@@ -87,7 +87,7 @@ const ProductosMasVendidos: React.FC = () => {
             orderBy === "amount" ? b.amount - a.amount : b.quantity - a.quantity
         );
 
-        setMostSoldProducts(sortedProducts.slice(0, 4)); // Limitar a los primeros 5 productos
+        setMostSoldProducts(sortedProducts.slice(0, 10)); // Limitar a los primeros 5 productos
       } catch (error) {
         console.error("Error fetching most sold products:", error);
       }
@@ -135,7 +135,7 @@ const ProductosMasVendidos: React.FC = () => {
               Ordenar por Cantidad
             </button>
           </div>
-          <dd className="font-light text-black dark:text-gray-400 w-full">
+          <dd className="font-light text-black dark:text-gray-400 w-full h-96 overflow-y-auto">
             <ul>
               {mostSoldProducts.map((product) => (
                 <li

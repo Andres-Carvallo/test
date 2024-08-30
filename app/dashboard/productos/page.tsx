@@ -5,36 +5,37 @@ import Link from "next/link";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import { getCookie } from "cookies-next";
 import axios from "axios";
-import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
 import toast from "react-hot-toast";
+import Loader from "@/components/common/Loader-t";
 
+// Interfaces para Tipos de Producto y Respuesta de la API
 interface Product {
-  [x: string]: string | undefined;
-  id: any;
+  id: string;
+  skuId: string;
   name: string;
   previewImageUrl: string;
-  productTypes: any;
+  mainImageUrl: string;
+  productTypes: { id: string; name: string }[];
   price: string;
   statusCode: string;
-  hasVariations: any;
-}
-
-interface Pagination {
-  totalPages: number;
-  pageSize: number;
-}
-
-interface ProductsResponse {
-  products: Product[];
-  pagination: Pagination;
-  total: number;
+  hasVariations: boolean;
+  enabledForDelivery: boolean;
+  enabledForWithdrawal: boolean;
+  description: string;
+  isFeatured: boolean;
+  hasFeaturedBaseSku: boolean;
 }
 
 export default function ProductPageBO() {
+  // Estados
+  const [loading, setLoading] = useState(false);
   const [filterDropdownVisible, setFilterDropdownVisible] = useState(false);
   const [actionsDropdownVisible, setActionsDropdownVisible] = useState(false);
-  const { productType, setProductType } = useAPI();
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const [paginatedProducts, setPaginatedProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
@@ -44,17 +45,40 @@ export default function ProductPageBO() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
-  const [totalProducts, setTotalProducts] = useState(0);
 
+  // Efecto para cargar los productos iniciales
+  useEffect(() => {
+    fetchProductos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Efecto para actualizar los productos filtrados cuando cambian las categorías o el término de búsqueda
+  useEffect(() => {
+    const filtered = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (selectedCategories.size === 0 ||
+          Array.from(selectedCategories).every((category) =>
+            product.productTypes.some((type) => type.name === category)
+          ))
+    );
+
+    setFilteredProducts(filtered);
+
+    const pages = Math.ceil(filtered.length / pageSize);
+    setTotalPages(pages);
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setPaginatedProducts(filtered.slice(startIndex, endIndex));
+  }, [products, searchTerm, selectedCategories, currentPage, pageSize]);
+
+  // Manejo de Cambio de Página
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
-    fetchProductos(pageNumber, pageSize);
   };
 
-  useEffect(() => {
-    fetchProductos(currentPage, pageSize);
-  }, [currentPage, pageSize]);
-
+  // Mostrar y Ocultar Modales
   const showDeleteModal = (product: Product) => {
     setProductToDelete(product);
     setIsModalVisible(true);
@@ -72,6 +96,7 @@ export default function ProductPageBO() {
     }
   };
 
+  // Manejo de Categorías
   const handleCategoryChange = (category: string) => {
     setSelectedCategories((prev) => {
       const newSelected = new Set(prev);
@@ -84,8 +109,8 @@ export default function ProductPageBO() {
     });
   };
 
+  // Manejo de Eventos de Clic Fuera de los Dropdowns
   const filterDropdownRef = useRef<HTMLDivElement>(null);
-
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (
       filterDropdownRef.current &&
@@ -110,44 +135,106 @@ export default function ProductPageBO() {
     setActionsDropdownVisible(!actionsDropdownVisible);
   };
 
-  const fetchProductos = async (pageNumber = 1, pageSize = 6) => {
+  const fetchProductos = async () => {
     try {
+      setLoading(true); // Inicia el loading
       const token = getCookie("AdminTokenAuth");
-      const data: ProductsResponse = await obtenerProductosBO(
-        pageNumber,
-        pageSize,
-        token
-      );
-      setProducts(data.products);
-      setTotalProducts(data.total); // Asume que el API devuelve el total de productos
+      const allData: Product[] = [];
+      let pageNumber = 1;
+      let data;
 
-      // Actualiza el estado con la cantidad de productos por página y la cantidad de páginas
-      setPageSize(data.pagination.pageSize);
-      setTotalProducts(data.pagination.totalPages);
-      setCurrentPage(pageNumber);
+      do {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=${pageNumber}&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        data = response.data;
+        allData.push(...data.products);
+        pageNumber += 1;
+      } while (data.products.length > 0);
 
-      // Extraer categorías únicas
-      const uniqueCategories = new Set<string>();
-      data.products.forEach((product) => {
-        product.productTypes.forEach((type: any) => {
-          uniqueCategories.add(type.name);
-        });
-      });
-      setCategories(Array.from(uniqueCategories));
+      setProducts(allData);
+      setFilteredProducts(allData);
+      initializeCategories(allData);
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Ocurrió un error:", error.message);
-      } else {
-        console.error("Ocurrió un error desconocido:", error);
-      }
+      console.error("Ocurrió un error:", error);
+      toast.error("Error al cargar los productos");
+    } finally {
+      setLoading(false); // Termina el loading
     }
   };
 
-  useEffect(() => {
-    fetchProductos();
-  }, []);
+  const initializeCategories = (products: Product[]) => {
+    const uniqueCategories = new Set<string>();
+    products.forEach((product) => {
+      product.productTypes.forEach((type) => {
+        uniqueCategories.add(type.name);
+      });
+    });
+    setCategories(Array.from(uniqueCategories));
+  };
 
-  const deleteProduct = async (id: number) => {
+  const filterProducts = () => {
+    const filtered = products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (selectedCategories.size === 0 ||
+          Array.from(selectedCategories).every((category) =>
+            product.productTypes.some((type) => type.name === category)
+          ))
+    );
+    setFilteredProducts(filtered);
+  };
+
+  const paginateProducts = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setPaginatedProducts(filteredProducts.slice(startIndex, endIndex));
+  };
+
+  const updateProduct = async (product: Product, updates: Partial<Product>) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${product.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          ...product,
+          ...updates,
+          hasFeaturedBaseSku: updates.isFeatured ?? product.isFeatured,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      toast.success("Producto actualizado");
+      fetchProductos();
+    } catch (error) {
+      console.error(
+        "Error updating product:",
+        error instanceof Error ? error.message : error
+      );
+      toast.error("Error al actualizar el producto");
+    }
+  };
+
+  const toggleFeatured = (product: Product) => {
+    updateProduct(product, { isFeatured: !product.isFeatured });
+  };
+
+  const toggleStatus = (product: Product) => {
+    const newStatus = product.statusCode === "ACTIVE" ? "DRAFT" : "ACTIVE";
+    updateProduct(product, { statusCode: newStatus });
+  };
+
+  const deleteProduct = async (id: string) => {
     try {
       const token = getCookie("AdminTokenAuth");
       await axios.delete(
@@ -159,14 +246,14 @@ export default function ProductPageBO() {
           },
         }
       );
-      // Recargar la lista de productos después de eliminar
-      toast.error("Producto eliminado");
+      toast.success("Producto eliminado");
       fetchProductos();
     } catch (error) {
       console.error(
         "Error deleting product:",
         error instanceof Error ? error.message : error
       );
+      toast.error("Error al eliminar el producto");
     }
   };
 
@@ -174,20 +261,10 @@ export default function ProductPageBO() {
     setSearchTerm(event.target.value);
   };
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedCategories.size === 0 ||
-        Array.from(selectedCategories).every((category) =>
-          product.productTypes.some((type: any) => type.name === category)
-        ))
-  );
-
   return (
     <section className="w-full py-10 mx-auto h-[85vh]">
       <div className="dark:bg-gray-900 p-3 sm:p-5 relative">
         <div className="mx-auto w-full px-2">
-          {/* Start coding here */}
           <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
               <div className="w-full md:w-1/2">
@@ -244,7 +321,7 @@ export default function ProductPageBO() {
                       <path
                         clipRule="evenodd"
                         fillRule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 010-1.414z"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z"
                       />
                     </svg>
                     Actions
@@ -292,7 +369,7 @@ export default function ProductPageBO() {
                     >
                       <path
                         fillRule="evenodd"
-                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
                         clipRule="evenodd"
                       />
                     </svg>
@@ -307,7 +384,7 @@ export default function ProductPageBO() {
                       <path
                         clipRule="evenodd"
                         fillRule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 010-1.414z"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z"
                       />
                     </svg>
                   </button>
@@ -368,92 +445,137 @@ export default function ProductPageBO() {
                       scope="col"
                       className="px-2 py-3"
                     >
-                      Categorias
+                      Categorías
+                    </th>
+
+                    <th
+                      scope="col"
+                      className="px-2 py-3"
+                    >
+                      Publicado
                     </th>
                     <th
                       scope="col"
                       className="px-2 py-3"
                     >
-                      Precio
+                      Destacado
                     </th>
                     <th
                       scope="col"
                       className="px-2 py-3"
                     >
-                      Estado
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3"
-                    >
-                      <span className="sr-only">Actions</span>
+                      Acciones
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredProducts.map((product, index) => (
-                    <tr
-                      key={index}
-                      className="border-b dark:border-gray-700"
-                    >
-                      {/* Detalles de cada producto */}
-                      <td className="px-2 py-3 flex items-center justify-center align-middle">
-                        <img
-                          src={product.mainImageUrl}
-                          alt="User"
-                          className="rounded-full h-9 w-9 object-cover"
-                        />
-                      </td>
-                      <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {product.name}
-                      </td>
-                      <td className="px-2 py-3">
-                        <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
-                          {product.productTypes.map((category: any) => (
-                            <button
-                              key={category.id}
-                              className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
-                            >
-                              {category.name}
-                            </button>
-                          ))}
+                  {loading ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="w-full h-32"
+                      >
+                        <div className="flex items-center justify-center h-full mt-20 py-20">
+                          <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
                         </div>
                       </td>
-                      <td className="px-2 py-3">{product.price}</td>
-                      <td className="px-2 py-3">
-                        {product.statusCode === "ACTIVE"
-                          ? "PUBLICADO"
-                          : product.statusCode}
-                      </td>
-
-                      <td className="px-2 py-3 flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => showDeleteModal(product)}
-                          className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-800"
-                        >
-                          Eliminar
-                        </button>
-                        <Link
-                          href={
-                            product.hasVariations
-                              ? `/dashboard/productos/crear/producto-variable?productVariableId=${product.id}`
-                              : `/dashboard/productos/crear/producto-simple?productId=${product.id}`
-                          }
-                          className="px-2 py-1 rounded bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                        >
-                          Editar
-                        </Link>
-                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    paginatedProducts.map((product) => (
+                      <tr
+                        key={product.id}
+                        className="border-b dark:border-gray-700"
+                      >
+                        <td className="px-2 py-3 flex items-center justify-center align-middle">
+                          <img
+                            src={product.mainImageUrl}
+                            alt="Product"
+                            className="rounded-full h-9 w-9 object-cover"
+                          />
+                        </td>
+                        <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                          {product.name}
+                        </td>
+                        <td className="px-2 py-3">
+                          <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
+                            {product.productTypes.map((category) => (
+                              <button
+                                key={category.id}
+                                className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
+                              >
+                                {category.name}
+                              </button>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-2 py-3">
+                          <label className="inline-flex relative items-center mr-5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={product.statusCode === "ACTIVE"}
+                              onChange={() => toggleStatus(product)}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+                          </label>
+                        </td>
+                        <td className="px-2 py-3">
+                          <button
+                            onClick={() => toggleFeatured(product)}
+                            className="focus:outline-none"
+                          >
+                            {product.isFeatured ? (
+                              <svg
+                                className="w-6 h-6 text-yellow-400"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="w-6 h-6 text-gray-400"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
+                              </svg>
+                            )}
+                          </button>
+                        </td>
+                        <td className="px-2 py-3 flex items-center space-x-2">
+                          <Link
+                            href={
+                              product.hasVariations
+                                ? `/dashboard/productos/crear/producto-variable?productVariableId=${product.id}`
+                                : `/dashboard/productos/crear/producto-simple?productId=${product.id}`
+                            }
+                            className="px-2 py-1 rounded bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                          >
+                            Editar
+                          </Link>
+                          <button
+                            onClick={() => showDeleteModal(product)}
+                            className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-800"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
+
             <div
               aria-label="Page navigation example"
               className="my-6 flex justify-center pt-8"
             >
               <ul className="flex items-center -space-x-px h-10 text-base">
+                {/* Botón de página anterior */}
                 <li>
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
@@ -480,26 +602,30 @@ export default function ProductPageBO() {
                     </svg>
                   </button>
                 </li>
-                {Array.from({ length: totalProducts }, (_, index) => (
+
+                {/* Botones de número de página */}
+                {Array.from({ length: totalPages }, (_, index) => (
                   <li key={index}>
                     <button
                       onClick={() => handlePageChange(index + 1)}
-                      className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
+                      className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
                         currentPage === index + 1
-                          ? "text-blue-600 border-blue-300 bg-blue-50"
-                          : ""
+                          ? "text-primary bg-gray-200"
+                          : "text-gray-300 bg-white"
                       }`}
                     >
                       {index + 1}
                     </button>
                   </li>
                 ))}
+
+                {/* Botón de página siguiente */}
                 <li>
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalProducts}
+                    disabled={currentPage === totalPages}
                     className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
-                      currentPage === totalProducts ? "cursor-not-allowed" : ""
+                      currentPage === totalPages ? "cursor-not-allowed" : ""
                     }`}
                   >
                     <span className="sr-only">Next</span>

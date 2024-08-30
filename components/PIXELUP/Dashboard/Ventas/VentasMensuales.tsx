@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import Loader from "@/components/common/Loader";
+import Loader from "@/components/common/Loader-t";
 import CardDataStats from "../../StatsBox/CardDataStats01";
 
 interface Sale {

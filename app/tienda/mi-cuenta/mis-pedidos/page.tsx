@@ -7,7 +7,7 @@ import OrderCard from "./OrderCard";
 
 export default function Page() {
   return (
-    <div className="py-24 min-h-screen">
+    <div className="py-24 md:min-h-screen">
       <OrderCard />
     </div>
   );

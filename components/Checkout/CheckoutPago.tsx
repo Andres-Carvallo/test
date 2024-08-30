@@ -60,6 +60,12 @@ function CheckoutPago() {
         fetchOrders();
         setDiscountCode(discountCode);
       } else {
+        /* LOGICA PARA LO DEL CUPÓN */
+        /* 
+      else if (response.data.code === AQUI HAY QUE PONER EL LO DEL BACKEND) { 
+        toast.error("Cupón no válido");
+        setDiscountApplied(false);
+      } */
         toast.error("Error al aplicar el descuento");
       }
     } catch (error) {
@@ -87,6 +93,13 @@ function CheckoutPago() {
       console.error("Error al eliminar el descuento:", error);
     }
   };
+  const hasFreeShipping = orderDetail.discountCoupons?.some(
+    (coupon: any) => coupon.discountCoupon?.hasFreeShipping
+  );
+
+  const discountPercentage = orderDetail.discountCoupons?.find(
+    (coupon: any) => coupon.discountCoupon?.percentage > 0
+  )?.discountCoupon.percentage;
 
   const handleSubmitOrder = async () => {
     try {
@@ -160,10 +173,7 @@ function CheckoutPago() {
             <div className="relative">
               <ul className="relative flex w-full items-center justify-between space-x-2 sm:space-x-4">
                 <li className="flex items-center space-x-3 text-left sm:space-x-4">
-                  <a
-                    className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-200 text-xs font-semibold text-emerald-700"
-                    href="#"
-                  >
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-200 text-xs font-semibold text-emerald-700">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4"
@@ -178,8 +188,29 @@ function CheckoutPago() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                  </a>
+                  </span>
                   <span className="font-semibold text-gray-900">Tienda</span>
+                </li>
+                <li className="flex items-center space-x-3 text-left sm:space-x-4">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-200 text-xs font-semibold text-emerald-700">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </span>
+                  <span className="font-semibold text-gray-900">
+                    Confirmación
+                  </span>
                 </li>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -200,32 +231,9 @@ function CheckoutPago() {
                     className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-600 text-xs font-semibold text-white ring ring-gray-600 ring-offset-2"
                     href="#"
                   >
-                    2
-                  </a>
-                  <span className="font-semibold text-gray-900">Envio</span>
-                </li>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-                <li className="flex items-center space-x-3 text-left sm:space-x-4">
-                  <a
-                    className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 text-xs font-semibold text-white"
-                    href="#"
-                  >
                     3
                   </a>
-                  <span className="font-semibold text-gray-500">Pago</span>
+                  <span className="font-semibold text-gray-900">Pago</span>
                 </li>
               </ul>
             </div>
@@ -272,7 +280,7 @@ function CheckoutPago() {
                                     <p className="mr-4 text-sm font-heading font-medium">
                                       <span>Precio:</span>
                                       <span className="ml-2 text-gray-400 font-body">
-                                        {order.unitPrice}
+                                        ${order.unitPrice.toLocaleString()}
                                       </span>
                                     </p>
                                   </div>
@@ -402,7 +410,7 @@ function CheckoutPago() {
                     htmlFor="addressLine2"
                     className="block mt-4"
                   >
-                    Comentarios Dirección
+                    Indicaciones Extras
                     <input
                       type="text"
                       id="addressLine2"
@@ -426,7 +434,12 @@ function CheckoutPago() {
                         value={discountCode}
                         name="codeDiscount"
                         onChange={(e) => setDiscountCode(e.target.value)}
-                        className="block bg-white w-full rounded-md border-dark/50 border p-2 mt-1"
+                        className={`block w-full rounded-md border-dark/50 border p-2 mt-1 ${
+                          hasDiscount
+                            ? "bg-gray-200 cursor-not-allowed"
+                            : "bg-white"
+                        }`}
+                        disabled={hasDiscount}
                       />
                     </label>
                   </div>
@@ -440,7 +453,7 @@ function CheckoutPago() {
                         id="botonDescuento"
                         className="mt-7 mb-8 w-full rounded-md bg-gray-900 px-6 py-2 font-medium text-white"
                       >
-                        {hasDiscount ? "Eliminar descuento" : "Agregar cupon"}
+                        {hasDiscount ? "Eliminar descuento" : "Agregar cupón"}
                       </button>
                     </label>
                   </div>
@@ -452,27 +465,48 @@ function CheckoutPago() {
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">Subtotal</p>
                   <p className="font-semibold text-gray-900">
-                    $ {orderDetail.totals.itemsAmount}
+                    $ {orderDetail.totals.itemsAmount.toLocaleString()}
                   </p>
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">Despacho</p>
                   <p className="font-semibold text-gray-900">
-                    $ {orderDetail.totals.shippingAmount}
+                    {hasFreeShipping ? (
+                      <span>
+                        <span className="line-through">
+                          ${orderDetail.totals.shippingAmount.toLocaleString()}
+                        </span>
+                        <span className="ml-2 text-green-600">
+                          Envío Gratis
+                        </span>
+                      </span>
+                    ) : (
+                      `$ ${orderDetail.totals.shippingAmount.toLocaleString()}`
+                    )}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">Descuento</p>
                   <p className="font-semibold text-gray-900">
-                    $ {orderDetail.totals.discountAmount}
+                    {discountPercentage ? (
+                      <span>
+                        ${orderDetail.totals.discountAmount.toLocaleString()}
+                        <span className="ml-2 text-green-600">
+                          ({discountPercentage}%)
+                        </span>
+                      </span>
+                    ) : (
+                      `$ ${orderDetail.totals.discountAmount.toLocaleString()}`
+                    )}
                   </p>
                 </div>
               </div>
+
               <div className="mt-6 flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-900">Total</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  $ {orderDetail.totals.totalAmount}
+                  $ {orderDetail.totals.totalAmount.toLocaleString()}
                 </p>
               </div>
             </div>

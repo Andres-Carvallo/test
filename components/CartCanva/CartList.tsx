@@ -1,6 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+
 const noop = () => {};
+
 function CartList({
   cartItems,
   decrementQuantity,
@@ -8,50 +9,47 @@ function CartList({
   removeItem,
   setItemAvailability = noop,
 }: any) {
-  const [updatedCartItems, setUpdatedCartItems] = useState<any[]>([]);
+  const [productDetails, setProductDetails] = useState<any>({});
 
-  useEffect(() => {
-    setUpdatedCartItems(cartItems);
-  }, [cartItems]);
+  const fetchProductDetails = useCallback(async (productId: string, itemId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const data = await response.json();
+      const { enabledForDelivery, enabledForWithdrawal } = data.product;
 
-  useEffect(() => {
-    async function fetchProductDetails(productId: string, itemId: string) {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-        const data = await response.json();
-        const { enabledForDelivery, enabledForWithdrawal } = data.product;
-
-        setUpdatedCartItems((prevCartItems) =>
-          prevCartItems.map((item) =>
-            item.id === itemId
-              ? { ...item, enabledForDelivery, enabledForWithdrawal }
-              : item
-          )
-        );
-        setItemAvailability(itemId, enabledForDelivery, enabledForWithdrawal);
-      } catch (error) {
-        console.error("Error fetching product details:", error);
-      }
+      setProductDetails((prevDetails: any) => ({
+        ...prevDetails,
+        [itemId]: {
+          enabledForDelivery,
+          enabledForWithdrawal,
+        },
+      }));
+      setItemAvailability(itemId, enabledForDelivery, enabledForWithdrawal);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
     }
+  }, [setItemAvailability]);
 
-    updatedCartItems.forEach((item) => {
+  useEffect(() => {
+    cartItems.forEach((item: any) => {
       const productId = item.sku.product.id;
-      if (
-        item.enabledForDelivery === undefined ||
-        item.enabledForWithdrawal === undefined
-      ) {
+      if (!productDetails[item.id]) {
         fetchProductDetails(productId, item.id);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updatedCartItems]);
-
+  }, [cartItems, fetchProductDetails]);
+  
+  const sortedCartItems = [...cartItems].sort((a, b) => 
+    a.sku.product.name.localeCompare(b.sku.product.name)
+  );
   return (
     <>
-      {updatedCartItems.map((item) => (
+      {sortedCartItems.map((item: any) => (
         <div
+          data-ignore-outside-click
           key={item.id}
           className="flex flex-col gap-5 py-6 border-b border-gray-200 group relative"
         >
@@ -62,6 +60,7 @@ function CartList({
           </div>
           <div className="flex items-center gap-4">
             <button
+              data-ignore-outside-click
               onClick={() => removeItem(item.id)}
               className="w-6 h-6 top-4 right-0 flex items-center absolute justify-center text-dark hover:text-red-600 "
             >
@@ -78,18 +77,19 @@ function CartList({
                 />
               </svg>
             </button>
-            <div className="w-full max-w-24 ">
+            <div className="w-full max-w-24">
               <img
                 src={item.sku.mainImageUrl}
                 alt={item.sku.product.name}
-                className="mx-auto shadow-md"
+                className="mx-auto shadow-md max-h-24 w-full object-cover"
                 style={{ borderRadius: "var(--radius)" }}
               />
             </div>
+
             <div className="flex w-full justify-between ">
-              <div className="col-span-1 min-w-24">
-                <div className="flex flex-col  items-center gap-3">
-                  <h6 className="font-medium mt-3 text-xl leading-7 text-primary transition-all duration-300 ">
+              <div className="col-span-1 min-w-24 self-center">
+                <div className="flex flex-col  items-center">
+                  <h6 className="font-medium  text-xl leading-7 text-primary transition-all duration-300 ">
                     ${item.totalPrice.toLocaleString("es-CL")}
                   </h6>
                 </div>
@@ -97,8 +97,9 @@ function CartList({
               <div className="flex items-center w-fit  justify-center h-full ">
                 <div className="flex items-center h-full">
                   <button
+                    data-ignore-outside-click
                     onClick={() => decrementQuantity(item.id)}
-                    className="group rounded-l-xl px-5 py-[18px]  flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
+                    className="group rounded-l-xl px-2 py-[8px] flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
                   >
                     <svg
                       className="stroke-gray-900 transition-all duration-500 group-hover:stroke-red-800"
@@ -116,14 +117,12 @@ function CartList({
                       />
                       <path
                         d="M16.5 11H5.5"
-                        stroke=""
                         strokeOpacity="0.2"
                         strokeWidth="1.6"
                         strokeLinecap="round"
                       />
                       <path
                         d="M16.5 11H5.5"
-                        stroke=""
                         strokeOpacity="0.2"
                         strokeWidth="1.6"
                         strokeLinecap="round"
@@ -131,15 +130,16 @@ function CartList({
                     </svg>
                   </button>
                   <span
-                    className="border border-gray-200 outline-none  h-12 w-12 flex items-center justify-center text-gray-900 font-semibold text-lg bg-transparent"
+                    className="border border-gray-200 outline-none  h-10 w-10 flex items-center justify-center text-gray-900 font-semibold text-lg bg-transparent"
                     style={{ borderRadius: "var(--radius)" }}
                   >
                     {item.quantity}
                   </span>
 
                   <button
+                    data-ignore-outside-click
                     onClick={() => incrementQuantity(item.id)}
-                    className="group rounded-l-xl px-5 py-[18px]  flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
+                    className="group rounded-l-xl px-2 py-[8px] flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
                   >
                     <svg
                       className="stroke-gray-900 transition-all duration-500 group-hover:stroke-green-800"
@@ -157,14 +157,12 @@ function CartList({
                       />
                       <path
                         d="M11 5.5V16.5M16.5 11H5.5"
-                        stroke=""
                         strokeOpacity="0.2"
                         strokeWidth="1.6"
                         strokeLinecap="round"
                       />
                       <path
                         d="M11 5.5V16.5M16.5 11H5.5"
-                        stroke=""
                         strokeOpacity="0.2"
                         strokeWidth="1.6"
                         strokeLinecap="round"
@@ -177,7 +175,7 @@ function CartList({
           </div>
           <div className="flex flex-wrap">
             <p>
-              {item.enabledForDelivery ? (
+              {productDetails[item.id]?.enabledForDelivery ? (
                 <div className="flex">
                   <span>
                     <svg
@@ -225,7 +223,7 @@ function CartList({
               )}
             </p>
             <p>
-              {item.enabledForWithdrawal ? (
+              {productDetails[item.id]?.enabledForWithdrawal ? (
                 <div className="flex">
                   <span>
                     <svg

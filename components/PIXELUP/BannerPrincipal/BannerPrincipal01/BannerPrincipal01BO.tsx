@@ -46,7 +46,7 @@ const BannerPrincipalBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "900a5ae4-8224-4758-84a4-c7f728d73f38";
+      const bannerId = "a9253899-5470-4cff-8ab9-fec7992a78e9";
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
@@ -119,7 +119,7 @@ const BannerPrincipalBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerId = "a9253899-5470-4cff-8ab9-fec7992a78e9";
 
       if (isAddingImage) {
         // Realizar una solicitud POST para crear una nueva imagen
@@ -177,7 +177,7 @@ const BannerPrincipalBO: React.FC = () => {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
 
-      const bannerId = "d24e992c-ac47-44f0-a9e6-fa5b6b8f7bfc";
+      const bannerId = "a9253899-5470-4cff-8ab9-fec7992a78e9";
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}`,
         {
@@ -434,10 +434,10 @@ const BannerPrincipalBO: React.FC = () => {
                     />
                   </svg>
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
+                    <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
+                  PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>

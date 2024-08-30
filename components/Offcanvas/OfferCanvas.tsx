@@ -17,7 +17,9 @@ type OfferCanvasProps = {
   offerToEdit?: any;
   onSave: any;
   isOpen: boolean;
+  fetchOffersForProduct: any;
   onClose: () => void;
+  setSelectedRow: any;
 };
 
 function OfferCanvas({
@@ -28,6 +30,8 @@ function OfferCanvas({
   onSave,
   isOpen,
   onClose,
+  setSelectedRow,
+  fetchOffersForProduct,
 }: OfferCanvasProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(isOpen);
   const offcanvasRef = useRef<HTMLDivElement>(null);
@@ -73,6 +77,8 @@ function OfferCanvas({
     setUnitPrice("");
     setStartDate("");
     setEndDate("");
+    fetchOffersForProduct(itemId, skuId);
+    setSelectedRow(skuId);
     setCurrencyCodeId("8ccc1abd-b35b-45ff-b814-b7c78fff3594"); // Default currencyCodeId
   };
 
@@ -83,16 +89,19 @@ function OfferCanvas({
 
   return (
     <div>
-      <Link
-        href="#"
-        onClick={handleMenuOpenCreate}
+      <button
+        onClick={(e) => {
+          e.preventDefault(); // Para evitar el comportamiento por defecto del enlace
+          handleMenuOpenCreate();
+        }}
         className="menu-open-btn ease-in-up rounded-sm bg-green-700 px-8 py-3 text-base font-medium text-white shadow-btn transition duration-300 hover:bg-secondary hover:text-primary hover:shadow-btn-hover md:block md:px-9 lg:px-6 xl:px-9"
       >
         Crear Oferta
-      </Link>
+      </button>
+
       <div
         ref={offcanvasRef}
-        className={`offcanvas-menu fixed z-50 bg-black h-screen dark:border-strokedark dark:bg-form-strokedark top-20 right-0 p-6 w-2/3 md:w-1/3 ease-in-out duration-1000 shadow-md flex items-center ${
+        className={`offcanvas-menu fixed z-50 bg-black h-screen dark:border-strokedark dark:bg-form-strokedark top-20 right-0 p-6 w-2/3 md:w-[500px] ease-in-out duration-1000 shadow-md flex items-center ${
           isMenuOpen ? "" : "translate-x-full"
         }`}
       >
@@ -116,13 +125,11 @@ function OfferCanvas({
             />
           </svg>
         </Link>
-        <div className="flex items-center flex-col">
-          <h1 className="text-white dark:text-bodydark text-2xl font-bold uppercase">
+        <div className="flex items-center flex-col w-full">
+          <h1 className="text-white dark:text-bodydark text-2xl font-bold uppercase mb-10">
             {offerToEdit ? "Editar Oferta" : "Crear Oferta"}
           </h1>
-          <p className="text-white pb-6 dark:text-bodydark">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          </p>
+
           <OfferForm
             id={itemId}
             skuId={skuId}
@@ -138,6 +145,7 @@ function OfferCanvas({
             setEndDate={setEndDate}
             currencyCodeId={currencyCodeId}
             setCurrencyCodeId={setCurrencyCodeId}
+            fetchOffersForProduct={fetchOffersForProduct}
           />
         </div>
       </div>

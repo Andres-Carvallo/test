@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const Validando = () => {
   return (
-    <div className="container py-16">
+    <div className="container pb-16 pt-8">
       <Validate />
     </div>
   );

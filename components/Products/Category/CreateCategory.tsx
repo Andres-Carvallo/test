@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
 import { getCookie } from "cookies-next";
+import toast from "react-hot-toast";
 
 interface CreateCategoryProps {
   handleCloseModal: any | null;
@@ -71,7 +72,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
 
     const requestData = {
       name: formDataCategory.name,
-      description: formDataCategory.description,
+      description: formDataCategory.description || "texto predeterminado",
       statusCode: "ACTIVE",
       ...(formDataCategory.base64Data
         ? {
@@ -104,7 +105,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
 
       const responseData = await response.json();
       console.log("Datos enviados correctamente:", responseData);
-
+      toast.success("Categoría creada correctamente");
       fetchData();
 
       setFormDataCategory({
@@ -149,7 +150,9 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="w-full  gap-4">
+                {" "}
+                {/* grid grid-cols-1 sm:grid-cols-2 */}
                 <div>
                   <label htmlFor="description">Descripción</label>
                   <textarea
@@ -158,11 +161,11 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                     value={formDataCategory.description}
                     onChange={handleChange}
                     rows={4}
-                    className="block w-full min-h-52 p-2.5 text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
+                    className="block w-full min-h-28 p-2.5 text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500"
                     placeholder="Descripción Categoría"
                   />
                 </div>
-                <div className="flex flex-col justify-center mt-6 items-center w-full relative border border-dashed border-gray-300 rounded-lg p-5">
+                {/*                 <div className="flex flex-col justify-center mt-6 items-center w-full relative border border-dashed border-gray-300 rounded-lg p-5">
                   {formDataCategory.imageLoaded ? (
                     <div className="w-full h-40 relative">
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -233,7 +236,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                       />
                     </label>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
             <div className="flex gap-3">

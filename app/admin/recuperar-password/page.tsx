@@ -1,6 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import axios from "axios";
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from "react-google-recaptcha-v3";
 
 function Page() {
   const [email, setEmail] = useState("");
@@ -10,6 +14,8 @@ function Page() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [message, setMessage] = useState("");
+
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const handleEmailSubmit = async (e: any) => {
     e.preventDefault();
@@ -21,10 +27,17 @@ function Page() {
       return;
     }
 
+    if (!executeRecaptcha) {
+      console.error("Execute recaptcha not yet available");
+      return;
+    }
+
     try {
+      const recaptchaToken = await executeRecaptcha("emailSubmit");
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/recoveries`,
-        { email }
+        { email, recaptchaToken } // Añadir el token de reCAPTCHA
       );
 
       if (response.data.code === 0) {
@@ -53,11 +66,17 @@ function Page() {
       return;
     }
 
+    if (!executeRecaptcha) {
+      console.error("Execute recaptcha not yet available");
+      return;
+    }
+
     try {
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const recaptchaToken = await executeRecaptcha("recoverySubmit");
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/recoveries/${recoveryId}/validations`,
-        { securityCode, newPassword, confirmNewPassword }
+        { securityCode, newPassword, confirmNewPassword, recaptchaToken } // Añadir el token de reCAPTCHA
       );
 
       if (response.data.code === 0) {
@@ -75,7 +94,7 @@ function Page() {
 
   return (
     <div>
-      <div className=" mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+      <div className="mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
         <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
           <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
             Recuperar Contraseña
@@ -168,4 +187,11 @@ function Page() {
   );
 }
 
-export default Page;
+export default function WrappedPage() {
+  const siteKey = process.env.RECAPTCHA_SITE_KEY || "";
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <Page />
+    </GoogleReCaptchaProvider>
+  );
+}

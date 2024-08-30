@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-
+import toast from "react-hot-toast";
 interface Variation {
   id: string;
   product: { id: string; name: string; productTypes: { name: string }[] };
@@ -398,6 +398,7 @@ const ProductDetail02: React.FC = () => {
   const handleAddToCart = () => {
     if (!areAllAttributesSelected()) {
       console.error("Debe seleccionar todos los atributos.");
+      toast.error("Debe seleccionar todos los atributos.");
       return;
     }
 
@@ -683,7 +684,6 @@ const ProductDetail02: React.FC = () => {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-semibold">Atributos:</h3>
                 <div className="flex flex-col space-y-4 mt-2">
                   {Object.entries(currentAttributes).map(
                     ([attributeName, attributeValues]) => (

@@ -1,10 +1,14 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
+import Modal from "@/components/Modals/ModalSeo"; // Asegúrate de importar el modal
+import Cropper from "react-easy-crop";
+import { getCroppedImg } from "@/lib/cropImage";
+import imageCompression from "browser-image-compression";
 
 // Cargar react-quill dinámicamente para evitar problemas de SSR (Server-Side Rendering)
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -20,8 +24,16 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
   BannerAboutBOData,
 }) => {
   const { BannerId, BannerImageId } = BannerAboutBOData;
+  const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
+
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
+  // States for image cropping
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [formDataHero, setFormDataHero] = useState<any>({
     title: "",
     landingText: "",
@@ -44,6 +56,8 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
     },
   });
 
+  const [originalFileName, setOriginalFileName] = useState<string>("");
+
   const MAX_CHARACTERS = 200;
   const ALERT_CHARACTERS = 199;
 
@@ -51,11 +65,11 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "0c482c67-65eb-4cbc-be04-2786262cb8fd";
-      const bannerImageId = "90c5ff6c-d258-4b26-8d94-d694efdfd9e8";
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNER_TIENDA_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_BANNER_TIENDA_IMGID}`;
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -116,10 +130,10 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
       }
 
       // Send updated data to the server
-      const bannerId = "0c482c67-65eb-4cbc-be04-2786262cb8fd";
-      const bannerImageId = "90c5ff6c-d258-4b26-8d94-d694efdfd9e8";
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNER_TIENDA_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_BANNER_TIENDA_IMGID}`;
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         updatedDataWithoutImage,
         {
           headers: {
@@ -136,6 +150,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
       // Handle error
     } finally {
       setLoading(false); // Ocultar el indicador de carga
+      setIsMainImageUploaded(false);
     }
   };
 
@@ -146,6 +161,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      setOriginalFileName(file.name); // Guardar el nombre del archivo original
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
@@ -166,6 +182,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
           ...prevData,
           [imageKey]: imageInfo,
         }));
+        setIsModalOpen(true); // Abrir el modal para recortar la imagen
       };
       reader.readAsDataURL(file);
     }
@@ -180,6 +197,66 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Tab") {
       e.preventDefault(); // Prevenir comportamiento predeterminado del Tab
+    }
+  };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const convertToBase64 = (file: Blob) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleCrop = async () => {
+    if (!mainImageHero) return;
+
+    try {
+      const croppedImage = await getCroppedImg(
+        mainImageHero,
+        croppedAreaPixels
+      );
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+        initialQuality: 0.8,
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const imageInfo = {
+        name: originalFileName, // Usar el nombre del archivo original
+        type: compressedFile.type,
+        size: compressedFile.size,
+        data: base64,
+      };
+
+      setFormDataHero((prevFormDataHero: any) => ({
+        ...prevFormDataHero,
+        mainImage: imageInfo,
+      }));
+      setMainImageHero(base64);
+      setIsModalOpen(false);
+      setIsMainImageUploaded(true);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
     }
   };
 
@@ -226,9 +303,6 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
               <h1 className="sm:text-4xl text-2xl font-bold mb-6">
                 {bannerData[0].title}
               </h1>
-              {/*             <p className="text-lg text-center text-gray-200">
-              {bannerData[0].landingText}
-            </p> */}
               <p
                 className="text-center text-gray-200"
                 dangerouslySetInnerHTML={{ __html: bannerData[0].landingText }}
@@ -311,40 +385,41 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
             id="mainImageHero"
             className="hidden"
             onChange={(e) =>
-              handleImageChange(e, setMainImageHero, "mainImage")
+              handleImageChange(e, setMainImageHero, "mainImageHero")
             }
           />
-          {mainImageHero ? (
-            <div>
-              <h3 className="font-normal text-primary">
-                Foto <span className="text-primary">*</span>
-              </h3>
-              <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
-                <img
-                  src={mainImageHero}
-                  alt="Main Image"
-                  className="w-full"
-                />
-                <button
-                  className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() => handleClearImage(setMainImageHero)}
+          {isMainImageUploaded ? (
+            <div className="flex flex-col items-center mt-3 relative">
+              <h4 className="font-normal text-primary text-center text-slate-600 w-full">
+                Tu fotografía{" "}
+                <span className="text-dark">
+                  {" "}
+                  {formDataHero.mainImage.name}
+                </span>{" "}
+                ya ha sido cargada.
+                <br /> Actualiza para ver los cambios.
+              </h4>
+
+              <button
+                className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full   text-xs mt-4"
+                onClick={() => handleClearImage(setMainImageHero)}
+              >
+                <span className="self-center">Seleccionar otra Imagen</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                </button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </button>
             </div>
           ) : (
             <div>
@@ -353,8 +428,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
               </h3>
               <label
                 htmlFor="mainImageHero"
-                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10"
-                style={{ borderRadius: "var(--radius)" }}
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
               >
                 <div className="flex flex-col justify-center items-center">
                   <svg
@@ -371,10 +445,10 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
                     />
                   </svg>
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
+                    <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
+                  PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>
@@ -409,6 +483,60 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
           {loading ? "Loading..." : "Actualizar Banner"}
         </button>
       </form>
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImageHero || ""} // Asegurar que se pasa una cadena no nula
+              crop={crop}
+              zoom={zoom}
+              aspect={5 / 1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+            <div className="controls"></div>
+          </div>
+          <div className="flex flex-col  justify-end ">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range "
+              />
+            </div>
+
+            <div className="flex justify-between w-full ">
+              <button
+                onClick={handleCrop}
+                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setMainImageHero(null);
+                  setIsMainImageUploaded(false);
+                  setIsModalOpen(false);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </section>
   );
 };

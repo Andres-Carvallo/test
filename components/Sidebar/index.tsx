@@ -15,7 +15,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
-
+  const handleLinkClick = (href: string) => {
+    if (href === pathname) {
+      window.location.reload();
+    }
+  };
   let storedSidebarExpanded = "true";
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === "true"
@@ -74,12 +78,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       }`}
     >
       {/* SIDEBAR HEADER */}
-      <div className="mt-8 flex items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
+      <div className="mt-10 flex items-center justify-center gap-2 px-6 py-5.5 lg:py-6.5">
         <Link href="/">
           <img
-            src="/img/pixelup-white.png"
+            src={process.env.NEXT_PUBLIC_LOGO_WHITE}
             alt=""
-            className="w-32 mt-2"
+            className="w-40 mt-2 mb-2"
           />
         </Link>
 
@@ -107,7 +111,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       </div>
       {/* SIDEBAR HEADER */}
 
-      <div className="no-scrollbar flex flex-col  duration-300 ease-linear">
+      <div className="overflow-y-auto flex flex-col  duration-300 ease-linear">
         {/* Sidebar Menu */}
         <nav className="mt-4 fit-content py-4 px-4 lg:px-6">
           {/* Menu Group */}
@@ -120,6 +124,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname.includes("/dashboard") &&
                     "bg-graydark dark:bg-meta-4"
                   }`}
+                  onClick={() => handleLinkClick("/dashboard/")}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -136,6 +141,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     />
                   </svg>
                   Inicio
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/dashboard/pixelcoins"
+                  className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                    pathname.includes("/dashboard/pixelcoins") &&
+                    "bg-graydark dark:bg-meta-4"
+                  }`}
+                  onClick={() => handleLinkClick("/dashboard/pixelcoins")}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
+                    />
+                  </svg>
+                  PixelCoins
                 </Link>
               </li>
 
@@ -199,6 +230,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-normal text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() => handleLinkClick("/dashboard/ventas")}
                           >
                             - Ventas
                           </Link>
@@ -209,6 +241,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-normal text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/visitas-web")
+                            }
                           >
                             - Visitas Web
                           </Link>
@@ -220,31 +255,94 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 )}
               </SidebarLinkGroup>
               {/* Menu Item Informes */}
+              {/* Menu Item pedidos */}
+              <SidebarLinkGroup activeCondition={pathname.includes("informes")}>
+                {(handleClick, open) => (
+                  <React.Fragment>
+                    <Link
+                      href="#"
+                      className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal  text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                        open && "bg-graydark dark:bg-meta-4"
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleGroup("pedidos");
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"
+                        />
+                      </svg>
+                      Pedidos
+                      <svg
+                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                          openGroup === "informes" ? "rotate-180" : ""
+                        }`}
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                          d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                          fill=""
+                        />
+                      </svg>
+                    </Link>
+                    {/* Dropdown Menu Start */}
+                    <div
+                      className={`translate transform overflow-hidden ${
+                        openGroup === "pedidos" ? "" : "hidden"
+                      }`}
+                    >
+                      <ul className="text-white  ml-5 mt-2.5 mb-4 flex flex-col gap-1 pl-6">
+                        <li>
+                          <Link
+                            href="/dashboard/pedidos"
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-normal text-secondary duration-300 ease-in-out hover:text-white ${
+                              pathname === "/" && "text-white"
+                            } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/pedidos")
+                            }
+                          >
+                            - Mis Pedidos
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/pedidos/crear"
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-normal text-secondary duration-300 ease-in-out hover:text-white ${
+                              pathname === "/" && "text-white"
+                            } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/pedidos/crear")
+                            }
+                          >
+                            - Crear Pedido
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                    {/* Dropdown Menu End */}
+                  </React.Fragment>
+                )}
+              </SidebarLinkGroup>
+              {/* Menu Item pedidos */}
 
-              <li>
-                <Link
-                  href="/dashboard/pedidos"
-                  className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
-                    pathname.includes("pedidos") && "bg-graydark dark:bg-meta-4"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"
-                    />
-                  </svg>
-                  Pedidos
-                </Link>
-              </li>
               {/* Menu Item Productos */}
               <SidebarLinkGroup
                 activeCondition={pathname.includes("productos")}
@@ -307,6 +405,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/productos")
+                            }
                           >
                             - Lista de Productos
                           </Link>
@@ -317,8 +418,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick(
+                                "/dashboard/productos/crear/producto-simple"
+                              )
+                            }
                           >
-                            - Cargar producto simple
+                            - Producto Simple
                           </Link>
                         </li>
                         <li>
@@ -327,8 +433,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick(
+                                "/dashboard/productos/crear/producto-variable"
+                              )
+                            }
                           >
-                            - Cargar producto variable
+                            - Producto Variable
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            href="/dashboard/colecciones"
+                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
+                              pathname === "/" && "text-white"
+                            } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/colecciones")
+                            }
+                          >
+                            - Colecciones
                           </Link>
                         </li>
                         <li>
@@ -338,17 +462,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                               pathname === "/dashboard/categorias" && "text-red"
                             } `}
                           >
-                            - Crear Categoría
-                          </Link>
-                        </li>
-                        <li>
-                          <Link
-                            href="/dashboard/colecciones"
-                            className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
-                              pathname === "/" && "text-white"
-                            } `}
-                          >
-                            - Crear Colección
+                            - Categorías
                           </Link>
                         </li>
                       </ul>
@@ -421,6 +535,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/banner-home")
+                            }
                           >
                             - Home
                           </Link>
@@ -431,6 +548,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() => handleLinkClick("/dashboard/tienda")}
                           >
                             - Tienda
                           </Link>
@@ -441,6 +559,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/about-us")
+                            }
                           >
                             - About
                           </Link>
@@ -516,6 +637,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/zona-repartos")
+                            }
                           >
                             - Zonas Personalizadas
                           </Link>
@@ -526,6 +650,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/starken")
+                            }
                           >
                             - Starken
                           </Link>
@@ -600,6 +727,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/ofertas")
+                            }
                           >
                             - Ofertas
                           </Link>
@@ -610,6 +740,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             className={`text-[14px] group relative flex items-center gap-1 rounded-md font-medium text-secondary duration-300 ease-in-out hover:text-white ${
                               pathname === "/" && "text-white"
                             } `}
+                            onClick={() =>
+                              handleLinkClick("/dashboard/cupones")
+                            }
                           >
                             - Cupones
                           </Link>
@@ -630,6 +763,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname.includes("Contactos") &&
                     "bg-graydark dark:bg-meta-4"
                   }`}
+                  onClick={() => handleLinkClick("/dashboard/SEO")}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -648,6 +782,33 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   SEO
                 </Link>
               </li>
+              {/* SEO */}
+
+              <li>
+                <Link
+                  href="/dashboard/mailing"
+                  className={`text-[14px] group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-normal text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                    pathname.includes("mailing") && "bg-graydark dark:bg-meta-4"
+                  }`}
+                  onClick={() => handleLinkClick("/dashboard/mailing")}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                    />
+                  </svg>
+                  Mailing
+                </Link>
+              </li>
               {/* Menu Item Promociones */}
 
               {/* Menu Item pedidos */}
@@ -658,6 +819,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname.includes("Contactos") &&
                     "bg-graydark dark:bg-meta-4"
                   }`}
+                  onClick={() => handleLinkClick("/dashboard/clientes")}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -679,141 +841,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               {/* Menu Item pedidos */}
 
               {/* Menu Item content Block */}
-              <li>
-                <Link
-                  href="/dashboard/clientes"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-primary duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes("Contactos") &&
-                    "bg-graydark dark:bg-meta-4"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6"
-                    />
-                  </svg>
-                  Content Block
-                </Link>
-              </li>
+
               {/* Menu Item content Block */}
               {/* Menu Item Zona Repartos */}
-              <li>
-                <Link
-                  href="/dashboard/zona-repartos"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-primary duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes("Contactos") &&
-                    "bg-graydark dark:bg-meta-4"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
-                    />
-                  </svg>
-                  Zona Repartos
-                </Link>
-              </li>
+
               {/* Menu Item Zona Repartos */}
               {/* Menu Item Cupones */}
-              <li>
-                <Link
-                  href="/dashboard/cupones"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-primary duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes("Contactos") &&
-                    "bg-graydark dark:bg-meta-4"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z"
-                    />
-                  </svg>
-                  Cupones
-                </Link>
-              </li>
-              {/* Menu Item Ofertas */}
-
-              {/* Menu Item Clientes */}
-              <li>
-                <Link
-                  href="/dashboard/clientes"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-primary duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes("Contactos") &&
-                    "bg-graydark dark:bg-meta-4"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
-                    />
-                  </svg>
-                  Clientes
-                </Link>
-              </li>
-              {/* Menu Item Clientes */}
-
-              {/* Menu Item Usuarios */}
-              <li>
-                <Link
-                  href="/dashboard/usuarios"
-                  className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-primary duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-                    pathname.includes("Contactos") &&
-                    "bg-graydark dark:bg-meta-4"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
-                    />
-                  </svg>
-                  Usuarios
-                </Link>
-              </li>
 
               {/* Menu Item Usuarios */}
 
@@ -825,6 +858,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     pathname.includes("/dashboard/opciones-de-cuenta") &&
                     "bg-graydark dark:bg-meta-4"
                   }`}
+                  onClick={() =>
+                    handleLinkClick("/dashboard/opciones-de-cuenta")
+                  }
                 >
                   <svg
                     className="fill-current"

@@ -94,7 +94,7 @@ export const handleStockSku = async (
         {
           warehouseId: warehouseId,
           quantity: quantity,
-          minimumQuantity: 5,
+          minimumQuantity: minimumQuantity,
         },
         {
           headers: {
@@ -112,5 +112,42 @@ export const handleStockSku = async (
     }
   } catch (error) {
     console.error("Error sending request:", error);
+  }
+};
+
+export const handleHasUnlimitedStock = async (
+  productId: any,
+  skuId: any,
+  hasUnlimitedStock: boolean,
+  description: string,
+  hasStockNotifications: boolean
+) => {
+  try {
+    console.log("hasUnlimitedStock:1123123", hasUnlimitedStock);
+    const response = await axios.put(
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+      {
+        hasUnlimitedStock: hasUnlimitedStock,
+        description: description,
+        hasStockNotifications: hasStockNotifications,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status >= 200 && response.status < 300) {
+      console.log("hasUnlimitedStock actualizado correctamente");
+    } else {
+      console.error(
+        "Error actualizando hasUnlimitedStock:",
+        response.statusText
+      );
+    }
+  } catch (error) {
+    console.error("Error enviando la solicitud:", error);
   }
 };

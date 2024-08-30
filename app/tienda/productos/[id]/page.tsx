@@ -12,7 +12,6 @@ export default function DetalleProductos() {
   return (
     <section>
       <BannerTienda />
-
       <ProductDetail />
     </section>
   );

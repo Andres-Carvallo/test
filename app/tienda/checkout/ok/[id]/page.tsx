@@ -6,6 +6,10 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Loader from "@/components/common/Loader";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
+
 
 interface Order {
   totals: any;
@@ -43,6 +47,7 @@ interface Order {
     unitPrice: number;
     quantity: number;
     sku: {
+      mainImageUrl:string;
       previewImageUrl: string;
       product: {
         name: string;
@@ -62,7 +67,48 @@ const OrderReceipt: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const printRef = useRef<HTMLDivElement>(null);
+  const imagePath = process.env.NEXT_PUBLIC_LOGO_COLOR;
+  const handleDownloadPdf = async () => {
+    const buttonElement = document.getElementById("download-button");
+    if (buttonElement) {
+      buttonElement.style.display = "none"; // Oculta el botón
+    }
+  
+    if (printRef.current) {
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2, // Aumenta la escala para mejorar la resolución
+        useCORS: true, // Permite imágenes de origen cruzado
+      });
+  
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: "a4", // Tamaño estándar A4
+      });
+  
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+  
+      // Calcula la escala para ajustar la imagen dentro de la página
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const scale = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+  
+      const scaledWidth = imgWidth * scale;
+      const scaledHeight = imgHeight * scale;
+  
+      pdf.addImage(imgData, "PNG", 0, 0, scaledWidth, scaledHeight);
+      pdf.save(`Orden_Número_${order?.correlative}.pdf`);
+    }
+  
+    if (buttonElement) {
+      buttonElement.style.display = "block"; // Vuelve a mostrar el botón
+    }
+  };
+  
+  
   useEffect(() => {
     if (id) {
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -115,15 +161,32 @@ const OrderReceipt: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full justify-center items-center bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
-      <div
-        className="max-w-6xl mx-auto px-10 bg-white shadow-md rounded-md my-20 py-10"
-        id="order-receipt"
-      >
-        <h1 className="text-3xl font-bold text-center text-primary">
-          Detalle de tu Orden
-        </h1>
-        <p className="text-center mb-12">¡Gracias por comprar con nosotros!</p>
+    <div className="mx-auto flex w-full justify-center items-center bg-gray-100">
+    <div
+      className="max-w-6xl mx-auto px-10 bg-white shadow-md rounded-md my-20 py-10"
+      id="order-receipt"
+      ref={printRef}
+    >
+      <div className="flex justify-end print:hidden">
+        <button
+          id="download-button" // Añade un id al botón
+          onClick={handleDownloadPdf}
+          className="px-4 py-2 bg-primary text-white rounded-md mt-4"
+        >
+          Descargar PDF
+        </button>
+      </div>
+      <div className="text-center mt-6 mb-6">
+        <img
+          src={imagePath}
+          alt="Logo Tavola"
+          className="mx-auto max-h-40"
+        />
+      </div>
+      <h1 className="text-3xl font-bold text-center text-primary">
+        Detalle de tu Orden
+      </h1>
+      <p className="text-center mb-12">¡Gracias por comprar con nosotros!</p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="border p-4 rounded-md ">
@@ -185,7 +248,7 @@ const OrderReceipt: React.FC = () => {
             >
               <div className="flex items-center">
                 <img
-                  src={item.sku.previewImageUrl}
+                  src={item.sku.mainImageUrl}
                   alt={item.sku.product.name}
                   className="w-16 h-16 object-cover rounded-md shadow-md mr-4"
                 />
@@ -194,9 +257,7 @@ const OrderReceipt: React.FC = () => {
                   <p className="text-gray-500">Cantidad: {item.quantity}</p>
                 </div>
               </div>
-              <p className="text-purple-700 font-semibold">
-                ${item.unitPrice.toFixed(2)}
-              </p>
+              <p className=" font-semibold">${item.unitPrice.toLocaleString("es-CL")}</p>
             </div>
           ))}
         </div>
@@ -204,31 +265,31 @@ const OrderReceipt: React.FC = () => {
         <div className="border p-4 rounded-md mb-6">
           <div className="flex justify-between items-center mb-2">
             <p className="text-lg font-semibold">Subtotal:</p>
-            <p className="text-lg">${order.totals.itemsAmount.toFixed(2)}</p>
+            <p className="text-lg">${order.totals.itemsAmount.toLocaleString("es-CL")}</p>
           </div>
           <div className="flex justify-between items-center mb-2">
             <p className="text-lg font-semibold">Cargo por Envío:</p>
-            <p className="text-lg">${order.totals.shippingAmount.toFixed(2)}</p>
+            <p className="text-lg">${order.totals.shippingAmount.toLocaleString("es-CL")}</p>
           </div>
           <div className="flex justify-between items-center mb-2">
             <p className="text-lg font-semibold">Impuestos:</p>
-            <p className="text-lg">${order.totals.taxAmount.toFixed(2)}</p>
+            <p className="text-lg">${order.totals.taxAmount.toLocaleString("es-CL")}</p>
           </div>
           <div className="flex justify-between items-center mb-2">
             <p className="text-lg font-semibold">Descuento:</p>
-            <p className="text-lg">${order.totals.discountAmount.toFixed(2)}</p>
+            <p className="text-lg">${order.totals.discountAmount.toLocaleString("es-CL")}</p>
           </div>
           <div className="flex justify-between items-center">
             <p className="text-xl font-bold">Total:</p>
-            <p className="text-xl font-bold text-purple-700">
-              ${order.totals.totalAmount.toFixed(2)}
+            <p className="text-xl font-bold ">
+              ${order.totals.totalAmount.toLocaleString("es-CL")}
             </p>
           </div>
         </div>
 
-        <button className="bg-blue-500 hidden text-white p-2 rounded-md shadow-md hover:bg-blue-600 focus:outline-none">
+{/*         <button className="bg-blue-500 hidden text-white p-2 rounded-md shadow-md hover:bg-blue-600 focus:outline-none">
           Descargar PDF
-        </button>
+        </button> */}
       </div>
     </div>
   );

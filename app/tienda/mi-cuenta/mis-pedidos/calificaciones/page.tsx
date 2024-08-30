@@ -74,7 +74,6 @@ const OpinionesPendientes: React.FC = () => {
                 id: item.product.id,
                 nombre: item.product.name,
                 imagen: item.product.mainImageUrl,
-                fechaCompra: item.purchasedDate,
               }));
             setProductosPendientes(fetchedPendientes);
           } else {
@@ -89,7 +88,7 @@ const OpinionesPendientes: React.FC = () => {
                 id: item.product.id,
                 nombre: item.product.name,
                 imagen: item.product.mainImageUrl,
-                fechaCompra: item.purchasedDate,
+
                 score: item.score,
                 comments: item.comments,
               }));
@@ -150,7 +149,7 @@ const OpinionesPendientes: React.FC = () => {
     if (id && token) {
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/product-reviews?siteId=4779bede-3416-42f3-8bf3-5ea0f5755074`,
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/product-reviews?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
             productId: productoId,
             score: calificacion,
@@ -257,9 +256,6 @@ const OpinionesPendientes: React.FC = () => {
                   />
                   <div>
                     <h3 className="text-md font-medium">{producto.nombre}</h3>
-                    <p className="text-sm text-gray-600">
-                      Comprado el {producto.fechaCompra}
-                    </p>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -397,9 +393,6 @@ const OpinionesPendientes: React.FC = () => {
                   />
                   <div>
                     <h3 className="text-md font-medium">{producto.nombre}</h3>
-                    <p className="text-sm text-gray-600">
-                      Comprado el {producto.fechaCompra}
-                    </p>
                   </div>
                 </div>
                 <div className="flex items-center">

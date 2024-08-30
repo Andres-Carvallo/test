@@ -8,44 +8,40 @@ import { obtenerUsuario } from "@/app/utils/obtenerUsuario";
 import axios from "axios";
 
 const TableUsers = () => {
-  const Token = String(getCookie("AdminTokenAuth"));
+  const token = String(getCookie("AdminTokenAuth"));
 
-  const [Usuarios, setUsuarios] = useState([] as UserData[]);
+  const [usuarios, setUsuarios] = useState<UserData[]>([]);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [userIdToDelete, setUserIdToDelete] = useState("");
+  const [userIdToDelete, setUserIdToDelete] = useState<string>("");
+
+  const fetchData = async () => {
+    try {
+      const userData = await obtenerUsuario(token);
+      const filteredUsers = userData.users.filter(
+        (user: UserData) => user.role.name !== "SU"
+      );
+      setUsuarios(filteredUsers); // Uso de usuarios filtrados
+    } catch (error) {
+      console.error("Error al obtener el usuario:", error);
+    }
+  };
 
   useEffect(() => {
-    const token = Token?.toString();
+    fetchData(); // Llamada inicial dentro del useEffect
 
-    const fetchData = async () => {
-      try {
-        const userData = await obtenerUsuario(token);
-        const userDataInfo = userData.users;
-        setUsuarios(userDataInfo);
-        console.log(userDataInfo, "user");
-      } catch (error) {
-        console.error("Error al obtener el usuario: " + error);
-      }
-    };
-
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-
-    // Agregar event listener para cerrar el modal cuando se presiona "Escape"
     const handleEscKeyPress = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setShowConfirmationModal(false);
+        setShowConfirmationModal(false); // Asegúrate de que setShowConfirmationModal esté definido
       }
     };
 
     document.addEventListener("keydown", handleEscKeyPress);
 
-    // Remover el event listener cuando el componente se desmonta
     return () => {
       document.removeEventListener("keydown", handleEscKeyPress);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Token]);
+  }, [token]);
 
   const openConfirmationModal = (userId: string) => {
     setShowConfirmationModal(true);
@@ -53,15 +49,17 @@ const TableUsers = () => {
   };
 
   const handleDelete = async () => {
-    // Verificar si hay más de un usuario
-    if (Usuarios.length <= 1) {
-      alert("No se puede eliminar el último usuario.");
+    const nonSUUsersCount = usuarios.filter(
+      (user) => user.role.name !== "SU"
+    ).length;
+
+    if (nonSUUsersCount <= 1) {
+      alert("No se puede eliminar el último usuario no SU.");
       setShowConfirmationModal(false);
       return;
     }
 
     try {
-      const token = String(getCookie("AdminTokenAuth"));
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -69,17 +67,15 @@ const TableUsers = () => {
       };
 
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userIdToDelete}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userIdToDelete}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         config
       );
 
       console.log("Usuario eliminado con éxito:", response.data);
-      // Actualiza la lista de usuarios eliminando el usuario eliminado
-      setUsuarios(Usuarios.filter((user) => user.id !== userIdToDelete));
+      setUsuarios(usuarios.filter((user) => user.id !== userIdToDelete));
     } catch (error) {
       console.error("Error al eliminar el usuario:", error);
     } finally {
-      // Cierra el modal de confirmación después de la eliminación
       setShowConfirmationModal(false);
     }
   };
@@ -87,45 +83,64 @@ const TableUsers = () => {
   return (
     <>
       <div className="mr-6 flex items-center justify-end pr-16 lg:pr-0">
-        <UserCanvas />
+        <UserCanvas fetchData={fetchData} />
       </div>
-      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1 ">
+      <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
         <div className="max-w-full overflow-x-auto">
           <table className="w-full table-auto">
             <thead>
-              <tr className="bg-dark text-left dark:bg-meta-4 hidden">
-                <th className="min-w-[60px] py-4 px-4 font-medium text-secondary dark:text-white xl:pl-11">
+              <tr className="bg-dark text-left dark:bg-meta-4">
+                <th
+                  scope="col"
+                  className="min-w-[60px] py-4 px-4 font-medium text-secondary dark:text-white xl:pl-11"
+                >
                   Avatar
                 </th>
-                <th className="min-w-[220px] py-4 px-4 font-medium text-secondary dark:text-white xl:pl-11">
+                <th
+                  scope="col"
+                  className="min-w-[220px] py-4 px-4 font-medium text-secondary dark:text-white xl:pl-11"
+                >
                   Nombre / Apellido
                 </th>
-                <th className="min-w-[150px] py-4 px-4 font-medium text-secondary dark:text-white">
+                <th
+                  scope="col"
+                  className="min-w-[150px] py-4 px-4 font-medium text-secondary dark:text-white"
+                >
                   Email
                 </th>
-                <th className="min-w-[120px] py-4 px-4 font-medium text-secondary dark:text-white">
+                <th
+                  scope="col"
+                  className="min-w-[120px] py-4 px-4 font-medium text-secondary dark:text-white"
+                >
                   ROL
                 </th>
-                <th className="py-4 px-4 font-medium text-primary dark:text-white">
-                  Actions
+                <th
+                  scope="col"
+                  className="py-4 px-4 font-medium text-primary dark:text-white"
+                >
+                  Acciones
                 </th>
               </tr>
             </thead>
             <tbody>
-              {Usuarios.map((userDetail, key) => (
+              {usuarios.map((userDetail, key) => (
                 <tr
                   key={key}
                   className="animate-fade-in"
                 >
-                  <td className="border-b border-dark py-5 px-4 pl-9 dark:border-strokedark xl:pl-11 hidden">
-                    <span className="h-12 w-12">
-                      <img
-                        width={112}
-                        height={112}
-                        src={userDetail.avatarUrl}
-                        alt="Avatar"
-                        className="rounded-full"
-                      />
+                  <td className="border-b border-dark py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
+                    <span className="h-12 w-12 flex items-center justify-center rounded-full bg-gray-300">
+                      {userDetail.avatarUrl ? (
+                        <img
+                          width={112}
+                          height={112}
+                          src={userDetail.avatarUrl}
+                          alt="Avatar"
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <span className="h-12 w-12 rounded-full bg-gray-300"></span>
+                      )}
                     </span>
                   </td>
                   <td className="border-b border-dark py-5 px-4 pl-9 dark:border-strokedark xl:pl-11">
@@ -140,14 +155,12 @@ const TableUsers = () => {
                     </p>
                   </td>
                   <td className="border-b border-dark py-5 px-4 dark:border-dark">
-                    <p
-                      className={`inline-flex rounded-full text-secondary bg-primary py-1 px-3 text-sm font-medium `}
-                    >
+                    <p className="inline-flex rounded-full text-secondary bg-primary py-1 px-3 text-sm font-medium">
                       {userDetail.role.name}
                     </p>
                   </td>
                   <td className="border-b border-dark py-5 px-4 dark:border-strokedark">
-                    {Usuarios.length > 1 && (
+                    {usuarios.length > 1 && (
                       <div className="flex items-center space-x-3.5">
                         <button
                           onClick={() => openConfirmationModal(userDetail.id)}
@@ -189,17 +202,17 @@ const TableUsers = () => {
         </div>
       </div>
       {showConfirmationModal && (
-        <div className="fixed z-10 inset-0 overflow-y-auto bg-graydark/70 backdrop-blur-sm  animate-blurred-fade-in animate-duration-400">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0 ">
-            <div className="fixed inset-0 transition-opacity ">
+        <div className="fixed z-10 inset-0 overflow-y-auto bg-graydark/70 backdrop-blur-sm animate-blurred-fade-in animate-duration-400">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen ">
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">
               &#8203;
             </span>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full ">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 ">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                     <svg
@@ -233,7 +246,7 @@ const TableUsers = () => {
               <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button
                   onClick={handleDelete}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm bg-red "
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   Eliminar
                 </button>

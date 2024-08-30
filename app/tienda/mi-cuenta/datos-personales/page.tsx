@@ -72,7 +72,7 @@ const DatosPersonales: React.FC<any> = () => {
     try {
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       setFormData((prevData) => ({
         ...prevData,
@@ -87,7 +87,7 @@ const DatosPersonales: React.FC<any> = () => {
     try {
       const Pais = "CL";
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       setFormData((prevData) => ({
         ...prevData,
@@ -263,7 +263,7 @@ const DatosPersonales: React.FC<any> = () => {
           >
             <div className="mb-11">
               <h1 className="text-gray-900 text-center font-manrope text-3xl font-bold leading-10 mb-2">
-                Datos personales
+                Datos Personales
               </h1>
             </div>
             <div className="flex space-x-4 mb-6">
@@ -292,18 +292,7 @@ const DatosPersonales: React.FC<any> = () => {
                 />
               </div>
             </div>
-            <div className="mb-6">
-              <label className="block text-gray-700">Correo*</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="shadow w-full h-12 text-gray-900 placeholder:text-gray-400 text-lg font-normal leading-7 border-gray-300 border focus:outline-none px-4"
-                placeholder="Correo"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </div>
+
             <div className="mb-6">
               <label className="block text-gray-700">Celular*</label>
               <input
@@ -386,7 +375,7 @@ const DatosPersonales: React.FC<any> = () => {
                 type="submit"
                 className="bg-primary hover:bg-secondary text-white hover:text-primary font-bold py-2 px-4 rounded"
               >
-                Actualizar Informacion
+                Actualizar Información
               </button>
             </div>
           </form>

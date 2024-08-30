@@ -53,6 +53,51 @@ ol {
   }
 }
 
+.custom-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #131516; /* Cambia esto al color que prefieras */
+  outline: none;
+  
+}
+
+.custom-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #ff1515; /* Cambia esto al color que prefieras */
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.custom-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #7cffc4; /* Cambia esto al color que prefieras */
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.grid-wrapper {
+  display: flex;
+  justify-content: center;
+  padding-top: 1.5rem;
+}
+
+.grid-container {
+  display: grid;
+  gap: 1rem; /* Espaciado constante */
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  width: 100%;
+  max-width: 1200px; /* Ajusta según necesites */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  justify-items: center;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -74,7 +119,7 @@ ol {
     --border: 0 20% 82%;
     --input: 0 20% 50%;
     --ring: 0 0% 0%;
-    --radius: 0rem;
+    --radius: 0.8rem;
   }
   .dark {
     --background: 0 10% 10%;
@@ -96,6 +141,6 @@ ol {
     --border: 0 20% 50%;
     --input: 0 20% 50%;
     --ring: 0 0% 0%;
-    --radius: 0rem;
+    --radius: 1rem;
   }
 }

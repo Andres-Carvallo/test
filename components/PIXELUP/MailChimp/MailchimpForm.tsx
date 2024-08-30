@@ -48,8 +48,8 @@ const MailchimpForm = () => {
       />
       <div id="mc_embed_signup items-center">
         <form
-          action="https://fbmjoyas.us21.list-manage.com/subscribe/post?u=bd6557b84be4ed48a449c44ac&id=85b245df5a&f_id=00c982e6f0"
-          method="post"
+/*           action="https://fbmjoyas.us21.list-manage.com/subscribe/post?u=bd6557b84be4ed48a449c44ac&id=85b245df5a&f_id=00c982e6f0"
+ */          method="post"
           id="mc-embedded-subscribe-form"
           name="mc-embedded-subscribe-form"
           className="validate mt-4"
@@ -95,6 +95,7 @@ const MailchimpForm = () => {
                   type="submit"
                   name="subscribe"
                   id="mc-embedded-subscribe"
+                  style={{ width: "100%", marginLeft: "0" }}
                   className="mt-3 w-full bg-foreground hover:bg-secondary p-2 text-secondary hover:text-primary"
                 >
                   Suscribirse

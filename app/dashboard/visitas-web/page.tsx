@@ -113,14 +113,14 @@ const StatsPage: React.FC = () => {
     labels,
     datasets: [
       {
-        label: "Sessions",
+        label: "Sesiones",
         data: sessionsData,
         borderColor: "rgba(75, 192, 192, 1)",
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         fill: true,
       },
       {
-        label: "Active Users",
+        label: "Usuarios Activos",
         data: activeUsersData,
         borderColor: "rgba(153, 102, 255, 1)",
         backgroundColor: "rgba(153, 102, 255, 0.2)",
@@ -133,7 +133,7 @@ const StatsPage: React.FC = () => {
     labels,
     datasets: [
       {
-        label: "New Users",
+        label: "Nuevos Usuarios",
         data: newUsersData,
         backgroundColor: "rgba(255, 206, 86, 0.2)",
         borderColor: "rgba(255, 206, 86, 1)",
@@ -143,7 +143,7 @@ const StatsPage: React.FC = () => {
   };
 
   const pieChartData = {
-    labels: ["Bounce Rate", "Other"],
+    labels: ["Tasa de rebote", "Otros"],
     datasets: [
       {
         data: [
@@ -168,7 +168,7 @@ const StatsPage: React.FC = () => {
     labels: Object.keys(cityCounts),
     datasets: [
       {
-        label: "Users by City",
+        label: "Usuarios por ciudad",
         data: Object.values(cityCounts),
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderColor: "rgba(75, 192, 192, 1)",
@@ -187,7 +187,7 @@ const StatsPage: React.FC = () => {
     labels: Object.keys(deviceCounts),
     datasets: [
       {
-        label: "Users by Device",
+        label: "Usuarios por dispositivo",
         data: Object.values(deviceCounts),
         backgroundColor: "rgba(153, 102, 255, 0.2)",
         borderColor: "rgba(153, 102, 255, 1)",
@@ -198,15 +198,19 @@ const StatsPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Statistics</h1>
-
+      <h1 className="text-3xl font-bold mb-6 text-center">Estadísticas</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <h3 className="text-lg font-medium">Active Users (Last 7 Days)</h3>
-          <p className="text-2xl font-bold">{totalActiveUsersWeek}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <h3 className="text-lg font-medium">Sessions</h3>
+      <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center flex flex-col justify-center h-full">
+  <h3 className="text-lg font-medium">
+    Usuarios Activos 
+    <p></p> 
+    <span className="text-gray-600 mb-2 text-xs">(Últimos 7 días)</span> 
+  </h3>
+  <p className="text-2xl font-bold">{totalActiveUsersWeek}</p>
+</div>
+
+        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center">
+          <h3 className="text-lg font-medium">Sesiones</h3>
           <p className="text-gray-600 mb-2 text-xs">
             Refleja el número total de sesiones realizadas en tu sitio web el
             día más reciente.
@@ -215,30 +219,31 @@ const StatsPage: React.FC = () => {
             {sessionsData[sessionsData.length - 1]}
           </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center col-span-1">
-          <h3 className="text-lg font-medium">Avg. Session Duration</h3>
-          <p className="text-2xl font-bold">{avgSessionDuration} min</p>
+        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center col-span-1">
+          <h3 className="text-lg font-medium">Promedio duración de la sesión</h3>
+          <p className="text-2xl font-bold">{avgSessionDuration} min.</p>
           <p className="text-gray-600 mb-2 text-xs">
             Duración promedio de las sesiones en tu sitio web durante el mes.
           </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <h3 className="text-lg font-medium">New Users</h3>
-          <p className="text-gray-600 mb-2 text-xs">
-            Refleja el número total de nuevos usuarios que visitaron tu sitio
-            web el día más reciente.
-          </p>
-          <p className="text-2xl font-bold">
-            {newUsersData[newUsersData.length - 1]}
-          </p>
-        </div>
+        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center flex flex-col justify-center h-full">
+  <h3 className="text-lg font-medium">Nuevo Usuario</h3>
+  <p className="text-gray-600 mb-2 text-xs">
+    Refleja el número total de nuevos usuarios que visitaron tu sitio
+    web el día más reciente.
+  </p>
+  <p className="text-2xl font-bold">
+    {newUsersData[newUsersData.length - 1]}
+  </p>
+</div>
+
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
         <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">New Users</h2>
+          <h2 className="text-xl font-semibold mb-4">Nuevos Usuarios</h2>
           <Bar data={barChartData} />
-          <p className="text-gray-600 mb-2 text-xs">
+          <p className="text-gray-600 mb-2 text-xs mt-6">
             <strong>Usuarios Nuevos:</strong> Usuarios que visitan tu sitio web
             por primera vez.
           </p>
@@ -246,17 +251,17 @@ const StatsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Users by City</h2>
+        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Usuarios por ciudad</h2>
           <Bar data={cityChartData} />
-          <p className="text-gray-600 mb-2 text-xs">
+          <p className="text-gray-600 mb-2 text-xs mt-4">
             Este gráfico muestra la distribución de tus usuarios por ciudad.
           </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Users by Device</h2>
+        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">Usuarios por dispositivos</h2>
           <Bar data={deviceChartData} />
-          <p className="text-gray-600 mb-2 text-xs">
+          <p className="text-gray-600 mb-2 text-xs mt-2">
             Este gráfico muestra la distribución de tus usuarios por tipo de
             dispositivo (por ejemplo, escritorio, móvil).
           </p>
@@ -264,24 +269,25 @@ const StatsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">
-            Active Users & Sessions
+            Usuarios y sesiones activas
           </h2>
           <Line data={lineChartData} />
-          <p className="text-gray-600 mb-2 text-xs">
+          <p className="text-gray-600 mb-2 text-xs mt-4">
             <strong>Usuarios Activos:</strong> Usuarios que han interactuado con
             tu sitio web.
+            <br />
             <br />
             <strong>Sesiones:</strong> Un período de tiempo en el que un usuario
             interactúa con tu sitio web. Una nueva sesión comienza cuando un
             usuario no ha estado activo en tu sitio durante 30 minutos o más.
           </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center col-span-1">
-          <h3 className="text-lg font-medium">Bounce Rate</h3>
+        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center col-span-1">
+          <h3 className="text-lg font-medium">Tasa de Rebote</h3>
           <Pie data={pieChartData} />
-          <p className="text-gray-600 mb-2 text-xs">
+          <p className="text-gray-600 mb-2 text-xs mt-4">
             <strong>Tasa de Rebote:</strong> Porcentaje de visitantes que
             abandonan tu sitio web después de ver solo una página. Un alto
             porcentaje puede indicar que los usuarios no encuentran lo que

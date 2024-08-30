@@ -4,9 +4,17 @@ import axios from "axios";
 import { setCookie, getCookie } from "cookies-next";
 import toast, { Toaster } from "react-hot-toast";
 
+
+
+
 const APIContextProductType = createContext();
 
 export function APIContextProvider({ children, SiteId }) {
+
+ 
+
+
+
   const [productType, setProductType] = useState([]);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
@@ -52,20 +60,56 @@ export function APIContextProvider({ children, SiteId }) {
     try {
       let cartId = getCookie("cartId");
 
-      if (!cartId) {
+      // Intentamos hacer fetch de los datos del carrito para verificar si el cartId es válido
+      let isValidCart = await validateCartId(cartId);
+
+      if (!cartId || !isValidCart) {
+        // Si la cookie de cartId es null o inválida, la eliminamos
+        console.log(
+          "CartId is null or invalid, removing the cookie and creating a new cart."
+        );
+        setCookie("cartId", "", { maxAge: -1 }); // Elimina la cookie
+
         // Crear un nuevo carrito y obtener su ID
         cartId = await createCart(skuId, quantity);
-        // Guardar el ID del carrito en las cookies
-        setCookie("cartId", cartId);
-        toast.success("Producto agregado al carrito");
-        setIsMenuOpen(true);
-        fetchCartData();
+        if (cartId) {
+          // Guardar el ID del carrito en las cookies si se creó correctamente
+          setCookie("cartId", cartId);
+          toast.success("Producto agregado al carrito");
+        } else {
+          toast.error(
+            "Error al crear el carrito. Inténtalo de nuevo más tarde."
+          );
+          return; // Salir de la función si no se pudo crear el carrito
+        }
       } else {
         // Agregar el producto al carrito existente
         await addToCart(cartId, skuId, quantity);
       }
+
+      setIsMenuOpen(true);
+      fetchCartData();
     } catch (error) {
       console.error("Error al agregar producto al carrito:", error);
+      toast.error(
+        "Error al agregar producto al carrito. Inténtalo de nuevo más tarde."
+      );
+    }
+  };
+
+  // Función para validar si el cartId es válido haciendo un fetch
+  const validateCartId = async (cartId) => {
+    if (!cartId) return false;
+
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}?siteId=${SiteId}`
+      );
+
+      // Si el fetch es exitoso, el cartId es válido
+      return response.status === 200;
+    } catch (error) {
+      return false; // Si hay un error en el fetch, el cartId no es válido
     }
   };
 
@@ -150,7 +194,6 @@ export function APIContextProvider({ children, SiteId }) {
           },
         }
       );
-      console.log("Elemento agregado al carrito:", response.data);
       toast.success("Producto agregado al carrito");
       setIsMenuOpen(true);
       fetchCartData();

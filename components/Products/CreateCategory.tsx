@@ -294,8 +294,8 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
   };
 
   return (
-    <div className="relative px-12 flex mt-[10%] justify-center">
-      <div className="relative p-4 grid grid-cols-1 sm:grid-cols-2 max-w-[50vw] min-w-[60vw] bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
+    <div className="relative px-12 flex  mt-[16vh]">
+      <div className="relative p-4 grid grid-cols-1 sm:grid-cols-2  px-8 md:px-12   justify-center w-full lg:w-[70%] bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
         <div>
           <div className="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600 ">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -402,11 +402,11 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                         />
                       </svg>
                       <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>{" "}
-                        or drag and drop
+                        <span className="font-semibold">Subir Imagen</span> or
+                        drag and drop
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        SVG, PNG, JPG or GIF (MAX. 800x400px)
+                      PNG, JPG o Webp (800x800px)
                       </p>
                     </div>
                     <input
@@ -426,7 +426,7 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
                 type="submit"
                 className="w-full sm:w-auto justify-center text-white inline-flex bg-secondary hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-secondary dark:focus:ring-primary-800"
               >
-                {mode === "create" ? "Create Category" : "Update Category"}
+                {mode === "create" ? "Crear Categoría" : "Actualizar Categoría"}
               </button>
 
               <button

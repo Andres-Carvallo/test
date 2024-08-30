@@ -358,10 +358,10 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
                     />
                   </svg>
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
+                    <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
+                  PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>
