@@ -1,8 +1,12 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import Modal from "@/components/Modals/ModalSeo";
+import Cropper from "react-easy-crop";
+import imageCompression from "browser-image-compression";
+import { getCroppedImg } from "@/lib/cropImage";
 
 interface HeroProps {
   HeroBOData: {
@@ -15,6 +19,13 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
   const { BannerId, BannerImageId } = HeroBOData;
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
+  const [originalFileName, setOriginalFileName] = useState<string>("");
+
   const [formDataHero, setFormDataHero] = useState<any>({
     title: "",
     landingText: "",
@@ -41,11 +52,11 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "24eed87b-2b78-4922-836a-9d860f878350";
-      const bannerImageId = "62ef3e11-da1d-47ef-8332-f00aa953d181";
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO01_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO01_IMGID}`;
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -99,10 +110,10 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       }
 
       // Send updated data to the server
-      const bannerId = "24eed87b-2b78-4922-836a-9d860f878350";
-      const bannerImageId = "62ef3e11-da1d-47ef-8332-f00aa953d181";
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO01_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO01_IMGID}`;
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         updatedDataWithoutImage,
         {
           headers: {
@@ -119,6 +130,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       // Handle error
     } finally {
       setLoading(false); // Ocultar el indicador de carga
+      setIsMainImageUploaded(false);
     }
   };
 
@@ -129,11 +141,12 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      setOriginalFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
         setImage(result);
-
+        setIsModalOpen(true);
         const imageInfo = {
           name: file.name,
           type: file.type,
@@ -158,6 +171,68 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     setImage: React.Dispatch<React.SetStateAction<string | null>>
   ) => {
     setImage(null); // Limpiar la imagen seleccionada
+  };
+
+  const convertToBase64 = (file: Blob) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleCrop = async () => {
+    if (!mainImageHero) return;
+
+    try {
+      const croppedImage = await getCroppedImg(
+        mainImageHero,
+        croppedAreaPixels
+      );
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+      const options = {
+        maxSizeMB: 1, // Ajusta el tamaño máximo permitido
+        maxWidthOrHeight: 1200, // Ajusta las dimensiones máximas permitidas
+        useWebWorker: true,
+        initialQuality: 0.8, // Ajusta la calidad inicial para mantener mejor calidad visual
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const imageInfo = {
+        name: originalFileName,
+        type: compressedFile.type,
+        size: compressedFile.size,
+        data: base64,
+      };
+      setFormDataHero((prevFormDataHero: any) => ({
+        ...prevFormDataHero,
+        mainImage: imageInfo,
+      }));
+      setUpdatedBannerData((prevData: any) => ({
+        ...prevData,
+        mainImage: imageInfo,
+      }));
+      setMainImageHero(base64);
+      setIsModalOpen(false);
+      setIsMainImageUploaded(true);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
+    }
   };
 
   if (loading) {
@@ -256,7 +331,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           </div> */}
         </div>
         <h3 className="font-normal text-primary">
-          Titulo <span className="text-primary">*</span>
+          Título <span className="text-primary">*</span>
         </h3>
         <input
           type="text"
@@ -286,7 +361,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           style={{ borderRadius: "var(--radius)" }}
           placeholder="Landing Text"
         />
-        <div>
+        {/*         <div>
           <input
             type="file"
             accept="image/*"
@@ -353,10 +428,87 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
                     />
                   </svg>
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
+                    <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     SVG, PNG, JPG or GIF (MAX. 800x400px)
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
+        </div> */}
+        <div>
+          <input
+            type="file"
+            accept="image/*"
+            id="mainImageHero"
+            className="hidden"
+            onChange={(e) =>
+              handleImageChange(e, setMainImageHero, "mainImage")
+            }
+          />
+          {isMainImageUploaded ? (
+            <div className="flex flex-col items-center mt-3 relative">
+              <h4 className="font-normal text-primary text-center text-slate-600 w-full">
+                Tu fotografía{" "}
+                <span className="text-dark">
+                  {" "}
+                  {formDataHero.mainImage.name}
+                </span>{" "}
+                ya ha sido cargada.
+                <br /> Actualiza para ver los cambios.
+              </h4>
+
+              <button
+                className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full   text-xs mt-4"
+                onClick={() => handleClearImage(setMainImageHero)}
+              >
+                <span className="self-center">Seleccionar otra Imagen</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div>
+              <h3 className="font-normal text-primary">
+                Foto <span className="text-primary">*</span>
+              </h3>
+              <label
+                htmlFor="mainImageHero"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
+              >
+                <div className="flex flex-col justify-center items-center">
+                  <svg
+                    className="w-12 h-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Subir Imagen</span>
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  PNG, JPG o Webp (400x500px)
                   </p>
                 </div>
               </label>
@@ -391,6 +543,60 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           {loading ? "Loading..." : "Actualizar Banner"}
         </button>
       </form>
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImageHero || ""} // Asegurar que se pasa una cadena no nula
+              crop={crop}
+              zoom={zoom}
+              aspect={3 / 4}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+            <div className="controls"></div>
+          </div>
+          <div className="flex flex-col  justify-end ">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range "
+              />
+            </div>
+
+            <div className="flex justify-between w-full ">
+              <button
+                onClick={handleCrop}
+                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setMainImageHero(null);
+                  setIsMainImageUploaded(false);
+                  setIsModalOpen(false);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </section>
   );
 };

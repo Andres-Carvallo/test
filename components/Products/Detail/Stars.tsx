@@ -42,8 +42,6 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
     }
   });
 
-  console.log("Rating distribution:", ratingDistribution);
-
   return (
     <section>
       <section className="py-24 relative">
@@ -54,13 +52,20 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
             </h2>
             <div className="flex w-full mb-11">
               <div className="w-full min-h-[230px]">
-                <div className="flex h-full rounded bg-gray-100 w-full">
+                <div
+                  className="grid grid-cols-1 md:grid-cols-2 h-full bg-white border  shadow-xl w-full"
+                  style={{ borderRadius: "var(--radius)" }}
+                >
                   <div className="flex items-center px-6">
                     <div className="flex flex-col sm:flex-row items-center max-lg:justify-center w-full h-full">
-                      <div className="sm:pr-3 sm:border-r border-gray-200 flex items-center justify-center flex-col min-w-[300px]">
-                        <h2 className="font-manrope font-bold text-5xl text-black text-center mb-4">
-                          {reviewAverageScore}
-                        </h2>
+                      <div className="sm:pr-3 md:border-r border-gray-200 flex items-center justify-center flex-col min-w-[300px] w-full">
+{/*                         <h2 className="mt-4 md:mt-0 font-manrope font-bold text-5xl text-black text-center mb-4">
+                          {parseFloat(reviewAverageScore).toFixed(1)}
+                        </h2> */}
+                         <h2 className="mt-4 md:mt-0 font-manrope font-bold text-5xl text-black text-center mb-4">
+  {Math.floor(reviewAverageScore * 10) / 10}
+</h2> 
+
                         <div className="flex items-center gap-3 mb-4">
                           {[...Array(5)].map((_, i) => (
                             <svg
@@ -93,17 +98,21 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
                           key={rating}
                           className="flex items-center w-full mb-2"
                         >
-                          <p className="font-medium text-lg py-[1px] text-black mr-[2px]">
-                            {rating}
-                          </p>
+                          <div className="w-8 text-center">
+                            <p className="font-medium text-lg py-[1px] text-black">
+                              {rating}
+                            </p>
+                          </div>
+
                           <svg
-                            className="w-6 h-6 text-yellow-500"
+                            className="w-6 h-6 text-yellow-500 ml-2"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg"
                           >
                             <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
                           </svg>
+
                           <div className="h-2 w-full rounded-[30px] bg-gray-200 ml-5 mr-3 relative">
                             <span
                               className="h-full rounded-[30px] bg-primary absolute top-0 left-0"
@@ -173,7 +182,7 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
                 ))
               ) : (
                 <p className="font-normal text-lg leading-8 text-gray-500">
-                  No reviews available.
+                  No existen reseñas del producto.
                 </p>
               )}
             </div>

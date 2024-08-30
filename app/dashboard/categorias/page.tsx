@@ -78,6 +78,7 @@ const CategoriasPage: React.FC = () => {
             <EditCategory
               handleCloseModal={null}
               fetchData={fetchProducTypes}
+              switchToCreateTab={null}
             />
           )}
         </div>

@@ -4,7 +4,7 @@ import Collection from "@/components/conMantenedor/colecciones";
 
 export default function BannerHome() {
   return (
-    <section className="gap-4 flex flex-col">
+    <section className=" gap-4 flex flex-col">
       {/*       <div
         className="shadow-md border border-primary p-4 bg-white"
         style={{ borderRadius: "var(--radius)" }}

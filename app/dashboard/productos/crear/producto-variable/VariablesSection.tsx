@@ -23,12 +23,16 @@ function VariationsComponente({
   handleImageRemove,
   variations,
   setVariations,
+  baseProductDescription,
 }: any) {
   const [variationImages, setVariationImages] = useState<any[]>([]); // Estado para las imágenes de la variación
   const [attributes, setAttributes] = useState<any[]>([]);
   const [currentAttributes, setCurrentAttributes] = useState<any>({});
   const [currentPrices, setCurrentPrices] = useState({});
   const [currentStocks, setCurrentStocks] = useState({});
+  const [currentMinimumQuantities, setCurrentMinimumQuantities] = useState<{
+    [key: string]: number | null;
+  }>({});
 
   const [currentVariationIndex, setCurrentVariationIndex] = useState<
     number | null
@@ -101,6 +105,7 @@ function VariationsComponente({
   const attributesByVariation: AttributesByVariation = {};
   const pricesByVariation: PricesByVariation = {};
   const stockByVariation: StockByVariation = {};
+  const minimumQuantitiesByVariation: { [key: string]: number | null } = {};
 
   const fetchVariations = async () => {
     try {
@@ -121,10 +126,9 @@ function VariationsComponente({
         const filteredVariations = responseVariations.skus.filter(
           (variation: any) => !variation.isBaseSku
         );
-
         // Crear promesas para fetchAttributesForVariation, fetchPriceForVariation y fetchStockForVariation
         const fetchTasks = filteredVariations.map(async (variation: any) => {
-          const [attributes, price, stock] = await Promise.all([
+          const [attributes, price, stockData] = await Promise.all([
             fetchAttributesForVariation(variation.id),
             fetchPriceForVariation(idVariable as string, variation.id),
             fetchStockForVariation(idVariable, variation.id),
@@ -139,8 +143,22 @@ function VariationsComponente({
             );
           }
 
+          if (stockData && stockData !== null) {
+            variation.stock = stockData.stock;
+            variation.minimumQuantity = stockData.minimumQuantity;
+          }
+          variation.hasStockNotifications =
+            variation.hasStockNotifications || false;
+
           pricesByVariation[variation.id] = price;
-          stockByVariation[variation.id] = stock;
+
+          stockByVariation[variation.id] =
+            stockData && stockData.stock !== undefined ? stockData.stock : null;
+
+          minimumQuantitiesByVariation[variation.id] =
+            stockData && stockData.minimumQuantity !== undefined
+              ? stockData.minimumQuantity
+              : null;
         });
 
         await Promise.all(fetchTasks);
@@ -149,6 +167,7 @@ function VariationsComponente({
         setCurrentAttributes(attributesByVariation);
         setCurrentPrices(pricesByVariation);
         setCurrentStocks(stockByVariation);
+        setCurrentMinimumQuantities(minimumQuantitiesByVariation); // <-- Actualizar el estado de minimum quantities
 
         // Establecer las variaciones filtradas
         setVariations(filteredVariations);
@@ -233,12 +252,18 @@ function VariationsComponente({
       );
       const data = await response.json();
       if (data.code === 0) {
-        // Extracción del stock de la primera skuInventory, si existe
         const stock =
           data.skuInventories.length > 0
             ? data.skuInventories[0].quantity
             : null;
-        return stock;
+
+        const minimumQuantity =
+          data.skuInventories.length > 0
+            ? data.skuInventories[0].minimumQuantity
+            : null;
+
+        // Devuelve un objeto con ambas propiedades
+        return { stock, minimumQuantity };
       } else {
         console.error(
           "Error al obtener el stock de la variación:",
@@ -412,7 +437,14 @@ function VariationsComponente({
               </div>
             </div>
             <div className="flex gap-4 justify-end">
-              <button onClick={() => setCurrentVariationIndex(index)}>
+              <button
+                onClick={() => setCurrentVariationIndex(index)}
+
+                // Desplazarse hacia el formulario de edición
+                /*   if (editFormRef.current) {
+    editFormRef.current.scrollIntoView({ behavior: "smooth" });
+  } */
+              >
                 {currentVariationIndex === index ? null : (
                   <div>
                     <svg
@@ -462,6 +494,7 @@ function VariationsComponente({
                 fetchAttributes={fetchAttributes}
                 currentPrices={currentPrices}
                 currentStocks={currentStocks}
+                currentMinimumQuantities={currentMinimumQuantities}
                 currentAttributes={currentAttributes}
                 setVariations={setVariations}
                 fetchVariationImages={fetchVariationImages}
@@ -486,6 +519,7 @@ function VariationsComponente({
                 selectedImages={selectedImages}
                 handleImageGalleryChange={handleImageGalleryChange}
                 handleImageRemove={handleImageRemove}
+                baseProductDescription={baseProductDescription}
               />
             )}
           </div>

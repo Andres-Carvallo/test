@@ -1,12 +1,13 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Loader from "@/components/common/Loader";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/HeaderDashboard";
-import { redirect } from "next/navigation";
-import { getCookie } from "cookies-next";
-import { useRouter } from "next/navigation";
-import Sidebarprueba from "@/components/sidebarprueba";
+import { getCookie, deleteCookie } from "cookies-next";
+import { useRouter, usePathname } from "next/navigation";
+import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
+import { jwtDecode } from "jwt-decode";
 
 export default function RootLayout({
   children,
@@ -15,28 +16,42 @@ export default function RootLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
-
   const router = useRouter();
-  const Token = getCookie("AdminTokenAuth");
+  const pathname = usePathname();
 
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 1000);
-  }, []);
+  const handleLogout = async () => {
+    deleteCookie("AdminTokenAuth");
+    window.location.href = "/";
+  };
 
-  useEffect(() => {
-    const checkCookie = () => {
-      const token = getCookie("AdminTokenAuth");
-      if (!token) {
-        router.push("/admin/login"); // Redirigir al home si no hay token
-      } else {
-        setLoading(false);
+  const checkCookie = async () => {
+    const token = getCookie("AdminTokenAuth")?.toString();
+
+    if (!token) {
+      router.push("/admin/login");
+    } else {
+      try {
+        const decodedToken: { sub: string } = jwtDecode(token);
+        const userId = decodedToken.sub;
+        const userData = await obtenerUsuarioPorID(userId, token);
+
+        if (userData.user) {
+          setLoading(false); // El usuario es válido, dejamos de mostrar el Loader
+        } else {
+          throw new Error("User data not found");
+        }
+      } catch (error) {
+        console.error("Error al obtener el usuario o token inválido: ", error);
+        handleLogout();
       }
-    };
+    }
+  };
 
-    checkCookie();
+  useEffect(() => {
+    checkCookie(); // Verificar cookie al cargar el componente
 
     const intervalDuration = parseInt(
-      process.env.NEXT_PUBLIC_INTERVAL_DURATION || "10800000",
+      process.env.NEXT_PUBLIC_INTERVAL_DURATION || "6000000",
       10
     );
 
@@ -44,56 +59,30 @@ export default function RootLayout({
 
     // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (loading) {
-    return <Loader />;
-  }
+  useEffect(() => {
+    checkCookie(); // Verificar cookie en cada cambio de ruta
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
-  if (!Token) {
-    router.push("/admin/login");
-  }
+  return (
+    <div className="dark:bg-boxdark-2 dark:text-bodydark bg-[#e9f0ee]">
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
 
-  if (Token) {
-    return (
-      <div className="dark:bg-boxdark-2 dark:text-bodydark">
-        {loading ? (
-          <Loader />
-        ) : (
-          <div className="flex h-screen overflow-hidden">
-            {/* <!-- ===== Sidebar Start ===== --> */}
-
-            <Sidebar
-              sidebarOpen={sidebarOpen}
-              setSidebarOpen={setSidebarOpen}
-            />
-
-            {/* <Sidebarprueba/> */}
-            {/* <!-- ===== Sidebar End ===== --> */}
-
-            {/* <!-- ===== Content Area Start ===== --> */}
-            <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden z-20">
-              {/* <!-- ===== Header Start ===== --> */}
-              <Header
-                sidebarOpen={sidebarOpen}
-                setSidebarOpen={setSidebarOpen}
-              />
-              {/* <!-- ===== Header End ===== --> */}
-
-              {/* <!-- ===== Main Content Start ===== --> */}
-
-              <div className="mx-auto  w-full -z-1 bg-[#e9f0ee] h-auto ">
-                {children}{" "}
-              </div>
-
-              {/* <!-- ===== Main Content End ===== --> */}
-            </div>
-            {/* <!-- ===== Content Area End ===== --> */}
-          </div>
-        )}
+        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden z-20">
+          <Header
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+          />
+          <div className="mx-auto w-full -z-1  h-auto ">{children}</div>
+        </div>
       </div>
-    );
-  } else {
-    router.push("/admin/login");
-  }
+    </div>
+  );
 }

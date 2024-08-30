@@ -9,15 +9,11 @@ import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTienda
 import { Content } from "next/font/google";
 function MarqueeTOP() {
   const [loading, setLoading] = useState(false);
-  const [bannerDataMarquee, setBannerDataMarquee] = useState<any | null>(null);
   const [marqueeData, setMarqueeData] = useState({
     title: "hola",
     contentText: "",
   });
-  const [welcomeData, setWelcomeData] = useState({
-    title: "",
-    contentText: "",
-  });
+
   const handleChangeMarquee = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -28,22 +24,14 @@ function MarqueeTOP() {
     });
   };
 
-  const handleChangeWelcome = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = event.target;
-    setWelcomeData({
-      ...welcomeData,
-      [name]: value,
-    });
-  };
+
   const handleSubmitMarquee = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "483f6151-a82f-47de-bc18-8d25aa2cf85e";
+      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_ID}`;
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
@@ -67,7 +55,6 @@ function MarqueeTOP() {
 
       // Manejar cualquier otra lógica necesaria después del envío exitoso
 
-      console.log("Datos enviados con éxito:", marqueeData);
       fetchMarquee();
     } catch (error) {
       console.error("Error al enviar los datos:", error);
@@ -80,7 +67,7 @@ function MarqueeTOP() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "483f6151-a82f-47de-bc18-8d25aa2cf85e";
+      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_ID}`;
       const Token = getCookie("AdminTokenAuth");
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -103,68 +90,10 @@ function MarqueeTOP() {
     }
   };
 
-  const handleSubmitWelcomeBanner = async (
-    event: React.FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
-    try {
-      setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "3ceacd14-be7c-4342-a129-0bde85115cd1";
-      // Enviar los datos al endpoint
-      const token = getCookie("AdminTokenAuth");
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
-        {
-          title: welcomeData.title,
-          contentText: welcomeData.contentText,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      // Limpiar el formulario después de enviar los datos
 
-      // Manejar cualquier otra lógica necesaria después del envío exitoso
-      setWelcomeData({
-        title: "",
-        contentText: "",
-      });
-      console.log("Datos enviados con éxito:", welcomeData);
-      fetchWelcomeBanner();
-    } catch (error) {
-      console.error("Error al enviar los datos:", error);
-      // Manejar el error según sea necesario
-    } finally {
-      setLoading(false); // Ocultar el indicador de carga
-    }
-  };
-
-  const fetchWelcomeBanner = async () => {
-    try {
-      setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "492d9afe-33e1-434d-8ed5-84d0be111b0f";
-
-      const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-
-      const bannerImage = productTypeResponse.data.contentBlock;
-      console.log(productTypeResponse.data.contentBlock, "bannerImage");
-      setWelcomeData(bannerImage);
-    } catch (error) {
-      console.error("Error al obtener los tipos de producto:", error);
-      // Manejar el error según sea necesario
-    } finally {
-      setLoading(false); // Ocultar el indicador de carga
-    }
-  };
 
   useEffect(() => {
     fetchMarquee();
-    fetchWelcomeBanner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial
   return (
@@ -179,8 +108,8 @@ function MarqueeTOP() {
             {bannerData?.title}
           </h3>
         </div>*/}
-                <p className="text-base flex-1">
-                  <Marquee>{marqueeData?.contentText}</Marquee>
+                <p className="text-base flex-1 text-center">
+                 {/*  <Marquee> */}{marqueeData?.contentText}{/* </Marquee> */}
                 </p>
               </div>
             </section>

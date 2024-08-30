@@ -6,9 +6,13 @@ import toast, { Toaster } from "react-hot-toast";
 
 interface CrearUsuarioFormProps {
   onClose: () => void;
+  fetchData: any;
 }
 
-const CrearUsuarioForm: React.FC<CrearUsuarioFormProps> = ({ onClose }) => {
+const CrearUsuarioForm: React.FC<CrearUsuarioFormProps> = ({
+  onClose,
+  fetchData,
+}) => {
   const [avatarImage, setAvatarImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     firstname: "",
@@ -68,7 +72,7 @@ const CrearUsuarioForm: React.FC<CrearUsuarioFormProps> = ({ onClose }) => {
       const newUser = {
         ...formData,
         statusCode: "ACTIVE", // Define el valor del statusCode como desees
-        roleId: "0ab02f5b-d3f1-4e22-b1bb-16a0582fe2da", // Asume que el ID del rol está fijo o proviene de otra fuente
+        roleId: "ad944aa1-8fae-47e9-90b8-048a04cf86c1", // Asume que el ID del rol está fijo o proviene de otra fuente
       };
 
       const config = {
@@ -79,12 +83,12 @@ const CrearUsuarioForm: React.FC<CrearUsuarioFormProps> = ({ onClose }) => {
       };
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         newUser,
         config
       );
       console.log("Usuario creado con éxito:", response.data);
-
+      fetchData();
       toast.success("Usuario creado con éxito!");
       onClose(); // Cierra el formulario al crear un usuario
     } catch (error) {
@@ -215,10 +219,10 @@ const CrearUsuarioForm: React.FC<CrearUsuarioFormProps> = ({ onClose }) => {
                         />
                       </svg>
                       <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>
+                        <span className="font-semibold">Subir Imagen</span>
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        SVG, PNG, JPG or GIF (MAX. 800x400px)
+                      PNG, JPG o Webp (800x800px)
                       </p>
                     </div>
                   </label>

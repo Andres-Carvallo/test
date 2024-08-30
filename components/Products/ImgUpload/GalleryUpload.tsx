@@ -1,51 +1,103 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, ChangeEvent } from "react";
-import Modal from "@/components/Products/ImgUpload/ModalGalleryUpload";
+import React, { useState, ChangeEvent, useCallback } from "react";
+import ModalGalleryUpload from "@/components/Products/ImgUpload/ModalGalleryUpload";
+import Cropper from "react-easy-crop";
+import imageCompression from "browser-image-compression";
+import { getCroppedImg } from "@/lib/cropImage";
+import Modal from "@/components/Modals/ModalSeo"; // Importar el modal de recorte
+
 interface Props {
   selectedImages: string[];
-  handleImageGalleryChange: any;
+  handleImageGalleryChange: (images: string[]) => void;
   handleImageRemove: (index: number) => void;
 }
+
 const GalleryUpload: React.FC<Props> = ({
   selectedImages,
   handleImageGalleryChange,
   handleImageRemove,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mainImage, setMainImage] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
 
-  // Función para manejar el cambio de imágenes seleccionadas
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const newImagesArray: string[] = [];
-
-    files.forEach((file) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        newImagesArray.push(result);
-        if (newImagesArray.length === files.length) {
-          const totalImages = selectedImages.length + newImagesArray.length;
-          if (totalImages <= 4) {
-            // Enviar las nuevas imágenes al componente padre
-            handleImageGalleryChange([...selectedImages, ...newImagesArray]);
-          } else {
-            setIsModalOpen(true);
-          }
-        }
+        setMainImage(result);
+        setIsCropModalOpen(true); // Open modal for cropping
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleCrop = async () => {
+    if (!mainImage) return;
+
+    try {
+      const croppedImage = await getCroppedImg(mainImage, croppedAreaPixels);
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true,
+        initialQuality: 0.8,
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const newImagesArray = [base64];
+
+      const totalImages = selectedImages.length + newImagesArray.length;
+      if (totalImages <= 4) {
+        handleImageGalleryChange([...selectedImages, ...newImagesArray]);
+      } else {
+        setIsModalOpen(true);
+      }
+
+      setIsCropModalOpen(false);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
+    }
+  };
+
+  const convertToBase64 = (file: Blob) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
     });
   };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = [...selectedImages];
-    newImages.splice(index, 1);
-    handleImageRemove(index); // Llamar a la función de devolución de llamada para manejar la eliminación de la imagen
+    handleImageRemove(index);
   };
 
   return (
     <div className="flex flex-col md:flex-row md:items-end w-full">
-      {/* Etiqueta label emulando el diseño del input */}
       <label
         htmlFor="fileInput"
         style={{ borderRadius: "var(--radius)" }}
@@ -69,16 +121,15 @@ const GalleryUpload: React.FC<Props> = ({
           </svg>
           {selectedImages.length > 0 ? null : (
             <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-              <span className="font-semibold">Click to upload</span>
+              <span className="font-semibold">Subir Imagen</span>
             </p>
           )}
           <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
-            PNG, JPG or Webp (MAX. 1MB)
+          PNG, JPG o Webp (800x800px)
           </p>
         </div>
       </label>
 
-      {/* Input oculto */}
       <input
         id="fileInput"
         type="file"
@@ -87,7 +138,6 @@ const GalleryUpload: React.FC<Props> = ({
         onChange={handleImageChange}
       />
 
-      {/* Mostrar miniaturas de las imágenes seleccionadas */}
       <div
         className={`flex flex-wrap gap-4 md:w-3/4 md:flex-initial p-4  ${
           selectedImages.length > 0 ? "block" : "hidden"
@@ -126,11 +176,63 @@ const GalleryUpload: React.FC<Props> = ({
         ))}
       </div>
 
-      {/* Modal de advertencia */}
-      <Modal
+      <ModalGalleryUpload
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+
+      {isCropModalOpen && (
+        <Modal
+          showModal={isCropModalOpen}
+          onClose={() => setIsCropModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImage || ""} // Asegurar que se pasa una cadena no nula
+              crop={crop}
+              zoom={zoom}
+              aspect={1 / 1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+            <div className="controls"></div>
+          </div>
+          <div className="flex flex-col justify-end ">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range"
+              />
+            </div>
+            <div className="flex justify-between w-full ">
+              <button
+                onClick={handleCrop}
+                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setMainImage(null);
+                  setIsCropModalOpen(false);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

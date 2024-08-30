@@ -32,7 +32,7 @@ const DropdownAdmin = () => {
 
   const handleLogout = async () => {
     deleteCookie("AdminTokenAuth");
-    window.location.href = "/tienda";
+    window.location.href = "/";
   };
 
   const [dropdownOpen, setDropdownOpen] = useState(false);

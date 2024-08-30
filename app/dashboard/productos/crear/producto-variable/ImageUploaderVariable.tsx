@@ -1,13 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { getCookie } from "cookies-next";
+import Cropper from "react-easy-crop";
+import imageCompression from "browser-image-compression";
+import { getCroppedImg } from "@/lib/cropImage"; // Asegúrate de tener esta función implementada
+
 type ImageUploaderVariableProps = {
   productId: string;
   skuId: string;
   variationImages: any[]; // Assuming variationImages is an array
   fetchVariationImages: (productId: string, skuId: string) => void;
 };
+
 const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
   productId,
   skuId,
@@ -20,16 +25,64 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
     fetchVariationImages(productId, skuId); // Cargar imágenes de variación
   }, [productId, skuId, token]);
 
+  const [imageSrc, setImageSrc] = useState<any>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+
   const handleImageUpload = (event: any) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
+        setImageSrc(reader.result as string);
+        setOriginalFile(file);
+        setIsCropModalOpen(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleSaveCroppedImage = async () => {
+    if (!originalFile || !imageSrc) return;
+
+    try {
+      const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es nulo");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
+
+      const file = new File([croppedImage], originalFile.name, {
+        type: croppedImage.type,
+        lastModified: originalFile.lastModified,
+      });
+
+      const compressedFile = await imageCompression(file, options);
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
         const newImage = {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          data: reader.result, // Base64 encoded data
+          name: originalFile.name,
+          type: compressedFile.type,
+          size: compressedFile.size,
+          data: base64data,
         };
 
         fetch(
@@ -47,7 +100,8 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
           .then((data) => {
             if (data.code === 0) {
               console.log("Uploaded variation image:", data);
-              fetchVariationImages(productId, skuId); // Actualiza solo las imágenes de variación
+              fetchVariationImages(productId, skuId);
+              setIsCropModalOpen(false);
             } else {
               console.error(
                 "Error al subir la imagen de variación:",
@@ -59,7 +113,10 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
             console.error("Error al subir la imagen de variación:", error);
           });
       };
-      reader.readAsDataURL(file);
+
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error("Error al recortar o comprimir la imagen:", error);
     }
   };
 
@@ -101,7 +158,6 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
 
         fetch(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-
           {
             method: "PUT",
             headers: {
@@ -199,10 +255,10 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
               />
             </svg>
             <p className="mb-2 text-sm text-gray-500 text-center">
-              <span className="font-semibold">Click to upload</span>
+              <span className="font-semibold">Subir Imagen</span>
             </p>
             <p className="text-xs text-gray-500 text-center">
-              SVG, PNG, JPG or GIF
+            PNG, JPG o Webp (800x800px)
             </p>
           </div>
           <input
@@ -213,6 +269,50 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
             onChange={handleImageUpload}
           />
         </label>
+      )}
+
+      {isCropModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-[#00000080]">
+          <div className="bg-white  rounded-lg shadow-lg relative w-full max-w-xl mx-auto p-10">
+            <div className="relative h-96 w-full">
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={handleCropComplete}
+              />
+            </div>
+            <div className="flex flex-col justify-end mt-4">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="zoom-range w-full custom-range mb-4"
+              />
+              <div className="flex justify-between">
+                <button
+                  onClick={handleSaveCroppedImage}
+                  className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Recortar y Subir
+                </button>
+                <button
+                  onClick={() => setIsCropModalOpen(false)}
+                  className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

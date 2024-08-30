@@ -4,8 +4,8 @@ import Footer from "@/components/Footer/Footer";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import Navbar01 from "@/components/PIXELUP/Navbar/Navbar01/Navbar01";
 import Footer03 from "@/components/PIXELUP/Footer/Footer03/Footer03";
-import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
-import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
+import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
+import Footer02 from "@/components/PIXELUP/Footer/Footer02/Footer02";
 
 export default function RootLayout({
   children,
@@ -15,9 +15,9 @@ export default function RootLayout({
   return (
     <>
       <MarqueeTOP />
-      <Navbar02 />
+      <Navbar04 />
       <div>{children}</div>
-      <Footer01 />
+      <Footer02 />
     </>
   );
 }

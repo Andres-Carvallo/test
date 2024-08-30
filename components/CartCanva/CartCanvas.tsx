@@ -21,9 +21,9 @@ function CartCanvas() {
     setIsMenuOpen,
     totalItems,
   } = useAPI();
-  const totalAmount = cartData?.totals?.totalAmount;
-  const subtotalAmount = cartData?.totals?.subtotalAmount;
-  const discountAmount = cartData?.totals?.discountAmount;
+  const totalAmount = cartData?.totals?.totalAmount ?? 0;
+  const subtotalAmount = cartData?.totals?.subtotalAmount ?? 0;
+  const discountAmount = cartData?.totals?.discountAmount ?? 0;
 
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
@@ -32,13 +32,31 @@ function CartCanvas() {
       }
     };
 
-    document.addEventListener("keydown", handleEscKey);
+    document.addEventListener("keydown", handleEscKey); 
 
     return () => {
       document.removeEventListener("keydown", handleEscKey);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        offcanvasRef.current &&
+        !offcanvasRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest('[data-ignore-outside-click]')
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  
 
   useEffect(() => {
     if (!offcanvasRef.current) {
@@ -126,7 +144,7 @@ function CartCanvas() {
   };
 
   return (
-    <div className="z-50">
+    <div className="z-50" data-ignore-outside-click>
       <Link
         href="#"
         onClick={handleMenuOpen}
@@ -154,14 +172,14 @@ function CartCanvas() {
       <div
         ref={offcanvasRef}
         id="menu-cart"
-        className={`offcanvas-menu fixed z-50  bg-slate-100 h-screen dark:border-strokedark dark:bg-form-strokedark top-0 right-0 p-6 w-full sm:w-2/3 md:w-1/2   ease-in-out duration-1000 shadow-md flex pt-32  ${
+        className={`offcanvas-menu w-full md:w-1/3 fixed z-50 min-w-[300px] bg-slate-100 h-screen dark:border-strokedark dark:bg-form-strokedark top-0 right-0 p-6 ease-in-out duration-1000 shadow-md flex pt-32  ${
           isMenuOpen ? "" : "translate-x-full"
         }`}
       >
         {/* Contenido del carrito */}
         <div className="fixed top-0 left-0 w-full h-full z-[1000] before:fixed   before:w-full before:h-full before:bg-[rgba(0,0,0,0.5)] font-[sans-serif]">
           <div className="w-full  bg-white shadow-lg relative ml-auto h-screen z-50">
-            <div className="overflow-auto p-6 h-[calc(100vh-135px)] min-w-[390px]">
+            <div className="overflow-auto p-4 h-[calc(100vh-200px)] md:h-[calc(100vh-130px)] min-w-[240px]">
               <div className="flex justify-between">
                 <Link
                   href="#"
@@ -200,8 +218,8 @@ function CartCanvas() {
                 </div>
                 <div className="col-span-12 md:col-span-5">
                   <div className="grid grid-cols-5">
-                    <div className="col-span-4">
-                      <p className="font-normal text-lg leading-8 text-gray-400 text-center">
+                    <div className="col-span-5">
+                      <p className="font-normal text-lg leading-8 text-gray-400 text-end">
                         Cantidad
                       </p>
                     </div>
@@ -217,9 +235,11 @@ function CartCanvas() {
                 incrementQuantity={incrementQuantity}
                 decrementQuantity={decrementQuantity}
                 removeItem={removeItem}
+                
+
               />
             </div>
-            <div className="p-6 absolute bottom-0 w-full border-t bg-white">
+            <div className="p-6 absolute bottom-20 md:bottom-0 w-full border-t bg-white">
               <ul className="text-[#333] divide-y">
                 {/* Subtotal del carrito */}
                 <li className="flex flex-wrap gap-4 text-2xl font-bold">
@@ -249,10 +269,10 @@ function CartCanvas() {
                       // Aquí puedes llamar a la función que deseas ejecutar después de 4 segundos
                     }, 1000); // 4000 milisegundos = 4 segundos
                   }}
-                  className="shadow menu-open-btn ease-in-up mt-6 text-md px-6 py-2.5 w-full bg-primary hover:bg-secondary text-secondary hover:text-primary"
+                  className="shadow menu-open-btn ease-in-up mt-6 text-md px-6 py-2.5 w-full bg-primary md:hover:scale-105 duration-300  text-secondary "
                   style={{ borderRadius: "var(--radius)" }}
                 >
-                  Check out
+                  Comprar ahora
                 </button>
               </Link>
             </div>

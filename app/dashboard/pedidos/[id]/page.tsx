@@ -9,7 +9,8 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import Link from "next/link";
 import Loader from "@/components/common/Loader";
-
+import toast from "react-hot-toast";
+import axios from "axios";
 interface Order {
   id: string;
   correlative: string;
@@ -74,18 +75,24 @@ export default function DetalleOrdenes() {
   const printRef = useRef<HTMLDivElement>(null);
   const [pedido, setPedido] = useState<Order | null>(null);
   const Token = String(getCookie("AdminTokenAuth"));
+  const imagePath = process.env.NEXT_PUBLIC_LOGO_COLOR;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await obtenerOrdenesId(id, Token);
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        const data = response.data; 
         setPedido(data.order);
+        console.log(data.order, "order");
       } catch (error) {
         console.error("Error al obtener el pedido:", error);
       }
     };
     fetchData();
   }, [id, Token]);
+  
 
   const handleDownloadPdf = async () => {
     if (printRef.current) {
@@ -113,8 +120,21 @@ export default function DetalleOrdenes() {
       const scaledHeight = imgHeight * scale;
 
       pdf.addImage(imgData, "PNG", 0, 0, scaledWidth, scaledHeight);
-      pdf.save(`order_${pedido?.correlative}.pdf`);
+      pdf.save(`Orden_Número_${pedido?.correlative}.pdf`);
     }
+  };
+
+  const handleCopyLink = (orderId: string) => {
+    const orderUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/pago?orderId=${orderId}`;
+    navigator.clipboard
+      .writeText(orderUrl)
+      .then(() => {
+        toast.success("URL de pago copiada al portapapeles");
+      })
+      .catch((error) => {
+        toast.error("Error al copiar la URL de pago");
+        console.error("Error al copiar la URL de pago:", error);
+      });
   };
 
   if (!pedido) {
@@ -122,9 +142,9 @@ export default function DetalleOrdenes() {
   }
 
   return (
-    <>
+    <section className="p-10">
       <Breadcrumb pageName="Mis Pedidos" />
-      <div className="flex justify-between w-full ">
+      <div className="flex justify-between w-full b ">
         <Link
           href="/dashboard/pedidos"
           className="px-4 py-2 bg-primary text-white rounded-md mt-4"
@@ -138,17 +158,33 @@ export default function DetalleOrdenes() {
           Descargar PDF
         </button>
       </div>
-      <div className="flex items-center w-full justify-center">
+      <div className="flex items-center w-full justify-center ">
         <div
-          className="mb-4 p-6 max-w-[900px]"
+          className="mb-6 p-6 max-w-[900px] bg-white rounded mt-6"
           ref={printRef}
         >
+          <div className="text-center mt-6 mb-6">
+            <img
+              src={imagePath}
+              alt="Logo Tavola"
+              className="mx-auto max-h-40"
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="border p-3 rounded-lg">
               <h3 className="text-lg font-semibold mb-2">Pedido</h3>
               <p>N°: {pedido.correlative}</p>
               <p>Fecha: {new Date(pedido.creationDate).toLocaleDateString()}</p>
               <p>Estado: {pedido.statusCode}</p>
+              {(pedido.statusCode === "CREATED" ||
+                pedido.statusCode === "PAYMENT_PENDING") && (
+                <button
+                  onClick={() => handleCopyLink(pedido.id)}
+                  className="text-blue-500 underline mt-2"
+                >
+                  Copiar enlace de pago
+                </button>
+              )}
             </div>
             <div className="border p-3 rounded-lg">
               <h3 className="text-lg font-semibold mb-2">Cliente</h3>
@@ -159,14 +195,13 @@ export default function DetalleOrdenes() {
               <p>Teléfono: {pedido.customer.phoneNumber}</p>
             </div>
             <div className="border p-3 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Dirección</h3>
-              <p>
-                {pedido.shippingInfo.addressLine1},{" "}
-                {pedido.shippingInfo.addressLine2},{" "}
-                {pedido.shippingInfo.commune.name},{" "}
-                {pedido.shippingInfo.commune.region.name}
-              </p>
-            </div>
+  <h3 className="text-lg font-semibold mb-2">Dirección</h3>
+  <p>{pedido.shippingInfo?.addressLine1 || "Dirección no disponible"}</p>
+  <p>{pedido.shippingInfo?.addressLine2 || ""}</p>
+  <p>{pedido.shippingInfo?.commune?.name || "Comuna no disponible"}</p>
+  <p>{pedido.shippingInfo?.commune?.region?.name || "Región no disponible"}</p>
+</div>
+
           </div>
           <div className="rounded-lg mb-6">
             <h3 className="text-lg font-semibold mb-4">Productos</h3>
@@ -177,7 +212,7 @@ export default function DetalleOrdenes() {
               >
                 {item.sku.previewImageUrl && (
                   <img
-                    src={item.sku.previewImageUrl}
+                    src={item.sku.mainImageUrl}
                     alt={item.sku.product.name}
                     className="w-16 h-16 object-cover rounded-lg mr-4"
                   />
@@ -186,31 +221,33 @@ export default function DetalleOrdenes() {
                   <p className="font-semibold">{item.sku.product.name}</p>
                   <p className="text-gray-500">Cantidad: {item.quantity}</p>
                 </div>
-                <p className="font-semibold">${item.unitPrice}</p>
+                <p className="font-semibold">
+                  ${item.unitPrice.toLocaleString("es-CL")}
+                </p>
               </div>
             ))}
           </div>
           <div className="border p-4 rounded-lg ">
             <div className="flex justify-between mb-2">
               <p>Subtotal</p>
-              <p>${pedido.totals.itemsAmount}</p>
+              <p>${pedido.totals.itemsAmount.toLocaleString("es-CL")}</p>
             </div>
             <div className="flex justify-between mb-2">
               <p>Costo Despacho</p>
-              <p>${pedido.totals.shippingAmount}</p>
+              <p>${pedido.totals.shippingAmount.toLocaleString("es-CL")}</p>
             </div>
             <div className="flex justify-between mb-2">
               <p>Descuento</p>
-              <p>${pedido.totals.discountAmount}</p>
+              <p>${pedido.totals.discountAmount.toLocaleString("es-CL")}</p>
             </div>
             <hr className="my-2" />
             <div className="flex justify-between font-bold">
               <p>Total</p>
-              <p>${pedido.totals.totalAmount}</p>
+              <p>${pedido.totals.totalAmount.toLocaleString("es-CL")}</p>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </section>
   );
 }

@@ -90,6 +90,37 @@ export default function RootLayout({
           `,
           }}
         />
+
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        />
+
+        <meta
+          httpEquiv="Content-Language"
+          content="es"
+        />
+        <meta
+          name="author"
+          content="PixelUP"
+        />
+        <meta
+          name="publisher"
+          content="PixelUP"
+        />
+        <link
+          rel="icon"
+          href="/favicon.ico"
+          sizes="any"
+        />
+        <meta
+          name="robots"
+          content="index, follow"
+        />
+        <meta
+          property="og:type"
+          content="website"
+        />
       </header>
       <APIContextProvider SiteId={SiteId}>
         <Analytics />
@@ -99,7 +130,7 @@ export default function RootLayout({
         >
           <Providers>
             <Toaster />
-            <div className="min-h-screen ">{children}</div>
+            <div className="md:min-h-screen ">{children}</div>
           </Providers>
         </body>
       </APIContextProvider>

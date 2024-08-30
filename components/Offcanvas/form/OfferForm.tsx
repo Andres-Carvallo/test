@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import toast from "react-hot-toast";
 
 type Offer = {
-  id: any;
   unitPrice: any;
   startDate: any;
   endDate: any;
@@ -26,6 +26,7 @@ type OfferFormProps = {
   setStartDate: any;
   setEndDate: any;
   setCurrencyCodeId: any;
+  fetchOffersForProduct: any;
 };
 
 function OfferForm({
@@ -43,6 +44,7 @@ function OfferForm({
   setUnitPrice,
   setCurrencyCodeId,
   setStartDate,
+  fetchOffersForProduct,
 }: OfferFormProps) {
   useEffect(() => {
     const fetchCurrencyCode = async () => {
@@ -69,7 +71,6 @@ function OfferForm({
 
   useEffect(() => {
     if (offerToEdit) {
-      console.log("Offer to edit:", offerToEdit); // Verifica los datos de la oferta a editar
       setUnitPrice(offerToEdit.unitPrice.toString());
       setStartDate(offerToEdit.startDate); // Formatear fecha a "YYYY-MM-DD"
       setEndDate(offerToEdit.endDate); // Formatear fecha a "YYYY-MM-DD"
@@ -82,8 +83,14 @@ function OfferForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validación de fechas
+    if (new Date(startDate) >= new Date(endDate)) {
+      toast.error("La fecha de inicio debe ser menor que la fecha de fin");
+      return;
+    }
+
     const updatedOffer: Offer = {
-      id: offerToEdit ? offerToEdit.id : null,
       unitPrice: parseFloat(unitPrice),
       startDate,
       endDate,
@@ -99,29 +106,48 @@ function OfferForm({
         },
       };
 
+      let response;
       if (offerToEdit && offerToEdit.id) {
         // Actualizar oferta existente
-        const response = await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers/${offerToEdit.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        response = await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${offerToEdit.skuId}/offers/${offerToEdit.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           updatedOffer,
           config
         );
         console.log("Oferta actualizada con éxito:", response.data);
+        toast.success("Oferta actualizada con éxito");
       } else {
         // Crear nueva oferta
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${offerToEdit.skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           updatedOffer,
           config
         );
         console.log("Oferta creada con éxito:", response.data);
+        toast.success("Oferta creada con éxito");
       }
 
+      // Actualizar datos en la interfaz
       fetchVariations();
+      fetchOffersForProduct(id, skuId);
       onSave(updatedOffer);
       handleMenuClose();
-    } catch (error) {
-      console.log("Error al guardar la oferta:", error);
+    } catch (error: any) {
+      // Manejar errores específicos
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.code === 3
+      ) {
+        const mensajeError =
+          "Error: Hay 1 oferta en conflicto con la información actual.";
+        toast.error(mensajeError); // O utiliza otra forma de mostrar el mensaje al usuario
+      } else {
+        // Manejo de otros errores
+        const mensajedeError =
+          "Ocurrió un error al guardar la oferta. Por favor, inténtalo de nuevo.";
+        toast.error(mensajedeError); // O utiliza otra forma de mostrar el mensaje al usuario
+      }
     }
   };
 
@@ -132,7 +158,7 @@ function OfferForm({
     >
       <div className="mb-4">
         <label className="block text-white text-sm font-bold mb-2">
-          Precio
+          Precio Oferta
         </label>
         <input
           type="number"

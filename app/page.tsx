@@ -20,17 +20,23 @@ import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Footer02 from "@/components/PIXELUP/Footer/Footer02/Footer02";
 import Footer03 from "@/components/PIXELUP/Footer/Footer03/Footer03";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
-import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01";
 import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
+import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
+import BannerPrincipal02 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
+import Destacados01 from "@/components/PIXELUP/Destacados/Destacado01";
+import Colecciones from "@/components/conMantenedor/colecciones";
+import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/cdgColecciones01";
+import BannerPrincipal03 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal03/BannerPrincipal03";
 
-const siteUrl = "http://pixelup.cl";
-const canonicalUrl = "http://pixelup.cl/planes";
+const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
+const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
 export const revalidate = 60; // Revalida cada 60 segundos
 
+export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
+
 async function fetchBannerData() {
-  const bannerId = "17c8ad89-3e8f-4ceb-aded-f0ed0a330696";
+  const bannerId = process.env.NEXT_PUBLIC_SEO_ID_BANNER;
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
   );
@@ -42,6 +48,7 @@ export const metadata = async () => {
     title: "PixelUP Title",
     description: "Una nueva plataforma para emprendedores y Pymes!",
     ogImage: "http://pixelup.cl/img/avatardefault.jpg",
+    keywords: "pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl",
   };
 
   try {
@@ -50,6 +57,7 @@ export const metadata = async () => {
       title: bannerImage.images[0].title,
       description: bannerImage.images[0].landingText,
       ogImage: bannerImage.images[0].mainImage.url,
+      keywords: bannerImage.images[0].buttonText,
       openGraph: {
         title: bannerImage.images[0].title,
         description: bannerImage.images[0].landingText,
@@ -94,41 +102,17 @@ export default async function Page() {
           name="description"
           content={seoData.description}
         />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <meta
-          name="keywords"
-          content="pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl"
-        />
-        <meta
-          httpEquiv="Content-Language"
-          content="es"
-        />
-        <meta
-          name="author"
-          content="PixelUP"
-        />
-        <meta
-          name="publisher"
-          content="PixelUP"
-        />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-          sizes="any"
-        />
+
         <link
           rel="canonical"
           href={canonicalUrl}
         />
-        <meta
-          name="robots"
-          content="index, follow"
-        />
 
         {/* Open Graph tags */}
+        <meta
+          name="keywords"
+          content={seoData.keywords}
+        />
         <meta
           property="og:title"
           content={seoData.title}
@@ -145,23 +129,42 @@ export default async function Page() {
           property="og:url"
           content={siteUrl}
         />
-        <meta
-          property="og:type"
-          content="website"
-        />
       </head>
 
       <MarqueeTOP />
-      <Navbar01 />
-      <BannerPrincipal />
-      <Colecciones01 />
-      <BannerSinFoto />
+      <Navbar04 />
+      <BannerPrincipal03 />
+      <Hero01 />
+      <Destacados01 />
+
+      <Colecciones01
+        id="1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+        coleccion="Promociones"
+        text="Descubre nuestros packs exclusivos en conjunto con La Casa Borracha, para una experiencia completa. Además de promociones especiales."
+      />
+      <Colecciones01
+        id="89ac8783-f388-4b6e-8c99-fe95002c8d1b"
+        coleccion="Nuestras Tablas"
+        text="Encuentra nuestra selección de tablas en sus diferentes tamaños. (S: 4-5 personas, M: 7-8 personas, L: 10-11 perosnas)"
+      />
+      <Colecciones01
+        id="bfa4fc11-ff0b-4d39-96f3-178bcf12d26a"
+        coleccion="CHEF BOX"
+        text="Encuentras las tablas que más te gustan en nuestro formato CHEF BOX! Recomendados para 2 personas!"
+      />
+      <Colecciones01
+        id="89ac8783-f388-4b6e-8c99-fe95002c8d1b"
+        coleccion="Acompañamientos"
+        text="Completa tu experiencia con alguno de nuestros exquisitos dips, salsas o añade a tu tabla productos como nuestra exquisita Provoleta oliva merkén"
+      />
+
+      {/*      <BannerSinFoto />
       <Categoria05 />
       <Frase01 />
       <Carrusel />
       <Hero02 />
-      <Frase02 />
-      <Footer03 />
+      <Frase02 /> */}
+      <Footer02 />
     </>
   );
 }

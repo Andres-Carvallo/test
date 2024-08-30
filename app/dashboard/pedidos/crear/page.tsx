@@ -1,19 +1,47 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { getCookie, setCookie } from "cookies-next";
 import axios from "axios";
+import toast from "react-hot-toast";
+import Loader from "@/components/common/Loader-t";
 import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
-import { getCookie } from "cookies-next";
-import { toast } from "react-hot-toast";
 
 interface Product {
   id: string;
+  skuId: string;
   name: string;
   hasVariations: boolean;
+  description: string;
+  statusCode: string;
+  previewImageUrl: string;
+  mainImageUrl: string;
+  enabledForDelivery: boolean;
+  enabledForWithdrawal: boolean;
+  isFeatured: boolean;
+  additionalData1: string | null;
+  additionalData2: string | null;
+  productTypes: {
+    id: string;
+    name: string;
+    description: string;
+    statusCode: string;
+    previewImageUrl: string | null;
+    mainImageUrl: string | null;
+  }[];
+  measures: {
+    length: number;
+    width: number;
+    height: number;
+    weight: number;
+  };
 }
 
 interface Variation {
   id: string;
   description: string;
+  isBaseSku: boolean;
+  attributes: string[];
+  formattedAttributes: string;
 }
 
 interface Region {
@@ -26,48 +54,36 @@ interface Commune {
   name: string;
 }
 
-interface Order {
-  currencyCodeId: string;
-  deliveryTypeId: string;
-  useDifferentShippingAddress: boolean;
-  customer: {
-    firstname: string;
-    lastname: string;
-    phoneNumber: string;
-    email: string;
-    addressLine1: string;
-    addressLine2: string;
-    communeId: string;
-  };
-  shippingInfo?: {
-    addressLine1: string;
-    addressLine2: string;
-    communeId: string;
-  };
-  items: {
-    skuId: string;
-    quantity: number;
-  }[];
-}
-
 interface SelectedItem {
   skuId: string;
   name: string;
   quantity: number;
 }
 
-const ManualOrder = () => {
+const ManualOrder: React.FC = () => {
+  const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
+  const [communes, setCommunes] = useState<{ id: string; name: string }[]>([]);
+  const [shippingCommunes, setShippingCommunes] = useState<Commune[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [enabledCommunes, setEnabledCommunes] = useState<string[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [selectedCommune, setSelectedCommune] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [variations, setVariations] = useState<Variation[]>([]);
+  const [selectedVariation, setSelectedVariation] = useState<string>("");
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
-  const [regions, setRegions] = useState<Region[]>([]);
-  const [communes, setCommunes] = useState<Commune[]>([]);
-  const [shippingCommunes, setShippingCommunes] = useState<Commune[]>([]);
-  const [order, setOrder] = useState<Order>({
-    currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
-    deliveryTypeId: "157314a8-f3c3-4489-9f1f-b240a3c209b6",
+  const [deliveryType, setDeliveryType] = useState<string>(""); // Valor predeterminado: entrega a domicilio
+  const [deliveryTypeID, setDeliveryTypeID] = useState<string>("");
+  const [orderUrl, setOrderUrl] = useState<string>("");
+  const [useDifferentShippingAddress, setUseDifferentShippingAddress] =
+    useState<boolean>(false);
+
+  const initialCustomerState = {
+    deliveryTypeId: "",
     useDifferentShippingAddress: false,
+    currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
     customer: {
       firstname: "",
       lastname: "",
@@ -77,64 +93,69 @@ const ManualOrder = () => {
       addressLine2: "",
       communeId: "",
     },
-    shippingInfo: {
-      addressLine1: "",
-      addressLine2: "",
-      communeId: "",
-    },
-    items: [],
-  });
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const token = getCookie("AdminTokenAuth");
-      const data = await obtenerProductosBO(1, 50, token as string);
-      setProducts(data.products);
-    };
-    fetchProducts();
-    fetchRegions();
-  }, []);
-
-  const fetchRegions = async () => {
-    try {
-      const Pais = "CL";
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions`
-      );
-      setRegions(response.data.regions);
-    } catch (error) {
-      console.error("Error fetching regions:", error);
-      toast.error("Error al obtener las regiones.");
-    }
   };
 
-  const fetchCommunes = async (regionId: string, forShipping = false) => {
+  const [customer, setCustomer] = useState(initialCustomerState);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchRegionsAndCommunes(false);
+  }, []);
+
+  const fetchProducts = async () => {
+    const token = getCookie("AdminTokenAuth");
+    const data = await obtenerProductosBO(1, 50, token as string);
+    setProducts(data.products);
+  };
+
+  const fetchRegionsAndCommunes = async (applyShippingZonesFilter: boolean) => {
+    setLoading(true); // Iniciar loader
     try {
-      const token = getCookie("AdminTokenAuth");
       const Pais = "CL";
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?hasShippingZones=true`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const regionsResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      if (forShipping) {
-        setShippingCommunes(response.data.communes);
-      } else {
-        setCommunes(response.data.communes);
+
+      const allRegions = regionsResponse.data.regions;
+      const filteredRegions: { id: string; name: string }[] = [];
+      const allCommunes: { id: string; name: string; regionId: string }[] = [];
+
+      for (const region of allRegions) {
+        const communesResponse = await axios.get(
+          `${
+            process.env.NEXT_PUBLIC_API_URL_CLIENTE
+          }/api/v1/countries/${Pais}/regions/${region.id}/communes?siteId=${
+            process.env.NEXT_PUBLIC_API_URL_SITEID
+          }${applyShippingZonesFilter ? "&hasDeliveryAvailable=true" : ""}`
+        );
+        const communesData = communesResponse.data.communes;
+        if (communesData.length > 0) {
+          filteredRegions.push({ id: region.id, name: region.name });
+          allCommunes.push(
+            ...communesData.map((commune: any) => ({
+              id: commune.id,
+              name: commune.name,
+              regionId: region.id,
+            }))
+          );
+        }
       }
+
+      setRegions(filteredRegions);
+      setCommunes(allCommunes);
+      setEnabledCommunes(allCommunes.map((commune: any) => commune.id));
     } catch (error) {
-      console.error("Error fetching communes:", error);
-      toast.error("Error al obtener las comunas.");
+      console.error("Error fetching regions and communes:", error);
+    } finally {
+      setLoading(false); // Terminar loader
     }
   };
 
   const handleProductChange = async (productId: string) => {
     const selected = products.find((p) => p.id === productId) || null;
     setSelectedProduct(selected);
+    setSelectedVariation(""); // Reset the selected variation when product changes
+
     if (selected && selected.hasVariations) {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
@@ -146,17 +167,72 @@ const ManualOrder = () => {
           },
         }
       );
-      setVariations(response.data.skus);
+      // Filtra las variaciones que no sean isBaseSku
+      const filteredVariations = response.data.skus.filter(
+        (sku: any) => !sku.isBaseSku
+      );
+
+      // Itera sobre las variaciones para obtener y formatear los atributos
+      const variationsWithAttributes = await Promise.all(
+        filteredVariations.map(async (variation: any) => {
+          const attributesResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          // Toma los primeros dos atributos y los une con un guion
+          const attributes = attributesResponse.data.skuAttributes
+            .slice(0, 2)
+            .map((attr: any) => `${attr.value}`)
+            .sort()
+            .join(" - ");
+
+          return {
+            ...variation,
+            formattedAttributes: attributes,
+          };
+        })
+      );
+
+      setVariations(variationsWithAttributes);
     } else {
       setVariations([]);
     }
   };
 
-  const handleAddItem = (skuId: string, name: string) => {
+  const handleAddItem = () => {
+    if (!selectedProduct) return;
+
+    let skuId = selectedProduct.skuId;
+    let name = selectedProduct.name;
+
+    if (selectedProduct.hasVariations && selectedVariation) {
+      const variation = variations.find((v) => v.id === selectedVariation);
+      if (variation) {
+        skuId = variation.id;
+        name = variation.formattedAttributes; // Mostrar los atributos formateados
+      }
+    }
+
+    if (!skuId || (selectedProduct.hasVariations && !selectedVariation)) {
+      toast.error(
+        "Por favor, selecciona una variación antes de agregar el producto."
+      );
+      return;
+    }
+
     const existingItem = selectedItems.find((item) => item.skuId === skuId);
     if (!existingItem) {
       setSelectedItems([...selectedItems, { skuId, name, quantity: 1 }]);
     }
+
+    // Limpiar los selectores
+    setSelectedProduct(null);
+    setSelectedVariation("");
   };
 
   const handleQuantityChange = (skuId: string, quantity: string) => {
@@ -167,350 +243,621 @@ const ManualOrder = () => {
     );
   };
 
-  const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const token = getCookie("AdminTokenAuth");
+  const handleRemoveItem = (skuId: string) => {
+    setSelectedItems((prevItems) =>
+      prevItems.filter((item) => item.skuId !== skuId)
+    );
+  };
 
-    const orderToSubmit = {
-      ...order,
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const regionId = e.target.value;
+    setSelectedRegion(regionId);
+    setSelectedCommune("");
+  };
+
+  const handleCommuneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const communeId = e.target.value;
+    setSelectedCommune(communeId);
+    setCustomer({
+      ...customer,
+      customer: {
+        ...customer.customer,
+        communeId: communeId,
+      },
+    });
+  };
+
+  const validateDeliveryOption = (option: string) => {
+    const invalidItems = selectedItems.filter((item: any) => {
+      const product = products.find((p) => p.skuId === item.skuId);
+      if (!product) return false;
+
+      if (option === "HOME_DELIVERY_WITHOUT_COURIER")
+        return !product.enabledForDelivery;
+      if (option === "WITHDRAWAL_FROM_STORE")
+        return !product.enabledForWithdrawal;
+      return false;
+    });
+
+    if (invalidItems.length > 0) {
+      toast.error(
+        `Los siguientes productos no son elegibles para ${
+          option === "HOME_DELIVERY_WITHOUT_COURIER" ? "delivery" : "retiro"
+        }: ${invalidItems.map((item: any) => item.name).join(", ")}`
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleChangeDeliveryType = async (newValue: string) => {
+    if (validateDeliveryOption(newValue)) {
+      setDeliveryType(newValue);
+      setLoading(true); // Iniciar loader
+
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
+        );
+        const deliveryTypes = response.data.deliveryTypes;
+        const selectedDeliveryType = deliveryTypes.find(
+          (type: any) => type.code === newValue
+        );
+        if (selectedDeliveryType) {
+          setDeliveryTypeID(selectedDeliveryType.id);
+        } else {
+          console.error(
+            "No se encontró el deliveryType seleccionado en la respuesta de la API"
+          );
+        }
+      } catch (error) {
+        console.error("Error al obtener los tipos de entrega:", error);
+      }
+
+      if (newValue === "WITHDRAWAL_FROM_STORE") {
+        await fetchRegionsAndCommunes(false);
+      } else {
+        await fetchRegionsAndCommunes(true);
+      }
+    }
+  };
+
+  const handleSubmitOrder = async () => {
+    // Verificar si no hay productos seleccionados
+    if (selectedItems.length === 0) {
+      toast.error("Debe agregar un producto antes de crear la orden.");
+      return; // Salir de la función si no hay productos
+    }
+
+    const addressLine2 = customer.customer?.addressLine2?.trim()
+      ? customer.customer.addressLine2
+      : "Sin Comentarios";
+
+    let communeIdToSend: string | undefined;
+    if (deliveryType === "WITHDRAWAL_FROM_STORE") {
+      communeIdToSend = selectedCommune;
+    } else if (useDifferentShippingAddress) {
+      communeIdToSend = selectedCommune;
+    } else {
+      communeIdToSend = customer.customer?.communeId;
+    }
+
+    console.log("Submitting order with customer data:", {
+      ...customer,
+      deliveryTypeId: deliveryTypeID,
+      addressLine2,
+      communeId: communeIdToSend,
       items: selectedItems.map((item) => ({
         skuId: item.skuId,
         quantity: item.quantity,
       })),
+    });
+
+    const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+    const orderData = {
+      ...customer,
+      currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
+      deliveryTypeId: deliveryTypeID,
+      useDifferentShippingAddress,
+      items: selectedItems.map((item) => ({
+        skuId: item.skuId,
+        quantity: item.quantity,
+      })),
+      customer: {
+        firstname: customer.customer?.firstname,
+        lastname: customer.customer?.lastname,
+        phoneNumber: customer.customer?.phoneNumber,
+        email: customer.customer?.email,
+        addressLine1: customer.customer?.addressLine1,
+        addressLine2: addressLine2,
+        communeId: communeIdToSend,
+      },
+      ...(useDifferentShippingAddress
+        ? {
+            shippingInfo: {
+              addressLine1: customer.customer?.addressLine1,
+              addressLine2: addressLine2,
+              communeId: selectedCommune,
+            },
+          }
+        : {}),
     };
 
-    if (!order.useDifferentShippingAddress) {
-      const { shippingInfo, ...orderWithoutShippingInfo } = orderToSubmit;
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders`,
-        orderWithoutShippingInfo,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    } else {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders`,
-        orderToSubmit,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-
     try {
-      toast.success("Order submitted successfully");
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
+        orderData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data) {
+        const idOrder = response.data.order.id;
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+        const orderPaymentUrl = `${baseUrl}/tienda/checkout/pago?orderId=${idOrder}`;
+        console.log("Order Payment URL", orderPaymentUrl);
+        await navigator.clipboard.writeText(orderPaymentUrl);
+        toast.success(
+          "Orden creada correctamente, URL de la orden copiada al portapapeles"
+        );
+
+        setOrderUrl(orderPaymentUrl);
+        setCookie("idOrder", idOrder);
+        setSelectedItems([]);
+        setCustomer(initialCustomerState);
+      }
+      console.log("Order confirmation response:", response.data);
     } catch (error) {
-      toast.error("Error submitting order");
+      toast.error(
+        "Error al confirmar la orden. Por Favor, Revise los campos del formulario."
+      );
+      console.error("Error al confirmar la orden:", error);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-8">Create Manual Order</h1>
-      <form
-        onSubmit={handleOrderSubmit}
-        className="space-y-6"
-      >
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="First Name"
-              className="border rounded p-2 w-full"
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  customer: {
-                    ...order.customer,
-                    firstname: e.target.value,
-                  },
-                })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              className="border rounded p-2 w-full"
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  customer: {
-                    ...order.customer,
-                    lastname: e.target.value,
-                  },
-                })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Phone Number"
-              className="border rounded p-2 w-full"
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  customer: {
-                    ...order.customer,
-                    phoneNumber: e.target.value,
-                  },
-                })
-              }
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="border rounded p-2 w-full"
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  customer: { ...order.customer, email: e.target.value },
-                })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Address Line 1"
-              className="border rounded p-2 w-full"
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  customer: {
-                    ...order.customer,
-                    addressLine1: e.target.value,
-                  },
-                })
-              }
-            />
-            <input
-              type="text"
-              placeholder="Address Line 2"
-              className="border rounded p-2 w-full"
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  customer: {
-                    ...order.customer,
-                    addressLine2: e.target.value,
-                  },
-                })
-              }
-            />
-            <select
-              className="border rounded p-2 w-full"
-              onChange={(e) => fetchCommunes(e.target.value)}
-            >
-              <option value="">Select Region</option>
-              {regions.map((region) => (
-                <option
-                  key={region.id}
-                  value={region.id}
-                >
-                  {region.name}
-                </option>
-              ))}
-            </select>
-            <select
-              className="border rounded p-2 w-full"
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  customer: { ...order.customer, communeId: e.target.value },
-                })
-              }
-            >
-              <option value="">Select Commune</option>
-              {communes.map((commune) => (
-                <option
-                  key={commune.id}
-                  value={commune.id}
-                >
-                  {commune.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Shipping Information</h2>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={order.useDifferentShippingAddress}
-              onChange={(e) =>
-                setOrder({
-                  ...order,
-                  useDifferentShippingAddress: e.target.checked,
-                })
-              }
-            />
-            <span>Use different shipping address</span>
-          </label>
-          {order.useDifferentShippingAddress && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <input
-                type="text"
-                placeholder="Shipping Address Line 1"
-                className="border rounded p-2 w-full"
-                onChange={(e) =>
-                  setOrder({
-                    ...order,
-                    shippingInfo: {
-                      ...order.shippingInfo,
-                      addressLine1: e.target.value,
-                    } as any,
-                  })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Shipping Address Line 2"
-                className="border rounded p-2 w-full"
-                onChange={(e) =>
-                  setOrder({
-                    ...order,
-                    shippingInfo: {
-                      ...order.shippingInfo,
-                      addressLine2: e.target.value,
-                    } as any,
-                  })
-                }
-              />
-              <select
-                className="border rounded p-2 w-full"
-                onChange={(e) => fetchCommunes(e.target.value, true)}
-              >
-                <option value="">Select Region</option>
-                {regions.map((region) => (
-                  <option
-                    key={region.id}
-                    value={region.id}
+    <>
+      <div>
+        <title>Crear Pedido</title>
+        <div className="pb-12">
+          <div className="p-10">
+            <div className="mt-10 bg-white rounded p-10 px-4 pt-8 lg:mt-0">
+              <p className="text-xl font-medium">Datos Personales</p>
+              <p className="text-gray-400">Completa tus datos de Personales</p>
+              <div className="">
+                <div className="mt-10 px-4 pt-2 lg:mt-0">
+                  <div className="grid grid-cols-2 gap-4">
+                    <label
+                      htmlFor="firstname"
+                      className="block mt-4"
+                    >
+                      Nombre <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="firstname"
+                        name="firstname"
+                        value={customer.customer?.firstname || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              firstname: e.target.value,
+                            },
+                          })
+                        }
+                        className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      />
+                    </label>
+                    <label
+                      htmlFor="lastname"
+                      className="block mt-4"
+                    >
+                      Apellido <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="lastname"
+                        name="lastname"
+                        value={customer.customer?.lastname || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              lastname: e.target.value,
+                            },
+                          })
+                        }
+                        className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <label
+                      htmlFor="phoneNumber"
+                      className="block mt-4"
+                    >
+                      Teléfono <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        value={customer.customer?.phoneNumber || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              phoneNumber: e.target.value,
+                            },
+                          })
+                        }
+                        className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      />
+                    </label>
+                    <label
+                      htmlFor="email"
+                      className="block mt-4"
+                    >
+                      Email
+                      <input
+                        type="text"
+                        id="email"
+                        name="email"
+                        value={customer.customer?.email || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              email: e.target.value,
+                            },
+                          })
+                        }
+                        className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      />
+                    </label>
+                  </div>
+                  <div
+                    style={{ borderRadius: "var(--radius)" }}
+                    className="shadow  flex items-center p-4 mt-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 mx-4"
+                    role="alert"
                   >
-                    {region.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="border rounded p-2 w-full"
-                onChange={(e) =>
-                  setOrder({
-                    ...order,
-                    shippingInfo: {
-                      ...order.shippingInfo,
-                      communeId: e.target.value,
-                    } as any,
-                  })
-                }
-              >
-                <option value="">Select Commune</option>
-                {shippingCommunes.map((commune) => (
-                  <option
-                    key={commune.id}
-                    value={commune.id}
+                    <svg
+                      className="flex-shrink-0 inline w-4 h-4 me-3"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                    </svg>
+                    <span className="sr-only">Envío</span>
+                    <div className="flex flex-col">
+                      <div>
+                        Cuando selecciones <strong>Envío</strong>, sólo
+                        aparecerán las Regiones/Comunas{" "}
+                        <strong>disponible para despacho a domicilio</strong>.
+                      </div>
+                    </div>
+                  </div>
+                  <form className="mt-5 grid gap-2 px-4">
+                    <div className="relative">
+                      <input
+                        className="peer hidden"
+                        id="radio_retiroTienda"
+                        type="radio"
+                        name="radio"
+                        value="WITHDRAWAL_FROM_STORE"
+                        checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
+                        onChange={() =>
+                          handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")
+                        }
+                      />
+                      <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                      <label
+                        className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                        htmlFor="radio_retiroTienda"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-12 h-12"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                          />
+                        </svg>
+                        <div className="ml-5">
+                          <span className="mt-2 font-semibold">
+                            Retiro en Tienda
+                          </span>
+                          <p className="text-slate-500 text-sm leading-6">
+                            Entrega en: 0-1 días
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <input
+                        className="peer hidden"
+                        id="radio_delivery"
+                        type="radio"
+                        name="radio"
+                        value="HOME_DELIVERY_WITHOUT_COURIER"
+                        checked={
+                          deliveryType === "HOME_DELIVERY_WITHOUT_COURIER"
+                        }
+                        onChange={() =>
+                          handleChangeDeliveryType(
+                            "HOME_DELIVERY_WITHOUT_COURIER"
+                          )
+                        }
+                      />
+                      <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                      <label
+                        className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                        htmlFor="radio_delivery"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-12 h-12"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                          />
+                        </svg>
+                        <div className="ml-5">
+                          <span className="mt-2 font-semibold">Envío</span>
+                          <p className="text-slate-500 text-sm leading-6">
+                            Envío: 2-4 días
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </form>
+                  <div className="grid grid-cols-1">
+                    <label
+                      htmlFor="addressLine1"
+                      className="block mt-4"
+                    >
+                      Dirección
+                      <input
+                        type="text"
+                        id="addressLine1"
+                        name="addressLine1"
+                        value={customer.customer?.addressLine1 || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              addressLine1: e.target.value,
+                            },
+                          })
+                        }
+                        className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      />
+                    </label>
+                    <label
+                      htmlFor="addressLine2"
+                      className="block mt-4"
+                    >
+                      Indicaciones Extras
+                      <input
+                        type="text"
+                        id="addressLine2"
+                        name="addressLine2"
+                        value={customer.customer?.addressLine2 || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              addressLine2: e.target.value,
+                            },
+                          })
+                        }
+                        className="block w-full rounded-md border-dark/50 border p-1 mt-1"
+                      />
+                    </label>
+                  </div>
+                </div>
+                <div className="mt-5 grid gap-4 px-4">
+                  <label
+                    htmlFor="RegionId"
+                    className="block"
                   >
-                    {commune.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Products</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <select
-              className="border rounded p-2 w-full"
-              onChange={(e) => handleProductChange(e.target.value)}
-            >
-              <option value="">Select a Product</option>
-              {products.map((product) => (
-                <option
-                  key={product.id}
-                  value={product.id}
-                >
-                  {product.name}
-                </option>
-              ))}
-            </select>
-            {selectedProduct && selectedProduct.hasVariations && (
-              <select
-                className="border rounded p-2 w-full"
-                onChange={(e) =>
-                  handleAddItem(
-                    e.target.value,
-                    variations.find((v) => v.id === e.target.value)
-                      ?.description || ""
-                  )
-                }
-              >
-                <option value="">Select a Variation</option>
-                {variations.map((variation) => (
-                  <option
-                    key={variation.id}
-                    value={variation.id}
+                    Región
+                    <select
+                      id="region"
+                      value={selectedRegion}
+                      onChange={(event) => {
+                        handleRegionChange(event);
+                      }}
+                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                    >
+                      <option>Selecciona Región</option>
+                      {regions.map((region) => (
+                        <option
+                          key={region.id}
+                          value={region.id}
+                        >
+                          {region.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label
+                    htmlFor="communeId"
+                    className="block"
                   >
-                    {variation.description}
-                  </option>
-                ))}
-              </select>
-            )}
-            {!selectedProduct ||
-              (!selectedProduct.hasVariations && (
-                <button
-                  type="button"
-                  className="bg-blue-500 text-white rounded p-2"
-                  onClick={() =>
-                    handleAddItem(
-                      selectedProduct?.id || "",
-                      selectedProduct?.name || ""
-                    )
-                  }
-                >
-                  Add Product
-                </button>
-              ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Selected Items</h2>
-          <div className="space-y-4">
-            {selectedItems.map((item) => (
-              <div
-                key={item.skuId}
-                className="flex items-center space-x-4"
-              >
-                <span>{item.name}</span>
-                <input
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  className="border rounded p-2 w-20"
-                  onChange={(e) =>
-                    handleQuantityChange(item.skuId, e.target.value)
-                  }
-                />
+                    Comuna
+                    <select
+                      id="commune"
+                      value={selectedCommune}
+                      onChange={(event) => {
+                        handleCommuneChange(event);
+                      }}
+                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                    >
+                      <option>Selecciona Comuna</option>
+                      {communes
+                        .filter(
+                          (commune: any) => commune.regionId === selectedRegion
+                        )
+                        .map((commune) => (
+                          <option
+                            key={commune.id}
+                            value={commune.id}
+                          >
+                            {commune.name}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        <button
-          type="submit"
-          className="bg-green-500 text-white rounded p-2 w-full"
-        >
-          Submit Order
-        </button>
-      </form>
-    </div>
+              {orderUrl && (
+                <div className="mt-4 text-center">
+                  <p className="text-gray-700">
+                    URL de la orden:{" "}
+                    <a
+                      href={orderUrl}
+                      className="text-blue-500"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {orderUrl}
+                    </a>
+                  </p>
+                </div>
+              )}
+            </div>
+            {loading ? (
+              <div className="text-center my-8">Cargando Productos</div>
+            ) : null}
+            {loading ? (
+              <Loader />
+            ) : (
+              <div className="px-4 pt-8 rounded bg-white mt-6 p-10">
+                <p className="text-xl font-medium">Detalle de la Orden</p>
+                <p className="text-gray-400 mb-4">Selecciona los productos</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <select
+                    className="border rounded p-2 w-full"
+                    onChange={(e) => handleProductChange(e.target.value)}
+                  >
+                    <option value="">Selecciona un producto</option>
+                    {products.map((product) => (
+                      <option
+                        key={product.id}
+                        value={product.id}
+                      >
+                        {product.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedProduct && (
+                    <div
+                      className={`grid gap-4 ${
+                        selectedProduct.hasVariations
+                          ? "grid-cols-2"
+                          : "grid-cols-1"
+                      }`}
+                    >
+                      {selectedProduct.hasVariations && (
+                        <select
+                          className="border rounded p-2 w-full"
+                          onChange={(e) => setSelectedVariation(e.target.value)}
+                          value={selectedVariation}
+                        >
+                          <option value="">Selecciona una Variación</option>
+                          {variations.map((variation) => (
+                            <option
+                              key={variation.id}
+                              value={variation.id}
+                            >
+                              {variation.formattedAttributes}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <button
+                        type="button"
+                        className="bg-dark text-white rounded p-2 w-full"
+                        onClick={handleAddItem}
+                        disabled={
+                          selectedProduct.hasVariations && !selectedVariation
+                        }
+                      >
+                        Agregar producto
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4 mt-4">
+                  {selectedItems.map((item) => (
+                    <div
+                      key={item.skuId}
+                      className="grid grid-cols-2 items-center space-x-4 justify-between"
+                    >
+                      <div className="flex w-full justify-between  space-x-4">
+                        <span className="w-full min-w-24 border p-2">
+                          {item.name}
+                        </span>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          className="border rounded p-2 w-28"
+                          onChange={(e) =>
+                            handleQuantityChange(item.skuId, e.target.value)
+                          }
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="bg-red-500 text-white rounded p-2"
+                        onClick={() => handleRemoveItem(item.skuId)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={handleSubmitOrder}
+                  className="mt-4 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white"
+                >
+                  Crear Orden
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

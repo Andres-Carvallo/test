@@ -6,17 +6,23 @@ import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import axios from "axios";
 import OfferCanvas from "@/components/Offcanvas/OfferCanvas";
+import Link from "next/link";
+import toast from "react-hot-toast";
 
 type Offer = {
-  [x: string]: any;
+  id: any;
   currencyCodeId: any;
   unitPrice: any;
   startDate: any;
   endDate: any;
+  productId: any;
+  skuId: any;
 };
 
 function DetalleOferta() {
   const { id } = useParams();
+  const [expiredOffers, setExpiredOffers] = useState<Offer[]>([]);
+
   const [sku, setSku] = useState<any[]>([]);
   const [product, setProduct] = useState<any>(null);
   const [currentAttributes, setCurrentAttributes] = useState<
@@ -27,11 +33,13 @@ function DetalleOferta() {
   >({});
   const [variationsWithOffers, setVariationsWithOffers] = useState<any>({});
   const [selectedVariation, setSelectedVariation] = useState<any>(null);
+  const [selectedRow, setSelectedRow] = useState<string | null>(null);
+
   const [offers, setOffers] = useState<Offer[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
-  const [offerToEdit, setOfferToEdit] = useState<Offer | null>({
+  const [offerToEdit, setOfferToEdit] = useState<Offer | any>({
     currencyCodeId: "",
     unitPrice: 0,
     startDate: undefined,
@@ -39,23 +47,43 @@ function DetalleOferta() {
   });
 
   const handleVariationSelect = async (variation: any) => {
+    console.log("Variación seleccionada:", variation);
     setSelectedVariation(variation);
+    setSelectedRow(variation.id); // Aquí se establece la fila seleccionada
     await fetchOffersForProduct(id as string, variation.id);
   };
+const handleEditOffer = (offerId: string) => {
+  
+  
+  const activeOffer = offers.find((o) => o.id === offerId);
+  const expiredOffer = expiredOffers.find((o) => o.id === offerId);
+
+ 
+
+  const offer = activeOffer || expiredOffer;
+
+  if (offer) {
+    console.log("Editando oferta:", offer);
+    setOfferToEdit(offer);
+    setIsOffcanvasOpen(true);
+  } else {
+    console.log("No se encontró ninguna oferta con el ID proporcionado.");
+  }
+};
+
+  
 
   const handleDeleteOffer = (offerId: string) => {
-    setOfferToDelete(offerId);
+    setOfferToDelete(offerId); // Guarda el ID de la oferta
     setShowModal(true);
   };
 
-  const handleEditOffer = (offerId: string) => {
-    const offer = offers.find((o) => o.id === offerId);
-    setOfferToEdit(offer || null);
-    setIsOffcanvasOpen(true);
-  };
-
   const handleModalConfirm = async () => {
-    if (offerToDelete && selectedVariation) {
+    // Si el producto es variable, usamos el selectedVariation.id
+    // Si no es variable, usamos product.skuId directamente
+    const skuId = selectedVariation ? selectedVariation.id : product?.skuId;
+
+    if (offerToDelete && skuId) {
       try {
         const token = String(getCookie("AdminTokenAuth"));
         const config = {
@@ -64,15 +92,20 @@ function DetalleOferta() {
             "Content-Type": "application/json",
           },
         };
-        await axios.delete(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${selectedVariation.id}/offers/${offerToDelete}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          config
-        );
-        fetchOffersForProduct(id as string, selectedVariation.id);
-        setShowModal(false);
+
+        const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers/${offerToDelete}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+
+        await axios.delete(url, config);
+
+        console.log("Oferta eliminada exitosamente");
+
+        // Recargar la página después de eliminar la oferta
+        window.location.reload();
       } catch (error) {
         console.log("Error al eliminar la oferta:", error);
       }
+    } else {
+      console.log("Faltan datos para eliminar la oferta");
     }
   };
 
@@ -80,42 +113,38 @@ function DetalleOferta() {
     setShowModal(false);
   };
 
-  const handleSaveOffer = async (updatedOffer: Offer) => {
-    try {
-      const token = String(getCookie("AdminTokenAuth"));
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      };
+ const handleSaveOffer = async (updatedOffer: Offer) => {
+  try {
+    const token = String(getCookie("AdminTokenAuth"));
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
 
-      const formattedOffer = {
-        ...updatedOffer,
-        currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
-        startDate: updatedOffer?.startDate?.toISOString().split("T")[0],
-        endDate: updatedOffer?.endDate?.toISOString().split("T")[0],
-      };
+    const formattedOffer = {
+      ...updatedOffer,
+      currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
+      startDate: updatedOffer?.startDate?.[0],
+      endDate: updatedOffer?.endDate?.[0],
+    };
 
-      const response = await axios.put(
-        `${
-          process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE
-        }/api/v1/products/${id}/skus/${
-          selectedVariation?.id || product?.skuId
-        }/offers/${updatedOffer.id}`,
-        formattedOffer,
-        config
-      );
-      console.log("Oferta actualizada con éxito:", response.data);
-      fetchOffersForProduct(
-        id as string,
-        selectedVariation?.id || product?.skuId
-      );
-      setIsOffcanvasOpen(false);
-    } catch (error) {
-      console.log("Error al actualizar la oferta:", error);
-    }
-  };
+    const response = await axios.put(
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${updatedOffer.productId}/skus/${updatedOffer.skuId}/offers/${updatedOffer.id}`,
+      formattedOffer,
+      config
+    );
+    console.log("Oferta actualizada con éxito:", response.data);
+    toast.success("Oferta actualizada exitosamente");
+
+    fetchOffersForProduct(updatedOffer.productId, updatedOffer.skuId);
+    setIsOffcanvasOpen(false);
+  } catch (error) {
+    console.log("Error al actualizar la oferta:", error);
+  }
+};
+
   const fetchPriceForProduct = async (productId: string, skuId: string) => {
     try {
       const token = getCookie("AdminTokenAuth");
@@ -242,7 +271,7 @@ function DetalleOferta() {
       const url = skuId
         ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
         : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
-
+  
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -251,16 +280,33 @@ function DetalleOferta() {
       });
       const data = await response.json();
       if (data.code === 0) {
-        setOffers(data.skuOffers || data.offers);
+        const currentOffers = data.skuOffers || data.offers;
+        const expired = currentOffers.filter((offer: Offer) => {
+          const currentDate = new Date();
+          const endDate = new Date(offer.endDate);
+          return endDate < currentDate;
+        });
+  
+        const activeOffers = currentOffers.filter((offer: Offer) => {
+          const currentDate = new Date();
+          const endDate = new Date(offer.endDate);
+          return endDate >= currentDate;
+        });
+  
+        setOffers(activeOffers);
+        setExpiredOffers(expired);
       } else {
         console.error("Error al obtener las ofertas:", data.message);
         setOffers([]);
+        setExpiredOffers([]);
       }
     } catch (error) {
       console.error("Error al obtener las ofertas:", error);
       setOffers([]);
+      setExpiredOffers([]);
     }
   };
+  
 
   const fetchHasOfferForVariation = async (
     productId: string,
@@ -366,14 +412,41 @@ function DetalleOferta() {
   };
 
   return (
-    <section>
+    <section className="p-10">
       <Breadcrumb pageName="Administrar Oferta" />
-      <div className="bg-white border dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden max-w-[1500px] mx-auto">
+      <div className="flex justify-between w-full mx-4 mb-6">
+        <Link
+          href="/dashboard/ofertas"
+          className="px-4 py-2 bg-primary text-white rounded-md mt-4"
+        >
+          Volver
+        </Link>
+      </div>
+      <div className="bg-white border dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden mx-auto py-6">
         <div className="flex flex-col md:flex-row items-center justify-center p-4">
           <div className="w-full md:w-2/3 flex flex-col items-center">
-            <div className="flex flex-col items-center justify-center text-center text-4xl mt-2 mb-4">
+            <div className="flex flex-col items-center justify-center text-center text-4xl mb-4">
               {product && <h3>{product.name}</h3>}
             </div>
+          </div>
+        </div>
+        <div
+          className="mb-4 mx-12 shadow rounded flex items-center p-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+          role="alert"
+        >
+          <svg
+            className="flex-shrink-0 inline w-4 h-4 me-3"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+          </svg>
+          <span className="sr-only">Info</span>
+          <div>
+            Presiona el botón <span className="font-bold">Crear Oferta </span>
+             en cualquier producto y luego elige la variación que quieres editar.
           </div>
         </div>
 
@@ -394,7 +467,9 @@ function DetalleOferta() {
                   sku.map((item) => (
                     <tr
                       key={item.id}
-                      className="dark:border-gray-700"
+                      className={`dark:border-gray-700 ${
+                        selectedRow === item.id ? "bg-gray-100" : ""
+                      }`}
                     >
                       <td className="px-2 py-2 border border-gray-300">
                         <img
@@ -441,32 +516,38 @@ function DetalleOferta() {
                           {variationsWithOffers[item.id] ? (
                             <button
                               onClick={() => handleVariationSelect(item)}
-                              className="bg-primary text-white px-1 py-0.5 rounded hover:underline"
+                              className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded-sm"
                             >
-                              Editar
+                              Ofertas Creadas
                             </button>
                           ) : null}
 
                           <OfferCanvas
                             itemId={product.id}
                             skuId={item.id}
+                            setSelectedRow={setSelectedRow}
                             fetchVariations={fetchVariations}
                             offerToEdit={offerToEdit}
                             onSave={handleSaveOffer}
                             isOpen={isOffcanvasOpen}
                             onClose={() => setIsOffcanvasOpen(false)}
+                            fetchOffersForProduct={fetchOffersForProduct}
                           />
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
-                  <tr>
+                  <tr
+                    className={`dark:border-gray-700 ${
+                      selectedRow === product.skuId ? "bg-gray-100" : ""
+                    }`}
+                  >
                     <td className="px-2 py-2 border border-gray-300">
                       <img
                         className="w-14 h-14 object-cover mx-auto"
                         alt={product.name}
-                        src={product.previewImageUrl}
+                        src={product.mainImageUrl}
                       />
                     </td>
                     <td className="px-2 py-2 border border-gray-300">
@@ -497,12 +578,14 @@ function DetalleOferta() {
 
                         <OfferCanvas
                           itemId={product.id}
+                          setSelectedRow={setSelectedRow}
                           skuId={product.skuId}
                           fetchVariations={fetchVariations}
                           offerToEdit={offerToEdit}
                           onSave={handleSaveOffer}
                           isOpen={isOffcanvasOpen}
                           onClose={() => setIsOffcanvasOpen(false)}
+                          fetchOffersForProduct={fetchOffersForProduct}
                         />
                       </div>
                     </td>
@@ -539,18 +622,12 @@ function DetalleOferta() {
                           <td className="px-2 py-2">
                             ${offer.unitPrice.toLocaleString("es-CL")}
                           </td>
-                          <td className="px-2 py-2">
-                            {formatDateToChileanTime(
-                              offer.startDate.toString()
-                            )}
-                          </td>
-                          <td className="px-2 py-2">
-                            {formatDateToChileanTime(offer.endDate.toString())}
-                          </td>
+                          <td className="px-2 py-2"> {offer.startDate.split('-').reverse().join('/')}</td>
+                          <td className="px-2 py-2">{offer.endDate.split('-').reverse().join('/')}</td>
                           <td className="px-2 py-2 flex justify-center gap-2">
                             <button
                               onClick={() => handleEditOffer(offer.id)}
-                              className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-700"
+                              className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
                             >
                               Editar
                             </button>
@@ -570,6 +647,66 @@ function DetalleOferta() {
                           className="px-2 py-2"
                         >
                           No hay ofertas disponibles
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="w-full">
+          {(selectedVariation || (product && !product.hasVariations)) && (
+            <div className="pb-6">
+              <h2 className="text-center font-semibold uppercase py-6">
+                Ofertas Expiradas
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                      <th className="px-2 py-2">Precio Oferta</th>
+                      <th className="px-2 py-2">Fecha de Inicio</th>
+                      <th className="px-2 py-2">Fecha de Fin</th>
+                      <th className="px-2 py-2">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expiredOffers.length ? (
+                      expiredOffers.map((offer) => (
+                        <tr
+                          key={offer.id}
+                          className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                        >
+                          <td className="px-2 py-2">
+                            ${offer.unitPrice.toLocaleString("es-CL")}
+                          </td>
+                          <td className="px-2 py-2"> {offer.startDate.split('-').reverse().join('/')}</td>
+                          <td className="px-2 py-2">{offer.endDate.split('-').reverse().join('/')}</td>
+                          <td className="px-2 py-2 flex justify-center gap-2">
+                            <button
+                              onClick={() => handleEditOffer(offer.id)}
+                              className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleDeleteOffer(offer.id)}
+                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                            >
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-2 py-2"
+                        >
+                          No hay ofertas expiradas disponibles
                         </td>
                       </tr>
                     )}

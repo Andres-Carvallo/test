@@ -1,8 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { getCookie } from "cookies-next"; // asegúrate de tener cookies-next instalado
 import Loader from "@/components/common/Loader";
+import Modal from "@/components/Modals/ModalSeo";
+import Cropper from "react-easy-crop";
+import imageCompression from "browser-image-compression";
+import { getCroppedImg } from "@/lib/cropImage";
 
 const ImageUploader: React.FC<any> = ({
   productId,
@@ -12,6 +16,12 @@ const ImageUploader: React.FC<any> = ({
 }) => {
   const token = getCookie("AdminTokenAuth");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [mainImage, setMainImage] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [originalFileName, setOriginalFileName] = useState<string>("");
 
   useEffect(() => {
     // Cargar imágenes iniciales desde la API
@@ -22,41 +32,12 @@ const ImageUploader: React.FC<any> = ({
     setIsLoading(true);
     const file = event.target.files[0];
     if (file) {
+      setOriginalFileName(file.name);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const newImage = {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          data: reader.result, // Base64 encoded data
-        };
-
-        fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ mainImage: newImage }),
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.code === 0) {
-              console.log("Uploaded image:", data);
-              fetchImages(productId, skuId);
-            } else {
-              console.error("Error al subir la imagen:", data.message);
-            }
-          })
-          .catch((error) => {
-            console.error("Error al subir la imagen:", error);
-          })
-          .finally(() => {
-            setIsLoading(false);
-          });
+        const result = reader.result as string;
+        setMainImage(result);
+        setIsModalOpen(true);
       };
       reader.readAsDataURL(file);
     } else {
@@ -132,10 +113,86 @@ const ImageUploader: React.FC<any> = ({
     }
   };
 
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleCrop = async () => {
+    if (!mainImage) return;
+
+    try {
+      const croppedImage = await getCroppedImg(mainImage, croppedAreaPixels);
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+      const options = {
+        maxSizeMB: 1, // Ajusta el tamaño máximo permitido
+        maxWidthOrHeight: 1200, // Ajusta las dimensiones máximas permitidas
+        useWebWorker: true,
+        initialQuality: 0.8, // Ajusta la calidad inicial para mantener mejor calidad visual
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const newImage = {
+        name: originalFileName,
+        type: compressedFile.type,
+        size: compressedFile.size,
+        data: base64,
+      };
+
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ mainImage: newImage }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.code === 0) {
+            console.log("Uploaded image:", data);
+            fetchImages(productId, skuId);
+          } else {
+            console.error("Error al subir la imagen:", data.message);
+          }
+        })
+        .catch((error) => {
+          console.error("Error al subir la imagen:", error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setIsModalOpen(false);
+        });
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
+    }
+  };
+
+  const convertToBase64 = (file: Blob) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   return (
     <div className="relative flex space-x-4 overflow-x-auto p-4">
       {isLoading && (
-        <div className="absolute  inset-0 flex justify-center items-center bg-white bg-opacity-75 z-50">
+        <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-75 z-50">
           <div role="status">
             <svg
               aria-hidden="true"
@@ -160,7 +217,7 @@ const ImageUploader: React.FC<any> = ({
       {skuImages.map((image: any, index: any) => (
         <div
           key={image.id}
-          className="min-w-[80px] h-[80px]  relative"
+          className="min-w-[80px] h-[80px] relative"
         >
           <img
             src={image.imageUrl}
@@ -222,10 +279,10 @@ const ImageUploader: React.FC<any> = ({
               />
             </svg>
             <p className="mb-2 text-sm text-gray-500 text-center">
-              <span className="font-semibold">Click to upload</span>
+              <span className="font-semibold">Subir Imagen</span>
             </p>
-            <p className="text-xs text-gray-500   text-center">
-              SVG, PNG, JPG or GIF (MAX. 800x400px)
+            <p className="text-xs text-gray-500 text-center">
+            PNG, JPG o Webp (800x800px)
             </p>
           </div>
           <input
@@ -236,6 +293,59 @@ const ImageUploader: React.FC<any> = ({
             onChange={handleImageUpload}
           />
         </label>
+      )}
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImage || ""} // Asegurar que se pasa una cadena no nula
+              crop={crop}
+              zoom={zoom}
+              aspect={1 / 1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+            <div className="controls"></div>
+          </div>
+          <div className="flex flex-col justify-end">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range"
+              />
+            </div>
+            <div className="flex justify-between w-full">
+              <button
+                onClick={handleCrop}
+                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setMainImage(null);
+                  setIsModalOpen(false);
+                  setIsLoading(false);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

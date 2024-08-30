@@ -1,8 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router"; // Importa useRouter
 import { useTheme } from "next-themes";
-import ThemeToggler from "@/components/PIXELUP/Theme/ThemeToggler";
 import Buscador from "@/components/PIXELUP/Buscador/Buscador02";
 import CartCanvas from "@/components/CartCanva/CartCanvas";
 import axios from "axios";
@@ -14,20 +12,27 @@ import DropdownUserMobile from "@/components/Dropdown/DropdownUser/DropdownUserM
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const { theme, setTheme } = useTheme();
   const AdminToken = getCookie("AdminTokenAuth");
   const ClientToken = getCookie("ClientTokenAuth");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [collections, setCollections] = useState<any[]>([]);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [pathname, setPathname] = useState("");
 
-  const [pathname, setPathname] = useState(""); // Estado para almacenar el pathname
+  const excludedIds = `${process.env.NEXT_PUBLIC_BANNER_NAVBAR}`;
+  /*   [
+    "1c0c6de9-65c9-4472-8eaa-7fc879abbd7d",
+    "c89d287c-f23f-4a88-8778-cc02160469c0",
+  ]; */
+  const filteredCollections = collections
+    .filter((collection) => !excludedIds.includes(collection.id))
+    .sort((a, b) => a.title.localeCompare(b.title));
 
   useEffect(() => {
-    // Este efecto solo se ejecutará en el cliente
     if (typeof window !== "undefined") {
-      setPathname(window.location.pathname); // Obtén el pathname del cliente
+      setPathname(window.location.pathname);
     }
   }, []);
 
@@ -54,66 +59,139 @@ export default function Navbar() {
     setIsOpen(!isOpen);
   };
 
+  const toggleVisibility = () => {
+    setIsVisible(!isVisible);
+  };
+
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-lg relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-32">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 min-w-[120px]">
             <div className="flex-shrink-0 pr-4">
               <Link href="/">
                 <img
-                  className="h-24 w-24"
+                  className="w-24"
                   src="/img/Logo/tavola.jpeg"
                   alt="Logo"
                 />
               </Link>
             </div>
-            <div className="hidden md:block">
-              <ul className="flex flex-col md:flex-row md:space-x-4">
-                <li className={pathname === "/" ? "text-primary" : ""}>
-                  <Link
-                    href="/"
-                    className="text-base font-medium"
-                  >
-                    Inicio
-                  </Link>
-                </li>
-                {collections.length > 0 && (
-                  <ul className="flex flex-col md:flex-row md:space-x-4">
-                    {collections.map((collection) => (
+          </div>
+          <div className="hidden xl:flex flex-grow justify-center">
+            <ul className="flex flex-col md:flex-row md:space-x-8 uppercase">
+              <li className={pathname === "/" ? "text-primary" : ""}>
+                <Link
+                  href="/"
+                  className="text-base font-medium"
+                >
+                  Inicio
+                </Link>
+              </li>
+              <li className={pathname === "/tienda" ? "text-primary" : ""}>
+                <Link
+                  href="/tienda"
+                  className="text-base font-medium"
+                >
+                  Tienda
+                </Link>
+              </li>
+              {collections.length > 0 && (
+                <li className="group relative">
+                  <p className="hover:text-primary cursor-pointer text-base font-medium flex items-center">
+                    PRODUCTOS
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16px"
+                      height="16px"
+                      className="ml-1"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 16a1 1 0 0 1-.71-.29l-6-6a1 1 0 0 1 1.42-1.42l5.29 5.3 5.29-5.29a1 1 0 0 1 1.41 1.41l-6 6a1 1 0 0 1-.7.29z"
+                        data-name="16"
+                        data-original="#000000"
+                      />
+                    </svg>
+                  </p>
+                  <ul className="hidden absolute uppercase left-0 w-52 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg group-hover:block">
+                    {filteredCollections.map((collection) => (
                       <li
                         key={collection.id}
-                        className="group relative"
+                        className="flex w-auto pb-2 border-b pl-2 py-2 uppercase"
                       >
+                        <span className="self-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-3"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                            />
+                          </svg>
+                        </span>
                         <Link
                           href={`/tienda/colecciones/${collection.id}`}
-                          className="hover:text-primary text-base font-medium"
+                          className="hover:text-primary text-base text-[15px] block "
                         >
                           {collection.title}
                         </Link>
                       </li>
                     ))}
                   </ul>
-                )}
-                <li className={pathname === "/tallas" ? "text-primary" : ""}>
-                  <a
-                    href="#"
-                    className="hover:text-primary text-base font-medium"
-                  >
-                    Tallas
-                  </a>
                 </li>
-              </ul>
-            </div>
+              )}
+              <li
+                className={
+                  pathname ===
+                  "http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                    ? "text-primary"
+                    : ""
+                }
+              >
+                <Link
+                  href="http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                  className="hover:text-primary text-base font-medium uppercase"
+                >
+                  PROMOCIONES
+                </Link>
+              </li>
+              <li className={pathname === "/nosotros" ? "text-primary" : ""}>
+                <Link
+                  href="/nosotros"
+                  className="hover:text-primary text-base font-medium uppercase"
+                >
+                  nosotros
+                </Link>
+              </li>
+              <li
+                className={
+                  pathname === "/cotiza-tu-evento" ? "text-primary" : ""
+                }
+              >
+                <Link
+                  href="/cotiza-tu-evento"
+                  className="hover:text-primary text-base font-medium uppercase"
+                >
+                  Cotiza Tu evento
+                </Link>
+              </li>
+            </ul>
           </div>
           <div className="flex items-center gap-2">
-            <div>
+            <div className="hidden xl:flex">
               <Buscador />
             </div>
-            <div className="hidden md:flex">
+            <div className="hidden xl:flex">
               <CartCanvas />
             </div>
-            <div className="hidden md:flex pl-2">
+            <div className="hidden xl:flex pl-2">
               {AdminToken ? (
                 <DropdownAdmin />
               ) : ClientToken ? (
@@ -140,11 +218,8 @@ export default function Navbar() {
                 )
               )}
             </div>
-            {/*             <div className="hidden md:flex">
-              <ThemeToggler />
-            </div> */}
           </div>
-          <div className="-mr-2 flex md:hidden">
+          <div className="flex xl:hidden items-center gap-4">
             <button
               onClick={toggleMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:text-gray-600 dark:focus:text-gray-300"
@@ -166,91 +241,218 @@ export default function Navbar() {
                 />
               </svg>
             </button>
-            <div className="md:hidden self-center mr-4">
+            <div className="">
+              <Buscador />
+            </div>
+            <div className="self-center">
               <CartCanvas />
+            </div>
+            <div className="self-center">
+              {AdminToken ? (
+                <DropdownAdmin />
+              ) : ClientToken ? (
+                <DropdownUser />
+              ) : (
+                !AdminToken && (
+                  <Link href="/tienda/login">
+                    <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md text-white">
+                      Login
+                    </div>
+                  </Link>
+                )
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 pl-4">
-          <ul className="flex flex-col md:flex-row md:space-x-4">
-            <li
-              className={`max-lg:py-2 ${
-                pathname === "/tienda" ? "text-primary" : ""
-              }`}
+      <div
+        className={`fixed inset-0 z-50 bg-white dark:bg-gray-800 ${
+          isOpen ? "block" : "hidden"
+        }`}
+      >
+        <div className="flex justify-end p-4">
+          <button
+            onClick={toggleMenu}
+            className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+          >
+            <svg
+              className="h-8 w-8"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className="pt-2 pb-3 space-y-1 px-6 text-3xl">
+          <div className="flex-shrink-0 flex justify-center items-center">
+            <Link
+              href="/"
+              onClick={() => setIsOpen(false)}
+            >
+              <img
+                className="w-48"
+                src="/img/Logo/tavola.jpeg"
+                alt="Logo"
+              />
+            </Link>
+          </div>
+
+          <ul className="flex flex-col text-center pb-8">
+            <li className={` ${pathname === "/" ? "text-primary" : ""}`}>
               <Link
                 href="/"
-                className="hover:text-primary text-base font-semibold"
+                className="hover:text-primary text-base font-medium"
+                onClick={() => setIsOpen(false)}
               >
-                Inicio
+                INICIO
               </Link>
             </li>
-            {collections.length > 0 && (
-              <ul className="flex flex-col md:flex-row md:space-x-4">
-                {collections.map((collection) => (
-                  <li
-                    key={collection.id}
-                    className={`max-lg:py-2 ${
-                      pathname === "/tienda" ? "text-primary" : ""
-                    }`}
-                  >
-                    <Link
-                      href={`/tienda/colecciones/${collection.id}`}
-                      className="hover:text-primary text-base font-medium"
-                    >
-                      {collection.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <li
-              className={`max-lg:py-2 ${
-                pathname === "/tallas" ? "text-primary" : ""
-              }`}
-            >
-              <a
-                href="#"
-                className="hover:text-primary text-base font-medium"
+            <li className={`${pathname === "/" ? "text-primary" : ""}`}>
+              <button
+                className="relative items-center justify-center hover:text-primary text-base font-medium"
+                onClick={toggleVisibility}
               >
-                Tallas
-              </a>
+                PRODUCTOS
+                <div
+                  className="absolute"
+                  style={{ top: "3px", left: "121px" }}
+                >
+                  {isVisible ? (
+                    <div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-4 "
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                        />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+            </li>
+            {isVisible && (
+              <div className="border-b border-t pb-2 mt-2">
+                {collections.length > 0 && (
+                  <ul className="flex flex-col space-y-1 text-center ">
+                    {filteredCollections.map((collection) => (
+                      <li
+                        key={collection.id}
+                        className={`${
+                          pathname === "/tienda" ? "text-primary" : ""
+                        }`}
+                      >
+                        <Link
+                          href={`/tienda/colecciones/${collection.id}`}
+                          className="hover:text-primary text-base font-medium uppercase"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {collection.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            <li
+              className={
+                pathname ===
+                "http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                  ? "text-primary"
+                  : ""
+              }
+            >
+              <Link
+                href="http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                className="hover:text-primary text-base font-medium uppercase"
+              >
+                PROMOCIONES
+              </Link>
+            </li>
+            <li className={pathname === "/nosotros" ? "text-primary" : ""}>
+              <Link
+                href="/nosotros"
+                className="hover:text-primary text-base font-medium uppercase"
+              >
+                nosotros
+              </Link>
+            </li>
+            <li
+              className={pathname === "/cotiza-tu-evento" ? "text-primary" : ""}
+            >
+              <Link
+                href="/cotiza-tu-evento"
+                className="hover:text-primary text-base font-medium uppercase"
+              >
+                Cotiza Tu evento
+              </Link>
             </li>
           </ul>
 
-          <div className="border-y py-4">
-            {AdminToken ? (
-              <DropdownAdmin />
-            ) : ClientToken ? (
-              <DropdownUserMobile />
-            ) : (
-              !AdminToken && (
-                <section className="flex">
-                  <div>
-                    <Link href="/tienda/login">
-                      <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
-                        Login
-                      </div>
-                    </Link>
-                  </div>
-                  <div>
-                    <Link
-                      className="p-2 hidden bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white"
-                      href="/tienda/register"
-                    >
-                      Registrarse
-                    </Link>
-                  </div>
-                </section>
-              )
-            )}
+          <div className="w-full py-4 flex  items-center">
+            <div className="w-full flex justify-center items-center mb-4">
+              {AdminToken ? (
+                <DropdownAdmin />
+              ) : ClientToken ? (
+                <DropdownUserMobile />
+              ) : (
+                !AdminToken && (
+                  <section className="flex">
+                    <div>
+                      <Link href="/tienda/login">
+                        <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
+                          Login
+                        </div>
+                      </Link>
+                    </div>
+                    <div>
+                      <Link
+                        className="p-2 hidden bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white"
+                        href="/tienda/register"
+                      >
+                        Registrarse
+                      </Link>
+                    </div>
+                  </section>
+                )
+              )}
+            </div>
           </div>
-          {/*           <div className="lg:hidden pt-2 pl-2">
-            <ThemeToggler />
-          </div> */}
         </div>
       </div>
     </nav>

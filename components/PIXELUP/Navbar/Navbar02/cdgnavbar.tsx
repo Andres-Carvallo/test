@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router"; // Importa useRouter
 import { useTheme } from "next-themes";
@@ -151,12 +152,12 @@ export default function Navbar() {
                   </Link>
                 </li>
                 <li className={pathname === "/about" ? "text-primary" : ""}>
-                  <Link
-                    href="javascript:void(0)"
+                  <button
                     className="hover:text-primary text-base font-medium"
+                    onClick={() => setShowModal(true)}
                   >
-                    <button onClick={() => setShowModal(true)}>Tallas</button>
-                  </Link>
+                    Tallas
+                  </button>
                 </li>
                 <li className={pathname === "/contacto" ? "text-primary" : ""}>
                   <Link
@@ -324,12 +325,12 @@ export default function Navbar() {
                 pathname === "/about" ? "text-primary" : ""
               }`}
             >
-              <Link
-                href="javascript:void(0)"
+              <button
                 className="hover:text-primary text-base font-medium"
+                onClick={() => setShowModal(true)}
               >
-                <button onClick={() => setShowModal(true)}>Tallas</button>
-              </Link>
+                Tallas
+              </button>
             </li>
             <li
               className={`max-lg:py-2 ${

@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 interface BannerImage {
   mainImage: any;
@@ -24,7 +25,7 @@ const BannerPrincipal01: React.FC = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
-      const bannerId = "7c6387c7-e487-4f64-a471-17c805accf69";
+      const bannerId = "a9253899-5470-4cff-8ab9-fec7992a78e9";
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -84,31 +85,22 @@ const BannerPrincipal01: React.FC = () => {
       className="w-full"
     >
       <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:z-10">
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-          {bannerData.images.map((image, index) => (
+{/*         <div className="absolute inset-0 w-full h-full overflow-hidden">
+
+        </div> */}
+        <div className="w-full min-h-[400px] relative z-10  mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+        {bannerData.images.map((image, index) => (
+          <Link href={image.buttonLink} key={index} className="absolute inset-0 w-full h-full">
             <img
-              key={index}
+              /* key={index} */
               src={image.mainImage.url}
               alt={image.title}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
                 index === currentIndex ? "opacity-100" : "opacity-0"
               }`}
             />
+            </Link>
           ))}
-        </div>
-        <div className=" min-h-[400px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-          {/*           <h2 className="text-2xl font-semibold mb-2 uppercase">
-            {currentImage.title}
-          </h2>
-          <p className="text-md text-center text-gray-200">
-            {currentImage.landingText}
-          </p>
-          <a
-            href={currentImage.buttonLink}
-            className="mt-8 bg-dark bg-primary text-secondary hover:text-primary text-base font-semibold py-2.5 px-6 rounded hover:bg-secondary"
-          >
-            {currentImage.buttonText}
-          </a> */}
         </div>
         {multipleImages && (
           <>

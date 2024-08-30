@@ -208,7 +208,10 @@ const BannerAbout02: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
   }
 
   return (
-    <section id="banner" className="w-full">
+    <section
+      id="banner"
+      className="w-full"
+    >
       <div>
         {bannerData && (
           <div className="relative  font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0  before:z-10">
@@ -217,14 +220,15 @@ const BannerAbout02: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
               alt={bannerData[0].title}
               className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="min-h-[250px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-            </div>
+            <div className="min-h-[250px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6"></div>
           </div>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="px-4 mx-auto mt-8">
-        
+      <form
+        onSubmit={handleSubmit}
+        className="px-4 mx-auto mt-8"
+      >
         <div>
           <input
             type="file"
@@ -241,7 +245,11 @@ const BannerAbout02: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
                 Foto <span className="text-primary">*</span>
               </h3>
               <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
-                <img src={mainImageHero} alt="Main Image" className="w-full" />
+                <img
+                  src={mainImageHero}
+                  alt="Main Image"
+                  className="w-full"
+                />
                 <button
                   className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
                   onClick={() => handleClearImage(setMainImageHero)}
@@ -288,10 +296,10 @@ const BannerAbout02: React.FC<BannerAboutProps> = ({ BannerAboutBOData }) => {
                     />
                   </svg>
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span>
+                    <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
+                  PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>

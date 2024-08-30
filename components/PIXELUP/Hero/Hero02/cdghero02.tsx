@@ -33,7 +33,7 @@ const Hero02: React.FC<Hero02Props> = ({ Hero02Data }) => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
-      const bannerId = "24eed87b-2b78-4922-836a-9d860f878350";
+      const bannerId = "e0d55d17-c977-4a0a-9c84-e4895e35d1ff";
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

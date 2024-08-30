@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import TabExtra from "@/components/Products/ProductoSimple/TabExtra";
 import TabCategory from "@/components/Products/Category/TabCategory";
@@ -11,39 +11,68 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import Select from "react-select";
-import { useSearchParams, useRouter } from "next/navigation"; // Importar los hooks necesarios
+import { useSearchParams, useRouter } from "next/navigation";
 import ImageUploader from "./ImageUploader";
 import StarCheckbox from "@/components/PIXELUP/Checkbox/StarCheckbox";
 import Loader from "@/components/common/Loader";
 import toast from "react-hot-toast";
+import Modal from "@/components/Modals/ModalSeo";
+import Cropper from "react-easy-crop";
+import imageCompression from "browser-image-compression";
+import { getCroppedImg } from "@/lib/cropImage";
+import { handleStockSku } from "@/app/utils/HandleStockSku";
+import { HandlePriceSku } from "@/app/utils/HandlePriceSku";
+import Link from "next/link";
 
 const CrearProductoSimple: React.FC = ({}) => {
   const [isLoading, setIsLoading] = useState(false);
   const { productType, setProductType } = useAPI();
-  const [openModalId, setOpenModalId] = useState(null);
+  const [openModalId, setOpenModalId] = useState<string | null>(null);
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [precioNormal, setPrecioNormal] = useState<number | null>(null);
   const [stockQuantity, setStockQuantity] = useState<number | null>(null);
-
   const [productId, setProductId] = useState<string | null>(null);
-  const [skuId, setSkuId] = useState(null);
+  const [skuId, setSkuId] = useState<string | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [checkOfferChecked, setCheckOfferChecked] = useState(false);
+
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
   const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
-  const searchParams = useSearchParams(); // Utilizar useSearchParams para obtener parámetros de búsqueda
-  const router = useRouter(); // Utilizar useRouter para redirigir si es necesario
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [destacado, setDestacado] = useState(false);
   const [skuImages, setSkuImages] = useState<any[]>([]);
-  const [alertStock, setAlertStock] = useState<number>(0);
+  const [alertStock, setAlertStock] = useState<number | null>(null);
   const [isFeatured, setIsFeatured] = useState(false);
-
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [originalFileName, setOriginalFileName] = useState<string>("");
+  const maxLength = 1000; // Límite de caracteres
+  const [charCount, setCharCount] = useState(0); // Contador de caracteres
+  const [skuData, setSkuData] = useState({
+    description: "",
+    hasUnlimitedStock: false,
+    hasStockNotifications: false,
+    isFeatured: false,
+  });
+  const [checkOfferChecked, setCheckOfferChecked] = useState(
+    skuData.hasStockNotifications || false
+  );
+  const handleDescriptionChange = (event: any) => {
+    const value = event.target.value;
+    if (value.length <= maxLength) {
+      setFormData({
+        ...formData,
+        description: value,
+      });
+      setCharCount(value.length);
+    }
+  };
   const validateForm = () => {
     let valid = true;
-
     if (!formData.name) {
       toast.error("El nombre del producto es requerido");
       valid = false;
@@ -52,14 +81,15 @@ const CrearProductoSimple: React.FC = ({}) => {
       toast.error("La descripción del producto es requerida");
       valid = false;
     }
-
     if (precioNormal === null || precioNormal <= 1) {
       toast.error("El precio es requerido y debe ser mayor a 1");
       valid = false;
     }
-
-    if (stockQuantity === null || stockQuantity <= 1) {
-      toast.error("La cantidad de stock es requerido y debe ser mayor a 1");
+    if (
+      !skuData.hasUnlimitedStock &&
+      (stockQuantity === null || stockQuantity <= 0)
+    ) {
+      toast.error("La cantidad de stock es requerida y debe ser mayor a 0");
       valid = false;
     }
     if (formData.productTypes.length === 0) {
@@ -78,7 +108,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   };
 
   const handleCheckboxChange = () => {
-    setFormData((prevFormData) => ({
+    setFormData((prevFormData: any) => ({
       ...prevFormData,
       hasFeaturedBaseSku: !prevFormData.hasFeaturedBaseSku,
       isFeatured: !prevFormData.isFeatured,
@@ -92,7 +122,6 @@ const CrearProductoSimple: React.FC = ({}) => {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -102,20 +131,20 @@ const CrearProductoSimple: React.FC = ({}) => {
       );
       const data = await response.json();
       if (data.code === 0) {
-        // Extracción del stock de la primera skuInventory, si existe
         setSkuImages(data.skuImages);
       } else {
         console.error(
           "Error al obtener el stock de la variación:",
           data.message
         );
-        return null; // En caso de error, devuelve null
+        return null;
       }
     } catch (error) {
       console.error("Error al obtener el stock de la variación:", error);
-      return null; // En caso de error, devuelve null
+      return null;
     }
   };
+
   const handleDeleteForm = () => {
     setFormData(() => ({
       productTypes: [],
@@ -126,6 +155,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       enabledForWithdrawal: false,
       hasVariations: false,
       hasFeaturedBaseSku: false,
+      hasUnlimitedStock: false,
       isFeatured: false,
       measures: {
         length: 1,
@@ -161,44 +191,11 @@ const CrearProductoSimple: React.FC = ({}) => {
     router.replace(`${window.location.pathname}`);
   };
 
-  //   try {
-  //     const token = getCookie("AdminTokenAuth");
-  //     const response = await fetch(
-  //       `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers`,
-
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     console.log(data, "data offer");
-  //     if (data.code === 0) {
-  //       // Extracción del stock de la primera skuInventory, si existe
-  //       setOfferPrice(data.skuOffers[0].unitPrice);
-  //     } else {
-  //       console.error(
-  //         "Error al obtener el stock de la variación:",
-  //         data.message
-  //       );
-  //       return null; // En caso de error, devuelve null
-  //     }
-  //   } catch (error) {
-  //     console.error("Error al obtener el stock de la variación:", error);
-  //     return null; // En caso de error, devuelve null
-  //   }
-  // };
-
-  // Obtener tipos de producto
   const fetchProducTypes = async () => {
     try {
       const token = getCookie("AdminTokenAuth");
-
       const PageNumber = 1;
       const PageSize = 100;
-
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/product-types?pageNumber=${PageNumber}&pageSize=${PageSize}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -208,7 +205,6 @@ const CrearProductoSimple: React.FC = ({}) => {
           },
         }
       );
-
       setProductType(productTypeResponse.data.productTypes);
     } catch (error) {
       console.error("Error al obtener los tipos de producto:", error);
@@ -229,11 +225,8 @@ const CrearProductoSimple: React.FC = ({}) => {
         }
       );
       const data = await response.json();
-      console.log(data, "datastock");
-      if (data.code === 0) {
-        // Extracción del stock de la primera skuInventory, si existe
+      if (data.skuInventories.length > 0) {
         setStockQuantity(data.skuInventories[0].quantity);
-
         setAlertStock(data.skuInventories[0].minimumQuantity);
         setCheckOfferChecked(data.skuInventories[0].minimumQuantity !== 0);
       } else {
@@ -241,11 +234,11 @@ const CrearProductoSimple: React.FC = ({}) => {
           "Error al obtener el stock de la variación:",
           data.message
         );
-        return null; // En caso de error, devuelve null
+        return null;
       }
     } catch (error) {
       console.error("Error al obtener el stock de la variación:", error);
-      return null; // En caso de error, devuelve null
+      return null;
     }
   };
 
@@ -261,11 +254,8 @@ const CrearProductoSimple: React.FC = ({}) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
-
       const response = await axios.delete(url, { headers });
-
       if (response.status === 200) {
-        // Eliminar la imagen de la lista de imágenes
         fetchImages(productId, skuId);
       } else {
         console.error("Error al eliminar la imagen:", response.status);
@@ -273,6 +263,20 @@ const CrearProductoSimple: React.FC = ({}) => {
     } catch (error) {
       console.error("Error al eliminar la imagen:", error);
     }
+  };
+  const handleAlertStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    const currentStock =
+      stockQuantity !== null && stockQuantity !== undefined ? stockQuantity : 0;
+    // Verifica si el valor de la alerta es mayor o igual al stock actual
+    if (value >= currentStock) {
+      toast.error(
+        "El stock mínimo para la alerta debe ser menor que el stock disponible."
+      );
+      return;
+    }
+
+    setAlertStock(value ? value : null);
   };
 
   const fetchPrice = async (productId: string, skuId: string) => {
@@ -289,24 +293,22 @@ const CrearProductoSimple: React.FC = ({}) => {
       );
       const data = await response.json();
       if (data.code === 0) {
-        // Extracción del precio de la primera skuPricing, si existe
         setPrecioNormal(data.skuPricings[0].unitPrice);
       } else {
         console.error(
           "Error al obtener el precio de la variación:",
           data.message
         );
-        return null; // En caso de error, devuelve null
+        return null;
       }
     } catch (error) {
       console.error("Error al obtener el precio de la variación:", error);
-      return null; // En caso de error, devuelve null
+      return null;
     }
   };
 
   useEffect(() => {
     fetchProducTypes();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -316,47 +318,43 @@ const CrearProductoSimple: React.FC = ({}) => {
         setOpenModalId(null);
       }
     };
-
     if (openModalId) {
       document.addEventListener("keydown", handleEscape);
     } else {
       document.removeEventListener("keydown", handleEscape);
     }
-
     return () => {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [openModalId]);
 
-  function handleOpenModal(modalId: any) {
+  const handleOpenModal = (modalId: any) => {
     setOpenModalId(modalId);
-  }
+  };
   const handleCloseModal = () => {
     setOpenModalId(null);
   };
 
-  const handleImageChange = (e: any, setImage: any, imageKey: any) => {
+  const handleImageChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    setImage: React.Dispatch<React.SetStateAction<string | null>>,
+    imageKey: string
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
+      setOriginalFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
         setImage(result);
-
+        setIsModalOpen(true);
         const imageInfo = {
           name: file.name,
           type: file.type,
           size: file.size,
           data: result,
         };
-
-        // Determina qué imagen se está cambiando y actualiza el estado correspondiente
-        if (imageKey === "mainImage") {
-          setIsMainImageUploaded(true);
-        } else if (imageKey === "previewImage") {
-          setIsPreviewImageUploaded(true);
-        }
-        setFormData((prevFormData) => ({
+        setFormData((prevFormData: any) => ({
           ...prevFormData,
           [imageKey]: imageInfo,
         }));
@@ -378,7 +376,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     })
   );
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData]: any = useState({
     productTypes: [],
     name: "",
     description: "",
@@ -403,7 +401,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     mainImage: {
       name: "",
       type: "",
-      size: null,
+      size: null as number | null,
       data: "",
     },
   });
@@ -426,7 +424,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         response.data.warehouses &&
         response.data.warehouses.length > 0
       ) {
-        return response.data.warehouses[0].id; // Devuelve el id del primer almacén
+        return response.data.warehouses[0].id;
       } else {
         console.error("No se encontraron almacenes.");
         return null;
@@ -591,8 +589,59 @@ const CrearProductoSimple: React.FC = ({}) => {
       console.error("Error al enviar la solicitud:", error);
     }
   };
+  const fetchSkuData = async (productId: string, skuId: string) => {
+    console.log("fetchSkuData<<<");
+    if (productId && skuId) {
+      try {
+        const token = getCookie("AdminTokenAuth");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-  // Función para agregar una imagen a través de la API
+        const responseData = await response.json();
+        if (response.ok && responseData.code === 0) {
+          const skuDataResponse = responseData.sku;
+          console.log("fetchSkuData>>> skuDataResponse:", skuDataResponse);
+          setSkuData({
+            description: skuDataResponse.description || "",
+            hasUnlimitedStock: skuDataResponse.hasUnlimitedStock || false,
+            hasStockNotifications:
+              skuDataResponse.hasStockNotifications || false,
+            isFeatured: skuDataResponse.isFeatured || false,
+          });
+          setCheckOfferChecked(skuDataResponse.hasStockNotifications);
+        } else {
+          console.error(
+            "Error al obtener los datos del SKU:",
+            responseData.message
+          );
+          toast.error("Error al obtener los datos del SKU");
+        }
+      } catch (error) {
+        console.error("Error al obtener los datos del SKU:", error);
+        toast.error("Error al obtener los datos del SKU");
+      }
+    }
+  };
+  const handleSkuFieldChange = (field: keyof typeof skuData, value: any) => {
+    if (field === "hasUnlimitedStock" && value === true) {
+      setStockQuantity((prevQuantity) => (prevQuantity === null || prevQuantity <= 0 ? 9999999 : prevQuantity));
+    }
+  
+    setSkuData((prevSkuData) => ({
+      ...prevSkuData,
+      [field]: value,
+    }));
+  };
+  
+  
+
   const addProductImage = async (id: string, skuId: string, image: string) => {
     try {
       const name = image.substring(image.indexOf("/") + 1, image.indexOf(";"));
@@ -633,6 +682,83 @@ const CrearProductoSimple: React.FC = ({}) => {
       console.error("Error sending request:", error);
     }
   };
+  const handleStockQuantityChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = parseFloat(e.target.value);
+
+    // Verifica si alertStock es mayor o igual al nuevo stock
+    if (alertStock !== null && alertStock >= value) {
+      toast.error(
+        "El stock debe ser mayor que el stock mínimo para la alerta."
+      );
+      return;
+    }
+
+    setStockQuantity(value ? value : null);
+  };
+
+  const handleSkuData = async (
+    productId: string,
+    skuId: string,
+    description: string,
+    hasUnlimitedStock: boolean,
+    hasStockNotifications: boolean,
+    isFeatured: boolean
+  ) => {
+    console.log("handleSkuData>>>");
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+
+      const data = {
+        description,
+        hasUnlimitedStock,
+        hasStockNotifications,
+        isFeatured,
+      };
+
+      console.log("Datos que se envían en la solicitud:", data);
+
+      const response = await axios.put(url, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        console.log("SKU data updated successfully");
+        toast.success("Datos de la SKU actualizados correctamente");
+      } else {
+        console.error("Error updating SKU data:", response.statusText);
+        toast.error("Error al actualizar los datos de la SKU");
+      }
+    } catch (error) {
+      console.error("Error updating SKU data:", error);
+      toast.error("Error al actualizar los datos de la SKU");
+    }
+  };
+
+  const handleUnlimitedStockChange = () => {
+    if (skuData.hasUnlimitedStock) {
+      handleSkuFieldChange("hasUnlimitedStock", false);
+    } else {
+      // Desactivar alerta de stock si se activa el stock ilimitado
+      handleSkuFieldChange("hasStockNotifications", false);
+      handleSkuFieldChange("hasUnlimitedStock", true);
+    }
+  };
+
+  const handleStockNotificationChange = (checked: boolean) => {
+    if (checked) {
+      // Si se activa la alerta de stock, se desactiva el stock ilimitado
+      handleSkuFieldChange("hasUnlimitedStock", false);
+      handleSkuFieldChange("hasStockNotifications", true);
+    } else {
+      handleSkuFieldChange("hasStockNotifications", false);
+    }
+  };
 
   const handleSubmit = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -645,7 +771,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       delete dataToSend.mainImage;
     }
 
-    setIsLoading(true); // Mostrar el loader
+    setIsLoading(true);
 
     if (!isEditMode && !validateForm()) {
       setIsLoading(false);
@@ -680,7 +806,7 @@ const CrearProductoSimple: React.FC = ({}) => {
           response.statusText
         );
         toast.error("Error en la respuesta del servidor");
-        setIsLoading(false); // Ocultar el loader
+        setIsLoading(false);
         return;
       }
 
@@ -688,13 +814,12 @@ const CrearProductoSimple: React.FC = ({}) => {
       console.log("Datos de la respuesta:", responseData);
 
       if (!isEditMode) {
-        // Caso de creación
         if (!responseData || !responseData.product) {
           console.error(
             "La respuesta no contiene el objeto 'product' esperado."
           );
           toast.error("Error al crear el producto");
-          setIsLoading(false); // Ocultar el loader
+          setIsLoading(false);
           return;
         }
 
@@ -702,43 +827,58 @@ const CrearProductoSimple: React.FC = ({}) => {
         const { id, skuId: sku } = product;
 
         if (id && sku) {
-          console.log("Producto creado con ID:", id, "y SKU:", sku);
+          try {
+            await handleSkuData(
+              id,
+              sku,
+              "hola",
+              skuData.hasUnlimitedStock,
+              skuData.hasStockNotifications,
+              skuData.isFeatured
+            );
 
-          if (stockQuantity !== null && alertStock !== null) {
-            console.log("Llamando a addProductStock");
-            await addProductStock(id, sku, stockQuantity, alertStock);
+            await handleStockSku(id, sku, stockQuantity, alertStock);
+
+            if (precioNormal !== null) {
+              await HandlePriceSku(id, sku, precioNormal);
+            }
+
+            for (const image of selectedImages) {
+              await addProductImage(id, sku, image);
+            }
+
+            toast.success("Producto creado correctamente");
+            setProductId(product.id);
+            setIsEditMode(true);
+            router.replace(`${window.location.pathname}?productId=${id}`);
+          } catch (error) {
+            console.error("Error durante la creación del producto:", error);
+            toast.error("Error durante la creación del producto");
           }
-
-          if (precioNormal !== null) {
-            console.log("Llamando a addProductPricing");
-            await addProductPricing(id, sku, precioNormal);
-          }
-          for (const image of selectedImages) {
-            console.log("Llamando a addProductImage con imagen:", image);
-            await addProductImage(id, sku, image);
-          }
-
-          toast.success("Producto creado correctamente");
-
-          setProductId(product.id);
-          setIsEditMode(true);
-          router.replace(`${window.location.pathname}?productId=${id}`);
         } else {
           console.error("Error al crear el producto: ID o SKU no válidos");
           toast.error("Error al crear el producto: ID o SKU no válidos");
         }
       } else {
-        // Caso de actualización
         if (responseData.code === 0 && responseData.message === "Success") {
           toast.success("Producto actualizado correctamente");
 
           if (precioNormal && productId && skuId !== null) {
-            console.log("Llamando a addProductPricing");
-            await addProductPricing(productId, skuId, precioNormal);
+            await HandlePriceSku(productId, skuId, precioNormal);
+          }
+          if (productId && skuId !== null) {
+            await handleSkuData(
+              productId,
+              skuId,
+              "hola",
+              skuData.hasUnlimitedStock,
+              skuData.hasStockNotifications,
+              skuData.isFeatured
+            );
           }
 
           if (stockQuantity && productId && skuId && alertStock !== null) {
-            await addProductStock(productId, skuId, stockQuantity, alertStock);
+            await handleStockSku(productId, skuId, stockQuantity, alertStock);
           }
 
           for (const image of selectedImages) {
@@ -748,8 +888,6 @@ const CrearProductoSimple: React.FC = ({}) => {
               image
             );
           }
-
-          console.log("Producto actualizado correctamente");
         } else {
           console.error(
             "Error al actualizar el producto:",
@@ -764,11 +902,10 @@ const CrearProductoSimple: React.FC = ({}) => {
       console.error("Error al enviar la solicitud:", error);
       toast.error("Error al enviar la solicitud");
     } finally {
-      setIsLoading(false); // Ocultar el loader al final
+      setIsLoading(false);
     }
   };
 
-  // Efecto para detectar el productId en los parámetros de búsqueda y entrar en modo edición
   useEffect(() => {
     const id = searchParams.get("productId");
     if (id) {
@@ -777,7 +914,6 @@ const CrearProductoSimple: React.FC = ({}) => {
     }
   }, [searchParams]);
 
-  // Efecto para obtener datos del producto si se está en modo edición
   useEffect(() => {
     const fetchProductData = async () => {
       try {
@@ -798,7 +934,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         fetchImages(productData.id, productData.skuId);
         setSkuId(productData.skuId);
         setIsFeatured(productData.isFeatured);
-
+        fetchSkuData(productData.id, productData.skuId);
         const selectedProductTypes = productData.productTypes.map(
           (productType: any) => ({
             id: productType.id,
@@ -815,13 +951,12 @@ const CrearProductoSimple: React.FC = ({}) => {
           hasVariations: productData.hasVariations,
           productTypes: selectedProductTypes,
           isFeatured: productData.isFeatured,
-
           mainImage: isMainImageUploaded
             ? formData.mainImage
-            : (undefined as any),
+            : { ...formData.mainImage, data: productData.mainImageUrl },
           previewImage: isPreviewImageUploaded
             ? formData.previewImage
-            : (undefined as any),
+            : { ...formData.previewImage, data: productData.previewImageUrl },
           measures: productData.measures || {
             length: null,
             width: null,
@@ -829,7 +964,6 @@ const CrearProductoSimple: React.FC = ({}) => {
             weight: null,
           },
         });
-        console.log(productData, "productData");
         setMainImage(productData.mainImageUrl);
         setPreviewImage(productData.previewImageUrl);
       } catch (error) {
@@ -854,13 +988,302 @@ const CrearProductoSimple: React.FC = ({}) => {
     newImages.splice(index, 1);
     setSelectedImages(newImages);
   };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleCrop = async () => {
+    if (!mainImage) return;
+
+    try {
+      const croppedImage = await getCroppedImg(mainImage, croppedAreaPixels);
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es nulo");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
+
+      // Convert Blob to File
+      const file = new File([croppedImage], originalFileName, {
+        type: croppedImage.type,
+        lastModified: Date.now(),
+      });
+
+      const compressedFile = await imageCompression(file, options);
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        setMainImage(base64data);
+        const imageInfo = {
+          name: originalFileName,
+          type: compressedFile.type,
+          size: compressedFile.size,
+          data: base64data,
+        };
+
+        setFormData((prevFormData: any) => ({
+          ...prevFormData,
+          mainImage: imageInfo,
+        }));
+
+        setIsMainImageUploaded(true);
+      };
+
+      reader.readAsDataURL(compressedFile);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error al recortar o comprimir la imagen:", error);
+    }
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   if (isLoading) {
     return <Loader />;
   }
+
   return (
     <div className="relative pb-20 ">
-      <div className="w-[90%] mx-auto sticky backdrop-blur-md flex justify-center top-16 py-8 z-50">
+      <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-16 py-8 z-50">
         <div className="flex w-full justify-between px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-1 md:gap-4 w-full">
+            <div className="w-full  px-4 py-1 h-full  border-dark border rounded text-dark flex items-center gap-2">
+              Estado:{" "}
+              <span className="text-rosa">
+                {isEditMode ? "Publicado" : "Borrador"}
+              </span>
+            </div>
+  {/*            <button
+              onClick={handleSubmit}
+              className="relative w-full  inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group "
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  className="w-5 h-5 text-rosa"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  className="w-5 h-5 text-verde"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </span>
+             <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
+              </span>
+
+            </button> */}
+                        <button
+              onClick={handleDeleteForm}
+              className="relative w-full  inline-flex  items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  className="w-5 h-5 text-rosa"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  className="w-5 h-5 text-verde"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                Nuevo Producto
+              </span>
+            </button>
+            <button
+              id="createCategories"
+              onClick={() => handleOpenModal("createCategoriesModal")}
+              className="relative w-full  inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group "
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="{1.5}"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="white"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                Categorías
+              </span>
+            </button>
+
+            <Link
+              href="/dashboard/productos"
+              className="relative w-full  inline-flex  items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="{1.5}"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="white"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m0 0L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                Cancelar
+              </span>
+            </Link>
+            {/* <button
+              onClick={handleDeleteForm}
+              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="{1.5}"
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="white"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+                Cancelar
+              </span>
+            </button> */}
+          </div>
+        </div>
+        {/* <div className="flex w-full justify-between px-6">
           <div className=" px-4 py-1 border-dark border rounded text-dark flex items-center gap-2">
             Estado:{" "}
             <span className="text-rosa">
@@ -958,7 +1381,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                 </svg>
               </span>
               <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                Categorías
+                Crear Categorías
               </span>
             </button>
             <button
@@ -994,7 +1417,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m0 0L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                   />
                 </svg>
               </span>
@@ -1003,15 +1426,9 @@ const CrearProductoSimple: React.FC = ({}) => {
               </span>
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
-
-      {/* <Breadcrumb
-        pageName={isEditMode ? "Editar Producto" : "Crear Producto"}
-      /> */}
-
       <div className="w-[95%] md:w-[80%] mx-auto  bg-white  rounded-md p-6">
-        {/* Columna principal */}
         <div className=" flex flex-col pb-8 ">
           <div className="grid grid-cols-1 2xl:grid-cols-1 gap-2">
             <div
@@ -1031,14 +1448,11 @@ const CrearProductoSimple: React.FC = ({}) => {
               <div>
                 La información que cargues en el Título, Descripción y
                 Fotografía Principal, será la que aparecerá en una búsqueda
-                orgánica.
+                orgánica (SEO).
               </div>
             </div>
             <div>
-              <label
-                htmlFor="nombreProducto"
-                className="font-normal "
-              >
+              <label htmlFor="nombreProducto" className="font-normal ">
                 Nombre Producto
               </label>
               <input
@@ -1054,22 +1468,40 @@ const CrearProductoSimple: React.FC = ({}) => {
             <div className="">
               <label className="font-normal ">Descripción Producto</label>
               <textarea
-                className="shadow rounded block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                className="min-h-40 shadow rounded block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
                 name="descripcionProducto"
                 cols={30}
                 rows={5}
                 value={formData.description}
-                onChange={(event) =>
-                  setFormData({ ...formData, description: event.target.value })
-                }
+                onChange={handleDescriptionChange}
               ></textarea>
+              <div className="flex justify-between items-center mt-2">
+                <div className="text-left text-sm text-gray-500">
+                  {charCount}/{maxLength} caracteres
+                </div>
+                <div className="flex items-center text-right text-sm text-gray-500">
+                  <span>Arrastra aquí para expandir</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="size-6 ml-2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
-
             <div className="my-2 ">
               <label className="font-normal ">
                 Tipo de Entrega Disponible:
               </label>
-
               <div className="mt-5 w-full gap-2 flex mb-4 -z-1">
                 <div className="relative w-full">
                   <input
@@ -1149,7 +1581,6 @@ const CrearProductoSimple: React.FC = ({}) => {
                 </div>
               </div>
             </div>
-
             <div className="flex w-full">
               <div className="self-center mx-6">
                 <StarCheckbox
@@ -1179,7 +1610,6 @@ const CrearProductoSimple: React.FC = ({}) => {
               </div>
             </div>
           </div>
-
           <div>
             <div>
               <label className="font-normal ">Categoría</label>
@@ -1196,7 +1626,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                 onChange={(selectedOptions) => {
                   const selectedIds = selectedOptions.map((option: any) => ({
                     id: option.value,
-                    name: option.label, // Incluye el nombre para que se muestre correctamente en modo edición
+                    name: option.label,
                   }));
                   setFormData({
                     ...formData,
@@ -1206,7 +1636,6 @@ const CrearProductoSimple: React.FC = ({}) => {
               />
             </div>
           </div>
-
           <div className="mt-4 grid grid-cols-1 space-y-8">
             <div
               className="shadow border  p-4"
@@ -1231,59 +1660,114 @@ const CrearProductoSimple: React.FC = ({}) => {
                   <label className="font-normal ">Stock</label>
                   <input
                     type="number"
-                    className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                    onKeyDown={(e) => {
+                      const allowedKeys = [
+                        "Backspace",
+                        "Tab",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Delete",
+                      ];
+                      if (
+                        !allowedKeys.includes(e.key) &&
+                        !/^[0-9]$/.test(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                    className={`shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 ${
+                      skuData.hasUnlimitedStock
+                        ? "bg-gray-200 cursor-not-allowed"
+                        : ""
+                    }`}
                     style={{ borderRadius: "var(--radius)" }}
                     value={stockQuantity !== null ? stockQuantity : ""}
-                    onChange={(e) =>
-                      setStockQuantity(parseFloat(e.target.value))
-                    }
+                    onChange={handleStockQuantityChange} // Cambia a este nuevo manejador
                     name="stockProducto"
                     required
+                    disabled={skuData.hasUnlimitedStock}
                   />
                 </div>
               </div>
               <div className="flex ">
-                <label className="items-center cursor-pointer inline-flex pl-2">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={checkOfferChecked}
-                    onChange={(e) => setCheckOfferChecked(e.target.checked)}
-                  />
-                  <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
-                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                    Activar Alerta
-                  </span>
-                </label>
+                <div className="form-group flex justify-between w-full">
+                  <div>
+                    {" "}
+                    <label className="items-center cursor-pointer inline-flex pl-2">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={skuData.hasStockNotifications}
+                        onChange={(e) => {
+                          handleStockNotificationChange(e.target.checked);
+                          setCheckOfferChecked(e.target.checked);
+                        }}
+                      />
+                      <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Activar Alerta
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="unlimitedStock"
+                      className="mr-2 flex items-center"
+                    >
+                      <input
+                        type="checkbox"
+                        id="unlimitedStock"
+                        className="sr-only peer"
+                        checked={skuData.hasUnlimitedStock}
+                        onChange={handleUnlimitedStockChange}
+                      />
+                      <div className="relative w-8 h-5 bg-secondary rounded-full peer dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 peer-checked:bg-primary peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600" />
+                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Stock Ilimitado
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
             <div
               className={`mt-4 bg-primary p-4 text-dark shadow border   ${
-                checkOfferChecked ? "" : " hidden"
+                skuData.hasStockNotifications ? "" : " hidden"
               }`}
               style={{ borderRadius: "var(--radius)" }}
             >
               <div>
                 <label className="font-normal text-white">
-                  Recibiras una alerta al alcanzar el stock minimo
+                  Recibirás una alerta al alcanzar el stock mínimo
                 </label>
                 <input
                   type="number"
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace",
+                      "Tab",
+                      "ArrowLeft",
+                      "ArrowRight",
+                      "Delete",
+                    ];
+                    if (
+                      !allowedKeys.includes(e.key) &&
+                      !/^[0-9]$/.test(e.key)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
                   className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
                   style={{ borderRadius: "var(--radius)" }}
                   name="AlertadeStock"
                   value={alertStock !== null ? alertStock : ""}
-                  onChange={(e) =>
-                    setAlertStock(
-                      e.target.value ? parseFloat(e.target.value) : 0
-                    )
-                  }
+                  onChange={handleAlertStockChange} // Cambia a esta función
                   required
                 />
               </div>
             </div>
           </div>
-
           <div className="grid grid-cols-4 mt-8 gap-4">
             <div className="col-span-1">
               <input
@@ -1298,7 +1782,6 @@ const CrearProductoSimple: React.FC = ({}) => {
               {mainImage ? (
                 <div>
                   <label className="font-normal ">Imagen Principal</label>
-
                   <div
                     className="shadow relative mt-2 h-[150px] object-contain overflow-hidden bg-center bg-no-repeat bg-cover"
                     style={{
@@ -1306,11 +1789,6 @@ const CrearProductoSimple: React.FC = ({}) => {
                       backgroundImage: `url(${mainImage})`,
                     }}
                   >
-                    {/* <img
-                      src={mainImage}
-                      alt="Main Image"
-                      className="w-full"
-                    /> */}
                     <button
                       className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
                       onClick={() => handleClearImage(setMainImage)}
@@ -1355,97 +1833,20 @@ const CrearProductoSimple: React.FC = ({}) => {
                         />
                       </svg>
                       <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>
+                        <span className="font-semibold">Subir Imagen</span>
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
-                        PNG, JPG or Webp (MAX. 1MB)
+                        PNG, JPG o Webp (800x800px)
                       </p>
                     </div>
                   </label>
                 </div>
               )}
             </div>
-            <div className="hidden">
-              <input
-                type="file"
-                accept="image/*"
-                id="previewImage"
-                className="hidden"
-                onChange={(e) =>
-                  handleImageChange(e, setPreviewImage, "previewImage")
-                }
-              />
-              {previewImage ? (
-                <div>
-                  <label className="font-normal ">Imagen Secundaria</label>
-                  <div
-                    className="relative mt-2 h-[150px] object-contain overflow-hidden"
-                    style={{ borderRadius: "var(--radius)" }}
-                  >
-                    <img
-                      src={previewImage}
-                      alt="Preview Image"
-                      className="w-full"
-                    />
-                    <button
-                      className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                      onClick={() => handleClearImage(setPreviewImage)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-6 h-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <label className="font-normal ">Imagen Secundaria</label>
-                  <label
-                    htmlFor="previewImage"
-                    className="shadow flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-gray-600 cursor-pointer w-full z-10"
-                    style={{ borderRadius: "var(--radius)" }}
-                  >
-                    <div className="flex flex-col justify-center items-center">
-                      <svg
-                        className="w-12 h-12 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Click to upload</span>
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        SVG, PNG, JPG or GIF (MAX. 800x400px)
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              )}
-            </div>
-            <div className="col-span-3">
+            <div className="col-span-3 z-0">
               <label className="font-normal text-primary">
-                Galeria de imagenes
+                Galería de imágenes
               </label>
-
               <div className="flex space-x-4 overflow-x-auto">
                 {isEditMode ? (
                   <ImageUploader
@@ -1464,18 +1865,15 @@ const CrearProductoSimple: React.FC = ({}) => {
               </div>
             </div>
           </div>
-
-          {/* <div className="mt-8">
-            <TabExtra
-              setFormData={setFormData}
-              formData={formData}
-            />
-          </div> */}
+          <button
+                  className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
+                  style={{ borderRadius: "var(--radius)" }}
+                  onClick={handleSubmit}
+                >
+                  {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
+                </button>
         </div>
-        {/* FIN COL PRINCIPAL */}
       </div>
-
-      {/* MODALS */}
       <div
         id="createCategoriesModal"
         tabIndex={-1}
@@ -1491,7 +1889,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       <div
         id="createAttributeModal"
         tabIndex={-1}
-        className={`overflow-y-auto overflow-x-hidden p-32 pt-0 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080] left-0 z-50 w-full h-[calc(100%)] ${
+        className={`overflow-y-auto overflow-x-hidden md:p-32 pt-0 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080] left-0 z-50 w-full h-[calc(100%)] ${
           openModalId === "createAttributeModal" ? "" : "hidden"
         }`}
       >
@@ -1500,7 +1898,57 @@ const CrearProductoSimple: React.FC = ({}) => {
           fetchData={fetchProducTypes}
         />
       </div>
-      {/* MODALS */}
+      {isModalOpen && (
+        <Modal showModal={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImage || ""} // Asegurar que se pasa una cadena no nula
+              crop={crop}
+              zoom={zoom}
+              aspect={4 / 4}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+            <div className="controls"></div>
+          </div>
+          <div className="flex flex-col  justify-end ">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range "
+              />
+            </div>
+
+            <div className="flex justify-between w-full ">
+              <button
+                onClick={handleCrop}
+                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setMainImage(null);
+                  setIsMainImageUploaded(false);
+                  setIsModalOpen(false);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

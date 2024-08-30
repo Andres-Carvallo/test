@@ -96,7 +96,7 @@ const BuscadorModal = ({ onClose }: { onClose: () => void }) => {
       style={{ borderRadius: 'var(--radius)' }}
     >
       <img
-        src={producto.previewImageUrl}
+        src={producto.mainImageUrl}
         alt={producto.name}
         className="w-24 h-24 object-cover rounded" // Imagen fija con borde redondeado
       />

@@ -65,6 +65,20 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       },
     ],
   };
+  useEffect(() => {
+    if (salesData && salesData.length > 0 && startDate && endDate) {
+      const filtered = salesData.filter((item) => {
+        const date = new Date(item.date);
+        return date >= new Date(startDate) && date <= new Date(endDate);
+      });
+      setFilteredData(filtered);
+
+      // Calcular la suma de los montos filtrados
+      const total = filtered.reduce((sum, item) => sum + item.amount, 0);
+      setTotalAmount(total);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Este useEffect se ejecuta solo al montar el componente
 
   return (
     <div className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4">
@@ -74,7 +88,9 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
 
       <div className="flex space-x-4 mb-4">
         <div>
-          <label className="block text-gray-700 font-medium">Start Date</label>
+          <label className="block text-gray-700 font-medium">
+            Fecha Inicio
+          </label>
           <input
             type="date"
             value={startDate}
@@ -83,7 +99,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium">End Date</label>
+          <label className="block text-gray-700 font-medium">Fecha Fin</label>
           <input
             type="date"
             value={endDate}
@@ -95,7 +111,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       {filteredData.length > 0 ? (
         <>
           <p className="text-sm font-medium  pb-2  text-end">
-            Total Sales Amount:{" "}
+            Monto ventas totales:{" "}
             {totalAmount.toLocaleString("es-CL", {
               style: "currency",
               currency: "CLP",

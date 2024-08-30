@@ -23,6 +23,7 @@ const DetallePago = () => {
 
         if (response.data.code === 0) {
           setOrder(response.data.order);
+          console.log(response.data.order, "order");
         } else {
           setError("Failed to fetch order. Please try again.");
         }
@@ -86,24 +87,26 @@ const DetallePago = () => {
               <div className="text-gray-500 text-sm md:text-base">Orden ID</div>
               <div className="text-base md:text-lg">#{order.correlative}</div>
             </div>
-            <div className="mb-4">
-              <div className="text-gray-500 text-sm md:text-base">
-                Método de Pago
+            {order.paymentMethod && (
+              <div className="mb-4">
+                <div className="text-gray-500 text-sm md:text-base">
+                  Método de Pago
+                </div>
+                <div className="text-base md:text-lg">
+                  {order.paymentMethod || "No especificado"}
+                </div>
               </div>
-              <div className="text-base md:text-lg">
-                {order.paymentMethod || "No especificado"}
-              </div>
-            </div>
+            )}
 
             <div className="max-h-[345px] overflow-y-auto">
               {order.items.map((item: any, index: any) => (
                 <div
                   key={index}
-                  className="bg-secondary shadow-md border p-4 mb-4 rounded-lg"
+                  className="bg-gray-100 shadow-md border p-4 mb-4 rounded-lg"
                 >
                   <div className="flex items-center">
                     <img
-                      src={item.sku.previewImageUrl}
+                      src={item.sku.mainImageUrl}
                       alt={item.sku.product.name}
                       className="w-12 h-12 md:w-16 md:h-16 mr-4 rounded-lg"
                     />
@@ -111,12 +114,9 @@ const DetallePago = () => {
                       <div className="font-bold text-sm md:text-base">
                         {item.sku.product.name}
                       </div>
-                      <div className="text-gray-500 text-xs md:text-sm">
-                        {item.sku.product.description}
-                      </div>
                     </div>
                     <div className="ml-auto text-sm md:text-lg">
-                      CLP {item.unitPrice}
+                      ${item.unitPrice.toLocaleString("es-CL")}
                     </div>
                   </div>
                 </div>
@@ -172,7 +172,13 @@ const DetallePago = () => {
                   Subtotal
                 </div>
                 <div className="text-base md:text-lg">
-                  CLP {order.totals.itemsAmount}
+                  ${order.totals.itemsAmount.toLocaleString("es-CL")}
+                </div>
+              </div>
+              <div className="flex justify-between mb-4">
+                <div className="text-gray-500 text-sm md:text-base">Envío</div>
+                <div className="text-base md:text-lg">
+                  ${order.totals.shippingAmount.toLocaleString("es-CL")}
                 </div>
               </div>
               <div className="flex justify-between mb-4">
@@ -180,7 +186,7 @@ const DetallePago = () => {
                   Descuento
                 </div>
                 <div className="text-base md:text-lg">
-                  CLP {order.totals.discountAmount}
+                  ${order.totals.discountAmount.toLocaleString("es-CL")}
                 </div>
               </div>
 
@@ -191,7 +197,7 @@ const DetallePago = () => {
               <div className="flex justify-between font-bold">
                 <div className="text-base md:text-lg">Total</div>
                 <div className="text-base md:text-lg text-primary">
-                  CLP {order.totals.totalAmount}
+                  ${order.totals.totalAmount.toLocaleString("es-CL")}
                 </div>
               </div>
             </div>
