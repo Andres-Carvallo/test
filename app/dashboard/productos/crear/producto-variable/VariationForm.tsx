@@ -89,6 +89,7 @@ const VariationForm: React.FC<any> = ({
       onDescriptionChange(e, index); // Llama a la función existente para manejar el cambio
     }
   };
+
   useEffect(() => {
     if (useBaseDescription && baseProductDescription) {
       onDescriptionChange(
@@ -100,6 +101,7 @@ const VariationForm: React.FC<any> = ({
         currentVariationIndex
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useBaseDescription, baseProductDescription]);
 
   useEffect(() => {
@@ -232,7 +234,7 @@ const VariationForm: React.FC<any> = ({
     const value = parseFloat(e.target.value);
 
     // Verifica si alertStock es mayor o igual al nuevo stock
-    if (alertStock !== null && alertStock >= value) {
+    if (checkOfferChecked && alertStock !== null && alertStock >= value) {
       toast.error(
         "El stock debe ser mayor que el stock mínimo para la alerta."
       );
@@ -325,7 +327,15 @@ const VariationForm: React.FC<any> = ({
   };
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-
+    if (
+      !variation.hasUnlimitedStock &&
+      (stockQuantity === null || stockQuantity <= 0)
+    ) {
+      toast.error(
+        "El stock es 0 o nulo. No puedes publicar o actualizar esta variación."
+      );
+      return; // No continuar con la ejecución
+    }
     const token = getCookie("AdminTokenAuth");
     const idVariable = searchParams.get("productVariableId");
     const currentVariation = variation;
@@ -526,7 +536,10 @@ const VariationForm: React.FC<any> = ({
     return <Loader />;
   }
   return (
-    <div className="mt-4" ref={editFormRef}>
+    <div
+      className="mt-4"
+      ref={editFormRef}
+    >
       <div className="w-full">
         <label htmlFor="description">Descripción</label>
         <textarea
@@ -578,7 +591,10 @@ const VariationForm: React.FC<any> = ({
       <h4 className="mt-4">Atributos:</h4>
       <div className="mt-2 grid grid-cols-1 lg:grid-cols1 gap-4">
         {attributePairs.map((pair, pairIndex) => (
-          <div key={pairIndex} className="mt-2">
+          <div
+            key={pairIndex}
+            className="mt-2"
+          >
             <div className="flex gap-2">
               <Select
                 className="fit-content min-w-[30%]"
@@ -749,8 +765,13 @@ const VariationForm: React.FC<any> = ({
                     updatedVariations[currentVariationIndex].hasUnlimitedStock =
                       isUnlimitedStock;
 
-                    // Si se activa "Stock Ilimitado", desactivamos "Activar Alerta"
+                    // Si se activa "Stock Ilimitado"
                     if (isUnlimitedStock) {
+                      // Si stockQuantity está vacío o es nulo, lo asignamos a 99999
+                      if (!stockQuantity) {
+                        setStockQuantity(99999);
+                      }
+                      // Desactivamos "Activar Alerta"
                       updatedVariations[
                         currentVariationIndex
                       ].hasStockNotifications = false;
@@ -785,7 +806,9 @@ const VariationForm: React.FC<any> = ({
               className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
               style={{ borderRadius: "var(--radius)" }}
               name="AlertadeStock"
-              value={alertStock !== null ? alertStock : ""}
+              value={
+                alertStock !== null && alertStock !== undefined ? alertStock : 1
+              }
               onChange={handleAlertStockChange} // Cambia a esta función
               required
             />

@@ -32,7 +32,7 @@ function CartCanvas() {
       }
     };
 
-    document.addEventListener("keydown", handleEscKey); 
+    document.addEventListener("keydown", handleEscKey);
 
     return () => {
       document.removeEventListener("keydown", handleEscKey);
@@ -44,19 +44,19 @@ function CartCanvas() {
       if (
         offcanvasRef.current &&
         !offcanvasRef.current.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest('[data-ignore-outside-click]')
+        !(event.target as HTMLElement).closest("[data-ignore-outside-click]")
       ) {
         setIsMenuOpen(false);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
-  
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
 
   useEffect(() => {
     if (!offcanvasRef.current) {
@@ -144,7 +144,10 @@ function CartCanvas() {
   };
 
   return (
-    <div className="z-50" data-ignore-outside-click>
+    <div
+      className="z-50"
+      data-ignore-outside-click
+    >
       <Link
         href="#"
         onClick={handleMenuOpen}
@@ -235,8 +238,6 @@ function CartCanvas() {
                 incrementQuantity={incrementQuantity}
                 decrementQuantity={decrementQuantity}
                 removeItem={removeItem}
-                
-
               />
             </div>
             <div className="p-6 absolute bottom-20 md:bottom-0 w-full border-t bg-white">

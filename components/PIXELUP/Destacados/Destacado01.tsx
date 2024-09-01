@@ -48,7 +48,7 @@ const Destacados01: React.FC = () => {
       try {
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         const productosData = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50&isFeatured=true&siteId=${SiteId}`
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=1&pageSize=100&isFeatured=true&siteId=${SiteId}`
         );
 
         const productsWithStock = await Promise.all(

@@ -230,10 +230,18 @@ const DatosPersonales: React.FC<any> = () => {
           showNewPassword: false,
           showRepeatNewPassword: false,
         });
-        toast.success("Contraseña actualizada con éxito!");
+        toast.success("¡Contraseña actualizada con éxito!");
       } catch (error: any) {
         console.error("Error al actualizar la contraseña:", error);
         if (
+          error.response &&
+          error.response.data &&
+          error.response.data.code === 2
+        ) {
+          setPasswordErrors([
+            "Credenciales inválidas: La contraseña actual es incorrecta.",
+          ]);
+        } else if (
           error.response &&
           error.response.data &&
           error.response.data.errors

@@ -62,7 +62,7 @@ export default function ProductPageBO() {
             product.productTypes.some((type) => type.name === category)
           ))
     );
-
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
     setFilteredProducts(filtered);
 
     const pages = Math.ceil(filtered.length / pageSize);
@@ -447,7 +447,12 @@ export default function ProductPageBO() {
                     >
                       Categorías
                     </th>
-
+                    <th
+                      scope="col"
+                      className="px-2 py-3"
+                    >
+                      Tipo
+                    </th>
                     <th
                       scope="col"
                       className="px-2 py-3"
@@ -496,8 +501,8 @@ export default function ProductPageBO() {
                         <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                           {product.name}
                         </td>
-                        <td className="px-2 py-3">
-                          <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
+                        <td className="px-2 py-3 w-[200px]">
+                          <div className="flex justify-left flex-wrap gap-2 max-w-sm w-fit text-sm">
                             {product.productTypes.map((category) => (
                               <button
                                 key={category.id}
@@ -507,6 +512,13 @@ export default function ProductPageBO() {
                               </button>
                             ))}
                           </div>
+                        </td>
+                        <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                          {product.hasVariations ? (
+                            <span>V</span>
+                          ) : (
+                            <span className="">S</span>
+                          )}
                         </td>
                         <td className="px-2 py-3">
                           <label className="inline-flex relative items-center mr-5 cursor-pointer">

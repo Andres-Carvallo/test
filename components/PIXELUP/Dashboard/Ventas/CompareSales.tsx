@@ -177,7 +177,7 @@ const CompararVentas: React.FC = () => {
                 )}
               </dt>
               <dd className="font-light text-gray-700 ">
-                Ventas del Primer Mes
+                Ventas del Primer Periodo
               </dd>
             </div>
 
@@ -220,7 +220,7 @@ const CompararVentas: React.FC = () => {
                 )}
               </dt>
               <dd className="font-light text-gray-700 dark:text-gray-700">
-                Ventas del Segundo Mes
+                Ventas del Segundo Periodo
               </dd>
             </div>
           </div>

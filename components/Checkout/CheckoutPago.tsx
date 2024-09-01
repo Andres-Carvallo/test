@@ -492,7 +492,7 @@ function CheckoutPago() {
                     {discountPercentage ? (
                       <span>
                         ${orderDetail.totals.discountAmount.toLocaleString()}
-                        <span className="ml-2 text-green-600">
+                        <span className="ml-2 text-dark">
                           ({discountPercentage}%)
                         </span>
                       </span>

@@ -92,25 +92,49 @@ const CreditChecker = () => {
                     <h2 className="text-xl font-bold mb-2">
                       Resumen de PixelCoins
                     </h2>
-
-                    <p>
-                      <strong>Saldo de PixelCoins:</strong>{" "}
-                      {formatCLP(summary.creditsBalance)}
-                    </p>
-                    <p>
-                      <strong>Créditos por Expirar:</strong>{" "}
-                      {formatCLP(summary.creditsAboutToExpire)}
-                    </p>
-                    <p>
-                      <strong>Fecha de Expiración más cercana:</strong>{" "}
-                      {new Date(
-                        summary.nearestExpirationDate
-                      ).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Última Actualización:</strong>{" "}
-                      {new Date(summary.lastUpdated).toLocaleString()}
-                    </p>
+ 
+                    {summary.creditsBalance === 0 ? (
+            <div
+            style={{ borderRadius: "var(--radius)" }}
+            className="mt-4 shadow w-full flex items-center p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border-yellow-400 border "
+            role="alert"
+          >
+            <svg
+              className="flex-shrink-0 inline w-4 h-4 me-3"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="sr-only">Info</span>
+            <div>
+            Aquí verás el detalle de tus <span className="font-bold">PixelCoins</span>  cuando recibas la primera carga.
+            </div>
+          </div>
+                    ) : (
+                      <>
+                        <p>
+                          <strong>Saldo de PixelCoins:</strong>{" "}
+                          {formatCLP(summary.creditsBalance)}
+                        </p>
+                        <p>
+                          <strong>Créditos por Expirar:</strong>{" "}
+                          {formatCLP(summary.creditsAboutToExpire)}
+                        </p>
+                        <p>
+                          <strong>Fecha de Expiración más cercana:</strong>{" "}
+                          {new Date(
+                            summary.nearestExpirationDate
+                          ).toLocaleDateString()}
+                        </p>
+                        <p>
+                          <strong>Última Actualización:</strong>{" "}
+                          {new Date(summary.lastUpdated).toLocaleString()}
+                        </p>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -132,10 +156,7 @@ const CreditChecker = () => {
                     </thead>
                     <tbody>
                       {creditMovements.map((movement) => (
-                        <tr
-                          key={movement.id}
-                          className="text-center"
-                        >
+                        <tr key={movement.id} className="text-center">
                           <td className="px-4 py-2 border">{movement.type}</td>
                           <td className="px-4 py-2 border">
                             {movement.description}

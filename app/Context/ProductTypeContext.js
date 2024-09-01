@@ -4,17 +4,9 @@ import axios from "axios";
 import { setCookie, getCookie } from "cookies-next";
 import toast, { Toaster } from "react-hot-toast";
 
-
-
-
 const APIContextProductType = createContext();
 
 export function APIContextProvider({ children, SiteId }) {
-
- 
-
-
-
   const [productType, setProductType] = useState([]);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
@@ -143,42 +135,91 @@ export function APIContextProvider({ children, SiteId }) {
       return null;
     }
   };
+
+  const fetchAttributesForVariation = async (productId, skuId) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const responseData = await response.json();
+      if (responseData.code === 0) {
+        return responseData.skuAttributes.map((skuAttribute) => ({
+          value: skuAttribute.value,
+          label: skuAttribute.attribute.name,
+        }));
+      } else {
+        console.error(
+          "Error al obtener los atributos de la variación:",
+          responseData.message
+        );
+        return [];
+      }
+    } catch (error) {
+      console.error("Error al obtener los atributos de la variación:", error);
+      return [];
+    }
+  };
+
   const fetchCartData = async () => {
     try {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const cartId = getCookie("cartId");
 
-      // Verificar si hay un cartId válido antes de hacer la solicitud HTTP
       if (cartId) {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}?siteId=${SiteId}`
         );
 
-        // Obtener los datos del carrito de la respuesta
         const cartData = response.data.cart;
 
-        // Verificar si hay items en el carrito
         if (cartData && cartData.items) {
           let totalItems = 0;
 
-          // Sumar las cantidades de los elementos del carrito
-          cartData.items.forEach((item) => {
-            totalItems += item.quantity;
-          });
+          // Iterar sobre los items del carrito para obtener sus atributos
+          const itemsWithAttributes = await Promise.all(
+            cartData.items.map(async (item) => {
+              totalItems += item.quantity;
+
+              // Obtener los atributos de la variación del producto
+              const attributes = await fetchAttributesForVariation(
+                item.sku.product.id,
+                item.sku.id
+              );
+
+              // Retornar el item con los atributos agregados
+              return {
+                ...item,
+                attributes, // Añadir los atributos al item
+              };
+            })
+          );
+
+          console.log("Cart Data with Attributes", itemsWithAttributes);
 
           // Actualizar el estado con los datos del carrito y el total de elementos
-          setCartItems(cartData.items);
-          setCartData(cartData);
+          setCartItems(itemsWithAttributes);
+          setCartData({ ...cartData, items: itemsWithAttributes });
           setTotalItems(totalItems);
         }
       } else {
-        // Si no hay cartId, no hagas la solicitud HTTP y maneja la lógica correspondiente aquí
+        // Limpiar el estado del carrito si no hay cartId
+        setCartItems([]);
+        setCartData(null);
+        setTotalItems(0);
         console.log("No cartId found. Unable to fetch cart data.");
       }
     } catch (error) {
-      console.error("Error fetching cart data:", error);
+      console.error("Error fetching cart data:", error.message || error);
     }
   };
+
   // Función para agregar un elemento al carrito existente
   const addToCart = async (cartId, skuId, quantity) => {
     try {
