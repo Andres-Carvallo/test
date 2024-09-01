@@ -47,13 +47,31 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
     title: {
       text: "Detalle Ventas",
     },
-    tooltip: {},
+    tooltip: {
+      formatter: function (params:any) {
+        // Formatea el tooltip para mostrar el valor con el símbolo de $
+        return `${params.name}: $${params.value.toLocaleString()}`;
+      },
+    },
     xAxis: {
       type: "category",
-      data: filteredData.map((item) => item.date),
+      data: filteredData.map((item) => {
+        // Formatea la fecha a "día/mes/año"
+        const date = new Date(item.date);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      }),
     },
     yAxis: {
       type: "value",
+      axisLabel: {
+        formatter: function (value:any) {
+          // Formatea el eje Y para mostrar los valores con el símbolo de $
+          return `$${value.toLocaleString()}`;
+        },
+      },
     },
     series: [
       {
@@ -65,6 +83,8 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       },
     ],
   };
+  
+  console.log(filteredData,"algo"),
   useEffect(() => {
     if (salesData && salesData.length > 0 && startDate && endDate) {
       const filtered = salesData.filter((item) => {

@@ -78,7 +78,10 @@ export const handleStockSku = async (
         {
           warehouseId: warehouseId,
           quantity: quantity,
-          minimumQuantity: minimumQuantity,
+          minimumQuantity:
+            minimumQuantity !== null && minimumQuantity !== undefined
+              ? minimumQuantity
+              : 0,
         },
         {
           headers: {
@@ -94,7 +97,10 @@ export const handleStockSku = async (
         {
           warehouseId: warehouseId,
           quantity: quantity,
-          minimumQuantity: minimumQuantity,
+          minimumQuantity:
+            minimumQuantity !== null && minimumQuantity !== undefined
+              ? minimumQuantity
+              : 0,
         },
         {
           headers: {

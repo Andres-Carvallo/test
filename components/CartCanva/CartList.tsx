@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect, useCallback } from "react";
 
 const noop = () => {};
@@ -11,26 +12,31 @@ function CartList({
 }: any) {
   const [productDetails, setProductDetails] = useState<any>({});
 
-  const fetchProductDetails = useCallback(async (productId: string, itemId: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      const data = await response.json();
-      const { enabledForDelivery, enabledForWithdrawal } = data.product;
+  const fetchProductDetails = useCallback(
+    async (productId: string, itemId: string) => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
 
-      setProductDetails((prevDetails: any) => ({
-        ...prevDetails,
-        [itemId]: {
-          enabledForDelivery,
-          enabledForWithdrawal,
-        },
-      }));
-      setItemAvailability(itemId, enabledForDelivery, enabledForWithdrawal);
-    } catch (error) {
-      console.error("Error fetching product details:", error);
-    }
-  }, [setItemAvailability]);
+        const data = await response.json();
+        console.log(data, "daslkjdaslkdjlk");
+        const { enabledForDelivery, enabledForWithdrawal } = data.product;
+
+        setProductDetails((prevDetails: any) => ({
+          ...prevDetails,
+          [itemId]: {
+            enabledForDelivery,
+            enabledForWithdrawal,
+          },
+        }));
+        setItemAvailability(itemId, enabledForDelivery, enabledForWithdrawal);
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+      }
+    },
+    [setItemAvailability]
+  );
 
   useEffect(() => {
     cartItems.forEach((item: any) => {
@@ -41,8 +47,8 @@ function CartList({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems, fetchProductDetails]);
-  
-  const sortedCartItems = [...cartItems].sort((a, b) => 
+
+  const sortedCartItems = [...cartItems].sort((a, b) =>
     a.sku.product.name.localeCompare(b.sku.product.name)
   );
   return (
@@ -93,82 +99,100 @@ function CartList({
                     ${item.totalPrice.toLocaleString("es-CL")}
                   </h6>
                 </div>
+                {item.attributes && item.attributes.length > 0 && (
+                  <div className="item-attributes">
+                    <ul>
+                      {item.attributes
+                        .slice(0, 2)
+                        .map((attribute: any, index: number) => (
+                          <li key={index}>
+                            <small>{attribute.label}:</small>{" "}
+                            <small className="font-bold">
+                              {attribute.value}
+                            </small>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center w-fit  justify-center h-full ">
-                <div className="flex items-center h-full">
-                  <button
-                    data-ignore-outside-click
-                    onClick={() => decrementQuantity(item.id)}
-                    className="group rounded-l-xl px-2 py-[8px] flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
-                  >
-                    <svg
-                      className="stroke-gray-900 transition-all duration-500 group-hover:stroke-red-800"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 22 22"
-                      fill="none"
+              <div className="flex items-center justify-center">
+                <div className="flex items-center w-fit  justify-center h-full ">
+                  <div className="flex items-center h-full">
+                    <button
+                      data-ignore-outside-click
+                      onClick={() => decrementQuantity(item.id)}
+                      className="group rounded-l-xl px-2 py-[8px] flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
                     >
-                      <path
-                        d="M16.5 11H5.5"
-                        stroke=""
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M16.5 11H5.5"
-                        strokeOpacity="0.2"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M16.5 11H5.5"
-                        strokeOpacity="0.2"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                  <span
-                    className="border border-gray-200 outline-none  h-10 w-10 flex items-center justify-center text-gray-900 font-semibold text-lg bg-transparent"
-                    style={{ borderRadius: "var(--radius)" }}
-                  >
-                    {item.quantity}
-                  </span>
+                      <svg
+                        className="stroke-gray-900 transition-all duration-500 group-hover:stroke-red-800"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 22 22"
+                        fill="none"
+                      >
+                        <path
+                          d="M16.5 11H5.5"
+                          stroke=""
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M16.5 11H5.5"
+                          strokeOpacity="0.2"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M16.5 11H5.5"
+                          strokeOpacity="0.2"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                    <span
+                      className="border border-gray-200 outline-none  h-10 w-10 flex items-center justify-center text-gray-900 font-semibold text-lg bg-transparent"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
+                      {item.quantity}
+                    </span>
 
-                  <button
-                    data-ignore-outside-click
-                    onClick={() => incrementQuantity(item.id)}
-                    className="group rounded-l-xl px-2 py-[8px] flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
-                  >
-                    <svg
-                      className="stroke-gray-900 transition-all duration-500 group-hover:stroke-green-800"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 22 22"
-                      fill="none"
+                    <button
+                      data-ignore-outside-click
+                      onClick={() => incrementQuantity(item.id)}
+                      className="group rounded-l-xl px-2 py-[8px] flex items-center justify-center shadow-sm shadow-transparent transition-all duration-500 "
                     >
-                      <path
-                        d="M11 5.5V16.5M16.5 11H5.5"
-                        stroke=""
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M11 5.5V16.5M16.5 11H5.5"
-                        strokeOpacity="0.2"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                      <path
-                        d="M11 5.5V16.5M16.5 11H5.5"
-                        strokeOpacity="0.2"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        className="stroke-gray-900 transition-all duration-500 group-hover:stroke-green-800"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 22 22"
+                        fill="none"
+                      >
+                        <path
+                          d="M11 5.5V16.5M16.5 11H5.5"
+                          stroke=""
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M11 5.5V16.5M16.5 11H5.5"
+                          strokeOpacity="0.2"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                        <path
+                          d="M11 5.5V16.5M16.5 11H5.5"
+                          strokeOpacity="0.2"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

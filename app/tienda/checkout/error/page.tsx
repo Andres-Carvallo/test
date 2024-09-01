@@ -33,7 +33,7 @@ const Fail = () => {
             Pago Rechazado
           </h1>
           <p className="text-dark m-4">
-            Se rechazo la transacción, Elige otra forma de pago o comunícate con
+            Se rechazó la transacción. Elige otra forma de pago o comunícate con
             la entidad emisora de la tarjeta.
           </p>
         </div>

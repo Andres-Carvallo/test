@@ -1,14 +1,15 @@
 "use client";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import axios from "axios";
 import toast from "react-hot-toast";
-import CartList from "@/components/CartCanva/CartList";
 import { useRouter } from "next/navigation";
 import { Customer, ItemAvailability } from "@/types/types";
 import { jwtDecode } from "jwt-decode";
 import Loader from "@/components/common/Loader";
+
+const CartList = React.lazy(() => import("@/components/CartCanva/CartList"));
 
 const Checkout: React.FC = () => {
   const [regionsDelivery, setRegionsDelivery] = useState<
@@ -23,6 +24,9 @@ const Checkout: React.FC = () => {
   const [communesPickup, setCommunesPickup] = useState<
     { id: string; name: string; regionId: string }[]
   >([]);
+  const [availableDeliveryTypes, setAvailableDeliveryTypes] = useState<any[]>(
+    []
+  );
 
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
@@ -68,6 +72,9 @@ const Checkout: React.FC = () => {
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
         );
         const deliveryTypes = response.data.deliveryTypes;
+
+        setAvailableDeliveryTypes(deliveryTypes); // Guardar los tipos de entrega disponibles
+
         const selectedDeliveryType = deliveryTypes.find(
           (type: any) => type.code === "HOME_DELIVERY_WITHOUT_COURIER"
         );
@@ -84,7 +91,8 @@ const Checkout: React.FC = () => {
     };
 
     fetchDeliveryTypeId();
-  }, []);
+  }, []); // Se ejecuta solo una vez al montar el componente
+
   const isLoggedIn = getCookie("ClientTokenAuth");
   const [useDifferentShippingAddress, setUseDifferentShippingAddress] =
     useState<boolean>(false);
@@ -160,6 +168,10 @@ const Checkout: React.FC = () => {
 
   const fetchRegionsAndCommunes = async (applyShippingZonesFilter: boolean) => {
     try {
+      if (regionsDelivery.length > 0 && regionsPickup.length > 0) {
+        return;
+      }
+
       const Pais = "CL";
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const regionsResponse = await axios.get(
@@ -227,11 +239,35 @@ const Checkout: React.FC = () => {
     }
   };
 
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
+  const validatePhoneNumber = (phoneNumber: string) => {
+    const re = /^\+?\d{9,11}$/;
+    return re.test(phoneNumber);
+  };
+
   const handleSubmitOrder = async () => {
     // if (!termsAccepted) {
     //   toast.error("Debes aceptar los términos y condiciones para continuar.");
     //   return;
     // }
+
+    const invalidItems = validateItemsForDeliveryType(deliveryType);
+
+    if (invalidItems.length > 0) {
+      toast.error(
+        `Los siguientes productos no son elegibles para ${
+          deliveryType === "HOME_DELIVERY_WITHOUT_COURIER"
+            ? "delivery"
+            : "retiro"
+        }: ${invalidItems.map((item: any) => item.sku.product.name).join(", ")}`
+      );
+      return;
+    }
+
     const addressLine2 = customer.customer?.addressLine2?.trim()
       ? customer.customer.addressLine2
       : "Sin Comentarios";
@@ -245,18 +281,32 @@ const Checkout: React.FC = () => {
       communeIdToSend = customer.customer?.communeId;
     }
 
+    const email = customer.customer?.email?.trim();
+    const phoneNumber = customer.customer?.phoneNumber?.trim();
+
+    if (email && !validateEmail(email)) {
+      toast.error("Ingrese un mail válido.");
+      return;
+    }
+
+    if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
+      toast.error("Ingrese un número de teléfono válido ");
+      return;
+    }
+
     console.log("Submitting order with customer data:", {
       ...customer,
       deliveryTypeId: deliveryTypeID, // Asegurarse de incluir el deliveryTypeID
       addressLine2,
       communeId: communeIdToSend,
     });
+
     if (
       !isLoggedIn &&
       (!customer.customer?.firstname?.trim() ||
         !customer.customer?.lastname?.trim() ||
         !customer.customer?.phoneNumber?.trim() ||
-        !customer.customer?.email?.trim() ||
+        !email ||
         !customer.customer?.addressLine1?.trim() ||
         !communeIdToSend)
     ) {
@@ -296,7 +346,7 @@ const Checkout: React.FC = () => {
               firstname: customer.customer?.firstname,
               lastname: customer.customer?.lastname,
               phoneNumber: customer.customer?.phoneNumber,
-              email: customer.customer?.email,
+              email: email,
               addressLine1: customer.customer?.addressLine1,
               addressLine2: addressLine2,
               communeId: communeIdToSend,
@@ -323,6 +373,10 @@ const Checkout: React.FC = () => {
         setCookie("idOrder", idOrder);
 
         setCustomer(initialCustomerState);
+        setCartData(null);
+        setCartItems([]);
+        setTotalItems(0);
+        deleteCookie("cartId");
       }
       console.log("Order confirmation response:", response.data);
     } catch (error) {
@@ -398,7 +452,8 @@ const Checkout: React.FC = () => {
   useEffect(() => {
     fetchRegionsAndCommunes(false);
     fetchCartData();
-  }, [fetchCartData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Memoized values based on the selected delivery type
   const displayedRegions = useMemo(() => {
@@ -436,6 +491,15 @@ const Checkout: React.FC = () => {
       },
     });
   };
+  const validateItemsForDeliveryType = (deliveryType: string) => {
+    return cartItems.filter((item: any) => {
+      if (deliveryType === "HOME_DELIVERY_WITHOUT_COURIER")
+        return !itemAvailability[item.id]?.enabledForDelivery;
+      if (deliveryType === "WITHDRAWAL_FROM_STORE")
+        return !itemAvailability[item.id]?.enabledForWithdrawal;
+      return false;
+    });
+  };
 
   const handleChangeDeliveryType = async (newValue: string) => {
     setDeliveryType(newValue);
@@ -458,30 +522,26 @@ const Checkout: React.FC = () => {
       return;
     }
 
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
+    const selectedDeliveryType = availableDeliveryTypes.find(
+      (type: any) => type.code === newValue
+    );
+
+    if (selectedDeliveryType) {
+      setDeliveryTypeID(selectedDeliveryType.id);
+    } else {
+      console.error(
+        "No se encontró el deliveryType seleccionado en los tipos de entrega disponibles"
       );
-      const deliveryTypes = response.data.deliveryTypes;
-      const selectedDeliveryType = deliveryTypes.find(
-        (type: any) => type.code === newValue
-      );
-      if (selectedDeliveryType) {
-        setDeliveryTypeID(selectedDeliveryType.id);
-      } else {
-        console.error(
-          "No se encontró el deliveryType seleccionado en la respuesta de la API"
-        );
-      }
-    } catch (error) {
-      console.error("Error al obtener los tipos de entrega:", error);
     }
 
-    // Si el usuario no está logueado y selecciona retiro, mostrar todas las comunas
-    if (!isLoggedIn && newValue === "WITHDRAWAL_FROM_STORE") {
-      await fetchRegionsAndCommunes(false); // false para no aplicar el filtro
-    } else {
-      await fetchRegionsAndCommunes(true); // true para aplicar el filtro de shipping zones
+    // Si las regiones y comunas ya están cargadas, no hacer fetch
+    if (regionsDelivery.length === 0 || regionsPickup.length === 0) {
+      // Si el usuario no está logueado y selecciona retiro, mostrar todas las comunas
+      if (!isLoggedIn && newValue === "WITHDRAWAL_FROM_STORE") {
+        await fetchRegionsAndCommunes(false); // false para no aplicar el filtro
+      } else {
+        await fetchRegionsAndCommunes(true); // true para aplicar el filtro de shipping zones
+      }
     }
   };
 
@@ -588,13 +648,15 @@ const Checkout: React.FC = () => {
                 <p className="text-gray-400 mb-4">Listado de tu carrito</p>
                 <div className="w-full bg-white shadow-lg relative ml-auto h-auto">
                   <div className="overflow-auto p-6">
-                    <CartList
-                      cartItems={cartItems}
-                      incrementQuantity={incrementQuantity}
-                      decrementQuantity={decrementQuantity}
-                      removeItem={removeItem}
-                      setItemAvailability={setItemAvailabilityHandler}
-                    />
+                    <Suspense fallback={<div>Cargando carrito...</div>}>
+                      <CartList
+                        cartItems={cartItems}
+                        incrementQuantity={incrementQuantity}
+                        decrementQuantity={decrementQuantity}
+                        removeItem={removeItem}
+                        setItemAvailability={setItemAvailabilityHandler}
+                      />
+                    </Suspense>
                   </div>
                 </div>
               </div>
@@ -1004,4 +1066,4 @@ const Checkout: React.FC = () => {
   );
 };
 
-export default Checkout;
+export default React.memo(Checkout);

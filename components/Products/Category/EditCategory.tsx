@@ -134,7 +134,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
         }
       );
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Error al enviar los datos.");
       }
 

@@ -196,8 +196,18 @@ const Mailing: React.FC = () => {
       className="w-full p-10"
     >
       <div className="flex flex-col gap-8">
+
+
+
+        <div
+        className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
+        style={{ borderRadius: "var(--radius)" }}
+      >
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Header Banner</div>
+          <div>/ Mailing</div>
+        </div>
         <div>
-          <h2 className="text-center text-xl font-bold">Header Banner</h2>
           {headerImage && (
             <div className="flex justify-center mb-4">
               <img
@@ -267,9 +277,19 @@ const Mailing: React.FC = () => {
             </div>
           </form>
         </div>
+      </div>
 
+
+
+        <div
+        className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
+        style={{ borderRadius: "var(--radius)" }}
+      >
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Footer Banner</div>
+          <div>/ Mailing</div>
+        </div>
         <div>
-          <h2 className="text-center text-xl font-bold">Footer Banner</h2>
           {footerImage && (
             <div className="flex justify-center mb-4">
               <img
@@ -341,6 +361,10 @@ const Mailing: React.FC = () => {
             </div>
           </form>
         </div>
+      </div>
+
+
+
       </div>
 
       {isModalOpen && (

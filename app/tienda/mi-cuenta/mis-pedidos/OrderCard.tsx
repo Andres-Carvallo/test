@@ -48,21 +48,21 @@ export default function OrderData() {
   const token = getCookie("ClientTokenAuth");
   const decodeToken = token ? jwtDecode(token) : null;
 
-  const formatDateToChileanTime = (isoDateString: string) => {
-    const date = new Date(isoDateString);
+  // const formatDateToChileanTime = (isoDateString: string) => {
+  //   const date = new Date(isoDateString);
 
-    // Ajustar la hora a la zona horaria de Chile (GMT-4)
-    const timezoneOffset = -4 * 60; // -4 horas en minutos
-    const adjustedDate = new Date(date.getTime() + timezoneOffset * 60 * 1000);
+  //   // Ajustar la hora a la zona horaria de Chile (GMT-4)
+  //   const timezoneOffset = -4 * 60; // -4 horas en minutos
+  //   const adjustedDate = new Date(date.getTime() + timezoneOffset * 60 * 1000);
 
-    const day = adjustedDate.getDate().toString().padStart(2, "0");
-    const month = (adjustedDate.getMonth() + 1).toString().padStart(2, "0"); // Los meses son 0-indexados
-    const year = adjustedDate.getFullYear();
-    const hours = adjustedDate.getHours().toString().padStart(2, "0");
-    const minutes = adjustedDate.getMinutes().toString().padStart(2, "0");
+  //   const day = adjustedDate.getDate().toString().padStart(2, "0");
+  //   const month = (adjustedDate.getMonth() + 1).toString().padStart(2, "0"); // Los meses son 0-indexados
+  //   const year = adjustedDate.getFullYear();
+  //   const hours = adjustedDate.getHours().toString().padStart(2, "0");
+  //   const minutes = adjustedDate.getMinutes().toString().padStart(2, "0");
 
-    return `${day}-${month}-${year} ${hours}:${minutes}`;
-  };
+  //   return `${day}-${month}-${year} ${hours}:${minutes}`;
+  // };
 
   useEffect(() => {
     const fetchOrdersAndReviews = async () => {
@@ -219,7 +219,14 @@ export default function OrderData() {
           >
             <div className="bg-white p-4">
               <p className="text-sm text-gray-700">
-                {formatDateToChileanTime(order.creationDate)}
+                {" "}
+                {new Date(order.creationDate).toLocaleDateString("es-ES", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </p>
             </div>
             <div className="bg-secondary p-4 flex items-center">

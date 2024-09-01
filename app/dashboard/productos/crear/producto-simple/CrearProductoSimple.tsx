@@ -44,7 +44,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   const router = useRouter();
   const [destacado, setDestacado] = useState(false);
   const [skuImages, setSkuImages] = useState<any[]>([]);
-  const [alertStock, setAlertStock] = useState<number | null>(null);
+  const [alertStock, setAlertStock] = useState<number | null>(0);
   const [isFeatured, setIsFeatured] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -82,7 +82,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       valid = false;
     }
     if (precioNormal === null || precioNormal <= 1) {
-      toast.error("El precio es requerido y debe ser mayor a 1");
+      toast.error("El precio es requerido");
       valid = false;
     }
     if (
@@ -631,16 +631,16 @@ const CrearProductoSimple: React.FC = ({}) => {
   };
   const handleSkuFieldChange = (field: keyof typeof skuData, value: any) => {
     if (field === "hasUnlimitedStock" && value === true) {
-      setStockQuantity((prevQuantity) => (prevQuantity === null || prevQuantity <= 0 ? 9999999 : prevQuantity));
+      setStockQuantity((prevQuantity) =>
+        prevQuantity === null || prevQuantity <= 0 ? 9999999 : prevQuantity
+      );
     }
-  
+
     setSkuData((prevSkuData) => ({
       ...prevSkuData,
       [field]: value,
     }));
   };
-  
-  
 
   const addProductImage = async (id: string, skuId: string, image: string) => {
     try {
@@ -688,13 +688,12 @@ const CrearProductoSimple: React.FC = ({}) => {
     const value = parseFloat(e.target.value);
 
     // Verifica si alertStock es mayor o igual al nuevo stock
-    if (alertStock !== null && alertStock >= value) {
+    if (checkOfferChecked && alertStock !== null && alertStock >= value) {
       toast.error(
         "El stock debe ser mayor que el stock mínimo para la alerta."
       );
       return;
     }
-
     setStockQuantity(value ? value : null);
   };
 
@@ -1063,49 +1062,8 @@ const CrearProductoSimple: React.FC = ({}) => {
                 {isEditMode ? "Publicado" : "Borrador"}
               </span>
             </div>
-  {/*            <button
-              onClick={handleSubmit}
-              className="relative w-full  inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group "
-            >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
-              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
-                <svg
-                  className="w-5 h-5 text-rosa"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </span>
-              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
-                <svg
-                  className="w-5 h-5 text-verde"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </span>
-             <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
-              </span>
 
-            </button> */}
-                        <button
+            <button
               onClick={handleDeleteForm}
               className="relative w-full  inline-flex  items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
             >
@@ -1240,193 +1198,8 @@ const CrearProductoSimple: React.FC = ({}) => {
                 Cancelar
               </span>
             </Link>
-            {/* <button
-              onClick={handleDeleteForm}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
-            >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
-              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="{1.5}"
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
-                </svg>
-              </span>
-              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="white"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
-                </svg>
-              </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                Cancelar
-              </span>
-            </button> */}
           </div>
         </div>
-        {/* <div className="flex w-full justify-between px-6">
-          <div className=" px-4 py-1 border-dark border rounded text-dark flex items-center gap-2">
-            Estado:{" "}
-            <span className="text-rosa">
-              {isEditMode ? "Publicado" : "Borrador"}
-            </span>
-          </div>
-          <div className="flex space-x-4">
-            <button
-              onClick={handleSubmit}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
-            >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
-              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
-                <svg
-                  className="w-5 h-5 text-rosa"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </span>
-              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
-                <svg
-                  className="w-5 h-5 text-verde"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </svg>
-              </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
-              </span>
-            </button>
-            <button
-              id="createCategories"
-              onClick={() => handleOpenModal("createCategoriesModal")}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
-            >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
-              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="{1.5}"
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                </svg>
-              </span>
-              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="white"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                  />
-                </svg>
-              </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                Crear Categorías
-              </span>
-            </button>
-            <button
-              onClick={handleDeleteForm}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
-            >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
-              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="{1.5}"
-                  stroke="currentColor"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
-                </svg>
-              </span>
-              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="white"
-                  className="size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m0 0L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
-                </svg>
-              </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                Cancelar
-              </span>
-            </button>
-          </div>
-        </div> */}
       </div>
       <div className="w-[95%] md:w-[80%] mx-auto  bg-white  rounded-md p-6">
         <div className=" flex flex-col pb-8 ">
@@ -1452,7 +1225,10 @@ const CrearProductoSimple: React.FC = ({}) => {
               </div>
             </div>
             <div>
-              <label htmlFor="nombreProducto" className="font-normal ">
+              <label
+                htmlFor="nombreProducto"
+                className="font-normal "
+              >
                 Nombre Producto
               </label>
               <input
@@ -1866,12 +1642,12 @@ const CrearProductoSimple: React.FC = ({}) => {
             </div>
           </div>
           <button
-                  className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
-                  style={{ borderRadius: "var(--radius)" }}
-                  onClick={handleSubmit}
-                >
-                  {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
-                </button>
+            className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
+            style={{ borderRadius: "var(--radius)" }}
+            onClick={handleSubmit}
+          >
+            {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
+          </button>
         </div>
       </div>
       <div
@@ -1899,7 +1675,10 @@ const CrearProductoSimple: React.FC = ({}) => {
         />
       </div>
       {isModalOpen && (
-        <Modal showModal={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
           <div className="relative h-96 w-full">
             <Cropper
               image={mainImage || ""} // Asegurar que se pasa una cadena no nula

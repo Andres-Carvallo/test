@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
 import VariationForm from "./VariationForm";
 import axios from "axios";
+import toast from "react-hot-toast";
+
 interface Variation {
   description: string;
   images: any[];
@@ -30,6 +32,27 @@ function VariationsComponente({
   const [currentAttributes, setCurrentAttributes] = useState<any>({});
   const [currentPrices, setCurrentPrices] = useState({});
   const [currentStocks, setCurrentStocks] = useState({});
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [variationToDelete, setVariationToDelete] = useState<any>(null);
+  const showDeleteModal = (variation: any) => {
+    setVariationToDelete(variation);
+    setIsDeleteModalVisible(true);
+  };
+
+  const hideDeleteModal = () => {
+    setIsDeleteModalVisible(false);
+    setVariationToDelete(null);
+  };
+  const confirmDeleteVariation = async () => {
+    if (variationToDelete) {
+      await handleDeleteVariation(
+        variationToDelete.id,
+        variations.indexOf(variationToDelete)
+      );
+      hideDeleteModal();
+    }
+  };
+
   const [currentMinimumQuantities, setCurrentMinimumQuantities] = useState<{
     [key: string]: number | null;
   }>({});
@@ -126,6 +149,12 @@ function VariationsComponente({
         const filteredVariations = responseVariations.skus.filter(
           (variation: any) => !variation.isBaseSku
         );
+
+        filteredVariations.sort((a: any, b: any) => {
+          // Orden ascendente por 'id'
+          return a.id.localeCompare(b.id);
+        });
+
         // Crear promesas para fetchAttributesForVariation, fetchPriceForVariation y fetchStockForVariation
         const fetchTasks = filteredVariations.map(async (variation: any) => {
           const [attributes, price, stockData] = await Promise.all([
@@ -157,8 +186,8 @@ function VariationsComponente({
 
           minimumQuantitiesByVariation[variation.id] =
             stockData && stockData.minimumQuantity !== undefined
-              ? stockData.minimumQuantity
-              : null;
+              ? stockData.minimumQuantity ?? 0
+              : 0;
         });
 
         await Promise.all(fetchTasks);
@@ -259,8 +288,8 @@ function VariationsComponente({
 
         const minimumQuantity =
           data.skuInventories.length > 0
-            ? data.skuInventories[0].minimumQuantity
-            : null;
+            ? data.skuInventories[0].minimumQuantity ?? 0
+            : 0;
 
         // Devuelve un objeto con ambas propiedades
         return { stock, minimumQuantity };
@@ -363,6 +392,7 @@ function VariationsComponente({
       setVariations((prevVariations: any) =>
         prevVariations.filter((_: any, i: number) => i !== index)
       );
+      toast.success("Variación eliminada con éxito");
       return;
     }
     try {
@@ -381,7 +411,7 @@ function VariationsComponente({
       );
 
       if (response.status === 200) {
-        console.log(`Variation with ID: ${skuId} deleted successfully.`);
+        toast.success("Variación eliminada con éxito");
         fetchVariations(); // Call fetchVariations to update the list
       } else {
         console.error("Error deleting variation:", response.statusText);
@@ -465,9 +495,7 @@ function VariationsComponente({
                 )}
               </button>
 
-              <button
-                onClick={() => handleDeleteVariation(variation.id, index)}
-              >
+              <button onClick={() => showDeleteModal(variation)}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -525,6 +553,71 @@ function VariationsComponente({
           </div>
         </div>
       ))}
+      {isDeleteModalVisible && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div>
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <svg
+                    className="h-6 w-6 text-red-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </div>
+                <div className="mt-3 text-center sm:mt-5">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Eliminar Variación
+                  </h3>
+                  <div className="mt-2">
+                    <p>¿Estás seguro de que deseas eliminar esta variación?</p>
+                    <p className="text-sm text-red-500 uppercase mt-2">
+                      Esta acción no se puede deshacer.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse justify-between">
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
+                  onClick={hideDeleteModal}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={confirmDeleteVariation}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
