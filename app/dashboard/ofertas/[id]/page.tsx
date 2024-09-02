@@ -40,6 +40,7 @@ function DetalleOferta() {
   const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
   const [offerToEdit, setOfferToEdit] = useState<Offer | any>({
+    id: "",
     currencyCodeId: "",
     unitPrice: 0,
     startDate: undefined,
@@ -52,26 +53,20 @@ function DetalleOferta() {
     setSelectedRow(variation.id); // Aquí se establece la fila seleccionada
     await fetchOffersForProduct(id as string, variation.id);
   };
-const handleEditOffer = (offerId: string) => {
-  
-  
-  const activeOffer = offers.find((o) => o.id === offerId);
-  const expiredOffer = expiredOffers.find((o) => o.id === offerId);
+  const handleEditOffer = (offerId: string) => {
+    const activeOffer = offers.find((o) => o.id === offerId);
+    const expiredOffer = expiredOffers.find((o) => o.id === offerId);
 
- 
+    const offer = activeOffer || expiredOffer;
 
-  const offer = activeOffer || expiredOffer;
-
-  if (offer) {
-    console.log("Editando oferta:", offer);
-    setOfferToEdit(offer);
-    setIsOffcanvasOpen(true);
-  } else {
-    console.log("No se encontró ninguna oferta con el ID proporcionado.");
-  }
-};
-
-  
+    if (offer) {
+      console.log("Editando oferta:", offer);
+      setOfferToEdit(offer);
+      setIsOffcanvasOpen(true);
+    } else {
+      console.log("No se encontró ninguna oferta con el ID proporcionado.");
+    }
+  };
 
   const handleDeleteOffer = (offerId: string) => {
     setOfferToDelete(offerId); // Guarda el ID de la oferta
@@ -113,37 +108,37 @@ const handleEditOffer = (offerId: string) => {
     setShowModal(false);
   };
 
- const handleSaveOffer = async (updatedOffer: Offer) => {
-  try {
-    const token = String(getCookie("AdminTokenAuth"));
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    };
+  const handleSaveOffer = async (updatedOffer: Offer) => {
+    try {
+      const token = String(getCookie("AdminTokenAuth"));
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
 
-    const formattedOffer = {
-      ...updatedOffer,
-      currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
-      startDate: updatedOffer?.startDate?.[0],
-      endDate: updatedOffer?.endDate?.[0],
-    };
+      const formattedOffer = {
+        ...updatedOffer,
+        currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
+        startDate: updatedOffer?.startDate?.[0],
+        endDate: updatedOffer?.endDate?.[0],
+      };
 
-    const response = await axios.put(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${updatedOffer.productId}/skus/${updatedOffer.skuId}/offers/${updatedOffer.id}`,
-      formattedOffer,
-      config
-    );
-    console.log("Oferta actualizada con éxito:", response.data);
-    toast.success("Oferta actualizada exitosamente");
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${updatedOffer.productId}/skus/${updatedOffer.skuId}/offers/${updatedOffer.id}`,
+        formattedOffer,
+        config
+      );
+      console.log("Oferta actualizada con éxito:", response.data);
+      toast.success("Oferta actualizada exitosamente");
 
-    fetchOffersForProduct(updatedOffer.productId, updatedOffer.skuId);
-    setIsOffcanvasOpen(false);
-  } catch (error) {
-    console.log("Error al actualizar la oferta:", error);
-  }
-};
+      fetchOffersForProduct(updatedOffer.productId, updatedOffer.skuId);
+      setIsOffcanvasOpen(false);
+    } catch (error) {
+      console.log("Error al actualizar la oferta:", error);
+    }
+  };
 
   const fetchPriceForProduct = async (productId: string, skuId: string) => {
     try {
@@ -271,7 +266,7 @@ const handleEditOffer = (offerId: string) => {
       const url = skuId
         ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
         : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
-  
+
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -286,13 +281,13 @@ const handleEditOffer = (offerId: string) => {
           const endDate = new Date(offer.endDate);
           return endDate < currentDate;
         });
-  
+
         const activeOffers = currentOffers.filter((offer: Offer) => {
           const currentDate = new Date();
           const endDate = new Date(offer.endDate);
           return endDate >= currentDate;
         });
-  
+
         setOffers(activeOffers);
         setExpiredOffers(expired);
       } else {
@@ -306,7 +301,6 @@ const handleEditOffer = (offerId: string) => {
       setExpiredOffers([]);
     }
   };
-  
 
   const fetchHasOfferForVariation = async (
     productId: string,
@@ -446,7 +440,7 @@ const handleEditOffer = (offerId: string) => {
           <span className="sr-only">Info</span>
           <div>
             Presiona el botón <span className="font-bold">Crear Oferta </span>
-             en cualquier producto y luego elige la variación que quieres editar.
+            en cualquier producto y luego elige la variación que quieres editar.
           </div>
         </div>
 
@@ -622,8 +616,13 @@ const handleEditOffer = (offerId: string) => {
                           <td className="px-2 py-2">
                             ${offer.unitPrice.toLocaleString("es-CL")}
                           </td>
-                          <td className="px-2 py-2"> {offer.startDate.split('-').reverse().join('/')}</td>
-                          <td className="px-2 py-2">{offer.endDate.split('-').reverse().join('/')}</td>
+                          <td className="px-2 py-2">
+                            {" "}
+                            {offer.startDate.split("-").reverse().join("/")}
+                          </td>
+                          <td className="px-2 py-2">
+                            {offer.endDate.split("-").reverse().join("/")}
+                          </td>
                           <td className="px-2 py-2 flex justify-center gap-2">
                             <button
                               onClick={() => handleEditOffer(offer.id)}
@@ -682,8 +681,13 @@ const handleEditOffer = (offerId: string) => {
                           <td className="px-2 py-2">
                             ${offer.unitPrice.toLocaleString("es-CL")}
                           </td>
-                          <td className="px-2 py-2"> {offer.startDate.split('-').reverse().join('/')}</td>
-                          <td className="px-2 py-2">{offer.endDate.split('-').reverse().join('/')}</td>
+                          <td className="px-2 py-2">
+                            {" "}
+                            {offer.startDate.split("-").reverse().join("/")}
+                          </td>
+                          <td className="px-2 py-2">
+                            {offer.endDate.split("-").reverse().join("/")}
+                          </td>
                           <td className="px-2 py-2 flex justify-center gap-2">
                             <button
                               onClick={() => handleEditOffer(offer.id)}
