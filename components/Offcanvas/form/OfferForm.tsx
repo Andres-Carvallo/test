@@ -119,7 +119,7 @@ function OfferForm({
       } else {
         // Crear nueva oferta
         response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${offerToEdit.skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           updatedOffer,
           config
         );
