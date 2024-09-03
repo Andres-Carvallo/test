@@ -79,7 +79,7 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
       <div className="text-sm font-medium border-b pb-2 mb-6">
         Productos Vendidos por Fecha
       </div>
-      <div className="flex space-x-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4  mb-6">
         <div>
           <label className="block text-gray-700 font-medium">
             Fecha Inicio

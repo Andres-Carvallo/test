@@ -77,7 +77,7 @@ function ClientLoginForm() {
   };
 
   return (
-    <div className="mx-auto flex w-full justify-center items-center h-[40rem] md:h-screen bg-gray-200 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+    <div className="mx-auto flex w-full justify-center items-center h-[40rem] md:h-screen bg-gray-200">
       <div className="mx-4 md:mx-0 w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
         <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
           Ingresa a tu cuenta

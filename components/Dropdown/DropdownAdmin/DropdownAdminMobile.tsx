@@ -3,24 +3,24 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { deleteCookie, getCookie } from "cookies-next";
-import { obtenerClienteID } from "@/app/utils/obtenerClienteID";
+import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import { jwtDecode } from "jwt-decode";
 import { UserData } from "@/types/UserData";
 
-const DropdownUserMobile = ({ toggleMenu }: { toggleMenu: () => void }) => {
-  const Token = getCookie("ClientTokenAuth");
+const DropdownAdminMobile = ({ toggleMenu }: { toggleMenu: () => void }) => {
+  const Token = getCookie("AdminTokenAuth");
 
   const decodeToken = Token ? jwtDecode(Token) : null;
 
   const [userDataInfo, setUserDataInfo] = useState<UserData>();
 
   useEffect(() => {
+    const token = Token?.toString();
     const id = decodeToken?.sub;
     const fetchData = async () => {
       try {
-        const userData = await obtenerClienteID(id, Token);
-
-        const userDataInfo = userData.customer;
+        const userData = await obtenerUsuarioPorID(id, token);
+        const userDataInfo = userData.user;
         setUserDataInfo(userDataInfo);
       } catch (error) {
         console.error("Error al obtener el usuario: " + error);
@@ -31,8 +31,8 @@ const DropdownUserMobile = ({ toggleMenu }: { toggleMenu: () => void }) => {
   }, [Token, decodeToken?.sub]);
 
   const handleLogout = async () => {
-    deleteCookie("ClientTokenAuth");
-    window.location.href = "/tienda";
+    deleteCookie("AdminTokenAuth");
+    window.location.href = "/";
   };
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -79,7 +79,7 @@ const DropdownUserMobile = ({ toggleMenu }: { toggleMenu: () => void }) => {
         <ul className="flex flex-col gap-5 border-b border-t py-4 border-stroke px-6 py-7.5 dark:border-strokedark">
           <li>
             <Link
-              href="/tienda/mi-cuenta/datos-personales"
+              href="/dashboard/"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
               onClick={() => {
                 setDropdownOpen(false);
@@ -103,34 +103,7 @@ const DropdownUserMobile = ({ toggleMenu }: { toggleMenu: () => void }) => {
                   fill=""
                 />
               </svg>
-              Mi Cuenta
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              href="/tienda/mi-cuenta/mis-pedidos"
-              className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
-              onClick={() => {
-                setDropdownOpen(false);
-                toggleMenu();
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                />
-              </svg>
-              Mis Pedidos
+              Dashboard
             </Link>
           </li>
         </ul>
@@ -163,4 +136,4 @@ const DropdownUserMobile = ({ toggleMenu }: { toggleMenu: () => void }) => {
   );
 };
 
-export default DropdownUserMobile;
+export default DropdownAdminMobile;

@@ -269,21 +269,21 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       <section className="w-full bg-foreground/5">
         <div className="text-gray-600 body-font">
           {bannerData && (
-            <div className="container py-10 mx-auto flex flex-col md:flex-row items-center md:space-x-4 max-w-3xl">
+            <div className="container py-10 mx-auto flex flex-col items-center space-y-6 md:space-y-0 md:flex-row md:space-x-4 max-w-3xl">
               <img
-                className="w-1/2 md:w-1/3 xl:w-2/4 object-cover object-center rounded mx-auto"
+                className="w-full sm:w-2/3 md:w-1/3 xl:w-2/4 object-cover object-center rounded"
                 alt="hero"
                 src={bannerData.mainImage.url}
                 style={{ borderRadius: "var(--radius)" }}
               />
-              <div className="md:pl-4">
-                <h4 className="text-primary text-lg md:text-xl mt-6 md:mt-0">
+              <div className="w-full text-center md:text-left md:pl-4">
+                <h4 className="text-primary text-lg md:text-xl mt-6 md:mt-0 break-words overflow-hidden">
                   {bannerData.buttonText}
                 </h4>
-                <h1 className="mt-2 text-3xl md:text-4xl font-bold leading-tight text-foreground">
+                <h1 className="mt-2 text-3xl md:text-4xl font-bold leading-tight text-foreground break-words overflow-hidden">
                   {bannerData.title}
                 </h1>
-                <p className="text-base md:text-lg text-foreground py-3">
+                <p className="text-base md:text-lg text-foreground py-3 break-words overflow-hidden">
                   {bannerData.landingText}
                 </p>
               </div>
@@ -508,7 +508,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
                     <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG o Webp (400x500px)
+                    PNG, JPG o Webp (400x500px)
                   </p>
                 </div>
               </label>

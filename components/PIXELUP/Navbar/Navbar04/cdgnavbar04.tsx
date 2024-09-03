@@ -9,6 +9,7 @@ import Link from "next/link";
 import DropdownAdmin from "@/components/Dropdown/DropdownAdmin/DropdownAdmin";
 import DropdownUser from "@/components/Dropdown/DropdownUser/DropdownUser";
 import DropdownUserMobile from "@/components/Dropdown/DropdownUser/DropdownUserMobile";
+import DropdownAdminMobile from "@/components/Dropdown/DropdownAdmin/DropdownAdminMobile";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -427,9 +428,9 @@ export default function Navbar() {
           <div className="w-full py-4 flex  items-center">
             <div className="w-full flex justify-center items-center mb-4">
               {AdminToken ? (
-                <DropdownAdmin />
+                <DropdownAdminMobile toggleMenu={toggleMenu} />
               ) : ClientToken ? (
-                <DropdownUserMobile />
+                <DropdownUserMobile toggleMenu={toggleMenu} />
               ) : (
                 !AdminToken && (
                   <section className="flex">

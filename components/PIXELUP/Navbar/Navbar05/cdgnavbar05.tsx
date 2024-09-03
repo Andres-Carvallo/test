@@ -59,20 +59,30 @@ export default function Navbar() {
           <div className="flex items-center gap-6 min-w-[120px]">
             <div className="flex-shrink-0 pr-4">
               <Link href="/">
-                <img className="w-24" src="/img/Logo/tavola.jpeg" alt="Logo" />
+                <img
+                  className="w-24"
+                  src="/img/Logo/tavola.jpeg"
+                  alt="Logo"
+                />
               </Link>
             </div>
             <div className="hidden xl:block">
               <ul className="flex flex-col md:flex-row md:space-x-8 uppercase">
                 <li className={pathname === "/" ? "text-primary" : ""}>
-                  <Link href="/" className="text-base font-medium">
+                  <Link
+                    href="/"
+                    className="text-base font-medium"
+                  >
                     Inicio
                   </Link>
                 </li>
                 {collections.length > 0 && (
                   <ul className="flex flex-col md:flex-row md:space-x-8">
                     {collections.map((collection) => (
-                      <li key={collection.id} className="group relative">
+                      <li
+                        key={collection.id}
+                        className="group relative"
+                      >
                         <Link
                           href={`/tienda/colecciones/${collection.id}`}
                           className="hover:text-primary text-base font-medium"
@@ -189,15 +199,24 @@ export default function Navbar() {
           </button>
         </div>
         <div className="pt-2 pb-3 space-y-1 px-6 text-3xl">
-        <div className="flex-shrink-0 flex justify-center items-center">
-  <Link href="/">
-    <img className="w-48" src="/img/Logo/tavola.jpeg" alt="Logo" />
-  </Link>
-</div>
+          <div className="flex-shrink-0 flex justify-center items-center">
+            <Link href="/">
+              <img
+                className="w-48"
+                src="/img/Logo/tavola.jpeg"
+                alt="Logo"
+              />
+            </Link>
+          </div>
 
           <ul className="flex flex-col text-center pb-8">
-            <li className={`py-2 ${pathname === "/tienda" ? "text-primary" : ""}`}>
-              <Link href="#" className="hover:text-primary text-base font-medium">
+            <li
+              className={`py-2 ${pathname === "/tienda" ? "text-primary" : ""}`}
+            >
+              <Link
+                href="#"
+                className="hover:text-primary text-base font-medium"
+              >
                 INICIO
               </Link>
             </li>
@@ -206,7 +225,9 @@ export default function Navbar() {
                 {collections.map((collection) => (
                   <li
                     key={collection.id}
-                    className={`${pathname === "/tienda" ? "text-primary" : ""}`}
+                    className={`${
+                      pathname === "/tienda" ? "text-primary" : ""
+                    }`}
                   >
                     <Link
                       href={`/tienda/colecciones/${collection.id}`}
@@ -218,8 +239,15 @@ export default function Navbar() {
                 ))}
               </ul>
             )}
-            <li className={`py-2 text-center ${pathname === "/cotiza-tu-evento" ? "text-primary" : ""}`}>
-              <Link href="/cotiza-tu-evento" className="hover:text-primary text-base font-medium uppercase">
+            <li
+              className={`py-2 text-center ${
+                pathname === "/cotiza-tu-evento" ? "text-primary" : ""
+              }`}
+            >
+              <Link
+                href="/cotiza-tu-evento"
+                className="hover:text-primary text-base font-medium uppercase"
+              >
                 Cotiza tu evento
               </Link>
             </li>
@@ -229,7 +257,7 @@ export default function Navbar() {
             {AdminToken ? (
               <DropdownAdmin />
             ) : ClientToken ? (
-              <DropdownUserMobile />
+              <DropdownUserMobile toggleMenu={toggleMenu} />
             ) : (
               !AdminToken && (
                 <section className="flex">

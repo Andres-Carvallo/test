@@ -67,7 +67,7 @@ function AdminLoginForm() {
 
   return (
     <div className="mx-auto flex w-full justify-center items-center h-screen bg-gray-100">
-      <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
+      <div className="w-full mx-4 max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
         <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
           Ingresa a tu Panel de Administración
         </h3>

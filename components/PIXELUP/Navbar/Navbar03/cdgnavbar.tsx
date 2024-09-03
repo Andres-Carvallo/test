@@ -233,12 +233,12 @@ export default function Navbar() {
                 pathname === "/tienda" ? "text-primary" : ""
               }`}
             />
-              <Link
-                href="/tienda"
-                className="hover:text-primary text-base font-semibold"
-              >
-                Tienda
-              </Link>
+            <Link
+              href="/tienda"
+              className="hover:text-primary text-base font-semibold"
+            >
+              Tienda
+            </Link>
             {collections.length > 0 && (
               <li className="group">
                 <p className="hover:text-primary border-b cursor-pointer text-base font-medium py-2 fill-primary lg:hover:fill-secondary flex items-center">
@@ -332,7 +332,7 @@ export default function Navbar() {
             {AdminToken ? (
               <DropdownAdmin />
             ) : ClientToken ? (
-              <DropdownUserMobile />
+              <DropdownUserMobile toggleMenu={toggleMenu} />
             ) : (
               !AdminToken && (
                 <section className="flex">
