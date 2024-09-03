@@ -7,6 +7,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import CartList from "./CartList";
+import toast from "react-hot-toast";
 
 function CartCanvas() {
   const offcanvasRef = useRef<HTMLDivElement>(null);
@@ -80,24 +81,40 @@ function CartCanvas() {
     try {
       const itemIndex = cartItems.findIndex((item: any) => item.id === itemId);
       if (itemIndex !== -1) {
-        const updatedCartItems = [...cartItems];
-        updatedCartItems[itemIndex] = {
-          ...updatedCartItems[itemIndex],
-          quantity: updatedCartItems[itemIndex].quantity + 1,
-        };
-        setCartItems(updatedCartItems);
+        const newQuantity = cartItems[itemIndex].quantity + 1;
 
-        // Actualizar la cantidad en la API
+        // Actualizar la cantidad en la API primero
         const cartId = getCookie("cartId");
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`,
-          { quantity: updatedCartItems[itemIndex].quantity }
+          { quantity: newQuantity }
         );
+
+        // Si la API se actualizó con éxito, actualizar el estado
+        const updatedCartItems = [...cartItems];
+        updatedCartItems[itemIndex] = {
+          ...updatedCartItems[itemIndex],
+          quantity: newQuantity,
+        };
+        setCartItems(updatedCartItems);
+
+        // Opcionalmente, puedes volver a obtener los datos del carrito
         fetchCartData();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error incrementing quantity:", error);
+
+      // Mostrar el mensaje de error si está disponible
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Error incrementing quantity. Please try again.");
+      }
     }
   };
 
