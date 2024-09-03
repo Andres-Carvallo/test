@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import DarkModeSwitcher from "./DarkModeSwitcher";
 import DropdownMessage from "./DropdownMessage";
@@ -46,11 +47,11 @@ const Header = (props: {
             className="block flex-shrink-0 lg:hidden"
             href="/"
           >
-            <Image
+            <img
               width={54}
               height={54}
-              src={"/img/pixelup.png"}
-              alt="LogoPixelup"
+              src={process.env.NEXT_PUBLIC_LOGO_COLOR}
+              alt="Logo"
             />
           </Link>
         </div>

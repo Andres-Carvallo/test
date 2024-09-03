@@ -8,7 +8,6 @@ import { getCookie } from "cookies-next";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import CartList from "./CartList";
 import toast from "react-hot-toast";
-
 function CartCanvas() {
   const offcanvasRef = useRef<HTMLDivElement>(null);
   const {

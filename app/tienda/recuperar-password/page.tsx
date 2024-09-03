@@ -2,7 +2,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import {
+  GoogleReCaptchaProvider,
+  useGoogleReCaptcha,
+} from "react-google-recaptcha-v3";
 import toast from "react-hot-toast";
 
 function Page() {
@@ -15,7 +18,6 @@ function Page() {
   const [message, setMessage] = useState("");
   const router = useRouter();
   const { executeRecaptcha } = useGoogleReCaptcha();
-
 
   const handleEmailSubmit = async (e: any) => {
     e.preventDefault();
@@ -43,7 +45,9 @@ function Page() {
 
       if (response.data.code === 0) {
         setRecoveryId(response.data.recovery.id);
-        setMessage("Revise su correo electrónico para obtener el código de recuperación.");
+        setMessage(
+          "Revise su correo electrónico para obtener el código de recuperación."
+        );
       } else {
         setError("Failed to initiate recovery. Please try again.");
       }
@@ -81,7 +85,9 @@ function Page() {
         setNewPassword("");
         setConfirmNewPassword("");
       } else {
-        setError("Error al restablecer la contraseña. Por favor intente de nuevo.");
+        setError(
+          "Error al restablecer la contraseña. Por favor intente de nuevo."
+        );
       }
     } catch (err) {
       setError("Se produjo un error. Por favor intente de nuevo.");
@@ -89,8 +95,8 @@ function Page() {
   };
 
   return (
-    <div>
-      <div className="mx-auto flex w-full justify-center items-center h-screen bg-gradient-to-r from-primary/90 from-10% via-primary/60 via-30% to-primary/90 to-90%">
+    <div className="mx-auto flex bg-gray-200">
+      <div className="mx-4 flex w-full justify-center items-center h-[36rem] bg-gray-200">
         <div className="w-full max-w-md px-6 py-10 rounded-2xl bg-white shadow-three dark:bg-dark sm:p-10">
           <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
             Recuperar Contraseña

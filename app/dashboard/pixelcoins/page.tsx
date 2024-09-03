@@ -27,6 +27,7 @@ const CreditChecker = () => {
   const [creditSummaries, setCreditSummaries] = useState<CreditSummary[]>([]);
   const [creditMovements, setCreditMovements] = useState<CreditMovement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCreditsAndMovements = async () => {
@@ -34,30 +35,31 @@ const CreditChecker = () => {
         const token = getCookie("AdminTokenAuth");
         const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
-        // Fetch credit summaries
-        const creditResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/credits?siteId=${siteId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        setCreditSummaries(creditResponse.data.creditSummaries);
+        const [creditResponse, movementsResponse] = await Promise.all([
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/credits?siteId=${siteId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          ),
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/credits/movements?pageNumber=1&pageSize=50&siteId=${siteId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          ),
+        ]);
 
-        // Fetch credit movements
-        const movementsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/credits/movements?pageNumber=1&pageSize=50&siteId=${siteId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        setCreditMovements(movementsResponse.data.creditMovements);
+        setCreditSummaries(creditResponse.data.creditSummaries || []);
+        setCreditMovements(movementsResponse.data.creditMovements || []);
       } catch (error) {
+        setError("Error fetching credits or movements.");
         console.error("Error fetching credits or movements:", error);
       } finally {
         setLoading(false);
@@ -80,9 +82,11 @@ const CreditChecker = () => {
         <h1 className="text-2xl font-bold mb-6">Mis PixelCoins</h1>
         {loading ? (
           <p>Cargando información...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
         ) : (
           <div>
-            {creditSummaries.length > 0 && (
+            {creditSummaries.length > 0 ? (
               <div className="mt-6">
                 {creditSummaries.map((summary) => (
                   <div
@@ -92,27 +96,29 @@ const CreditChecker = () => {
                     <h2 className="text-xl font-bold mb-2">
                       Resumen de PixelCoins
                     </h2>
- 
+
                     {summary.creditsBalance === 0 ? (
-            <div
-            style={{ borderRadius: "var(--radius)" }}
-            className="mt-4 shadow w-full flex items-center p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border-yellow-400 border "
-            role="alert"
-          >
-            <svg
-              className="flex-shrink-0 inline w-4 h-4 me-3"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-            </svg>
-            <span className="sr-only">Info</span>
-            <div>
-            Aquí verás el detalle de tus <span className="font-bold">PixelCoins</span>  cuando recibas la primera carga.
-            </div>
-          </div>
+                      <div
+                        style={{ borderRadius: "var(--radius)" }}
+                        className="mt-4 shadow w-full flex items-center p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border-yellow-400 border "
+                        role="alert"
+                      >
+                        <svg
+                          className="flex-shrink-0 inline w-4 h-4 me-3"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                        </svg>
+                        <span className="sr-only">Info</span>
+                        <div>
+                          Aquí verás el detalle de tus{" "}
+                          <span className="font-bold">PixelCoins</span> cuando
+                          recibas la primera carga.
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <p>
@@ -138,9 +144,11 @@ const CreditChecker = () => {
                   </div>
                 ))}
               </div>
+            ) : (
+              <p>No hay resúmenes de créditos disponibles.</p>
             )}
 
-            {creditMovements.length > 0 && (
+            {creditMovements.length > 0 ? (
               <div className="mt-6">
                 <h2 className="text-xl font-bold mb-4">
                   Movimientos de Créditos
@@ -156,7 +164,10 @@ const CreditChecker = () => {
                     </thead>
                     <tbody>
                       {creditMovements.map((movement) => (
-                        <tr key={movement.id} className="text-center">
+                        <tr
+                          key={movement.id}
+                          className="text-center"
+                        >
                           <td className="px-4 py-2 border">{movement.type}</td>
                           <td className="px-4 py-2 border">
                             {movement.description}
@@ -170,6 +181,8 @@ const CreditChecker = () => {
                   </table>
                 </div>
               </div>
+            ) : (
+              <p>No hay movimientos de créditos disponibles.</p>
             )}
           </div>
         )}

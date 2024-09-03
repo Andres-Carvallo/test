@@ -213,13 +213,12 @@ const Hero: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Tab") {
-      e.preventDefault(); 
+      e.preventDefault();
     }
     if (e.key === "Enter") {
-      e.preventDefault(); 
+      e.preventDefault();
     }
   };
-  
 
   if (loading) {
     return (
@@ -256,7 +255,7 @@ const Hero: React.FC = () => {
         {bannerData && (
           <div className="flex flex-col items-center">
             <div
-              className="flex items-center text-center justify-center gap-4 w-full py-10 px-10 bg-gray-100 "
+              className="flex items-center text-center justify-center gap-4 w-full py-10 px-10 bg-gray-100 flex-wrap"
               style={{ borderRadius: "var(--radius)" }}
             >
               <div>
@@ -292,7 +291,7 @@ const Hero: React.FC = () => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <div className="flex gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex-1 flex flex-col">
             <h3 className="font-normal text-primary">Foto</h3>
             <div className="flex-1 flex flex-col">
@@ -358,117 +357,128 @@ const Hero: React.FC = () => {
                       <span className="font-semibold">Subir Imagen</span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                    PNG, JPG o Webp (800x800px)
+                      PNG, JPG o Webp (800x800px)
                     </p>
                   </div>
                 </label>
               )}
             </div>
           </div>
-          
+
           <div className="flex-1 flex flex-col">
-  <h3 className="font-normal text-primary">Título</h3>
-  <input
-    type="text"
-    name="title"
-    value={formDataHero.title}
-    onChange={handleChange}
-    onKeyDown={handleKeyDown}
-    className="shadow block w-full px-4 py-3 mt-2 mb-1 border border-gray-300"
-    style={{ borderRadius: "var(--radius)" }}
-    placeholder="Title"
-  />
-  <div className="text-right text-sm text-gray-600">
-    {formDataHero.title.length}/60
-  </div>
-  <small className="text-gray-500">
-    Recomendación: El título debe tener entre 50-60 caracteres y contener la palabra clave principal al principio.
-  </small>
-  {formDataHero.title.length > 60 && (
-    <div
-      style={{ borderRadius: "var(--radius)" }}
-      className="shadow flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 bg-blue-50"
-      role="alert"
-    >
-      <svg
-        className="flex-shrink-0 inline w-4 h-4 me-3"
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-      </svg>
-      <span className="sr-only">Info</span>
-      <div>
-        <span className="font-semibold">Recomendación.</span> El título debe tener entre 50-60 caracteres.
-      </div>
-    </div>
-  )}
+            <h3 className="font-normal text-primary">Título</h3>
+            <input
+              type="text"
+              name="title"
+              value={formDataHero.title}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              className="shadow block w-full px-4 py-3 mt-2 mb-1 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
+              placeholder="Title"
+            />
+            <div className="text-right text-sm text-gray-600">
+              {formDataHero.title.length}/60
+            </div>
+            <small className="text-gray-500">
+              Recomendación: El título debe tener entre 50-60 caracteres y
+              contener la palabra clave principal al principio.
+            </small>
+            {formDataHero.title.length > 60 && (
+              <div
+                style={{ borderRadius: "var(--radius)" }}
+                className="shadow flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 bg-blue-50"
+                role="alert"
+              >
+                <svg
+                  className="flex-shrink-0 inline w-4 h-4 me-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  <span className="font-semibold">Recomendación.</span> El
+                  título debe tener entre 50-60 caracteres.
+                </div>
+              </div>
+            )}
 
-  <h3 className="font-normal text-primary mt-4">Keywords <small className="text-gray-500 text-xs"> (Las keywords deben estar separadas por comas.)</small></h3>
-  <input
-    type="text"
-    name="buttonText"
-    value={formDataHero.buttonText}
-    onChange={handleChange}
-    onKeyDown={handleKeyDown}
-    className="shadow block w-full px-4 py-3 mt-2 mb-1 border border-gray-300"
-    style={{ borderRadius: "var(--radius)" }}
-    placeholder="keywords., keywords, keywords..."
-  />
-  <div className="text-right text-sm text-gray-600">
-    {formDataHero.buttonText ? formDataHero.buttonText.split(',').filter((keyword: string) => keyword.trim() !== '').length : 0}/5 (Palabras clave)
-  </div>
-  <small className="text-gray-500">
-    Recomendación: Usa entre 3-5 keywords relevantes, incluyendo variantes y palabras clave long-tail. Sepáralas con comas.
-  </small>
+            <h3 className="font-normal text-primary mt-4">
+              Keywords{" "}
+              <small className="text-gray-500 text-xs">
+                {" "}
+                (Las keywords deben estar separadas por comas.)
+              </small>
+            </h3>
+            <input
+              type="text"
+              name="buttonText"
+              value={formDataHero.buttonText}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              className="shadow block w-full px-4 py-3 mt-2 mb-1 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
+              placeholder="keywords., keywords, keywords..."
+            />
+            <div className="text-right text-sm text-gray-600">
+              {formDataHero.buttonText
+                ? formDataHero.buttonText
+                    .split(",")
+                    .filter((keyword: string) => keyword.trim() !== "").length
+                : 0}
+              /5 (Palabras clave)
+            </div>
+            <small className="text-gray-500">
+              Recomendación: Usa entre 3-5 keywords relevantes, incluyendo
+              variantes y palabras clave long-tail. Sepáralas con comas.
+            </small>
 
-
-  <h3 className="font-normal text-primary mt-4">Descripción</h3>
-  <textarea
-    name="landingText"
-    value={formDataHero.landingText}
-    onChange={handleChange}
-    className="shadow block w-full px-4 py-3 mt-2 mb-1 border border-gray-300 flex-1"
-    style={{ borderRadius: "var(--radius)" }}
-    placeholder="Landing Text"
-    onKeyDown={handleKeyDown}
-    rows={4}
-  />
-  <div className="text-right text-sm text-gray-600">
-    {formDataHero.landingText.length}/160
-  </div>
-  <small className="text-gray-500">
-    Recomendación: La descripción debe tener entre 150-160 caracteres, resumiendo el contenido con una palabra clave principal y una llamada a la acción.
-  </small>
-  {formDataHero.landingText.length > 160 && (
-    <div
-      style={{ borderRadius: "var(--radius)" }}
-      className="shadow flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 bg-blue-50"
-      role="alert"
-    >
-      <svg
-        className="flex-shrink-0 inline w-4 h-4 me-3"
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-      </svg>
-      <span className="sr-only">Info</span>
-      <div>
-        <span className="font-semibold">Recomendación.</span> La descripción debe tener entre 150-160 caracteres.
-      </div>
-    </div>
-  )}
-</div>
-
-
-
-
-
+            <h3 className="font-normal text-primary mt-4">Descripción</h3>
+            <textarea
+              name="landingText"
+              value={formDataHero.landingText}
+              onChange={handleChange}
+              className="shadow block w-full px-4 py-3 mt-2 mb-1 border border-gray-300 flex-1"
+              style={{ borderRadius: "var(--radius)" }}
+              placeholder="Landing Text"
+              onKeyDown={handleKeyDown}
+              rows={4}
+            />
+            <div className="text-right text-sm text-gray-600">
+              {formDataHero.landingText.length}/160
+            </div>
+            <small className="text-gray-500">
+              Recomendación: La descripción debe tener entre 150-160 caracteres,
+              resumiendo el contenido con una palabra clave principal y una
+              llamada a la acción.
+            </small>
+            {formDataHero.landingText.length > 160 && (
+              <div
+                style={{ borderRadius: "var(--radius)" }}
+                className="shadow flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 bg-blue-50"
+                role="alert"
+              >
+                <svg
+                  className="flex-shrink-0 inline w-4 h-4 me-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  <span className="font-semibold">Recomendación.</span> La
+                  descripción debe tener entre 150-160 caracteres.
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <button
           type="submit"
