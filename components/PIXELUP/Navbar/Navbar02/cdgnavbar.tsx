@@ -350,7 +350,7 @@ export default function Navbar() {
             {AdminToken ? (
               <DropdownAdmin />
             ) : ClientToken ? (
-              <DropdownUserMobile />
+              <DropdownUserMobile toggleMenu={toggleMenu} />
             ) : (
               !AdminToken && (
                 <section className="flex">
