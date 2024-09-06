@@ -277,7 +277,7 @@ const ProductGridShop = () => {
         </div>
 
         <div className="flex justify-center mx-auto px-4">
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px]">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px] max-w-[1100px]">
             {paginatedProducts.map((product: any) => (
               <ProductCard02
                 key={product.id}

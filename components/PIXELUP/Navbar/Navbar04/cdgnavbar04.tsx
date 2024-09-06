@@ -151,13 +151,13 @@ export default function Navbar() {
               <li
                 className={
                   pathname ===
-                  "http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                  "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                     ? "text-primary"
                     : ""
                 }
               >
                 <Link
-                  href="http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                  href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                   className="hover:text-primary text-base font-medium uppercase"
                 >
                   PROMOCIONES
@@ -317,6 +317,14 @@ export default function Navbar() {
                 INICIO
               </Link>
             </li>
+            <li className={pathname === "/tienda" ? "text-primary" : ""}>
+                <Link
+                  href="/tienda"
+                  className="hover:text-primary text-base font-medium"
+                >
+                  TIENDA
+                </Link>
+              </li>
             <li className={`${pathname === "/" ? "text-primary" : ""}`}>
               <button
                 className="relative items-center justify-center hover:text-primary text-base font-medium"
@@ -335,29 +343,30 @@ export default function Navbar() {
                         viewBox="0 0 24 24"
                         strokeWidth="1.5"
                         stroke="currentColor"
-                        className="size-4 "
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                        />
-                      </svg>
-                    </div>
-                  ) : (
-                    <div>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
                         className="size-4"
                       >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                        />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div>
+
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-4 "
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
                         />
                       </svg>
                     </div>
@@ -393,13 +402,13 @@ export default function Navbar() {
             <li
               className={
                 pathname ===
-                "http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                   ? "text-primary"
                   : ""
               }
             >
               <Link
-                href="http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                 className="hover:text-primary text-base font-medium uppercase"
               >
                 PROMOCIONES

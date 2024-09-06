@@ -15,7 +15,7 @@ interface Product {
   // Otros campos que puedan estar en el producto
 }
 
-const Destacados01: React.FC = () => {
+const Destacados01: React.FC<any> = ({ text }) => {
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState<Error | null>(null);
@@ -137,7 +137,7 @@ const Destacados01: React.FC = () => {
     previous?: () => void;
   }) => {
     return (
-      <div className="absolute inset-y-0 -left-5 -right-5 flex items-center justify-between px-4 pointer-events-none">
+      <div className="hidden absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
         <button
           className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
           onClick={previous}
@@ -184,13 +184,13 @@ const Destacados01: React.FC = () => {
   return (
     <div className="container mx-auto m-8 mt-16 max-w-7xl relative">
       <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
-        Destacados
+      {text}
       </h1>
       <Carousel
         swipeable={true}
         draggable={true}
         ssr={true}
-        showDots={false}
+        showDots={true}
         responsive={responsive}
         infinite={true}
         autoPlay={autoplay}
@@ -218,7 +218,7 @@ const Destacados01: React.FC = () => {
           />
         ))}
       </Carousel>
-      <div className="flex items-center justify-center">
+      <div className="mt-6 flex items-center justify-center">
         <Link
           className="px-4 cursor-pointer py-2 mt-2 tracking-wide text-secondary capitalize transition-colors duration-300 transform bg-primary hover:scale-105 rounded"
           href="/tienda/"

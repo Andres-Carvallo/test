@@ -177,6 +177,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       },
     }));
     setAlertStock(0);
+    handleSkuFieldChange("hasUnlimitedStock", false);
     setCheckOfferChecked(false);
     setMainImage(null);
     setPreviewImage(null);

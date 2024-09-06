@@ -135,26 +135,27 @@ export default async function Page() {
       <Navbar04 />
       <BannerPrincipal03 />
       <Hero01 />
-      <Destacados01 />
+      <Destacados01 
+        text="Destacados"/>
 
       <Colecciones01
-        id="1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+        id="e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
         coleccion="Promociones"
         text="Descubre nuestros packs exclusivos en conjunto con La Casa Borracha, para una experiencia completa. Además de promociones especiales."
       />
       <Colecciones01
-        id="89ac8783-f388-4b6e-8c99-fe95002c8d1b"
+        id="6f1fc389-c295-418e-b43d-c12f1351bfc8"
         coleccion="Nuestras Tablas"
         text="Encuentra nuestra selección de tablas en sus diferentes tamaños. (S: 4-5 personas, M: 7-8 personas, L: 10-11 perosnas)"
       />
       <Colecciones01
-        id="bfa4fc11-ff0b-4d39-96f3-178bcf12d26a"
+        id="eb1f78e0-f6e4-4a5a-89e1-eca0b1b97ff1"
         coleccion="CHEF BOX"
         text="Encuentras las tablas que más te gustan en nuestro formato CHEF BOX! Recomendados para 2 personas!"
       />
       <Colecciones01
-        id="89ac8783-f388-4b6e-8c99-fe95002c8d1b"
-        coleccion="Acompañamientos"
+        id="ac61d5e9-93c0-44c5-96ae-a69ac64dab5d"
+        coleccion="Dips, Salsas y Extras"
         text="Completa tu experiencia con alguno de nuestros exquisitos dips, salsas o añade a tu tabla productos como nuestra exquisita Provoleta oliva merkén"
       />
 

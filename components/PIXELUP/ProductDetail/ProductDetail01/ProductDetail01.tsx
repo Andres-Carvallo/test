@@ -149,10 +149,11 @@ const ProductDetail01: React.FC = () => {
   const [isTouching, setIsTouching] = useState(false);
 
   const moveSlide = (direction: any) => {
-    const newIndex =
-      (currentSlide + direction + thumbnails.length) % thumbnails.length;
+    const newIndex = (currentSlide + direction + thumbnails.length) % thumbnails.length;
     setCurrentSlide(newIndex);
+    setSelectedThumbnail(thumbnails[newIndex].imageUrl); // Asegúrate de cambiar también la miniatura seleccionada
   };
+  
 
   const handleTouchStart = (e: any) => {
     setStartX(e.touches[0].clientX);
@@ -270,13 +271,15 @@ const ProductDetail01: React.FC = () => {
     }
   }, [id]);
 
-  const customOrder = ["S", "M", "L", "XL", "XXL"];
+  const customOrder = ["XS", "S", "M", "L", "XL", "XXL"];
 
   const sortAttributes = (attributeName: string, values: string[]) => {
-    // Si el atributo es "TALLA" o "TALLAS", usa el orden personalizado
+    // Si el atributo es "TALLA", "TALLAS", "TAMAÑO" o "TAMAÑOS", usa el orden personalizado
     if (
       attributeName.toLowerCase() === "talla" ||
-      attributeName.toLowerCase() === "tallas"
+      attributeName.toLowerCase() === "tallas" ||
+      attributeName.toLowerCase() === "tamaño" ||
+      attributeName.toLowerCase() === "tamaños"
     ) {
       return values.sort((a, b) => {
         const indexA = customOrder.indexOf(a);
