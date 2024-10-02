@@ -149,11 +149,11 @@ const ProductDetail01: React.FC = () => {
   const [isTouching, setIsTouching] = useState(false);
 
   const moveSlide = (direction: any) => {
-    const newIndex =
-      (currentSlide + direction + thumbnails.length) % thumbnails.length;
+    const newIndex = (currentSlide + direction + thumbnails.length) % thumbnails.length;
     setCurrentSlide(newIndex);
     setSelectedThumbnail(thumbnails[newIndex].imageUrl); // Asegúrate de cambiar también la miniatura seleccionada
   };
+  
 
   const handleTouchStart = (e: any) => {
     setStartX(e.touches[0].clientX);
