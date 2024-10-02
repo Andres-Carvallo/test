@@ -15,18 +15,18 @@ const ProductCard02: React.FC<ProductCardProps> = ({
   isOnSale,
   stock,
 }) => {
-<<<<<<< HEAD
-const renderPrice = () => {
-  let priceRange = {
-    min: Infinity,
-    max: -Infinity,
-=======
   const renderPrice = () => {
     let priceRange = {
       min: Infinity,
       max: -Infinity,
     };
-  
+
+    // Si el producto no tiene variaciones y tiene ofertas, mostrar solo el precio de la oferta
+    if (!product.hasVariations && product.offers && product.offers.length > 0) {
+      const offerPrice = product.offers[0].amount;
+      return <span>${offerPrice.toLocaleString("es-CL")}</span>;
+    }
+
     // Verificar si tiene variaciones y rangos de precios
     if (product.hasVariations && product.pricingRanges) {
       priceRange.min = Math.min(
@@ -41,7 +41,7 @@ const renderPrice = () => {
       priceRange.min = Math.min(priceRange.min, product.pricings[0].amount);
       priceRange.max = Math.max(priceRange.max, product.pricings[0].amount);
     }
-  
+
     // Si existe una oferta, se debe tomar como prioridad el precio de oferta
     if (product.offers && product.offers.length > 0) {
       product.offers.forEach((offer: any) => {
@@ -49,69 +49,23 @@ const renderPrice = () => {
         priceRange.max = Math.max(priceRange.max, offer.amount);
       });
     }
-  
+
     // Asegurarse de que el precio mínimo siempre sea menor al máximo
     const finalMin = Math.min(priceRange.min, priceRange.max);
     const finalMax = Math.max(priceRange.min, priceRange.max);
-  
+
     // Mostrar el rango o un solo precio si son iguales
     if (finalMin === finalMax) {
       return <span>${finalMin.toLocaleString("es-CL")}</span>;
     } else {
       return (
         <span>
-          ${finalMin.toLocaleString("es-CL")} - ${finalMax.toLocaleString("es-CL")}
+          ${finalMin.toLocaleString("es-CL")} - $
+          {finalMax.toLocaleString("es-CL")}
         </span>
       );
     }
->>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
   };
-  
-
-  // Si el producto no tiene variaciones y tiene ofertas, mostrar solo el precio de la oferta
-  if (!product.hasVariations && product.offers && product.offers.length > 0) {
-    const offerPrice = product.offers[0].amount;
-    return <span>${offerPrice.toLocaleString("es-CL")}</span>;
-  }
-
-  // Verificar si tiene variaciones y rangos de precios
-  if (product.hasVariations && product.pricingRanges) {
-    priceRange.min = Math.min(
-      priceRange.min,
-      product.pricingRanges[0].minimumAmount
-    );
-    priceRange.max = Math.max(
-      priceRange.max,
-      product.pricingRanges[0].maximumAmount
-    );
-  } else if (product.pricings) {
-    priceRange.min = Math.min(priceRange.min, product.pricings[0].amount);
-    priceRange.max = Math.max(priceRange.max, product.pricings[0].amount);
-  }
-
-  // Si existe una oferta, se debe tomar como prioridad el precio de oferta
-  if (product.offers && product.offers.length > 0) {
-    product.offers.forEach((offer: any) => {
-      priceRange.min = Math.min(priceRange.min, offer.amount);
-      priceRange.max = Math.max(priceRange.max, offer.amount);
-    });
-  }
-
-  // Asegurarse de que el precio mínimo siempre sea menor al máximo
-  const finalMin = Math.min(priceRange.min, priceRange.max);
-  const finalMax = Math.max(priceRange.min, priceRange.max);
-
-  // Mostrar el rango o un solo precio si son iguales
-  if (finalMin === finalMax) {
-    return <span>${finalMin.toLocaleString("es-CL")}</span>;
-  } else {
-    return (
-      <span>
-        ${finalMin.toLocaleString("es-CL")} - ${finalMax.toLocaleString("es-CL")}
-      </span>
-    );
-  }
-};
 
   const handleButtonClick = () => {
     if (product.hasVariations) {
@@ -120,7 +74,6 @@ const renderPrice = () => {
       addToCartHandler(product.skuId, 1);
     }
   };
-
 
   return (
     <div className="w-full   bg-white shadow-md duration-500 lg:hover:scale-105 md:hover:shadow-xl rounded-xl relative">

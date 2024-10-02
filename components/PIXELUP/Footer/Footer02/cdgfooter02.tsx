@@ -58,11 +58,9 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
     fetchCollections();
   }, []);
 
-
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
-
 
   return (
     <footer className="bg-background">
@@ -116,7 +114,6 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
               </div>
               {collections.length > 0 && (
                 <div>
-
                   <ul className=" space-y-2 uppercase">
                     {collections.map((collection) => (
                       <li key={collection.id}>
@@ -172,7 +169,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   />
                 </svg>
               </a>
-{/*               <a
+              {/*               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
                 href="#"
               >
@@ -193,204 +190,193 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
           </div>
         </div>
         <div className="pt-8 mt-8 border-t border-primary">
-          <div className="flex justify-center space-x-6">
-          </div>
+          <div className="flex justify-center space-x-6"></div>
           <div className="text-center text-base text-gray-500 ">
             © Copyright 2024 LaTavolaDelChef | All Rights Reserved.
           </div>
         </div>
       </div>
 
-
       {/* MOBILE */}
       <div className="md:hidden pt-20 pb-20 space-y-1 px-6 text-3xl">
-          <div className="flex-shrink-0 flex justify-center items-center">
+        <div className="flex-shrink-0 flex justify-center items-center">
+          <Link
+            href="/"
+            onClick={() => setIsOpen(false)}
+          >
+            <img
+              className="w-48"
+              src="/img/Logo/tavola.jpeg"
+              alt="Logo"
+            />
+          </Link>
+        </div>
+
+        <ul className="flex flex-col text-center pb-8">
+          <li className={` ${pathname === "/" ? "text-primary" : ""}`}>
             <Link
               href="/"
+              className="hover:text-primary text-base font-medium"
               onClick={() => setIsOpen(false)}
             >
-              <img
-                className="w-48"
-                src="/img/Logo/tavola.jpeg"
-                alt="Logo"
-              />
+              INICIO
             </Link>
-          </div>
-
-          <ul className="flex flex-col text-center pb-8">
-            <li className={` ${pathname === "/" ? "text-primary" : ""}`}>
-              <Link
-                href="/"
-                className="hover:text-primary text-base font-medium"
-                onClick={() => setIsOpen(false)}
+          </li>
+          <li className={` ${pathname === "/tienda" ? "text-primary" : ""}`}>
+            <Link
+              href="/tienda"
+              className="hover:text-primary text-base font-medium"
+              onClick={() => setIsOpen(false)}
+            >
+              TIENDA
+            </Link>
+          </li>
+          <li className={`${pathname === "/" ? "text-primary" : ""}`}>
+            <button
+              className="relative items-center justify-center hover:text-primary text-base font-medium"
+              onClick={toggleVisibility}
+            >
+              PRODUCTOS
+              <div
+                className="absolute"
+                style={{ top: "3px", left: "121px" }}
               >
-                INICIO
-              </Link>
-            </li>
-            <li className={` ${pathname === "/tienda" ? "text-primary" : ""}`}>
-              <Link
-                href="/tienda"
-                className="hover:text-primary text-base font-medium"
-                onClick={() => setIsOpen(false)}
-              >
-                TIENDA
-              </Link>
-            </li>
-            <li className={`${pathname === "/" ? "text-primary" : ""}`}>
-              <button
-                className="relative items-center justify-center hover:text-primary text-base font-medium"
-                onClick={toggleVisibility}
-              >
-                PRODUCTOS
-                <div
-                  className="absolute"
-                  style={{ top: "3px", left: "121px" }}
-                >
-                  {isVisible ? (
-                    <div>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                        />
-                      </svg>
-                    </div>
-                  ) : (
-                    <div>
-
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="size-4 "
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </button>
-            </li>
-            {isVisible && (
-              <div className="border-b border-t pb-2 mt-2">
-                {collections.length > 0 && (
-                  <ul className="flex flex-col space-y-1 text-center ">
-                    {filteredCollections.map((collection) => (
-                      <li
-                        key={collection.id}
-                        className={`${
-                          pathname === "/tienda" ? "text-primary" : ""
-                        }`}
-                      >
-                        <Link
-                          href={`/tienda/colecciones/${collection.id}`}
-                          className="hover:text-primary text-base font-medium uppercase"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          {collection.title}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                {isVisible ? (
+                  <div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="size-4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                      />
+                    </svg>
+                  </div>
+                ) : (
+                  <div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="size-4 "
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  </div>
                 )}
               </div>
-            )}
+            </button>
+          </li>
+          {isVisible && (
+            <div className="border-b border-t pb-2 mt-2">
+              {collections.length > 0 && (
+                <ul className="flex flex-col space-y-1 text-center ">
+                  {filteredCollections.map((collection) => (
+                    <li
+                      key={collection.id}
+                      className={`${
+                        pathname === "/tienda" ? "text-primary" : ""
+                      }`}
+                    >
+                      <Link
+                        href={`/tienda/colecciones/${collection.id}`}
+                        className="hover:text-primary text-base font-medium uppercase"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {collection.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
-            <li
-              className={
-                pathname ===
-                "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-                  ? "text-primary"
-                  : ""
-              }
+          <li
+            className={
+              pathname ===
+              "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
+                ? "text-primary"
+                : ""
+            }
+          >
+            <Link
+              href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
+              className="hover:text-primary text-base font-medium uppercase"
             >
-              <Link
-                href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-                className="hover:text-primary text-base font-medium uppercase"
-              >
-                PROMOCIONES
-              </Link>
-            </li>
-            <li className={pathname === "/nosotros" ? "text-primary" : ""}>
-              <Link
-                href="/nosotros"
-                className="hover:text-primary text-base font-medium uppercase"
-              >
-                nosotros
-              </Link>
-            </li>
-            <li
-              className={pathname === "/cotiza-tu-evento" ? "text-primary" : ""}
+              PROMOCIONES
+            </Link>
+          </li>
+          <li className={pathname === "/nosotros" ? "text-primary" : ""}>
+            <Link
+              href="/nosotros"
+              className="hover:text-primary text-base font-medium uppercase"
             >
-              <Link
-                href="/cotiza-tu-evento"
-                className="hover:text-primary text-base font-medium uppercase"
+              nosotros
+            </Link>
+          </li>
+          <li
+            className={pathname === "/cotiza-tu-evento" ? "text-primary" : ""}
+          >
+            <Link
+              href="/cotiza-tu-evento"
+              className="hover:text-primary text-base font-medium uppercase"
+            >
+              Cotiza Tu evento
+            </Link>
+          </li>
+        </ul>
+        <div className=" mt-8 lg:mt-0 w-full lg:w-72 flex flex-col items-center">
+          <h4 className="text-base font-semibold leading-4 mb-2 uppercase">
+            Síguenos en nuestras redes sociales
+          </h4>
+          <div className="w-full flex justify-center xl:justify-start space-x-6 mt-4">
+            <a
+              className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
+              href="https://www.instagram.com/latavoladelchef"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-secondary hover:text-primary"
               >
-                Cotiza Tu evento
-              </Link>
-            </li>
-          </ul>
-          <div className=" mt-8 lg:mt-0 w-full lg:w-72 flex flex-col items-center">
-            <h4 className="text-base font-semibold leading-4 mb-2 uppercase">
-              Síguenos en nuestras redes sociales
-            </h4>
-            <div className="w-full flex justify-center xl:justify-start space-x-6 mt-4">
-              <a
-                className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
-<<<<<<< HEAD
-                href="https://www.instagram.com/latavoladelchef"
-=======
-                href="#"
->>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-secondary hover:text-primary"
-                >
-                  <rect
-                    width="20"
-                    height="20"
-                    x="2"
-                    y="2"
-                    rx="5"
-                    ry="5"
-                  />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line
-                    x1="17.5"
-                    x2="17.51"
-                    y1="6.5"
-                    y2="6.5"
-                  />
-                </svg>
-              </a>
-<<<<<<< HEAD
-{/*               <a
-=======
-              <a
->>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
+                <rect
+                  width="20"
+                  height="20"
+                  x="2"
+                  y="2"
+                  rx="5"
+                  ry="5"
+                />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line
+                  x1="17.5"
+                  x2="17.51"
+                  y1="6.5"
+                  y2="6.5"
+                />
+              </svg>
+            </a>
+            {/*               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
                 href="#"
               >
@@ -406,15 +392,10 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                     clipRule="evenodd"
                   />
                 </svg>
-<<<<<<< HEAD
               </a> */}
-=======
-              </a>
->>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
-            </div>
           </div>
         </div>
-
+      </div>
     </footer>
   );
 };
