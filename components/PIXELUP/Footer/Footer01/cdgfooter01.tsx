@@ -20,6 +20,7 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ FooterData }) => {
   const { titulo, subtitulo, parrafo, img } = FooterData;
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [collections, setCollections] = useState<any[]>([]);
   const fetchCollections = async () => {
@@ -48,14 +49,14 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
             <img
               alt="Logo"
               className="h-40 object-cover mx-auto"
-              src={img}
+              src={process.env.NEXT_PUBLIC_LOGO_WHITE}
             />
           </div>
-          <div className="xl:col-span-6 mt-12 grid grid-cols gap-8 xl:mt-0 mx-12">
+          <div className="text-center lg:text-left xl:col-span-6 mt-12 grid grid-cols gap-8 xl:mt-0 mx-12">
             <div className="md:grid md:grid-cols-3 md:gap-16 text-secondary">
               <div>
-                <h3 className="text-sm font-bold tracking-wider uppercase">
-                  Useful Links
+                <h3 className="underline text-sm font-bold tracking-wider uppercase">
+                  LINKS DIRECTOS
                 </h3>
                 <ul className="mt-4 space-y-2">
                   <li>
@@ -63,7 +64,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                       className="text-base hover:underline "
                       href="#"
                     >
-                      Inicio
+                      TIENDA
                     </a>
                   </li>
                   <li>
@@ -71,7 +72,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                       className="text-base hover:underline "
                       href="#"
                     >
-                      Tienda
+                      ANILLOS
                     </a>
                   </li>
                   <li>
@@ -79,7 +80,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                       className="text-base hover:underline "
                       href="#"
                     >
-                      Anillos
+                      COLGANTES
                     </a>
                   </li>
                   <li>
@@ -87,7 +88,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                       className="text-base hover:underline "
                       href="#"
                     >
-                      Colgantes
+                      PULSERAS
                     </a>
                   </li>
                   <li>
@@ -95,23 +96,16 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                       className="text-base hover:underline "
                       href="#"
                     >
-                      Pulseras
+                      AROS
                     </a>
                   </li>
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Aros
-                    </a>
-                  </li>
+
                 </ul>
               </div>
 
               {collections.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
+                  <h3 className="underline text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
                     Colecciones
                   </h3>
                   <ul className="mt-4 space-y-2">
@@ -119,7 +113,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                       <li key={collection.id}>
                         <Link
                           href={`/tienda/colecciones/${collection.id}`}
-                          className="text-base hover:underline"
+                          className="text-base hover:underline uppercase"
                         >
                           {collection.title}
                         </Link>
@@ -129,19 +123,16 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                 </div>
               )}
               <div>
-                <h3 className="text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
-                  Colecciones
+                <h3 className="underline text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
+                  OTROS
                 </h3>
                 <ul className="mt-4 space-y-2">
-                  <li>
-                    <a
-                      className="text-base hover:underline "
-                      href="#"
-                    >
-                      Contacto
-                    </a>
+                <li>
+                <button className="hover:underline text-base font-medium" onClick={() => setShowModal(true)}>
+                TALLAS
+              </button>
                   </li>
-                  <li>
+                <li>
                     <a
                       className="text-base hover:underline "
                       href="#"
@@ -154,7 +145,16 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                       className="text-base hover:underline "
                       href="#"
                     >
-                      Tallas
+                      CONTACTO
+                    </a>
+                  </li>
+
+                  <li>
+                    <a
+                      className="text-base hover:underline "
+                      href="#"
+                    >
+                      TÉRMINOS Y CONDICIONES
                     </a>
                   </li>
                 </ul>
@@ -172,7 +172,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
         </div> */}
             </div>
           </div>
-          <div className="col-span-2 lg:col-span-3 lg:flex ml-auto md:mt-12 lg:mt-0 mt-8 text-secondary">
+          <div className="col-span-2 lg:col-span-3 lg:flex ml-auto md:mt-16 lg:mt-0 mt-8 text-secondary">
             <div className="max-w-md mx-auto w-full px-4 lg:px-0">
               <h3 className="text-sm font-bold tracking-wider uppercase ">
                 ¡Se parte de la comunidad!
@@ -313,6 +313,22 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
           </div>
         </div>
       </div>
+        {/* Modal de confirmación */}
+  {showModal && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50" onClick={() => setShowModal(false)}>
+      <div className="bg-white p-6 rounded-lg shadow-lg relative" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => setShowModal(false)} className="absolute top-2 right-4 text-4xl">
+          &times;
+        </button>
+        <img
+          src="/img/Tabladetallas/TabladeTallas.webp"
+          alt="Tabla de Tallas"
+          className="max-w-full max-h-full object-contain"
+          style={{ maxWidth: "80vw", maxHeight: "80vh" }}
+        />
+      </div>
+    </div>
+  )}
     </footer>
   );
 };

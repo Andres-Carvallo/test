@@ -78,6 +78,7 @@ const CreditChecker = () => {
 
   return (
     <div className="min-h-screen">
+      <title>PixelCoins</title>
       <section className="max-w-[85%] mx-auto p-6 mt-20 bg-white rounded-lg">
         <h1 className="text-2xl font-bold mb-6">Mis PixelCoins</h1>
         {loading ? (

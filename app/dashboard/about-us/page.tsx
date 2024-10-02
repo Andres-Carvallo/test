@@ -9,6 +9,7 @@ import BannerAbout01BO from "@/components/PIXELUP/BannerAbout/BannerAbout01/Back
 export default function BannerHome() {
   return (
     <section className="gap-4 flex flex-col px-10 py-10 ">
+      <title>Content block - About</title>
       {/*       <div
         className="shadow-md  border-primary mt-6 p-4 bg-white"
         style={{ borderRadius: "var(--radius)" }}
@@ -23,7 +24,7 @@ export default function BannerHome() {
         <h4 className="uppercase font-bold mb-4">Hero About Me</h4>
         <Hero03BO />
       </div> */}
-
+ 
       <div
         className="shadow-md  border-primary mt-6 p-4 bg-white"
         style={{ borderRadius: "var(--radius)" }}
@@ -37,6 +38,7 @@ export default function BannerHome() {
       >
         <h4 className="uppercase font-bold mb-4">About Us Texto</h4>
         <About01BO />
+        
       </div>
     </section>
   );

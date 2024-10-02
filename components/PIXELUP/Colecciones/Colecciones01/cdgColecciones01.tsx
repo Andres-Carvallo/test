@@ -7,7 +7,7 @@ import ProductCard02 from "@/components/PIXELUP/ProductCards/ProductCards02/Prod
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 import Link from "next/link";
-
+ 
 const Colecciones01: React.FC<any> = ({ id, coleccion, text }) => {
   const [collectionData, setCollectionData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,7 +24,7 @@ const Colecciones01: React.FC<any> = ({ id, coleccion, text }) => {
     previous?: () => void;
   }) => {
     return (
-      <div className="absolute inset-y-0 -left-5 -right-5 top-[20%] flex items-center justify-between px-4 pointer-events-none">
+      <div className="hidden absolute inset-y-0 lg:-left-5 lg:-right-5 top-[20%] lg:flex items-center justify-between px-4 pointer-events-none">
         <button
           className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
           onClick={previous}

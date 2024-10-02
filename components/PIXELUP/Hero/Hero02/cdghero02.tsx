@@ -24,7 +24,7 @@ interface BannerImage {
 interface BannerData {
   images: BannerImage[];
 }
-
+ 
 const Hero02: React.FC<Hero02Props> = ({ Hero02Data }) => {
   const { titulo, subtitulo, parrafo, img } = Hero02Data;
   const [bannerData, setBannerData] = useState<BannerData | null>(null);
@@ -33,7 +33,7 @@ const Hero02: React.FC<Hero02Props> = ({ Hero02Data }) => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
-      const bannerId = "e0d55d17-c977-4a0a-9c84-e4895e35d1ff";
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO02_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -63,35 +63,34 @@ const Hero02: React.FC<Hero02Props> = ({ Hero02Data }) => {
 
   const currentImage = bannerData.images[0];
   return (
-    <div>
-      <div className="px-6 lg:px-0 mt-24 flex justify-center">
+<div className="container mx-auto max-w-7xl relative">
+  <div className=" lg:px-0 mt-24 flex justify-center">
+    <div
+      className="relative w-full h-[600px] bg-cover bg-center"
+      style={{ borderRadius: "var(--radius)" }}
+    >
+      <img
+        src={currentImage.mainImage.url}
+        alt="FBM Joyas"
+        className="absolute inset-0 w-full h-full object-cover rounded-lg"
+      />
+      <div className="absolute top-1/2 left-1/2 lg:left-[24%] transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-4 md:p-8 rounded-lg shadow-lg max-w-lg text-gray-800 w-[90%] md:w-full">
+        <h2 className="text-lg md:text-2xl font-bold mb-2 md:mb-4">{currentImage.title}</h2>
         <div
-          className="relative w-full max-w-7xl h-[500px] bg-cover bg-center"
-          style={{ borderRadius: "var(--radius)" }}
+          className="mb-2 md:mb-4 editortexto"
+          dangerouslySetInnerHTML={{ __html: currentImage.landingText }}
+        />
+        <a
+          href={currentImage.buttonLink}
+          className="text-blue-500 hover:underline text-right"
         >
-          <img
-            src={currentImage.mainImage.url}
-            alt="FBM Joyas"
-            className="absolute inset-0 w-full h-full object-cover rounded-lg"
-          />
-          <div className="absolute top-1/2 left-[24%] transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-8 rounded-lg shadow-lg max-w-lg text-gray-800">
-            <h2 className="text-2xl font-bold mb-4">{currentImage.title}</h2>
-            <div
-              className="mb-4 editortexto"
-              dangerouslySetInnerHTML={{ __html: currentImage.landingText }}
-            />
-            {/*                     <p className="mb-4">{currentImage.buttonLink}</p>
-             */}{" "}
-            <a
-              href={currentImage.buttonLink}
-              className="text-blue-500 hover:underline text-right"
-            >
-              {currentImage.buttonText}
-            </a>
-          </div>
-        </div>
+          {currentImage.buttonText}
+        </a>
       </div>
     </div>
+  </div>
+</div>
+
   );
 };
 

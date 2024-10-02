@@ -1,0 +1,1103 @@
+/* eslint-disable @next/next/no-head-element */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-img-element */
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
+import { useAPI } from "@/app/Context/ProductTypeContext";
+import Stars from "@/components/Products/Detail/Stars";
+import Head from "next/head";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { getCookie } from "cookies-next";
+
+interface Variation {
+  id: string;
+  product: {
+    id: string;
+    description: any;
+  };
+  isBaseSku: boolean;
+  mainImageUrl: string;
+  description: string;
+  attributes: { label: string; value: string }[];
+  offers?: {
+    unitPrice: number;
+    startDate: string;
+    endDate: string;
+  }[];
+}
+
+interface Thumbnail {
+  id: string;
+  imageUrl: string;
+}
+
+const ProductDetail01: React.FC = () => {
+  const [variations, setVariations] = useState<Variation[]>([]);
+  const [isOutOfStock, setIsOutOfStock] = useState(false);
+  const [stock, setStock] = useState<number | null>(null);
+
+  const [selectedVariation, setSelectedVariation] = useState<Variation | any>(
+    null
+  );
+  const [selectedAttributes, setSelectedAttributes] = useState<{
+    [key: string]: string;
+  }>({});
+  const [quantity, setQuantity] = useState(1);
+  const [currentAttributes, setCurrentAttributes] = useState<{
+    [key: string]: string[];
+  }>({});
+  const [currentPrices, setCurrentPrices] = useState<{ [key: string]: number }>(
+    {}
+  );
+  const [mainImageUrl, setMainImageUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [productName, setProductName] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [selectedVariationPrice, setSelectedVariationPrice] = useState<
+    number | null
+  >(null);
+  const [attributeSelected, setAttributeSelected] = useState(false);
+  const [disabledAttributes, setDisabledAttributes] = useState<{
+    [key: string]: boolean[];
+  }>({});
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isBaseSku, setIsBaseSku] = useState(false);
+  const [hasVariations, setHasVariations] = useState(Boolean);
+  const [enabledForDelivery, setEnabledForDelivery] = useState(false);
+  const [enabledForWithdrawal, setEnabledForWithdrawal] = useState(false);
+  const [thumbnails, setThumbnails] = useState<Thumbnail[]>([]);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(
+    null
+  );
+  const [isAddToCartDisabled, setIsAddToCartDisabled] = useState(false);
+  const [reviewAverageScore, setReviewAverageScore] = useState<number | null>(
+    null
+  );
+  const [totalReviews, setTotalReviews] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { addToCartHandler } = useAPI();
+  const { id } = useParams();
+
+  const fetchStockForVariation = async (productId: string, skuId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const data = await response.json();
+      if (data.code === 0 && data.skuInventories.length > 0) {
+        const totalStock = data.skuInventories.reduce(
+          (acc: number, inventory: any) => acc + inventory.quantity,
+          0
+        );
+        setStock(totalStock);
+      } else {
+        setStock(0);
+      }
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      setStock(0);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedVariation) {
+      fetchStockForVariation(
+        selectedVariation.product.id,
+        selectedVariation.id
+      );
+    }
+  }, [selectedVariation]);
+
+  const fetchThumbnails = async (productId: string, skuId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        const mainThumbnail = { id: "main", imageUrl: mainImageUrl };
+        const allThumbnails = [mainThumbnail, ...data.skuImages];
+        setThumbnails(allThumbnails);
+        setSelectedThumbnail(mainImageUrl);
+      } else {
+        console.error("Error fetching thumbnails:", data.message);
+      }
+    } catch (error) {
+      console.error("Error al obtener las miniaturas:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedVariation) {
+      fetchThumbnails(selectedVariation.product.id, selectedVariation.id);
+    } else {
+      fetchThumbnails(id as string, id as string);
+    }
+  }, [selectedVariation]);
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const handleThumbnailClick = (index: number) => {
+    setCurrentSlide(index);
+    setSelectedThumbnail(thumbnails[index].imageUrl);
+  };
+
+  const [startX, setStartX] = useState(0);
+  const [isTouching, setIsTouching] = useState(false);
+
+  const moveSlide = (direction: any) => {
+    const newIndex = (currentSlide + direction + thumbnails.length) % thumbnails.length;
+    setCurrentSlide(newIndex);
+    setSelectedThumbnail(thumbnails[newIndex].imageUrl); // Asegúrate de cambiar también la miniatura seleccionada
+  };
+  
+
+  const handleTouchStart = (e: any) => {
+    setStartX(e.touches[0].clientX);
+    setIsTouching(true);
+  };
+
+  const handleTouchMove = (e: any) => {
+    if (!isTouching) return;
+
+    const touchX = e.touches[0].clientX;
+    const touchDiff = startX - touchX;
+
+    if (touchDiff > 50) {
+      moveSlide(1); // Swipe left
+      setIsTouching(false);
+    } else if (touchDiff < -50) {
+      moveSlide(-1); // Swipe right
+      setIsTouching(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsTouching(false);
+  };
+
+  const renderThumbnails = () => {
+    return (
+      <>
+        {/* Carrusel deslizable solo para pantallas pequeñas */}
+        <div className="md:hidden">
+          <div className="relative max-w-4xl mx-auto overflow-hidden">
+            <button
+              className="absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 z-10"
+              onClick={() => moveSlide(-1)}
+            >
+              &#10094;
+            </button>
+            <div
+              className="slider flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {thumbnails.map((thumbnail, index) => (
+                <div
+                  key={index}
+                  className="slide min-w-full box-border"
+                >
+                  <img
+                    src={thumbnail.imageUrl}
+                    alt={`Slide ${index + 1}`}
+                    className="w-full rounded"
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 z-10"
+              onClick={() => moveSlide(1)}
+            >
+              &#10095;
+            </button>
+            <div className="flex justify-center mt-4 space-x-2">
+              {thumbnails.map((thumbnail, index) => (
+                <img
+                  key={thumbnail.id}
+                  src={thumbnail.imageUrl}
+                  alt="Miniatura"
+                  className={`object-cover cursor-pointer shadow-md ${
+                    selectedThumbnail === thumbnail.imageUrl
+                      ? "border-2 border-blue-500"
+                      : ""
+                  }`}
+                  style={{
+                    width: "50px",
+                    height: "auto",
+                    borderRadius: "var(--radius)",
+                  }}
+                  onClick={() => handleThumbnailClick(index)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Visualización original para pantallas más grandes */}
+        <div className="hidden md:flex md:flex-col gap-4 justify-center items-center md:items-start mt-4 md:mt-0 md:mr-4">
+          {thumbnails.map((thumbnail, index) => (
+            <img
+              key={thumbnail.id}
+              src={thumbnail.imageUrl}
+              alt="Miniatura"
+              className={`object-cover cursor-pointer shadow-md ${
+                selectedThumbnail === thumbnail.imageUrl
+                  ? "border-2 border-blue-500"
+                  : ""
+              }`}
+              style={{
+                width: "80px",
+                height: "80px",
+                borderRadius: "var(--radius)",
+              }}
+              onClick={() => handleThumbnailClick(index)}
+            />
+          ))}
+        </div>
+      </>
+    );
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchVariations();
+    }
+  }, [id]);
+
+  const customOrder = ["XS", "S", "M", "L", "XL", "XXL"];
+
+  const sortAttributes = (attributeName: string, values: string[]) => {
+    // Si el atributo es "TALLA", "TALLAS", "TAMAÑO" o "TAMAÑOS", usa el orden personalizado
+    if (
+      attributeName.toLowerCase() === "talla" ||
+      attributeName.toLowerCase() === "tallas" ||
+      attributeName.toLowerCase() === "tamaño" ||
+      attributeName.toLowerCase() === "tamaños"
+    ) {
+      return values.sort((a, b) => {
+        const indexA = customOrder.indexOf(a);
+        const indexB = customOrder.indexOf(b);
+
+        // Si alguno de los valores no está en el customOrder, colócalo al final
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+
+        return indexA - indexB;
+      });
+    }
+
+    // Para todos los demás atributos, ordena alfabéticamente o numéricamente
+    return values.sort((a, b) => {
+      if (!isNaN(Number(a)) && !isNaN(Number(b))) {
+        return Number(a) - Number(b);
+      }
+      return a.localeCompare(b);
+    });
+  };
+  const [variationsQuantity, setVariationsQuantity] = useState(0);
+  const fetchVariations = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const responseVariations = await response.json();
+      if (responseVariations.code === 0) {
+        const variations = responseVariations.skus;
+
+        setVariationsQuantity(variations.length);
+        console.log(variations.length, "variations");
+        const variationsWithOffers = variations.map((variation: any) => ({
+          ...variation,
+          offers: variation.offers || [],
+        }));
+
+        setVariations(variationsWithOffers);
+
+        const baseSku = variations.find((sku: any) => sku.isBaseSku);
+        if (baseSku) {
+          setMainImageUrl(baseSku.mainImageUrl);
+          setProductName(baseSku.product.name);
+          setEnabledForDelivery(baseSku.product.enabledForDelivery);
+          setEnabledForWithdrawal(baseSku.product.enabledForWithdrawal);
+          setDescription(baseSku.product.description);
+          setReviewAverageScore(baseSku.product.reviewAverageScore);
+          setTotalReviews(baseSku.product.totalReviews);
+
+          if (!selectedVariation) {
+            setDescription(baseSku.product.description);
+          }
+        }
+
+        if (baseSku && baseSku.product && baseSku.product.productTypes) {
+          setCategories(
+            baseSku.product.productTypes.map((type: any) => type.name)
+          );
+        }
+
+        const attributesByVariation: { [key: string]: any[] } = {};
+        const pricesByVariation: { [key: string]: number | null } = {};
+        const offersByVariation: { [key: string]: any | null } = {};
+
+        const fetchTasks = variations.map(async (variation: any) => {
+          const [attributes, price, offer] = await Promise.all([
+            fetchAttributesForVariation(variation.id),
+            fetchPriceForVariation(id as string, variation.id),
+            fetchOffersForVariation(id as string, variation.id),
+          ]);
+
+          if (attributes !== null) {
+            attributesByVariation[variation.id] = attributes;
+          }
+
+          pricesByVariation[variation.id] = price;
+          offersByVariation[variation.id] = offer;
+        });
+
+        await Promise.all(fetchTasks);
+
+        // Aplica el orden a los atributos antes de establecer el estado
+        const sortedAttributes = groupAttributesByLabel(attributesByVariation);
+        Object.keys(sortedAttributes).forEach((key) => {
+          sortedAttributes[key] = sortAttributes(key, sortedAttributes[key]);
+        });
+
+        setCurrentAttributes(sortedAttributes);
+
+        setCurrentPrices(pricesByVariation as { [key: string]: number });
+
+        setVariations(
+          variations.map((variation: any) => ({
+            ...variation,
+            attributes: attributesByVariation[variation.id] || [],
+            offer: offersByVariation[variation.id] || null,
+          }))
+        );
+
+        const prices = Object.values(pricesByVariation).filter(
+          (price) => price !== null
+        ) as number[];
+        if (prices.length > 0) {
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          setMinPrice(minPrice.toString());
+          setMaxPrice(maxPrice.toString());
+        } else {
+          setMinPrice("No disponible");
+          setMaxPrice("No disponible");
+        }
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching variations:", error);
+      setIsLoading(false);
+    }
+  }, [id, selectedVariation]);
+
+  const groupAttributesByLabel = (attributesByVariation: {
+    [key: string]: any[];
+  }) => {
+    const groupedAttributes: { [key: string]: Set<string> } = {};
+
+    Object.values(attributesByVariation).forEach((attributes) => {
+      attributes.forEach((attribute) => {
+        if (!groupedAttributes[attribute.label]) {
+          groupedAttributes[attribute.label] = new Set();
+        }
+        groupedAttributes[attribute.label].add(attribute.value);
+      });
+    });
+
+    const result: { [key: string]: string[] } = {};
+    Object.keys(groupedAttributes).forEach((key) => {
+      result[key] = Array.from(groupedAttributes[key]);
+    });
+
+    return result;
+  };
+
+  useEffect(() => {
+    const matchingVariation = variations.find((variation) => {
+      return Object.keys(selectedAttributes).every((key) => {
+        const attribute = variation.attributes.find(
+          (attr) => attr.label === key
+        );
+        return attribute && attribute.value === selectedAttributes[key];
+      });
+    });
+
+    if (matchingVariation) {
+      setSelectedVariation(matchingVariation);
+      setSelectedVariationPrice(currentPrices[matchingVariation.id] ?? null);
+      setIsBaseSku(matchingVariation.isBaseSku);
+      setMainImageUrl(matchingVariation.mainImageUrl || mainImageUrl);
+      if (matchingVariation.isBaseSku) {
+        setDescription(matchingVariation.product.description);
+      } else {
+        setDescription(matchingVariation.description);
+      }
+    } else {
+      setSelectedVariation(null);
+      setSelectedVariationPrice(null);
+      setMainImageUrl("");
+      setDescription("");
+    }
+    updateDisabledAttributes();
+  }, [
+    selectedAttributes,
+    variations,
+    currentPrices,
+    mainImageUrl,
+    hasVariations,
+  ]);
+
+  const fetchAttributesForVariation = async (variationId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const responseData = await response.json();
+      if (responseData.code === 0) {
+        return responseData.skuAttributes.map((skuAttribute: any) => ({
+          value: skuAttribute.value,
+          label: skuAttribute.attribute.name,
+        }));
+      }
+    } catch (error) {
+      console.error("Error al obtener los atributos de la variación:", error);
+    }
+    return null;
+  };
+
+  const fetchPriceForVariation = async (productId: string, skuId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        const price =
+          data.skuPricings.length > 0 ? data.skuPricings[0].unitPrice : null;
+        return price;
+      }
+    } catch (error) {
+      console.error("Error al obtener el precio de la variación:", error);
+    }
+    return null;
+  };
+  const calculateDiscount = (originalPrice: number, offerPrice: number) => {
+    const discount = ((originalPrice - offerPrice) / originalPrice) * 100;
+    return Math.floor(discount);
+  };
+
+  const discountPercentage =
+    selectedVariation &&
+    selectedVariationPrice !== null &&
+    selectedVariation.offers?.length > 0
+      ? calculateDiscount(
+          selectedVariationPrice,
+          selectedVariation.offers[0].unitPrice
+        )
+      : 0; // O cualquier valor por defecto que prefieras
+
+  const fetchOffersForVariation = async (productId: string, skuId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        const offers = data.sku.offers;
+        if (offers.length > 0) {
+          return offers[0];
+        } else {
+          const productResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+          );
+          const productData = await productResponse.json();
+          if (productData.code === 0 && productData.offers.length > 0) {
+            return productData.offers[0];
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error al obtener las ofertas de la variación:", error);
+    }
+    return null;
+  };
+
+  const handleAttributeChange = (attribute: string, value: string) => {
+    setSelectedAttributes((prevAttributes) => {
+      const newAttributes = { ...prevAttributes };
+  
+      // Si el atributo seleccionado ya está en newAttributes y es igual, lo deseleccionamos.
+      if (newAttributes[attribute] === value) {
+        delete newAttributes[attribute];
+      } else {
+        // Reinicia los atributos relacionados solo si es el primer atributo
+        if (Object.keys(currentAttributes)[0] === attribute) {
+          // Reinicia todos los atributos menos el primero
+          Object.keys(newAttributes).forEach((key, index) => {
+            if (index > 0) {
+              delete newAttributes[key];
+            }
+          });
+        }
+        newAttributes[attribute] = value; // Asigna el nuevo valor al atributo seleccionado
+      }
+  
+      setAttributeSelected(Object.keys(newAttributes).length > 0);
+  
+      return newAttributes;
+    });
+  };
+  
+
+
+  const updateDisabledAttributes = () => {
+    const disabledAttrs: { [key: string]: boolean[] } = {};
+    Object.keys(currentAttributes).forEach((attributeName, index) => {
+      // El primer atributo no debe tener restricciones
+      if (index === 0) {
+        disabledAttrs[attributeName] = currentAttributes[attributeName].map(
+          () => false
+        );
+      } else {
+        disabledAttrs[attributeName] = currentAttributes[attributeName].map(
+          (value) => {
+            return !variations.some((variation) => {
+              const attributesMatch = Object.keys(selectedAttributes).every(
+                (key) => {
+                  if (key === attributeName) {
+                    return true;
+                  }
+                  const attribute = variation.attributes.find(
+                    (attr) => attr.label === key
+                  );
+                  return attribute && attribute.value === selectedAttributes[key];
+                }
+              );
+  
+              const attribute = variation.attributes.find(
+                (attr) => attr.label === attributeName
+              );
+              return attributesMatch && attribute && attribute.value === value;
+            });
+          }
+        );
+      }
+    });
+  
+    setDisabledAttributes(disabledAttrs);
+    setIsAddToCartDisabled(hasVariations && !selectedVariation);
+  };
+  
+
+  const handleAddToCart = () => {
+    if (!areAllAttributesSelected()) {
+      console.error("Debe seleccionar todos los atributos.");
+      toast.error("Debe seleccionar todos los atributos.");
+      return;
+    }
+
+    if (selectedVariation) {
+      addToCartHandler(selectedVariation.id, quantity);
+    } else if (!hasVariations) {
+      addToCartHandler(id, quantity);
+    } else {
+      console.error("No se ha seleccionado una variación válida.");
+    }
+  };
+
+  const areAllAttributesSelected = () => {
+    if (!variations.length) return true; // Si no hay variaciones, no se requiere selección de atributos
+
+    const hasAttributes = variations.some(
+      (variation) => variation.attributes.length > 0
+    );
+
+    if (!hasAttributes) return true; // Si no hay atributos, permite agregar al carrito
+
+    // Verifica si se ha seleccionado al menos un atributo
+    const selectedAttributesKeys = Object.keys(selectedAttributes);
+    if (selectedAttributesKeys.length === 0) {
+      return false; // No se ha seleccionado ningún atributo
+    }
+
+    // Encuentra la variación coincidente basada en los atributos seleccionados
+    const matchingVariation = variations.find((variation) => {
+      return variation.attributes.every((attr) => {
+        return selectedAttributes[attr.label] === attr.value;
+      });
+    });
+
+    // Si se encuentra una variación coincidente, verifica que todos los atributos requeridos para esa variación estén seleccionados
+    if (matchingVariation) {
+      const requiredAttributes = matchingVariation.attributes.map(
+        (attr) => attr.label
+      );
+      return requiredAttributes.every((attr) =>
+        selectedAttributesKeys.includes(attr)
+      );
+    }
+
+    return false; // No se encontró ninguna variación válida con los atributos seleccionados
+  };
+
+  const hasAttributes = () => {
+    return Object.keys(currentAttributes).length > 0;
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-16">
+      <head>
+        <title>{productName}</title>
+        <meta
+          name="description"
+          content={description}
+        />
+        <meta
+          property="og:image"
+          content={mainImageUrl}
+        />
+
+        <meta
+          property="og:title"
+          content={productName}
+        />
+        <meta
+          property="og:description"
+          content={description}
+        />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_BASE_URL}tienda/productos/${id}`}
+        />
+      </head>
+      {isLoading ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 animate-pulse">
+          <div className="flex flex-col md:flex-row -mx-4">
+            <div className="md:flex-1 px-4">
+              <div className="flex items-center justify-center">
+                <div className="flex flex-col justify-center items-center space-y-2 mr-4">
+                  <div className="flex flex-col gap-4 justify-start items-center">
+                    {[1, 2, 3, 4, 5].map((index) => (
+                      <div
+                        key={index}
+                        className="w-20 h-20 bg-gray-200 rounded"
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+                <div className="w-[500px] h-[500px] bg-gray-200 rounded"></div>
+              </div>
+            </div>
+            <div className="md:flex-1 px-4 ml-4 space-y-6">
+              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </div>
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                <div className="flex space-x-2">
+                  {[1, 2, 3].map((index) => (
+                    <div
+                      key={index}
+                      className="h-10 w-10 bg-gray-200 rounded"
+                    ></div>
+                  ))}
+                </div>
+              </div>
+              <div className="h-12 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row -mx-4">
+          <div className="md:flex-1 px-4">
+            <div className=" md:hidden">
+              <h1 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
+                {productName}
+              </h1>
+              <p className="text-gray-500 text-sm flex gap-3">
+                Categoría: {categories.join(", ")}
+                {reviewAverageScore !== null && totalReviews !== null && (
+                  <span className="flex items-center ml-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < reviewAverageScore
+                            ? "text-yellow-500"
+                            : "text-gray-300"
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885 a1 1 0 00.95-.69L9.049.775z" />
+                      </svg>
+                    ))}
+                    <span className="ml-1 text-gray-600">
+                      {reviewAverageScore} ({totalReviews})
+                    </span>
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex md:flex-row flex-col-reverse items-center justify-center">
+              {/* Miniaturas ajustadas para ser colocadas a la izquierda en escritorios y debajo en móviles */}
+              <div className="flex flex-row md:flex-col gap-4 justify-center items-center md:items-start mt-4 md:mt-0 md:mr-4">
+                {renderThumbnails()}
+              </div>
+              {/* Imagen principal ajustada para ser cuadrada y responsive */}
+              <div
+                className="w-full md:w-[500px] md:h-[500px] bg-gray-100 md:flex items-center justify-center shadow-md mb-4 md:mb-0 hidden "
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <img
+                  src={selectedThumbnail || mainImageUrl}
+                  alt="Producto"
+                  className="object-cover max-w-full h-auto md:h-full md:w-full rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="md:flex-1 px-4 ml-4 md:ml-24 lg:ml-4 mt-2 md:mt-8">
+            <div className="hidden md:block">
+              <h1 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
+                {productName}
+              </h1>
+
+              <p className="text-gray-500 text-sm flex gap-3">
+                Categoría: {categories.join(", ")}
+                {reviewAverageScore !== null && totalReviews !== null && (
+                  <span className="flex items-center ml-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i}
+                        className={`w-4 h-4 ${
+                          i < reviewAverageScore
+                            ? "text-yellow-500"
+                            : "text-gray-300"
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885 a1 1 0 00.95-.69L9.049.775z" />
+                      </svg>
+                    ))}
+                    <span className="ml-1 text-gray-600">
+                      {Math.floor(reviewAverageScore * 10) / 10} ({totalReviews}
+                      )
+                    </span>
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-4 my-4">
+              {selectedVariation &&
+              selectedVariation.offers &&
+              selectedVariation.offers.length > 0 ? (
+                <div className="flex items-center">
+                  <div className="rounded-lg bg-background flex py-2 px-3">
+                    <div className="flex flex-col">
+                      {" "}
+                      <span className="font-bold text-primary text-3xl line-through mr-4">
+                        ${selectedVariationPrice?.toLocaleString("es-CL")}
+                      </span>
+                      <span className="font-bold text-red-700 text-3xl mr-2">
+                        $
+                        {selectedVariation.offers[0].unitPrice.toLocaleString(
+                          "es-CL"
+                        )}
+                      </span>
+                    </div>
+                    <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
+                      Dcto. {discountPercentage}%
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg bg-background flex py-2 pr-3">
+                  <span className="font-bold text-primary text-3xl">
+                    {selectedVariationPrice !== null ? (
+                      <span>
+                        ${selectedVariationPrice.toLocaleString("es-CL")}
+                      </span>
+                    ) : variations.length === 2 ? (
+                      // Muestra solo el precio si hay una sola variación
+                      <span>
+                        ${parseFloat(minPrice).toLocaleString("es-CL")}
+                      </span>
+                    ) : (
+                      <span>
+                        {minPrice !== "No disponible" &&
+                        maxPrice !== "No disponible" ? (
+                          parseFloat(minPrice) === parseFloat(maxPrice) ? (
+                            // Muestra solo un precio si el mínimo y el máximo son iguales
+                            <span>
+                              ${parseFloat(minPrice).toLocaleString("es-CL")}
+                            </span>
+                          ) : (
+                            // Muestra el rango de precios si son diferentes
+                            `$${parseFloat(minPrice).toLocaleString(
+                              "es-CL"
+                            )} - $${parseFloat(maxPrice).toLocaleString(
+                              "es-CL"
+                            )}`
+                          )
+                        ) : (
+                          "Precio no disponible"
+                        )}
+                      </span>
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <h3 className="text-lg font-bold text-foreground">
+                Acerca del producto
+              </h3>
+              <h2 className="mt-4 text-gray-700 text-[16px] break-all">
+                {description}
+              </h2>
+
+              <div className="mt-10 flex flex-wrap">
+                <div>
+                  <p>
+                    {enabledForDelivery ? (
+                      <div className="flex">
+                        <span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                            />
+                          </svg>
+                        </span>
+                        <small className="px-2 text-primary self-center">
+                          Disponible para Delivery
+                        </small>
+                      </div>
+                    ) : (
+                      <div className="flex">
+                        <span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                            />
+                          </svg>
+                        </span>
+                        <small className="px-2 text-red-800 self-center">
+                          Delivery No Disponible
+                        </small>
+                      </div>
+                    )}
+                  </p>
+                  <p>
+                    {enabledForWithdrawal ? (
+                      <div className="flex">
+                        <span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"
+                            />
+                          </svg>
+                        </span>
+                        <small className="px-2 text-primary self-center">
+                          Disponible para Retiro
+                        </small>
+                      </div>
+                    ) : (
+                      <div className="flex">
+                        <span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"
+                            />
+                          </svg>
+                        </span>
+                        <small className="px-2 text-red-800 self-center">
+                          Retiro No Disponible
+                        </small>
+                      </div>
+                    )}
+                  </p>
+                </div>
+                <div className="mt-4 lg:mt-0 w-auto">
+                  <img
+                    src="/img/pixelup/wplus.svg"
+                    className="h-10 px-2"
+                    alt="LogoWebpay"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {hasAttributes() && (
+              <div className="mt-4">
+                <div className="flex flex-col space-y-4 mt-2">
+                  {Object.entries(currentAttributes).map(
+                    ([attributeName, attributeValues]) => (
+                      <div key={attributeName}>
+                        <h4>{attributeName}:</h4>
+                        <div className="flex space-x-2">
+                          {attributeValues.map((value, index) => (
+                            <button
+                              key={`${attributeName}-${index}`}
+                              className={`px-3 py-1 rounded border ${
+                                selectedAttributes[attributeName] === value
+                                  ? "bg-primary text-white"
+                                  : "bg-white text-gray-800"
+                              } ${
+                                disabledAttributes[attributeName] &&
+                                disabledAttributes[attributeName][index]
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                !disabledAttributes[attributeName][index] &&
+                                handleAttributeChange(attributeName, value)
+                              }
+                              disabled={
+                                disabledAttributes[attributeName] &&
+                                disabledAttributes[attributeName][index]
+                              }
+                            >
+                              {value}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 py-4  items-center mt-4">
+              {variationsQuantity <= 1 && (stock === 0 || stock === null) ? (
+                <span className="text-red-600 font-bold">
+                  No hay existencias
+                </span>
+              ) : (
+                <>
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="text-center text-[0.5rem] uppercase text-gray-400 tracking-wide font-semibold">
+                      Cantidad
+                    </div>
+                    <div className="relative w-[80px]">
+                      <select
+                        onChange={(e) => setQuantity(parseInt(e.target.value))}
+                        className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
+                      >
+                        {Array.from({ length: 10 }, (_, i) => (
+                          <option
+                            className="text-center"
+                            key={i}
+                          >
+                            {i + 1}
+                          </option>
+                        ))}
+                      </select>
+                      <svg
+                        className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleAddToCart}
+                    className={`h-14 px-6 py-2 text-[0.8rem] md:text-md font-semibold rounded-xl bg-primary text-white hover:bg-secondary hover:text-primary ${
+                      hasVariations &&
+                      (!attributeSelected || !areAllAttributesSelected())
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : ""
+                    }`}
+                    disabled={
+                      hasVariations &&
+                      (!attributeSelected || !areAllAttributesSelected())
+                    }
+                  >
+                    {hasVariations &&
+                    (!attributeSelected || !areAllAttributesSelected())
+                      ? "Selecciona todas las Variaciones"
+                      : "Agregar al Carrito"}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      <Stars
+        reviewAverageScore={reviewAverageScore}
+        totalReviews={totalReviews}
+      />
+    </div>
+  );
+};
+
+export default ProductDetail01;

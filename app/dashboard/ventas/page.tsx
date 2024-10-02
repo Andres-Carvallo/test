@@ -1,9 +1,13 @@
 "use client";
-
+import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import { getCookie } from "cookies-next";
 import axios from "axios";
-import SalesSummary from "@/components/PIXELUP/Dashboard/Ventas/SalesSummary";
+
+const SalesSummary = dynamic(
+  () => import("@/components/PIXELUP/Dashboard/Ventas/SalesSummary"),
+  { ssr: false }
+);
 import MostSoldProducts from "@/components/PIXELUP/Dashboard/Ventas/MostSoldProducts";
 import CompareSales from "@/components/PIXELUP/Dashboard/Ventas/CompareSales";
 import PedidosTotales from "@/components/PIXELUP/Dashboard/Ventas/PedidosTotales";

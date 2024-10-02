@@ -9,6 +9,7 @@ import Ofertas from "@/app/dashboard/ofertas/Ofertas";
 export default function BannerHome() {
   return (
     <section className="gap-4 flex flex-col">
+      <title>Ofertas</title>
       <div
         className=""
         style={{ borderRadius: "var(--radius)" }}

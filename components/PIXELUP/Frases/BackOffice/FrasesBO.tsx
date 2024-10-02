@@ -31,11 +31,11 @@ function FrasesBO() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "e8c37b79-cdcc-4674-bca5-3782d569b3d7";
+      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_ID}`;
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: marqueeData.title,
           contentText: marqueeData.contentText,
@@ -68,7 +68,7 @@ function FrasesBO() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "e8c37b79-cdcc-4674-bca5-3782d569b3d7";
+      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_ID}`; 
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -129,7 +129,7 @@ function FrasesBO() {
               name="title"
               onChange={handleChangeMarquee}
               className=" hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Title"
+              placeholder="Título"
             />
 
             <input
@@ -137,7 +137,7 @@ function FrasesBO() {
               name="contentText"
               onChange={handleChangeMarquee}
               className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Ingrese contenido..."
+              placeholder="Contenido frase número 1..."
             />
             <section>
               <div className=" flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
@@ -156,7 +156,7 @@ function FrasesBO() {
               name="title"
               onChange={handleChangeMarquee}
               className=" w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Title"
+              placeholder="Contenido frase número 2..."
             />
 
             <button

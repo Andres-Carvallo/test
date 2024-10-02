@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import "tailwindcss/tailwind.css";
-
-// Cargar echarts-for-react dinámicamente porque no se puede renderizar en el servidor
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
+import ReactECharts from "echarts-for-react";
 
 interface SalesDataItem {
   id: number;

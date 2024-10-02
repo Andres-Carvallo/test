@@ -152,6 +152,7 @@ const ProductDetail01: React.FC = () => {
     const newIndex =
       (currentSlide + direction + thumbnails.length) % thumbnails.length;
     setCurrentSlide(newIndex);
+    setSelectedThumbnail(thumbnails[newIndex].imageUrl); // Asegúrate de cambiar también la miniatura seleccionada
   };
 
   const handleTouchStart = (e: any) => {
@@ -198,10 +199,7 @@ const ProductDetail01: React.FC = () => {
               onTouchEnd={handleTouchEnd}
             >
               {thumbnails.map((thumbnail, index) => (
-                <div
-                  key={index}
-                  className="slide min-w-full box-border"
-                >
+                <div key={index} className="slide min-w-full box-border">
                   <img
                     src={thumbnail.imageUrl}
                     alt={`Slide ${index + 1}`}
@@ -270,13 +268,15 @@ const ProductDetail01: React.FC = () => {
     }
   }, [id]);
 
-  const customOrder = ["S", "M", "L", "XL", "XXL"];
+  const customOrder = ["XS", "S", "M", "L", "XL", "XXL"];
 
   const sortAttributes = (attributeName: string, values: string[]) => {
-    // Si el atributo es "TALLA" o "TALLAS", usa el orden personalizado
+    // Si el atributo es "TALLA", "TALLAS", "TAMAÑO" o "TAMAÑOS", usa el orden personalizado
     if (
       attributeName.toLowerCase() === "talla" ||
-      attributeName.toLowerCase() === "tallas"
+      attributeName.toLowerCase() === "tallas" ||
+      attributeName.toLowerCase() === "tamaño" ||
+      attributeName.toLowerCase() === "tamaños"
     ) {
       return values.sort((a, b) => {
         const indexA = customOrder.indexOf(a);
@@ -534,49 +534,40 @@ const ProductDetail01: React.FC = () => {
     setSelectedAttributes((prevAttributes) => {
       const newAttributes = { ...prevAttributes };
 
+      // Si el atributo seleccionado ya está en newAttributes y es igual, lo deseleccionamos.
       if (newAttributes[attribute] === value) {
-        // Si el atributo ya está seleccionado, lo deseleccionamos
         delete newAttributes[attribute];
-
-        // Opcional: eliminar los atributos relacionados cuando se deselecciona un atributo principal
-        // Aquí puedes decidir si quieres deseleccionar todos los atributos relacionados
-        const relatedAttributes = variations.find((variation) =>
-          variation.attributes.some((attr) => attr.label === attribute)
-        );
-
-        if (relatedAttributes) {
-          relatedAttributes.attributes.forEach((attr) => {
-            delete newAttributes[attr.label];
-          });
-        }
       } else {
-        // Si el atributo no está seleccionado, lo seleccionamos
-        newAttributes[attribute] = value;
-
-        // Encontrar la variación coincidente para completar los atributos faltantes
-        const matchingVariation = variations.find((variation) => {
-          return variation.attributes.some((attr) => {
-            return newAttributes[attr.label] === attr.value;
-          });
+        // Reinicia solo los atributos relacionados de la misma categoría
+        Object.keys(newAttributes).forEach((key) => {
+          if (key === attribute) {
+            delete newAttributes[key];
+          }
         });
-
-        // Si hay una variación coincidente, completar los atributos faltantes
-        if (matchingVariation) {
-          matchingVariation.attributes.forEach((attr) => {
-            if (!newAttributes[attr.label]) {
-              newAttributes[attr.label] = attr.value;
-            }
-          });
-        }
+        // Asigna el nuevo valor al atributo seleccionado
+        newAttributes[attribute] = value;
       }
 
-      console.log(
-        "Atributos seleccionados después de los cambios:",
-        newAttributes
-      );
+      // Verifica si la nueva combinación es válida
+      const matchingVariation = variations.find((variation) => {
+        return Object.keys(newAttributes).every((key) => {
+          const attribute = variation.attributes.find(
+            (attr) => attr.label === key
+          );
+          return attribute && attribute.value === newAttributes[key];
+        });
+      });
+
+      // Si no se encuentra una variación válida, reinicia los atributos que no se hayan seleccionado
+      if (!matchingVariation) {
+        Object.keys(newAttributes).forEach((key) => {
+          if (key !== attribute) {
+            delete newAttributes[key];
+          }
+        });
+      }
 
       setAttributeSelected(Object.keys(newAttributes).length > 0);
-
       return newAttributes;
     });
   };
@@ -609,16 +600,14 @@ const ProductDetail01: React.FC = () => {
     });
 
     setDisabledAttributes(disabledAttrs);
-    setIsAddToCartDisabled(hasVariations && !selectedVariation);
   };
 
   const handleAddToCart = () => {
     if (!areAllAttributesSelected()) {
-      console.error("Debe seleccionar todos los atributos.");
       toast.error("Debe seleccionar todos los atributos.");
-      return;
+      return; // Evita que el producto se agregue al carrito
     }
-
+  
     if (selectedVariation) {
       addToCartHandler(selectedVariation.id, quantity);
     } else if (!hasVariations) {
@@ -627,41 +616,32 @@ const ProductDetail01: React.FC = () => {
       console.error("No se ha seleccionado una variación válida.");
     }
   };
-
+  
   const areAllAttributesSelected = () => {
     if (!variations.length) return true; // Si no hay variaciones, no se requiere selección de atributos
-
-    const hasAttributes = variations.some(
-      (variation) => variation.attributes.length > 0
-    );
-
-    if (!hasAttributes) return true; // Si no hay atributos, permite agregar al carrito
-
-    // Verifica si se ha seleccionado al menos un atributo
+  
+    // Encuentra todos los atributos requeridos basados en las variaciones
+    const requiredAttributes = Object.keys(currentAttributes);
+    
+    // Verifica si todos los atributos requeridos han sido seleccionados
     const selectedAttributesKeys = Object.keys(selectedAttributes);
-    if (selectedAttributesKeys.length === 0) {
-      return false; // No se ha seleccionado ningún atributo
+    
+    // Compara que el número de atributos seleccionados sea igual al número de atributos requeridos
+    if (selectedAttributesKeys.length !== requiredAttributes.length) {
+      return false;
     }
-
-    // Encuentra la variación coincidente basada en los atributos seleccionados
+    
+    // Verifica si existe una variación que coincida con los atributos seleccionados
     const matchingVariation = variations.find((variation) => {
       return variation.attributes.every((attr) => {
         return selectedAttributes[attr.label] === attr.value;
       });
     });
-
-    // Si se encuentra una variación coincidente, verifica que todos los atributos requeridos para esa variación estén seleccionados
-    if (matchingVariation) {
-      const requiredAttributes = matchingVariation.attributes.map(
-        (attr) => attr.label
-      );
-      return requiredAttributes.every((attr) =>
-        selectedAttributesKeys.includes(attr)
-      );
-    }
-
-    return false; // No se encontró ninguna variación válida con los atributos seleccionados
+    
+    // Retorna si existe una variación válida con los atributos seleccionados
+    return !!matchingVariation;
   };
+  
 
   const hasAttributes = () => {
     return Object.keys(currentAttributes).length > 0;
@@ -671,23 +651,11 @@ const ProductDetail01: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-16">
       <head>
         <title>{productName}</title>
-        <meta
-          name="description"
-          content={description}
-        />
-        <meta
-          property="og:image"
-          content={mainImageUrl}
-        />
+        <meta name="description" content={description} />
+        <meta property="og:image" content={mainImageUrl} />
 
-        <meta
-          property="og:title"
-          content={productName}
-        />
-        <meta
-          property="og:description"
-          content={description}
-        />
+        <meta property="og:title" content={productName} />
+        <meta property="og:description" content={description} />
         <link
           rel="canonical"
           href={`${process.env.NEXT_PUBLIC_BASE_URL}tienda/productos/${id}`}
@@ -1011,21 +979,14 @@ const ProductDetail01: React.FC = () => {
                               key={`${attributeName}-${index}`}
                               className={`px-3 py-1 rounded border ${
                                 selectedAttributes[attributeName] === value
-                                  ? "bg-primary text-white"
-                                  : "bg-white text-gray-800"
-                              } ${
-                                disabledAttributes[attributeName] &&
-                                disabledAttributes[attributeName][index]
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
+                                  ? "bg-primary text-white" // Cuando está seleccionado
+                                  : disabledAttributes[attributeName] &&
+                                    disabledAttributes[attributeName][index]
+                                  ? "bg-gray-200 text-gray-500 " // Cuando está deshabilitado (no disponible)
+                                  : "bg-white text-gray-800" // Estado normal
                               }`}
                               onClick={() =>
-                                !disabledAttributes[attributeName][index] &&
                                 handleAttributeChange(attributeName, value)
-                              }
-                              disabled={
-                                disabledAttributes[attributeName] &&
-                                disabledAttributes[attributeName][index]
                               }
                             >
                               {value}
@@ -1056,10 +1017,7 @@ const ProductDetail01: React.FC = () => {
                         className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
                       >
                         {Array.from({ length: 10 }, (_, i) => (
-                          <option
-                            className="text-center"
-                            key={i}
-                          >
+                          <option className="text-center" key={i}>
                             {i + 1}
                           </option>
                         ))}
@@ -1081,23 +1039,21 @@ const ProductDetail01: React.FC = () => {
                     </div>
                   </div>
                   <button
-                    onClick={handleAddToCart}
-                    className={`h-14 px-6 py-2 text-[0.8rem] md:text-md font-semibold rounded-xl bg-primary text-white hover:bg-secondary hover:text-primary ${
-                      hasVariations &&
-                      (!attributeSelected || !areAllAttributesSelected())
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : ""
-                    }`}
-                    disabled={
-                      hasVariations &&
-                      (!attributeSelected || !areAllAttributesSelected())
-                    }
-                  >
-                    {hasVariations &&
-                    (!attributeSelected || !areAllAttributesSelected())
-                      ? "Selecciona todas las Variaciones"
-                      : "Agregar al Carrito"}
-                  </button>
+  onClick={handleAddToCart}
+  className={`h-14 px-6 py-2 text-[0.8rem] md:text-md font-semibold rounded-xl bg-primary text-white hover:bg-secondary hover:text-primary ${
+    hasVariations && (!attributeSelected || !areAllAttributesSelected())
+      ? "bg-gray-400 cursor-not-allowed"
+      : ""
+  }`}
+  disabled={
+    hasVariations && (!attributeSelected || !areAllAttributesSelected())
+  }
+>
+  {hasVariations && (!attributeSelected || !areAllAttributesSelected())
+    ? "Selecciona todas las Variaciones"
+    : "Agregar al Carrito"}
+</button>
+
                 </>
               )}
             </div>

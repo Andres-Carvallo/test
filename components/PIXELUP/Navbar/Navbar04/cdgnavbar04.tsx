@@ -15,6 +15,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { theme, setTheme } = useTheme();
+  const Logo=process.env.NEXT_PUBLIC_LOGO_COLOR;
   const AdminToken = getCookie("AdminTokenAuth");
   const ClientToken = getCookie("ClientTokenAuth");
   const [loading, setLoading] = useState(true);
@@ -23,10 +24,6 @@ export default function Navbar() {
   const [pathname, setPathname] = useState("");
 
   const excludedIds = `${process.env.NEXT_PUBLIC_BANNER_NAVBAR}`;
-  /*   [
-    "1c0c6de9-65c9-4472-8eaa-7fc879abbd7d",
-    "c89d287c-f23f-4a88-8778-cc02160469c0",
-  ]; */
   const filteredCollections = collections
     .filter((collection) => !excludedIds.includes(collection.id))
     .sort((a, b) => a.title.localeCompare(b.title));
@@ -73,8 +70,8 @@ export default function Navbar() {
               <Link href="/">
                 <img
                   className="w-24"
-                  src="/img/Logo/tavola.jpeg"
-                  alt="Logo"
+                  src={Logo}
+                  alt="FBM Joyas"
                 />
               </Link>
             </div>
@@ -151,13 +148,13 @@ export default function Navbar() {
               <li
                 className={
                   pathname ===
-                  "http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                  "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                     ? "text-primary"
                     : ""
                 }
               >
                 <Link
-                  href="http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                  href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                   className="hover:text-primary text-base font-medium uppercase"
                 >
                   PROMOCIONES
@@ -301,8 +298,8 @@ export default function Navbar() {
             >
               <img
                 className="w-48"
-                src="/img/Logo/tavola.jpeg"
-                alt="Logo"
+                src={Logo}
+                alt="FBM Joyas"
               />
             </Link>
           </div>
@@ -317,6 +314,14 @@ export default function Navbar() {
                 INICIO
               </Link>
             </li>
+            <li className={pathname === "/tienda" ? "text-primary" : ""}>
+                <Link
+                  href="/tienda"
+                  className="hover:text-primary text-base font-medium"
+                >
+                  TIENDA
+                </Link>
+              </li>
             <li className={`${pathname === "/" ? "text-primary" : ""}`}>
               <button
                 className="relative items-center justify-center hover:text-primary text-base font-medium"
@@ -335,29 +340,30 @@ export default function Navbar() {
                         viewBox="0 0 24 24"
                         strokeWidth="1.5"
                         stroke="currentColor"
-                        className="size-4 "
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                        />
-                      </svg>
-                    </div>
-                  ) : (
-                    <div>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
                         className="size-4"
                       >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                        />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div>
+
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="size-4 "
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
                         />
                       </svg>
                     </div>
@@ -393,13 +399,13 @@ export default function Navbar() {
             <li
               className={
                 pathname ===
-                "http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                   ? "text-primary"
                   : ""
               }
             >
               <Link
-                href="http://localhost:3000/tienda/colecciones/1c0c6de9-65c9-4472-8eaa-7fc879abbd7d"
+                href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
                 className="hover:text-primary text-base font-medium uppercase"
               >
                 PROMOCIONES

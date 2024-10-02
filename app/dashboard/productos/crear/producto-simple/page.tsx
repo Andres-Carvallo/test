@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import CrearProductoSimple from "./CrearProductoSimple";
 
 export const metadata: Metadata = {
-  title: "Crear Producto Simple | PixelUP",
-  description: "Dashboard Pixelup",
+  title: "Crear Producto Simple",
+  description: "Crear Producto Simple",
 };
 const CrearProductoSimplePage = () => {
   return (

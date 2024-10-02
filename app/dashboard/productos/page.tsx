@@ -263,6 +263,7 @@ export default function ProductPageBO() {
 
   return (
     <section className="w-full py-10 mx-auto h-[85vh]">
+      <title>Lista de Productos</title>
       <div className="dark:bg-gray-900 p-3 sm:p-5 relative">
         <div className="mx-auto w-full px-2">
           <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">

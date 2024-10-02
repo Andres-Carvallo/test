@@ -3,14 +3,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Marquee from "react-fast-marquee";
 
-function Frase01() {
+const Frase01: React.FC<any> = ({ id }) => {
   const [loading, setLoading] = useState(false);
   const [bannerData, setBannerData] = useState<any | null>(null);
 
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "e8c37b79-cdcc-4674-bca5-3782d569b3d7";
+      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_ID}`; 
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

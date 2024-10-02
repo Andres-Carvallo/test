@@ -45,6 +45,7 @@ const CategoriasPage: React.FC = () => {
   }, []);
   return (
     <div className="py-10 mx-10">
+      <title>Categorías</title>
       <Breadcrumb pageName="Categorías" />
       <div className="">
         <div className="flex  min-w-96  my-4 p-4 rounded-xl gap-6">

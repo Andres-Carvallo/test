@@ -17,7 +17,7 @@ function BannerSinFotoBO() {
   const fetchWelcomeBanner = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "0a109d60-29c9-428f-b03c-60316cebd34d";
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNERSINFOTO_ID}`;
 
       const Token = getCookie("AdminTokenAuth");
       const productTypeResponse = await axios.get(

@@ -60,7 +60,9 @@ interface Order {
     unitPrice: number;
     quantity: number;
     sku: {
+      id: any;
       product: {
+        mainImageUrl: string;
         name: string;
         description?: string;
       };
@@ -76,6 +78,40 @@ export default function DetalleOrdenes() {
   const [pedido, setPedido] = useState<Order | null>(null);
   const Token = String(getCookie("AdminTokenAuth"));
   const imagePath = process.env.NEXT_PUBLIC_LOGO_COLOR;
+  const [attributesMap, setAttributesMap] = useState<any>({});
+
+  const fetchAttributesForItems = async (items: any) => {
+    const attributesData: { [key: string]: any } = {};
+    for (const item of items) {
+      console.log(
+        `Obteniendo atributos para Producto ID: ${item.sku.product.id} y SKU ID: ${item.sku.id}`
+      );
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${item.sku.product.id}/skus/${item.sku.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        console.log(
+          `Respuesta completa para SKU ${item.sku.id}:`,
+          response.data
+        ); // Verifica toda la respuesta de la API
+
+        // Mapeamos los atributos dentro de skuAttributes
+        attributesData[item.sku.id] = response.data.skuAttributes.map(
+          (attr: any) => ({
+            name: attr.attribute.name,
+            value: attr.value,
+          })
+        );
+      } catch (error) {
+        console.error(
+          `Error al obtener atributos para el SKU ${item.sku.id}:`,
+          error
+        );
+      }
+    }
+    setAttributesMap(attributesData);
+    console.log("Mapa de atributos actualizado:", attributesData); // Verifica que el estado se esté actualizando
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,16 +119,17 @@ export default function DetalleOrdenes() {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
         );
-        const data = response.data; 
+        const data = response.data;
         setPedido(data.order);
-        console.log(data.order, "order");
+        // Llama a fetchAttributesForItems después de obtener los items de la orden
+        fetchAttributesForItems(data.order.items);
       } catch (error) {
         console.error("Error al obtener el pedido:", error);
       }
     };
+
     fetchData();
-  }, [id, Token]);
-  
+  }, [id]);
 
   const handleDownloadPdf = async () => {
     if (printRef.current) {
@@ -137,117 +174,173 @@ export default function DetalleOrdenes() {
       });
   };
 
+  const translateOrderStatus = (status: string) => {
+    switch (status) {
+      case "PAYMENT_COMPLETED":
+        return "Pagado";
+      case "CREATED":
+        return "Creado";
+      case "PAYMENT_PENDING":
+        return "Pendiente de pago";
+      default:
+        return status; // Devuelve el estado original si no coincide
+    }
+  };
+
   if (!pedido) {
     return <Loader />;
   }
 
   return (
-    <section className="p-10">
-      <Breadcrumb pageName="Mis Pedidos" />
-      <div className="flex justify-between w-full b ">
-        <Link
-          href="/dashboard/pedidos"
-          className="px-4 py-2 bg-primary text-white rounded-md mt-4"
-        >
-          Volver
-        </Link>
-        <button
-          onClick={handleDownloadPdf}
-          className="px-4 py-2 bg-primary text-white rounded-md mt-4"
-        >
-          Descargar PDF
-        </button>
-      </div>
-      <div className="flex items-center w-full justify-center ">
-        <div
-          className="mb-6 p-6 max-w-[900px] bg-white rounded mt-6"
-          ref={printRef}
-        >
-          <div className="text-center mt-6 mb-6">
-            <img
-              src={imagePath}
-              alt="Logo Tavola"
-              className="mx-auto max-h-40"
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="border p-3 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Pedido</h3>
-              <p>N°: {pedido.correlative}</p>
-              <p>Fecha: {new Date(pedido.creationDate).toLocaleDateString()}</p>
-              <p>Estado: {pedido.statusCode}</p>
-              {(pedido.statusCode === "CREATED" ||
-                pedido.statusCode === "PAYMENT_PENDING") && (
-                <button
-                  onClick={() => handleCopyLink(pedido.id)}
-                  className="text-blue-500 underline mt-2"
-                >
-                  Copiar enlace de pago
-                </button>
-              )}
+    <>
+      <title>Detalles de pedido</title>
+      <section className="p-10">
+        <Breadcrumb pageName="Mis Pedidos" />
+        <div className="flex justify-between w-full b ">
+          <Link
+            href="/dashboard/pedidos"
+            className="px-4 py-2 bg-primary text-white rounded-md mt-4"
+          >
+            Volver
+          </Link>
+          <button
+            onClick={handleDownloadPdf}
+            className="px-4 py-2 bg-primary text-white rounded-md mt-4"
+          >
+            Descargar PDF
+          </button>
+        </div>
+        <div className="flex items-center w-full justify-center ">
+          <div
+            className="mb-6 p-6 max-w-[900px] bg-white rounded mt-6"
+            ref={printRef}
+          >
+            <div className="text-center mt-6 mb-6">
+              <img
+                src={imagePath}
+                alt="Logo Tavola"
+                className="mx-auto max-h-40"
+              />
             </div>
-            <div className="border p-3 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Cliente</h3>
-              <p>
-                Nombre: {pedido.customer.firstname} {pedido.customer.lastname}
-              </p>
-              <p>Email: {pedido.customer.email}</p>
-              <p>Teléfono: {pedido.customer.phoneNumber}</p>
-            </div>
-            <div className="border p-3 rounded-lg">
-  <h3 className="text-lg font-semibold mb-2">Dirección</h3>
-  <p>{pedido.shippingInfo?.addressLine1 || "Dirección no disponible"}</p>
-  <p>{pedido.shippingInfo?.addressLine2 || ""}</p>
-  <p>{pedido.shippingInfo?.commune?.name || "Comuna no disponible"}</p>
-  <p>{pedido.shippingInfo?.commune?.region?.name || "Región no disponible"}</p>
-</div>
-
-          </div>
-          <div className="rounded-lg mb-6">
-            <h3 className="text-lg font-semibold mb-4">Productos</h3>
-            {pedido.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center my-2 border p-4 rounded-lg"
-              >
-                {item.sku.previewImageUrl && (
-                  <img
-                    src={item.sku.mainImageUrl}
-                    alt={item.sku.product.name}
-                    className="w-16 h-16 object-cover rounded-lg mr-4"
-                  />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="border p-3 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Pedido</h3>
+                <p>N°: {pedido.correlative}</p>
+                <p>
+                  Fecha: {new Date(pedido.creationDate).toLocaleDateString()}
+                </p>
+                <p>Estado: {translateOrderStatus(pedido.statusCode)}</p>
+                {(pedido.statusCode === "CREATED" ||
+                  pedido.statusCode === "PAYMENT_PENDING") && (
+                  <button
+                    onClick={() => handleCopyLink(pedido.id)}
+                    className="text-blue-500 underline mt-2"
+                  >
+                    Copiar enlace de pago
+                  </button>
                 )}
-                <div className="flex-1">
-                  <p className="font-semibold">{item.sku.product.name}</p>
-                  <p className="text-gray-500">Cantidad: {item.quantity}</p>
-                </div>
-                <p className="font-semibold">
-                  ${item.unitPrice.toLocaleString("es-CL")}
+              </div>
+              <div className="border p-3 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Cliente</h3>
+                <p>
+                  Nombre: {pedido.customer.firstname} {pedido.customer.lastname}
+                </p>
+                <p className="text-wrap">Email: {pedido.customer.email}</p>
+                <p>Teléfono: {pedido.customer.phoneNumber}</p>
+              </div>
+            </div>
+            <div className="mb-4">
+              <div className="border p-3 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Dirección</h3>
+                <p>
+                  {pedido.shippingInfo?.addressLine1 ||
+                    "Dirección no disponible"}
+                </p>
+                <p>{pedido.shippingInfo?.addressLine2 || ""}</p>
+                <p>
+                  {pedido.shippingInfo?.commune?.name || "Comuna no disponible"}
+                </p>
+                <p>
+                  {pedido.shippingInfo?.commune?.region?.name ||
+                    "Región no disponible"}
                 </p>
               </div>
-            ))}
-          </div>
-          <div className="border p-4 rounded-lg ">
-            <div className="flex justify-between mb-2">
-              <p>Subtotal</p>
-              <p>${pedido.totals.itemsAmount.toLocaleString("es-CL")}</p>
             </div>
-            <div className="flex justify-between mb-2">
-              <p>Costo Despacho</p>
-              <p>${pedido.totals.shippingAmount.toLocaleString("es-CL")}</p>
+            <div className="rounded-lg mb-6">
+              <h3 className="text-lg font-semibold mb-4">Productos</h3>
+              {pedido.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col rounded-lg sm:flex-row sm:items-center my-4 border border-gray-300 pb-4 p-4"
+                >
+                  {/* Imagen del producto */}
+                  <div className="sm:w-24 w-full mb-4 sm:mb-0 sm:mr-4 flex justify-center">
+                    <img
+                      src={item.sku.mainImageUrl}
+                      alt={item.sku.product.name}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                  </div>
+
+                  {/* Información del producto */}
+                  <div className="flex-1">
+                    <p className="font-semibold text-lg">
+                      {item.sku.product.name}
+                    </p>
+
+                    {/* Mostrar atributos si existen */}
+                    {attributesMap[item.sku.id]?.length > 0 && (
+                      <ul className="text-gray-500 space-y-1">
+                        {attributesMap[item.sku.id].map((attribute: any) => (
+                          <li
+                            key={attribute.name}
+                            className="text-sm"
+                          >
+                            {attribute.name}:{" "}
+                            <span className="font-semibold text-gray-700">
+                              {attribute.value}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  {/* Precio del producto */}
+                  <div className="mt-4 sm:mt-0 sm:ml-4 text-right">
+                    <p className="text-gray-500 mb-2">
+                      Cantidad: {item.quantity}
+                    </p>
+                    <p className="font-semibold text-lg">
+                      ${item.unitPrice.toLocaleString("es-CL")}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="flex justify-between mb-2">
-              <p>Descuento</p>
-              <p>${pedido.totals.discountAmount.toLocaleString("es-CL")}</p>
-            </div>
-            <hr className="my-2" />
-            <div className="flex justify-between font-bold">
-              <p>Total</p>
-              <p>${pedido.totals.totalAmount.toLocaleString("es-CL")}</p>
+
+            <div className="border p-4 rounded-lg ">
+              <div className="flex justify-between mb-2">
+                <p>Subtotal</p>
+                <p>${pedido.totals.itemsAmount.toLocaleString("es-CL")}</p>
+              </div>
+              <div className="flex justify-between mb-2">
+                <p>Costo Despacho</p>
+                <p>${pedido.totals.shippingAmount.toLocaleString("es-CL")}</p>
+              </div>
+              <div className="flex justify-between mb-2">
+                <p>Descuento</p>
+                <p>${pedido.totals.discountAmount.toLocaleString("es-CL")}</p>
+              </div>
+              <hr className="my-2" />
+              <div className="flex justify-between font-bold">
+                <p>Total</p>
+                <p>${pedido.totals.totalAmount.toLocaleString("es-CL")}</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

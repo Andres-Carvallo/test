@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import CrearVariable from "./CrearVariable";
 
 export const metadata: Metadata = {
-  title: "Crear Producto Varibale | PixelUP",
-  description: "Dashboard Pixelup",
+  title: "Crear Producto Varibale",
+  description: "Crear Producto Varibale",
 };
 const CrearProductoVariablePage = () => {
   return (
