@@ -8,10 +8,7 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import Loader from "../common/Loader";
 import ProductCard from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import ProductCard02 from "../PIXELUP/ProductCards/ProductCards02/ProductCard02";
-<<<<<<< HEAD
 import ProductCard01 from "../PIXELUP/ProductCards/ProductCards01/ProductCard01";
-=======
->>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
 import Destacados01 from "../PIXELUP/Destacados/Destacado01";
 
 const Collection = () => {
@@ -200,8 +197,8 @@ const Collection = () => {
             })}
           </div>
         </div>
-        
-        <Destacados01 text="Te recomendamos"/>
+
+        <Destacados01 text="Te recomendamos" />
       </div>
     </>
   );
