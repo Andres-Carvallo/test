@@ -351,7 +351,11 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
             <div className="w-full flex justify-center xl:justify-start space-x-6 mt-4">
               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
+<<<<<<< HEAD
                 href="https://www.instagram.com/latavoladelchef"
+=======
+                href="#"
+>>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -382,7 +386,11 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   />
                 </svg>
               </a>
+<<<<<<< HEAD
 {/*               <a
+=======
+              <a
+>>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
                 href="#"
               >
@@ -398,7 +406,11 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                     clipRule="evenodd"
                   />
                 </svg>
+<<<<<<< HEAD
               </a> */}
+=======
+              </a>
+>>>>>>> ee377f935bfe87cc8264e02ead28b9c798e9dd2d
             </div>
           </div>
         </div>
