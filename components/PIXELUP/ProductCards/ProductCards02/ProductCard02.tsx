@@ -21,6 +21,12 @@ const ProductCard02: React.FC<ProductCardProps> = ({
       max: -Infinity,
     };
 
+    // Si el producto no tiene variaciones y tiene ofertas, mostrar solo el precio de la oferta
+    if (!product.hasVariations && product.offers && product.offers.length > 0) {
+      const offerPrice = product.offers[0].amount;
+      return <span>${offerPrice.toLocaleString("es-CL")}</span>;
+    }
+
     // Verificar si tiene variaciones y rangos de precios
     if (product.hasVariations && product.pricingRanges) {
       priceRange.min = Math.min(
@@ -36,7 +42,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
       priceRange.max = Math.max(priceRange.max, product.pricings[0].amount);
     }
 
-    // Incluir precio de oferta si existe
+    // Si existe una oferta, se debe tomar como prioridad el precio de oferta
     if (product.offers && product.offers.length > 0) {
       product.offers.forEach((offer: any) => {
         priceRange.min = Math.min(priceRange.min, offer.amount);
@@ -44,14 +50,18 @@ const ProductCard02: React.FC<ProductCardProps> = ({
       });
     }
 
+    // Asegurarse de que el precio mínimo siempre sea menor al máximo
+    const finalMin = Math.min(priceRange.min, priceRange.max);
+    const finalMax = Math.max(priceRange.min, priceRange.max);
+
     // Mostrar el rango o un solo precio si son iguales
-    if (priceRange.min === priceRange.max) {
-      return <span>${priceRange.min.toLocaleString("es-CL")}</span>;
+    if (finalMin === finalMax) {
+      return <span>${finalMin.toLocaleString("es-CL")}</span>;
     } else {
       return (
         <span>
-          ${priceRange.min.toLocaleString("es-CL")} - $
-          {priceRange.max.toLocaleString("es-CL")}
+          ${finalMin.toLocaleString("es-CL")} - $
+          {finalMax.toLocaleString("es-CL")}
         </span>
       );
     }
@@ -66,9 +76,9 @@ const ProductCard02: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="w-full bg-white shadow-md duration-500 lg:hover:scale-105 md:hover:shadow-xl rounded-xl relative">
+    <div className="w-full   bg-white shadow-md duration-500 lg:hover:scale-105 md:hover:shadow-xl rounded-xl relative">
       {isOnSale && (
-        <span className="absolute top-2 right-2 bg-dark text-white text-[14px] rounded py-1 px-2">
+        <span className="absolute top-2 right-2 bg-red-700 text-white text-[14px] rounded py-1 px-2">
           En Oferta
         </span>
       )}

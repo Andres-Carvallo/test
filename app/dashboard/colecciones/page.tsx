@@ -5,10 +5,12 @@ import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTienda
 import BannersCategoriasBO from "@/components/conMantenedor/Mantenedores/BannersCategoriasBO";
 import Hero01BO from "@/components/PIXELUP/Hero/Hero01/BackOffice/Hero01BO";
 import ColeccionesBO from "../../../components/conMantenedor/Mantenedores/coleccionesBO";
+import type { Metadata } from "next";
 
 export default function BannerHome() {
   return (
     <section className="gap-4 flex flex-col">
+      <title>Colecciones</title>
       <div
         className="py-10 mx-10 "
         style={{ borderRadius: "var(--radius)" }}

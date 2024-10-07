@@ -2,6 +2,7 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import BodegasStarken from "./BodegasStarken";
 
 interface Option {
   id: string;
@@ -21,7 +22,7 @@ const OptionsComponent = () => {
   const [error, setError] = useState<string | null>(null);
   const [editingOption, setEditingOption] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
-    description: "",
+    description: "pixelup",
     value: "",
   });
 
@@ -110,9 +111,11 @@ const OptionsComponent = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Opciones</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="max-w-6xl mx-auto p-4 py-20">
+      <h1 className="text-3xl font-bold text-center mb-20 uppercase">
+        Opciones de Cuenta
+      </h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         {options.map((option) => (
           <div
             key={option.id}
@@ -120,20 +123,9 @@ const OptionsComponent = () => {
           >
             {editingOption === option.id ? (
               <div className="space-y-4">
+                <p className="text-md text-dark">{option.code}</p>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Descripción
-                  </label>
-                  <input
-                    type="text"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-md uppercase font-medium text-gray-700">
                     Valor
                   </label>
                   <input
@@ -141,7 +133,7 @@ const OptionsComponent = () => {
                     name="value"
                     value={formData.value}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className=" block w-full rounded bg-gray-100 border-dark shadow-sm py-4 px-3 mt-4  sm:text-sm"
                   />
                 </div>
                 <div className="flex justify-end space-x-2">
@@ -161,22 +153,10 @@ const OptionsComponent = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">ID:</span>{" "}
-                  {option.id}
-                </p>
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">Código:</span>{" "}
-                  {option.code}
-                </p>
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">
-                    Descripción:
-                  </span>{" "}
-                  {option.description}
-                </p>
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">Valor:</span>{" "}
+                <p className="text-md text-dark">{option.code}</p>
+
+                <p className="text-sm text-gray-700">
+                  <span className="font-medium text-gray-500">Valor:</span>{" "}
                   {option.value}
                 </p>
                 <button
@@ -190,6 +170,7 @@ const OptionsComponent = () => {
           </div>
         ))}
       </div>
+      <BodegasStarken token={token as string} />
     </div>
   );
 };

@@ -231,9 +231,9 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 1600,
+        maxWidthOrHeight: 2000,
         useWebWorker: true,
-        initialQuality: 0.8,
+        initialQuality: 1,
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -448,7 +448,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
                     <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG o Webp (800x800px)
+                    PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>

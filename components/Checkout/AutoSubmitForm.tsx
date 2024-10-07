@@ -23,6 +23,9 @@ const AutoSubmitForm: React.FC<AutoSubmitFormProps> = ({
     tokenInput.value = token;
     form.appendChild(tokenInput);
 
+    console.log("Enviando token_ws:", token);
+    alert(token);
+
     document.body.appendChild(form);
     form.submit();
 

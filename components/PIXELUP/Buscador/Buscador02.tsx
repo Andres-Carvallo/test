@@ -106,7 +106,7 @@ const Buscador = () => {
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50">
           <div
-            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg"
+            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg mx-4 md:mx-0"
             ref={modalRef}
           >
             <div className="flex justify-between items-center mb-4">

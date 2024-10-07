@@ -49,11 +49,11 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "24eed87b-2b78-4922-836a-9d860f878350";
-      const bannerImageId = "62ef3e11-da1d-47ef-8332-f00aa953d181";
-
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO02_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO02_IMGID}`;
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${siteId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -113,10 +113,11 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       }
 
       // Send updated data to the server
-      const bannerId = "24eed87b-2b78-4922-836a-9d860f878350";
-      const bannerImageId = "62ef3e11-da1d-47ef-8332-f00aa953d181";
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO02_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO02_IMGID}`;
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${siteId}`,
         updatedDataWithoutImage,
         {
           headers: {
@@ -213,18 +214,18 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     >
       <div>
         {bannerData && (
-          <div className="px-6 lg:px-0 mt-24 flex justify-center">
-            <div
-              className="relative w-full max-w-6xl h-[500px] bg-cover bg-center"
-              style={{ borderRadius: "var(--radius)" }}
-            >
+          <div className="px-0 md:px-6 lg:px-0 mt-0 md:mt-18 flex justify-center">
+    <div
+      className="relative w-full h-[800px] md:h-[600px] bg-cover bg-center"
+      style={{ borderRadius: "var(--radius)" }}
+    >
               <img
                 src={bannerData.mainImage.url}
                 alt="FBM Joyas"
                 className="absolute inset-0 w-full h-full object-cover rounded-lg"
-              />
-              <div className="absolute top-1/2 left-[24%] transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-8 rounded-lg shadow-lg max-w-lg text-gray-800">
-                <h2 className="text-2xl font-bold mb-4">{bannerData.title}</h2>
+                />
+      <div className="absolute top-1/2 left-1/2 lg:left-[24%] transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-4 md:p-8 rounded-lg shadow-lg max-w-lg text-gray-800 w-[90%] md:w-full">
+      <h2 className="text-2xl font-bold mb-4">{bannerData.title}</h2>
                 <div
                   className="mb-4 editortexto"
                   dangerouslySetInnerHTML={{ __html: bannerData.landingText }}
@@ -232,7 +233,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
                 {/*                     <p className="mb-4">{bannerData.buttonLink}</p>
                  */}{" "}
                 <a
-                  href={bannerData.buttonLink}
+                  
                   className="text-blue-500 hover:underline text-right"
                 >
                   {bannerData.buttonText}
@@ -242,6 +243,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           </div>
         )}
       </div>
+
 
       <form
         onSubmit={handleSubmit}
@@ -256,7 +258,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
         />
         <div className="grid gap-4"></div>
         <h3 className="font-normal text-primary">
-          Titulo <span className="text-primary">*</span>
+          Título <span className="text-primary">*</span>
         </h3>
         <input
           type="text"
@@ -265,7 +267,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
-          placeholder="Title"
+          placeholder="Título"
         />
         <input
           type="text"
@@ -282,7 +284,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           onChange={handleEditorChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
-          placeholder="Landing Text"
+          placeholder="Contenido"
           onKeyDown={handleKeyDown}
         />
         <div className="text-right text-sm text-gray-600">
@@ -334,7 +336,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
             onChange={handleChange}
             className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
             style={{ borderRadius: "var(--radius)" }}
-            placeholder="Segundo Párrafo"
+            placeholder="Link Botón"
           />
         </div>
         <div>

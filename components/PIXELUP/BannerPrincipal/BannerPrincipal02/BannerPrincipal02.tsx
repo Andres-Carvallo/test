@@ -17,7 +17,7 @@ interface BannerData {
   images: BannerImage[];
 }
 
-const BannerPrincipal01: React.FC = () => {
+const BannerPrincipal02: React.FC = () => {
   const [bannerData, setBannerData] = useState<BannerData | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -25,13 +25,13 @@ const BannerPrincipal01: React.FC = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
-      const bannerId = "a9253899-5470-4cff-8ab9-fec7992a78e9";
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL02_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      console.log(response.data.banner, "banner xxxx");
       setBannerData(response.data.banner);
+      console.log(response.data.banner, "LKJDSLFJSLDK")
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
     } finally {
@@ -67,7 +67,14 @@ const BannerPrincipal01: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="w-full text-center p-6">Loading...</div>;
+    return <div role="status" className="w-full animate-pulse  rtl:space-x-reverse md:flex md:items-center">
+        <div className="flex items-center justify-center w-full h-96 bg-gray-300 rounded dark:bg-gray-700">
+            <svg className="w-10 h-10 text-gray-200 dark:text-gray-600" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+                <path d="M18 0H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm4.376 10.481A1 1 0 0 1 16 15H4a1 1 0 0 1-.895-1.447l3.5-7A1 1 0 0 1 7.468 6a.965.965 0 0 1 .9.5l2.775 4.757 1.546-1.887a1 1 0 0 1 1.618.1l2.541 4a1 1 0 0 1 .028 1.011Z"/>
+            </svg>
+        </div>
+        <span className="sr-only">Loading...</span>
+    </div>;
   }
 
   if (!bannerData) {
@@ -79,18 +86,25 @@ const BannerPrincipal01: React.FC = () => {
   const currentImage = bannerData.images[currentIndex];
   const multipleImages = bannerData.images.length > 1;
 
+  const addHttp = (url: string) => {
+    if (!/^https?:\/\//i.test(url)) {
+      return `http://${url}`;
+    }
+    return url;
+  };
+
   return (
     <section
       id="banner"
       className="w-full"
     >
-      <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:z-10">
-{/*         <div className="absolute inset-0 w-full h-full overflow-hidden">
+      <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
+      {/*         <div className="absolute inset-0 w-full h-full overflow-hidden">
 
         </div> */}
-        <div className="w-full min-h-[400px] relative z-10  mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-        {bannerData.images.map((image, index) => (
-          <Link href={image.buttonLink} key={index} className="absolute inset-0 w-full h-full">
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+        {bannerData.images.map((image, index) => (            
+          <Link href={addHttp(image.buttonLink)} key={index} className="absolute inset-0 w-full h-full z-50">
             <img
               /* key={index} */
               src={image.mainImage.url}
@@ -101,6 +115,21 @@ const BannerPrincipal01: React.FC = () => {
             />
             </Link>
           ))}
+          
+        </div>
+        <div className="min-h-[400px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+{/*           <h2 className="text-4xl font-bold mb-2 uppercase">
+            {currentImage.title}
+          </h2>
+          <p className="text-md text-center text-gray-200">
+            {currentImage.landingText}
+          </p> */}
+{/*           <a
+            href={currentImage.buttonLink}
+            className="mt-8 bg-dark bg-primary text-secondary hover:text-primary text-base font-semibold py-2.5 px-6 rounded hover:bg-secondary"
+          >
+            {currentImage.buttonText}
+          </a> */}
         </div>
         {multipleImages && (
           <>
@@ -128,9 +157,10 @@ const BannerPrincipal01: React.FC = () => {
             </div>
           </>
         )}
+
       </div>
     </section>
   );
 };
 
-export default BannerPrincipal01;
+export default BannerPrincipal02;

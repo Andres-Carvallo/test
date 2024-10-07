@@ -7,6 +7,8 @@ import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import Modal from "@/components/Modals/ModalSeo";
 import { getCroppedImg } from "@/lib/cropImage";
+import toast from "react-hot-toast";
+import Loader from "@/components/common/Loader-t";
 
 const Mailing: React.FC = () => {
   const [headerImage, setHeaderImage] = useState<string | null>(null);
@@ -19,6 +21,9 @@ const Mailing: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isHeaderLoading, setIsHeaderLoading] = useState(false);
+  const [isFooterLoading, setIsFooterLoading] = useState(false);
+
   const [currentImageType, setCurrentImageType] = useState<"header" | "footer">(
     "header"
   );
@@ -138,36 +143,32 @@ const Mailing: React.FC = () => {
     setImageFile(null);
   };
 
-  const handleSubmit = async (
+  const handleSubmitHeader = async (
     e: React.FormEvent,
     image: string | null,
     bannerId: string,
-    imageFile: File | null,
-    isFooter: boolean
+    imageFile: File | null
   ) => {
     e.preventDefault();
     if (!image || !imageFile) return;
 
     try {
-      setIsLoading(true);
+      setIsHeaderLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerImageId = isFooter
-        ? `${process.env.NEXT_PUBLIC_FOOTER_IDIMG_BANNER}`
-        : `${process.env.NEXT_PUBLIC_HEADER_IDIMG_BANNER}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HEADER_IDIMG_BANNER}`;
 
-      // Datos requeridos por la API, con valores por defecto para los campos que no usas activamente
       const updatedData = {
-        title: "Lorem Ipsum", // Valor predeterminado
-        landingText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", // Valor predeterminado
-        buttonLink: "#", // Valor predeterminado (un enlace vacío o el que prefieras)
-        buttonText: "Click here", // Valor predeterminado
-        orderNumber: 1, // Orden predeterminado, ajusta según tu lógica si es necesario
-        mainImageLink: "#", // Enlace de la imagen, lo puedes dejar como "#"
+        title: "Lorem Ipsum",
+        landingText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        buttonLink: "#",
+        buttonText: "Click here",
+        orderNumber: 1,
+        mainImageLink: "#",
         mainImage: {
-          name: "imageFile", // Nombre real de la imagen
-          type: imageFile.type, // Tipo de imagen real
-          size: imageFile.size, // Tamaño real de la imagen
-          data: image, // Imagen en base64
+          name: "imageFile",
+          type: imageFile.type,
+          size: imageFile.size,
+          data: image,
         },
       };
 
@@ -182,196 +183,245 @@ const Mailing: React.FC = () => {
         }
       );
 
-      fetchBannerData(); // Refrescar los datos después de la actualización
+      fetchBannerData();
+      toast.success("Header actualizado con éxito"); // Toast de éxito
     } catch (error) {
       console.error("Error actualizando el banner:", error);
+      toast.error("Error actualizando el header"); // Toast de error
     } finally {
-      setIsLoading(false);
+      setIsHeaderLoading(false);
+    }
+  };
+
+  const handleSubmitFooter = async (
+    e: React.FormEvent,
+    image: string | null,
+    bannerId: string,
+    imageFile: File | null
+  ) => {
+    e.preventDefault();
+    if (!image || !imageFile) return;
+
+    try {
+      setIsFooterLoading(true);
+      const token = getCookie("AdminTokenAuth");
+      const bannerImageId = `${process.env.NEXT_PUBLIC_FOOTER_IDIMG_BANNER}`;
+
+      const updatedData = {
+        title: "Lorem Ipsum",
+        landingText: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        buttonLink: "#",
+        buttonText: "Click here",
+        orderNumber: 1,
+        mainImageLink: "#",
+        mainImage: {
+          name: "imageFile",
+          type: imageFile.type,
+          size: imageFile.size,
+          data: image,
+        },
+      };
+
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      fetchBannerData();
+      toast.success("Footer actualizado con éxito");
+    } catch (error) {
+      console.error("Error actualizando el banner:", error);
+      toast.error("Error actualizando el footer");
+    } finally {
+      setIsFooterLoading(false);
     }
   };
 
   return (
-    <section
-      id="mailing"
-      className="w-full p-10"
-    >
+    <section id="mailing" className="w-full p-10">
+      <title>Mailing</title>
+
       <div className="flex flex-col gap-8">
+        <div
+          className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
+          style={{ borderRadius: "var(--radius)" }}
+        >
+          <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+            <div>Header Banner</div>
+            <div>/ Mailing</div>
+          </div>
+          <div>
+            {headerImage && (
+              <div className="flex justify-center mb-4">
+                {isHeaderLoading ? (
+                  <Loader />
+                ) : (
+                  <img
+                    src={headerImage}
+                    alt="Header Banner Preview"
+                    className="w-[1000px] h-[250px] object-cover"
+                  />
+                )}
+              </div>
+            )}
 
-
+            <form
+              onSubmit={(e) =>
+                handleSubmitHeader(
+                  e,
+                  headerImage,
+                  process.env.NEXT_PUBLIC_HEADER_ID_BANNER || "",
+                  headerImageFile
+                )
+              }
+            >
+              <div className="flex flex-col items-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="headerImage"
+                  className="hidden"
+                  onChange={(e) =>
+                    handleImageChange(
+                      e,
+                      setHeaderImage,
+                      setHeaderImageFile,
+                      "header"
+                    )
+                  }
+                />
+                <label
+                  htmlFor="headerImage"
+                  className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10 flex-1"
+                >
+                  <div className="flex flex-col justify-center items-center">
+                    <svg
+                      className="w-12 h-12 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    <p className="mb-2 text-sm text-gray-500">Subir Imagen</p>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG o Webp (800x800px)
+                    </p>
+                  </div>
+                </label>
+                {headerImage && (
+                  <button
+                    type="submit"
+                    disabled={isHeaderLoading}
+                    className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded mt-6"
+                  >
+                    {isHeaderLoading ? "Cargando..." : "Actualizar Header"}
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
 
         <div
-        className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
-        style={{ borderRadius: "var(--radius)" }}
-      >
-        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
-          <div>Header Banner</div>
-          <div>/ Mailing</div>
-        </div>
-        <div>
-          {headerImage && (
-            <div className="flex justify-center mb-4">
-              <img
-                src={headerImage}
-                alt="Header Banner Preview"
-                className="w-[1000px] h-[250px] object-cover"
-              />
-            </div>
-          )}
-          <form
-            onSubmit={(e) =>
-              handleSubmit(
-                e,
-                headerImage,
-                process.env.NEXT_PUBLIC_HEADER_ID_BANNER || "",
-                headerImageFile,
-                false // Para header
-              )
-            }
-          >
-            <div className="flex flex-col items-center">
-              <input
-                type="file"
-                accept="image/*"
-                id="headerImage"
-                className="hidden"
-                onChange={(e) =>
-                  handleImageChange(
-                    e,
-                    setHeaderImage,
-                    setHeaderImageFile,
-                    "header"
-                  )
-                }
-              />
-              <label
-                htmlFor="headerImage"
-                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10 flex-1"
-              >
-                <div className="flex flex-col justify-center items-center">
-                  <svg
-                    className="w-12 h-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500">Subir Imagen</p>
-                  <p className="text-xs text-gray-500">PNG, JPG o Webp (800x800px)</p>
-                </div>
-              </label>
-              {headerImage && (
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded mt-6"
+          className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
+          style={{ borderRadius: "var(--radius)" }}
+        >
+          <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+            <div>Footer Banner</div>
+            <div>/ Mailing</div>
+          </div>
+          <div>
+            {footerImage && (
+              <div className="flex justify-center mb-4">
+                {isFooterLoading ? (
+                  <Loader />
+                ) : (
+                  <img
+                    src={footerImage}
+                    alt="Footer Banner Preview"
+                    className="w-[1000px] h-[250px] object-cover"
+                  />
+                )}
+              </div>
+            )}
+            <form
+              onSubmit={(e) =>
+                handleSubmitFooter(
+                  e,
+                  footerImage,
+                  process.env.NEXT_PUBLIC_FOOTER_ID_BANNER || "",
+                  footerImageFile
+                )
+              }
+            >
+              <div className="flex flex-col items-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="footerImage"
+                  className="hidden"
+                  onChange={(e) =>
+                    handleImageChange(
+                      e,
+                      setFooterImage,
+                      setFooterImageFile,
+                      "footer"
+                    )
+                  }
+                />
+                <label
+                  htmlFor="footerImage"
+                  className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10 flex-1"
                 >
-                  {isLoading ? "Loading..." : "Actualizar Header"}
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-      </div>
-
-
-
-        <div
-        className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
-        style={{ borderRadius: "var(--radius)" }}
-      >
-        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
-          <div>Footer Banner</div>
-          <div>/ Mailing</div>
-        </div>
-        <div>
-          {footerImage && (
-            <div className="flex justify-center mb-4">
-              <img
-                src={footerImage}
-                alt="Footer Banner Preview"
-                className="w-[1000px] h-[250px] object-cover"
-              />
-            </div>
-          )}
-          <form
-            onSubmit={(e) =>
-              handleSubmit(
-                e,
-                footerImage,
-                process.env.NEXT_PUBLIC_FOOTER_ID_BANNER || "",
-                footerImageFile,
-                true // Para footer
-              )
-            }
-          >
-            <div className="flex flex-col items-center">
-              <input
-                type="file"
-                accept="image/*"
-                id="footerImage"
-                className="hidden"
-                onChange={(e) =>
-                  handleImageChange(
-                    e,
-                    setFooterImage,
-                    setFooterImageFile,
-                    "footer"
-                  )
-                }
-              />
-              <label
-                htmlFor="footerImage"
-                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10 flex-1"
-              >
-                <div className="flex flex-col justify-center items-center">
-                  <svg
-                    className="w-12 h-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                  <div className="flex flex-col justify-center items-center">
+                    <svg
+                      className="w-12 h-12 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m-6-6h6m-6 0H6"
+                      />
+                    </svg>
+                    <p className="mb-2 text-sm text-gray-500">Subir Imagen</p>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG o Webp (800x800px)
+                    </p>
+                  </div>
+                </label>
+                {footerImage && (
+                  <button
+                    type="submit"
+                    disabled={isFooterLoading}
+                    className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded mt-6"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m-6-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500">Subir Imagen</p>
-                  <p className="text-xs text-gray-500">
-                    PNG, JPG o Webp (800x800px)
-                  </p>
-                </div>
-              </label>
-              {footerImage && (
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded mt-6"
-                >
-                  {isLoading ? "Loading..." : "Actualizar Footer"}
-                </button>
-              )}
-            </div>
-          </form>
+                    {isFooterLoading ? "Cargando..." : "Actualizar Footer"}
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-
-
-
       </div>
 
       {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        >
+        <Modal showModal={isModalOpen} onClose={() => setIsModalOpen(false)}>
           <div className="relative h-96 w-full">
             <Cropper
               image={imageToCrop || ""}

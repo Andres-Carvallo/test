@@ -11,6 +11,7 @@ import FrasesBO from "@/components/PIXELUP/Frases/BackOffice/FrasesBO";
 export default function BannerTienda() {
   return (
     <section className="gap-4 flex flex-col px-10 py-10 ">
+      <title>Content block - Tienda</title>
       <div
         className="shadow-md border-primary mt-6 p-4 bg-white "
         style={{ borderRadius: "var(--radius)" }}

@@ -12,34 +12,49 @@ const analyticsDataClient = new BetaAnalyticsDataClient({
 
 export async function GET() {
   try {
-    // Ejecutar un informe
-    const [response] = await analyticsDataClient.runReport({
+    console.log("Starting request to Google Analytics API");
+
+    // Solicitud a la API de Google Analytics para datos en tiempo real
+    const [response] = await analyticsDataClient.runRealtimeReport({
       property: `properties/${propertyId}`,
-      dateRanges: [
-        {
-          startDate: "30daysAgo",
-          endDate: "today",
-        },
-      ],
       dimensions: [
-        { name: "date" },
-        { name: "city" },
-        { name: "deviceCategory" },
+        { name: "unifiedScreenName" }, // Título de la página o nombre de la pantalla
+        { name: "country" }, // País
+        { name: "city" }, // Ciudad
+        { name: "deviceCategory" }, // Dispositivo (móvil, escritorio, tablet)
       ],
       metrics: [
-        { name: "activeUsers" },
-        { name: "sessions" },
-        { name: "newUsers" },
-        { name: "averageSessionDuration" },
-        { name: "bounceRate" },
+        { name: "activeUsers" }, // Usuarios activos
+        { name: "screenPageViews" }, // Vistas de pantalla/página
       ],
     });
 
-    console.log(response); // Imprimir los datos de la respuesta para inspeccionarlos
+    console.log("Response from Google Analytics API:", response);
 
-    return NextResponse.json(response);
+    const headers = {
+      "Cache-Control":
+        "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+      Pragma: "no-cache",
+      Expires: "0",
+    };
+
+    return NextResponse.json(response, { headers });
   } catch (error: any) {
-    console.error(error); // Registrar cualquier error en la consola
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error(
+      "Error while fetching data from Google Analytics API:",
+      error.message
+    );
+
+    const headers = {
+      "Cache-Control":
+        "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+      Pragma: "no-cache",
+      Expires: "0",
+    };
+
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500, headers }
+    );
   }
 }

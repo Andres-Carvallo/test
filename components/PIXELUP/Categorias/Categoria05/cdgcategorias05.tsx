@@ -37,10 +37,10 @@ const Categoria05: React.FC<Categoria05Props> = ({ Categoria05Data }) => {
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "cb50bccd-aff7-4ac7-8e13-8d784ad125ac";
-
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
       const BannersCategory = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${siteId}`
       );
 
       const bannerImages = BannersCategory.data.banner.images;
@@ -84,7 +84,7 @@ const Categoria05: React.FC<Categoria05Props> = ({ Categoria05Data }) => {
                   className="w-full"
                 >
                   <div
-                    className="w-[280px] h-[150px] md:w-[300px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-cover bg-center mx-auto"
+                    className="w-[326px] h-[150px] md:w-[300px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-cover bg-center mx-auto"
                     style={{
                       backgroundImage: `url(${
                         getDefaultBanner(0).mainImage.url
@@ -113,7 +113,7 @@ const Categoria05: React.FC<Categoria05Props> = ({ Categoria05Data }) => {
                   className="w-full"
                 >
                   <div
-                    className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
+                    className="w-[326px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
                     style={{
                       backgroundImage: `url(${
                         getDefaultBanner(1).mainImage.url
@@ -141,7 +141,7 @@ const Categoria05: React.FC<Categoria05Props> = ({ Categoria05Data }) => {
                   className="w-full"
                 >
                   <div
-                    className="w-[280px] h-[150px] md:w-[300px] md:h-[260px] lg:w-[600px] lg:h-[360px] bg-cover bg-center mx-auto"
+                    className="w-[326px] h-[150px] md:w-[300px] md:h-[260px] lg:w-[600px] lg:h-[360px] bg-cover bg-center mx-auto"
                     style={{
                       backgroundImage: `url(${
                         getDefaultBanner(2).mainImage.url
@@ -169,7 +169,7 @@ const Categoria05: React.FC<Categoria05Props> = ({ Categoria05Data }) => {
                   className="w-full"
                 >
                   <div
-                    className="w-[280px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
+                    className="w-[326px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
                     style={{
                       backgroundImage: `url(${
                         getDefaultBanner(3).mainImage.url

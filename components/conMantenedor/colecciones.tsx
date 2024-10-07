@@ -8,6 +8,8 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import Loader from "../common/Loader";
 import ProductCard from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import ProductCard02 from "../PIXELUP/ProductCards/ProductCards02/ProductCard02";
+import ProductCard01 from "../PIXELUP/ProductCards/ProductCards01/ProductCard01";
+import Destacados01 from "../PIXELUP/Destacados/Destacado01";
 
 const Collection = () => {
   const [collectionData, setCollectionData] = useState<any | null>(null);
@@ -180,8 +182,8 @@ const Collection = () => {
           </div>
         )}
 
-        <div className="flex justify-center mx-auto px-4 pt-20 pb-40">
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px]">
+        <div className="flex justify-center mx-auto px-4 pt-20 ">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px] max-w-[1100px]">
             {collectionProduct.map((product: any) => {
               return (
                 <ProductCard02
@@ -195,6 +197,8 @@ const Collection = () => {
             })}
           </div>
         </div>
+
+        <Destacados01 text="Te recomendamos" />
       </div>
     </>
   );

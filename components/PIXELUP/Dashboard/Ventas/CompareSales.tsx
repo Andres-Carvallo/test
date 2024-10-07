@@ -131,7 +131,7 @@ const CompararVentas: React.FC = () => {
 
   return (
     <div className="rounded border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black">
-      <title>Comparar Ventas</title>
+      <title>Ventas</title>
       <section className="dark:bg-gray-900">
         <div className="text-sm font-medium border-b pb-2">
           Comparar Ciclos de Venta

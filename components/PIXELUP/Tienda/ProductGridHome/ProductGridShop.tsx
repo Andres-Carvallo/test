@@ -3,8 +3,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { obtenerProductos } from "@/app/utils/obtenerProductos";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import BannerTienda from "@/components/conMantenedor/BannerTienda";
+import ProductCard01 from "../../ProductCards/ProductCards01/ProductCard01";
+import { useRouter, useSearchParams } from "next/navigation"; // Para Next.js 13+
 import ProductCard02 from "../../ProductCards/ProductCards02/ProductCard02";
-import Loader from "@/components/common/Loader";
 
 const ProductGridShop = () => {
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,9 @@ const ProductGridShop = () => {
   const [totalPages, setTotalPages] = useState(1); // Total de páginas
 
   const productsRef = useRef<HTMLDivElement>(null);
+
+  const searchParams = useSearchParams(); // Obtén los parámetros de la URL
+  const router = useRouter(); // Inicializa el router
 
   const fetchProductos = async (productTypeId?: string) => {
     try {
@@ -50,49 +54,13 @@ const ProductGridShop = () => {
         producto.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
-      // Obtener el stock de los productos simples
-      const productsWithStock = await Promise.all(
-        filtered.map(async (producto: any) => {
-          if (!producto.hasVariations && producto.skuId) {
-            const stock = await fetchStockForVariation(
-              producto.id,
-              producto.skuId
-            );
-
-            return { ...producto, stock } as any;
-          }
-          return { ...producto, stock: null } as any;
-        })
-      );
-
-      setFilteredProducts(productsWithStock as any); // Usar los productos con stock actualizado
-      setTotalPages(Math.ceil(productsWithStock.length / pageSize));
-      updatePaginatedProducts(productsWithStock, 1);
+      setFilteredProducts(filtered);
+      setTotalPages(Math.ceil(filtered.length / pageSize));
+      updatePaginatedProducts(filtered, 1);
       setLoading(false);
     } catch (error) {
       setLoading(false);
       setError(error as Error);
-    }
-  };
-
-  const fetchStockForVariation = async (productId: string, skuId: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      const data = await response.json();
-      let stock = 0;
-      if (data.code === 0 && data.skuInventories.length > 0) {
-        stock = data.skuInventories.reduce(
-          (acc: number, inventory: any) => acc + inventory.quantity,
-          0
-        );
-      }
-
-      return stock;
-    } catch (error) {
-      console.error("Error fetching stock:", error);
-      return 0;
     }
   };
 
@@ -121,8 +89,14 @@ const ProductGridShop = () => {
           max: -Infinity,
         };
 
-        // Verificar si tiene variaciones y rangos de precios
-        if (product.hasVariations && product.pricingRanges) {
+        if (
+          !product.hasVariations &&
+          product.offers &&
+          product.offers.length > 0
+        ) {
+          priceRange.min = product.offers[0].amount;
+          priceRange.max = product.offers[0].amount;
+        } else if (product.hasVariations && product.pricingRanges) {
           priceRange.min = Math.min(
             priceRange.min,
             product.pricingRanges[0].minimumAmount
@@ -134,14 +108,6 @@ const ProductGridShop = () => {
         } else if (product.pricings) {
           priceRange.min = Math.min(priceRange.min, product.pricings[0].amount);
           priceRange.max = Math.max(priceRange.max, product.pricings[0].amount);
-        }
-
-        // Incluir precio de oferta si existe
-        if (product.offers && product.offers.length > 0) {
-          product.offers.forEach((offer: any) => {
-            priceRange.min = Math.min(priceRange.min, offer.amount);
-            priceRange.max = Math.max(priceRange.max, offer.amount);
-          });
         }
 
         return order === "asc" ? priceRange.min : priceRange.max;
@@ -177,33 +143,45 @@ const ProductGridShop = () => {
 
   const handleChangeCategories = async (value: string) => {
     setProductTypeId(value === "ALL" ? undefined : value);
+
+    // Actualiza la URL con el query param de la categoría
+    if (value === "ALL") {
+      router.push("/tienda"); // Restablece la URL si se selecciona "Todas las categorías"
+    } else {
+      router.push(`/tienda?categoria=${encodeURIComponent(value)}`);
+    }
+
+    // Filtra los productos según la categoría seleccionada
     await fetchProductos(value === "ALL" ? undefined : value);
   };
 
   useEffect(() => {
-    fetchProductos();
     fetchProductTypes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // Aplica el filtro por categoría si está presente en la URL
+    const categoriaParam = searchParams.get("categoria");
+    if (categoriaParam) {
+      setProductTypeId(categoriaParam);
+      fetchProductos(categoriaParam);
+    } else {
+      setProductTypeId("ALL");
+      fetchProductos();
+    }
+  }, [searchParams, searchTerm]);
 
   useEffect(() => {
     updatePaginatedProducts(filteredProducts, 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredProducts]);
 
-  useEffect(() => {
-    fetchProductos(productTypeId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
-
   if (loading) {
     return (
       <div className="animate-pulse space-y-4 p-12">
         <div className="h-48 bg-gray-200 rounded"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="h-64 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -248,14 +226,12 @@ const ProductGridShop = () => {
                 className="shadow h-12 border border-gray-300 text-gray-900 pl-4 pr-10 text-xs font-normal leading-7 rounded-full block w-full py-2.5 px-4 appearance-none focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50 focus-within:bg-gray-50"
                 id="productType"
                 name="productType"
+                value={productTypeId || "ALL"} // Establecer el valor seleccionado basado en productTypeId
                 onChange={(e) => handleChangeCategories(e.target.value)}
               >
                 <option value="ALL">Todas las categorías</option>
                 {productTypes.map((productType: any) => (
-                  <option
-                    key={productType.id}
-                    value={productType.id}
-                  >
+                  <option key={productType.id} value={productType.id}>
                     {productType.name}
                   </option>
                 ))}
@@ -277,14 +253,14 @@ const ProductGridShop = () => {
         </div>
 
         <div className="flex justify-center mx-auto px-4">
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px]">
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px] max-w-[1100px]">
             {paginatedProducts.map((product: any) => (
               <ProductCard02
                 key={product.id}
                 product={product}
+                stock={product.stock}
                 addToCartHandler={addToCartHandler}
                 isOnSale={product.offers && product.offers.length > 0}
-                stock={product.stock}
               />
             ))}
           </div>

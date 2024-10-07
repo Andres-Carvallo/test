@@ -75,7 +75,7 @@ const DropdownAdmin = () => {
         <span className="h-12 w-8 ">
           <span>
             <svg
-              className="absolute w-6 h-6 text-primary hover:text-secondary  right-4 top-3 "
+              className="absolute w-6 h-6 text-primary hover:text-secondary right-1 md:right-4 top-3 "
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"

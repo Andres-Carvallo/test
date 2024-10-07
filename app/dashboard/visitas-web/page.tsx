@@ -2,27 +2,25 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { format } from "date-fns";
-import { Line, Bar, Pie } from "react-chartjs-2";
+import { Bar, Pie } from "react-chartjs-2";
+import Loader from "@/components/common/Loader";
+
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
   Legend,
   ArcElement,
 } from "chart.js";
-import Loader from "@/components/common/Loader";
+import Historical from "./Historical";
 
+// Registra los componentes de gráficos
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
@@ -39,263 +37,270 @@ interface AnalyticsData {
   rows: AnalyticsRow[];
 }
 
+const truncateText = (text: string, maxLength: number) => {
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+};
+
 const StatsPage: React.FC = () => {
-  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [realtimeData, setRealtimeData] = useState<AnalyticsData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchRealtimeData = async () => {
       try {
         const response = await axios.get("/api/analytics");
-        console.log(response.data); // Imprime los datos en la consola del navegador
-        setData(response.data);
+        setRealtimeData(response.data);
       } catch (error: any) {
         setError(error.message);
-        console.error("Error fetching analytics data:", error);
       }
     };
 
-    fetchData();
+    fetchRealtimeData();
   }, []);
 
   if (error) return <p className="text-red-500">Error: {error}</p>;
-  if (!data) return <Loader />;
+  if (!realtimeData) return <Loader />;
 
-  const labels = data.rows.map((row) =>
-    format(
-      new Date(
-        row.dimensionValues[0].value.replace(
-          /(\d{4})(\d{2})(\d{2})/,
-          "$1-$2-$3"
-        )
-      ),
-      "yyyy-MM-dd"
-    )
-  );
+  // Agrupar los datos por dispositivo, ciudad y vistas por página
+  let uniqueActiveUsers = new Set();
+  let pageViews: Record<string, number> = {};
+  let cityData: Record<string, number> = {};
+  let deviceData: Record<string, number> = {};
 
-  const sessionsData = data.rows.map((row) =>
-    Number(row.metricValues[1]?.value || 0)
-  );
-  const activeUsersData = data.rows.map((row) =>
-    Number(row.metricValues[0]?.value || 0)
-  );
-  const newUsersData = data.rows.map((row) =>
-    Number(row.metricValues[2]?.value || 0)
-  );
-  const avgSessionDurationData = data.rows.map(
-    (row) => Number(row.metricValues[3]?.value || 0) / 60
-  ); // Convertimos a minutos
-  const bounceRateData = data.rows.map(
-    (row) => Number(row.metricValues[4]?.value || 0) * 100
-  ); // Convertimos a porcentaje
+  realtimeData.rows.forEach((row) => {
+    const pageTitle = row.dimensionValues[0]?.value || "Sin título";
+    const country = row.dimensionValues[1]?.value || "Desconocido";
+    const city = row.dimensionValues[2]?.value || "Desconocido";
+    const deviceCategory = row.dimensionValues[3]?.value || "Desconocido";
+    const activeUsers = Number(row.metricValues[0]?.value || 0);
+    const screenPageViews = Number(row.metricValues[1]?.value || 0);
 
-  const cityData = data.rows.map(
-    (row) => row.dimensionValues[1]?.value || "Unknown"
-  );
-  const deviceData = data.rows.map(
-    (row) => row.dimensionValues[2]?.value || "Unknown"
-  );
+    // Añadir usuarios únicos
+    uniqueActiveUsers.add(`${country}-${city}-${deviceCategory}`);
 
-  // Agregar console.log para ver los datos de activeUsersData
+    // Agrupación de vistas por página
+    if (!pageViews[pageTitle]) {
+      pageViews[pageTitle] = screenPageViews;
+    } else {
+      pageViews[pageTitle] += screenPageViews;
+    }
 
-  // Calcular total de usuarios activos de la última semana
-  const totalActiveUsersWeek = activeUsersData
-    .slice(-7)
-    .reduce((a, b) => a + b, 0);
+    // Agrupación de datos por ciudad
+    if (!cityData[city]) {
+      cityData[city] = activeUsers;
+    } else {
+      cityData[city] += activeUsers;
+    }
 
-  // Calcular promedio de duración de la sesión en minutos para el mes
-  const avgSessionDuration = (
-    avgSessionDurationData.reduce((a, b) => a + b, 0) /
-    avgSessionDurationData.length
-  ).toFixed(2);
+    // Agrupación de datos por dispositivo
+    if (!deviceData[deviceCategory]) {
+      deviceData[deviceCategory] = activeUsers;
+    } else {
+      deviceData[deviceCategory] += activeUsers;
+    }
+  });
 
-  const lineChartData = {
-    labels,
-    datasets: [
-      {
-        label: "Sesiones",
-        data: sessionsData,
-        borderColor: "rgba(75, 192, 192, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        fill: true,
-      },
-      {
-        label: "Usuarios Activos",
-        data: activeUsersData,
-        borderColor: "rgba(153, 102, 255, 1)",
-        backgroundColor: "rgba(153, 102, 255, 0.2)",
-        fill: true,
-      },
-    ],
-  };
+  // Preparar datos para gráficos
+  const pageLabels = Object.keys(pageViews);
+  const pageData = Object.values(pageViews);
 
-  const barChartData = {
-    labels,
-    datasets: [
-      {
-        label: "Nuevos Usuarios",
-        data: newUsersData,
-        backgroundColor: "rgba(255, 206, 86, 0.2)",
-        borderColor: "rgba(255, 206, 86, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+  const cityLabels = Object.keys(cityData);
+  const cityActiveUsers = Object.values(cityData);
 
-  const pieChartData = {
-    labels: ["Tasa de rebote", "Otros"],
-    datasets: [
-      {
-        data: [
-          bounceRateData.reduce((a, b) => a + b, 0) / bounceRateData.length,
-          100 -
-            bounceRateData.reduce((a, b) => a + b, 0) / bounceRateData.length,
-        ],
-        backgroundColor: ["rgba(255, 99, 132, 0.2)", "rgba(54, 162, 235, 0.2)"],
-        borderColor: ["rgba(255, 99, 132, 1)", "rgba(54, 162, 235, 1)"],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Prepare data for city chart
-  const cityCounts = cityData.reduce((acc, city) => {
-    acc[city] = (acc[city] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const cityChartData = {
-    labels: Object.keys(cityCounts),
-    datasets: [
-      {
-        label: "Usuarios por ciudad",
-        data: Object.values(cityCounts),
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Prepare data for device chart
-  const deviceCounts = deviceData.reduce((acc, device) => {
-    acc[device] = (acc[device] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const deviceChartData = {
-    labels: Object.keys(deviceCounts),
-    datasets: [
-      {
-        label: "Usuarios por dispositivo",
-        data: Object.values(deviceCounts),
-        backgroundColor: "rgba(153, 102, 255, 0.2)",
-        borderColor: "rgba(153, 102, 255, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+  const deviceLabels = Object.keys(deviceData);
+  const deviceActiveUsers = Object.values(deviceData);
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Estadísticas</h1>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-      <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center flex flex-col justify-center h-full">
-  <h3 className="text-lg font-medium">
-    Usuarios Activos 
-    <p></p> 
-    <span className="text-gray-600 mb-2 text-xs">(Últimos 7 días)</span> 
-  </h3>
-  <p className="text-2xl font-bold">{totalActiveUsersWeek}</p>
-</div>
+    <>
+      <title>Dashboard - Visitas Web</title>
+      <div className="max-w-7xl mx-auto p-6 pt-10 pb-20">
+        <h1 className="text-3xl font-bold text-center">Visitas Web</h1>
+        <h3 className="text-xl font-bold mb-6 text-center">
+          Estadísticas últimos 30 días
+        </h3>
+        <div className="hidden">
+          {" "}
+          <div className="flex items-center justify-center">
+            <p className="mb-6 text-center max-w-xl">
+              Esta sección muestra estadísticas de los{" "}
+              <strong>últimos 5 a 10 minutos</strong> aprox. de las visitas a tu
+              sitio web.
+            </p>
+          </div>
+          {/* Mostrar número único de usuarios activos */}
+          <div className="mb-6 bg-white p-4 rounded-lg shadow-md">
+            <h2 className="text-2xl font-semibold my-4 text-center">
+              <small>Usuarios Activos:</small> {uniqueActiveUsers.size}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+            {/* Gráfico de Torta de Usuarios Activos por Ciudad */}
+            <div className=" p-4 ">
+              <h2 className="text-xl font-semibold mb-4">
+                Usuarios Activos por Ciudad
+              </h2>
 
-        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center">
-          <h3 className="text-lg font-medium">Sesiones</h3>
-          <p className="text-gray-600 mb-2 text-xs">
-            Refleja el número total de sesiones realizadas en tu sitio web el
-            día más reciente.
-          </p>
-          <p className="text-2xl font-bold">
-            {sessionsData[sessionsData.length - 1]}
+              <Pie
+                className="bg-white p-4 rounded-lg shadow-md max-h-[400px]"
+                data={{
+                  labels: cityLabels,
+                  datasets: [
+                    {
+                      label: "Usuarios Activos",
+                      data: cityActiveUsers,
+                      backgroundColor: [
+                        "rgba(75, 192, 192, 0.2)",
+                        "rgba(153, 102, 255, 0.2)",
+                        "rgba(255, 206, 86, 0.2)",
+                      ],
+                      borderColor: [
+                        "rgba(75, 192, 192, 1)",
+                        "rgba(153, 102, 255, 1)",
+                        "rgba(255, 206, 86, 1)",
+                      ],
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  maintainAspectRatio: false,
+                  plugins: {
+                    tooltip: {
+                      callbacks: {
+                        label: function (context) {
+                          let total = context.dataset.data.reduce(
+                            (a: number, b: number) => a + b,
+                            0
+                          );
+                          let percentage =
+                            ((context.raw as number) / total) * 100 || 0;
+                          return `${context.label}: ${percentage.toFixed(2)}%`;
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+
+            {/* Gráfico de Torta de Usuarios Activos por Dispositivo */}
+            <div className="p-4">
+              <h2 className="text-xl font-semibold mb-4">
+                Usuarios Activos por Dispositivo
+              </h2>
+
+              <Pie
+                className="bg-white p-4 rounded-lg shadow-md max-h-[400px]"
+                data={{
+                  labels: deviceLabels,
+                  datasets: [
+                    {
+                      label: "Usuarios Activos",
+                      data: deviceActiveUsers,
+                      backgroundColor: [
+                        "rgba(54, 162, 235, 0.2)",
+                        "rgba(255, 159, 64, 0.2)",
+                      ],
+                      borderColor: [
+                        "rgba(54, 162, 235, 1)",
+                        "rgba(255, 159, 64, 1)",
+                      ],
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  maintainAspectRatio: false,
+                  plugins: {
+                    tooltip: {
+                      callbacks: {
+                        label: function (context) {
+                          let total = context.dataset.data.reduce(
+                            (a: number, b: number) => a + b,
+                            0
+                          );
+                          let percentage =
+                            ((context.raw as number) / total) * 100 || 0;
+                          return `${context.label}: ${percentage.toFixed(2)}%`;
+                        },
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+          {/* Formato de tarjetas para mobile */}
+          <div className="md:hidden mb-6 p-4">
+            <h2 className="text-xl font-semibold mb-4">
+              Vistas por Título de Página
+            </h2>
+            {pageLabels.map((pageTitle, index) => (
+              <div
+                key={index}
+                className="mb-4 p-4 bg-white rounded-lg shadow-md"
+              >
+                <h2 className="text-lg font-semibold mb-2">
+                  {truncateText(pageTitle, 20)}
+                </h2>
+                <p>Vistas: {pageData[index]}</p>
+              </div>
+            ))}
+          </div>
+          {/* Gráfico de Barras en desktop */}
+          <div
+            className="hidden md:block mb-24 p-4"
+            style={{ height: "350px" }}
+          >
+            <h2 className="text-xl font-semibold mb-4">
+              Vistas por Título de Página
+            </h2>
+            <p className="mb-4">
+              Este gráfico de barras presenta las páginas más vistas en el sitio
+              web.{" "}
+              <strong>
+                Sirve para identificar qué contenido es más relevante y popular
+                entre los usuarios.
+              </strong>
+            </p>
+            <Bar
+              className="bg-white p-4 rounded-lg shadow-md "
+              data={{
+                labels: pageLabels.map((title) => truncateText(title, 20)),
+                datasets: [
+                  {
+                    label: "Vistas",
+                    data: pageData,
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    borderWidth: 1,
+                  },
+                ],
+              }}
+              options={{
+                indexAxis: "y",
+                maintainAspectRatio: false,
+                scales: {
+                  x: { beginAtZero: true },
+                  y: {
+                    ticks: {
+                      autoSkip: false,
+                      maxRotation: 0,
+                      minRotation: 0,
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-8 ">
+          <p className=" text-center ">
+            <Historical />
           </p>
         </div>
-        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center col-span-1">
-          <h3 className="text-lg font-medium">Promedio duración de la sesión</h3>
-          <p className="text-2xl font-bold">{avgSessionDuration} min.</p>
-          <p className="text-gray-600 mb-2 text-xs">
-            Duración promedio de las sesiones en tu sitio web durante el mes.
-          </p>
-        </div>
-        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center flex flex-col justify-center h-full">
-  <h3 className="text-lg font-medium">Nuevo Usuario</h3>
-  <p className="text-gray-600 mb-2 text-xs">
-    Refleja el número total de nuevos usuarios que visitaron tu sitio
-    web el día más reciente.
-  </p>
-  <p className="text-2xl font-bold">
-    {newUsersData[newUsersData.length - 1]}
-  </p>
-</div>
-
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Nuevos Usuarios</h2>
-          <Bar data={barChartData} />
-          <p className="text-gray-600 mb-2 text-xs mt-6">
-            <strong>Usuarios Nuevos:</strong> Usuarios que visitan tu sitio web
-            por primera vez.
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Usuarios por ciudad</h2>
-          <Bar data={cityChartData} />
-          <p className="text-gray-600 mb-2 text-xs mt-4">
-            Este gráfico muestra la distribución de tus usuarios por ciudad.
-          </p>
-        </div>
-        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Usuarios por dispositivos</h2>
-          <Bar data={deviceChartData} />
-          <p className="text-gray-600 mb-2 text-xs mt-2">
-            Este gráfico muestra la distribución de tus usuarios por tipo de
-            dispositivo (por ejemplo, escritorio, móvil).
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">
-            Usuarios y sesiones activas
-          </h2>
-          <Line data={lineChartData} />
-          <p className="text-gray-600 mb-2 text-xs mt-4">
-            <strong>Usuarios Activos:</strong> Usuarios que han interactuado con
-            tu sitio web.
-            <br />
-            <br />
-            <strong>Sesiones:</strong> Un período de tiempo en el que un usuario
-            interactúa con tu sitio web. Una nueva sesión comienza cuando un
-            usuario no ha estado activo en tu sitio durante 30 minutos o más.
-          </p>
-        </div>
-        <div className="lg:hover:scale-105 duration-100 lg:hover:shadow-xl bg-white p-4 rounded-lg shadow text-center col-span-1">
-          <h3 className="text-lg font-medium">Tasa de Rebote</h3>
-          <Pie data={pieChartData} />
-          <p className="text-gray-600 mb-2 text-xs mt-4">
-            <strong>Tasa de Rebote:</strong> Porcentaje de visitantes que
-            abandonan tu sitio web después de ver solo una página. Un alto
-            porcentaje puede indicar que los usuarios no encuentran lo que
-            buscan en tu sitio web.
-          </p>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };
 

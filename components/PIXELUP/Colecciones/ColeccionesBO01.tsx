@@ -71,9 +71,10 @@ function Colecciones() {
 
   // Lista de IDs de colecciones que no deberían tener el botón "Eliminar"
   const noEliminarIDs = [
-    "1c0c6de9-65c9-4472-8eaa-7fc879abbd7d",
-    "bfa4fc11-ff0b-4d39-96f3-178bcf12d26a",
-    "89ac8783-f388-4b6e-8c99-fe95002c8d1b",
+    "e2b1263f-7cd3-42b9-b08a-8d26e59d91d8",
+    "6f1fc389-c295-418e-b43d-c12f1351bfc8",
+    "eb1f78e0-f6e4-4a5a-89e1-eca0b1b97ff1",
+    "ac61d5e9-93c0-44c5-96ae-a69ac64dab5d"
   ]; // Reemplaza estos IDs con los reales
 
   // States for image cropping

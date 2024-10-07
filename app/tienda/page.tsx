@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Tienda",
-  description: "Tienda Pixelup",
+  description: "Tienda",
 };
 const TiendaHome = () => {
   return (

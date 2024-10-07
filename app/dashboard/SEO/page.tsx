@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import SEO from "./SEO";
 
 export const metadata: Metadata = {
-  title: "SEO | LaTavolaDelChef",
-  description: "Dashboard Pixelup",
+  title: "SEO",
+  description: "SEO",
 };
 
 function SEOPage() {
