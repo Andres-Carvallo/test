@@ -266,10 +266,28 @@ function CheckoutPago() {
                                     className="mx-auto rounded-xl p-2"
                                   />
                                 </div>
+
                                 <div>
                                   <span className="inline-block  text-lg font-heading font-medium ">
                                     {order.sku.product.name}
                                   </span>
+                                  <div>
+                                    {order.sku.attributes &&
+                                      order.sku.attributes.length > 0 && (
+                                        <div className="item-attributes">
+                                          <small className="font-bold">
+                                            {order.sku.attributes
+                                              .slice(0, 4)
+                                              .map(
+                                                (attribute: any) =>
+                                                  attribute.value
+                                              )
+                                              .join(", ")}
+                                          </small>
+                                        </div>
+                                      )}
+                                  </div>
+
                                   <div className="flex flex-wrap">
                                     <p className="mr-4 text-sm font-heading font-medium">
                                       <span>Cantidad:</span>

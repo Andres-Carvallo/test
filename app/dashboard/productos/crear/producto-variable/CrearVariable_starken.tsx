@@ -1173,6 +1173,79 @@ const CrearVariable: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                {/* MEDIDAS DELIVERY */}
+                <div className=" gap-4 mt-8">
+                  {formData.enabledForDelivery && (
+                    <div className="mt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                        <div className="">
+                          <label
+                            htmlFor="largo"
+                            className="text-xs"
+                          >
+                            Largo (cm.)
+                          </label>
+                          <input
+                            type="number"
+                            name="length"
+                            className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                            value={measures.length || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="ancho"
+                            className="text-xs"
+                          >
+                            Ancho (cm.)
+                          </label>
+                          <input
+                            type="number"
+                            name="width"
+                            className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                            value={measures.width || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                        <div>
+                          <label
+                            htmlFor="alto"
+                            className="text-xs"
+                          >
+                            Alto (cm.)
+                          </label>
+                          <input
+                            type="number"
+                            name="height"
+                            className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                            value={measures.height || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="peso"
+                            className="text-xs"
+                          >
+                            Peso (kg.)
+                          </label>
+                          <input
+                            type="number"
+                            name="weight"
+                            className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                            value={measures.weight || ""}
+                            onChange={handleInputMeasuresChange}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="flex w-full">
                   <div className="self-center mx-6">
                     <StarCheckbox
@@ -1380,124 +1453,6 @@ const CrearVariable: React.FC = () => {
                 )}
               </div> */}
                 </div>
-                {/* MEDIDAS DELIVERY */}
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-              <div>
-                <label htmlFor="medidas">
-                  <div className=" flex gap-2">
-                    <label className="font-normal text-primary">
-                      Medidas Delivery
-                    </label>
-                    <button onClick={() => setShowForm(!showForm)}>
-                      {showForm ? (
-                        <span className="bg-primary text-secondary p-1 text-xs">
-                          Ocultar
-                        </span>
-                      ) : (
-                        <span className="bg-primary text-secondary p-1 text-xs">
-                          Mostrar
-                        </span>
-                      )}
-                    </button>
-                  </div>
-                </label>
-                {showForm &&
-                  (formData.enabledForDelivery ? (
-                    <div className="mt-2">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        <div className="">
-                          <label
-                            htmlFor="largo"
-                            className="text-xs"
-                          >
-                            Largo (cm.)
-                          </label>
-                          <input
-                            type="number"
-                            name="length"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.length || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-                        <div>
-                          <label
-                            htmlFor="ancho"
-                            className="text-xs"
-                          >
-                            Ancho (cm.)
-                          </label>
-                          <input
-                            type="number"
-                            name="width"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.width || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        <div>
-                          <label
-                            htmlFor="alto"
-                            className="text-xs"
-                          >
-                            Alto (cm.)
-                          </label>
-                          <input
-                            type="number"
-                            name="height"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.height || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="peso"
-                            className="text-xs"
-                          >
-                            Peso (kg.)
-                          </label>
-                          <input
-                            type="number"
-                            name="weight"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.weight || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      style={{ borderRadius: "var(--radius)" }}
-                      className="shadow mt-4 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
-                      role="alert"
-                    >
-                      <svg
-                        className="flex-shrink-0 inline w-4 h-4 me-3"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                      </svg>
-                      <span className="sr-only">Info</span>
-                      <div>
-                        <span className="font-semibold">
-                          Habilitar despacho.
-                        </span>{" "}
-                        Se debe seleccionar la opcion para poder mostrar las
-                        medidas.
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div> */}
 
                 <button
                   className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"

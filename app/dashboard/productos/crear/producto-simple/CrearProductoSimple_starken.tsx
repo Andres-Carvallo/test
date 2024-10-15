@@ -24,6 +24,11 @@ import { handleStockSku } from "@/app/utils/HandleStockSku";
 import { HandlePriceSku } from "@/app/utils/HandlePriceSku";
 import Link from "next/link";
 
+import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css"; // Import styles
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
 const CrearProductoSimple: React.FC = ({}) => {
   const [isLoading, setIsLoading] = useState(false);
   const { productType, setProductType } = useAPI();
@@ -61,14 +66,14 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [checkOfferChecked, setCheckOfferChecked] = useState(
     skuData.hasStockNotifications || false
   );
-  const handleDescriptionChange = (event: any) => {
-    const value = event.target.value;
-    if (value.length <= maxLength) {
-      setFormData({
-        ...formData,
-        description: value,
-      });
-      setCharCount(value.length);
+  const [description, setDescription] = useState<string>("");
+  const handleDescriptionChange = (value: string) => {
+    const plainText = value.replace(/<[^>]+>/g, ""); // Eliminar etiquetas HTML para obtener solo el texto
+    if (plainText.length <= maxLength) {
+      setDescription(value); // Actualiza el contenido de la descripción con el valor en HTML
+      setCharCount(plainText.length); // Actualiza el contador de caracteres
+    } else {
+      toast.error("Has alcanzado el límite de caracteres");
     }
   };
   const validateForm = () => {
@@ -1256,34 +1261,14 @@ const CrearProductoSimple: React.FC = ({}) => {
             </div>
             <div className="">
               <label className="font-normal ">Descripción Producto</label>
-              <textarea
-                className="min-h-40 shadow rounded block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                name="descripcionProducto"
-                cols={30}
-                rows={5}
-                value={formData.description}
+              <ReactQuill
+                theme="snow"
+                value={description}
                 onChange={handleDescriptionChange}
-              ></textarea>
-              <div className="flex justify-between items-center mt-2">
+              />
+              <div className="flex justify-end items-center mt-2">
                 <div className="text-left text-sm text-gray-500">
                   {charCount}/{maxLength} caracteres
-                </div>
-                <div className="flex items-center text-right text-sm text-gray-500">
-                  <span>Arrastra aquí para expandir</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    className="size-6 ml-2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18"
-                    />
-                  </svg>
                 </div>
               </div>
             </div>

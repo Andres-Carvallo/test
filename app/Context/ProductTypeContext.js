@@ -68,6 +68,7 @@ export function APIContextProvider({ children, SiteId }) {
           // Guardar el ID del carrito en las cookies si se creó correctamente
           setCookie("cartId", cartId);
           toast.success("Producto agregado al carrito");
+          setIsMenuOpen(true);
         } else {
           toast.error(
             "Error al crear el carrito. Inténtalo de nuevo más tarde."
@@ -79,7 +80,6 @@ export function APIContextProvider({ children, SiteId }) {
         await addToCart(cartId, skuId, quantity);
       }
 
-      setIsMenuOpen(true);
       fetchCartData();
     } catch (error) {
       console.error("Error al agregar producto al carrito:", error);
@@ -128,25 +128,32 @@ export function APIContextProvider({ children, SiteId }) {
         }
       );
       const data = await response.json();
+
+      // Verificar si la respuesta indica un problema de stock
+      if (data.code !== 0) {
+        if (
+          data.message.includes("No hay stock suficiente para este Producto")
+        ) {
+          toast.error("El producto no tiene stock suficiente.");
+        } else {
+          toast.error(data.message || "Error al crear el carrito.");
+        }
+        return null;
+      }
+
       console.log("Nuevo carrito creado:", data.cart.id);
       return data.cart.id; // Devolver el ID del carrito creado
     } catch (error) {
       console.error("Error al crear un nuevo carrito:", error);
+      toast.error("Error al crear el carrito. Inténtalo de nuevo más tarde.");
       return null;
     }
   };
 
   const fetchAttributesForVariation = async (productId, skuId) => {
     try {
-      const token = getCookie("AdminTokenAuth");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
       const responseData = await response.json();
       if (responseData.code === 0) {
@@ -241,8 +248,15 @@ export function APIContextProvider({ children, SiteId }) {
     } catch (error) {
       if (error.response && error.response.data) {
         const errorMessage = error.response.data.message;
-        console.log(errorMessage);
-        toast.error(errorMessage);
+
+        // Verificar si el error se relaciona con stock insuficiente
+        if (
+          errorMessage.includes("No hay stock suficiente para este Producto")
+        ) {
+          toast.error("El producto no tiene stock suficiente.");
+        } else {
+          toast.error(errorMessage);
+        }
       } else {
         console.error("Error al agregar elemento al carrito:", error);
         toast.error(
