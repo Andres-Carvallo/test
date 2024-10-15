@@ -24,6 +24,11 @@ import { handleStockSku } from "@/app/utils/HandleStockSku";
 import { HandlePriceSku } from "@/app/utils/HandlePriceSku";
 import Link from "next/link";
 
+import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css"; // Import styles
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
 const CrearProductoSimple: React.FC = ({}) => {
   const [isLoading, setIsLoading] = useState(false);
   const { productType, setProductType } = useAPI();
@@ -58,19 +63,19 @@ const CrearProductoSimple: React.FC = ({}) => {
     hasStockNotifications: false,
     isFeatured: false,
   });
+  const [description, setDescription] = useState<string>("");
   const [checkOfferChecked, setCheckOfferChecked] = useState(
     skuData.hasStockNotifications || false
   );
-  const handleDescriptionChange = (event: any) => {
-    const value = event.target.value;
-    if (value.length <= maxLength) {
-      setFormData({
-        ...formData,
-        description: value,
-      });
-      setCharCount(value.length);
-    }
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    setCharCount(value.length);
+    setFormData((prevFormData: any) => ({
+      ...prevFormData,
+      description: value,
+    }));
   };
+
   const validateForm = () => {
     let valid = true;
     if (!formData.name) {
@@ -85,11 +90,8 @@ const CrearProductoSimple: React.FC = ({}) => {
       toast.error("El precio es requerido");
       valid = false;
     }
-    if (
-      !skuData.hasUnlimitedStock &&
-      (stockQuantity === null || stockQuantity <= 0)
-    ) {
-      toast.error("La cantidad de stock es requerida y debe ser mayor a 0");
+    if (!skuData.hasUnlimitedStock && stockQuantity === null) {
+      toast.error("La cantidad de stock es requerida");
       valid = false;
     }
     if (formData.productTypes.length === 0) {
@@ -270,7 +272,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     const currentStock =
       stockQuantity !== null && stockQuantity !== undefined ? stockQuantity : 0;
     // Verifica si el valor de la alerta es mayor o igual al stock actual
-    if (value >= currentStock) {
+    if (value > currentStock) {
       toast.error(
         "El stock mínimo para la alerta debe ser menor que el stock disponible."
       );
@@ -436,162 +438,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     }
   };
 
-  const addProductPricing = async (
-    id: string,
-    skuId: string,
-    precioNormal: number
-  ) => {
-    try {
-      const token = getCookie("AdminTokenAuth");
-      const currencyResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (
-        currencyResponse.data &&
-        currencyResponse.data.currencyCodes &&
-        currencyResponse.data.currencyCodes.length > 0
-      ) {
-        const currencyCodeId = currencyResponse.data.currencyCodes[0].id;
-        const warehouseId = await getWarehouseId();
-        if (!warehouseId) return;
-
-        // Verificar si ya existe un precio para el SKU
-        const existingPricingsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        let method = "POST";
-        let pricingUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
-        let data = {
-          currencyCodeId: currencyCodeId,
-          unitPrice: precioNormal,
-          warehouseId: warehouseId,
-        };
-
-        if (
-          existingPricingsResponse.data.skuPricings &&
-          existingPricingsResponse.data.skuPricings.length > 0
-        ) {
-          console.log(
-            "existingPricingsResponse existentes:",
-            existingPricingsResponse.data
-          );
-          // Update existing price
-          method = "PUT";
-          pricingUrl = `${pricingUrl}/${existingPricingsResponse.data.skuPricings[0].id}`;
-          // Eliminar warehouseId del payload si es una actualización
-
-          console.log("Actualizando precio existente con URL:", pricingUrl);
-        } else {
-          console.log("Creando nuevo precio con URL:", pricingUrl);
-        }
-
-        const response = await axios({
-          method: method,
-          url: pricingUrl,
-          data: data,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (response.status >= 200 && response.status < 300) {
-          console.log("Price added/updated successfully");
-        } else {
-          console.error("Error adding/updating price:", response.statusText);
-        }
-      } else {
-        console.error("No se encontraron códigos de moneda válidos.");
-      }
-    } catch (error) {
-      console.error("Error sending request:", error);
-    }
-  };
-
-  const addProductStock = async (
-    id: string,
-    skuId: string,
-    quantity: number,
-    minimumQuantity: number
-  ) => {
-    console.log("addproductstock<<<");
-    try {
-      console.log("Obteniendo warehouseId");
-      const warehouseId = await getWarehouseId();
-      if (!warehouseId) {
-        console.error("No se pudo obtener el warehouseId");
-        return;
-      }
-
-      const token = getCookie("AdminTokenAuth");
-      const stockData: any = {
-        warehouseId: warehouseId,
-        minimumQuantity: minimumQuantity,
-        quantity: quantity,
-      };
-
-      console.log("Obteniendo inventarios existentes");
-      const existingInventories = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("Inventarios existentes:", existingInventories.data);
-
-      let method = "POST";
-      let stockUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
-
-      if (existingInventories.data.skuInventories.length > 0) {
-        // Actualizar stock existente
-        method = "PUT";
-        stockUrl = `${stockUrl}/${existingInventories.data.skuInventories[0].id}`;
-        console.log("Actualizando stock existente con URL:", stockUrl);
-      } else {
-        console.log("Creando nuevo stock con URL:", stockUrl);
-      }
-
-      const response = await axios({
-        method: method,
-        url: stockUrl,
-        data: stockData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.status >= 200 && response.status < 300) {
-        console.log("Stock añadido/actualizado correctamente");
-      } else {
-        console.error(
-          "Error al añadir/actualizar el stock:",
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error("Error al enviar la solicitud:", error);
-    }
-  };
   const fetchSkuData = async (productId: string, skuId: string) => {
-    console.log("fetchSkuData<<<");
     if (productId && skuId) {
       try {
         const token = getCookie("AdminTokenAuth");
@@ -608,7 +455,6 @@ const CrearProductoSimple: React.FC = ({}) => {
         const responseData = await response.json();
         if (response.ok && responseData.code === 0) {
           const skuDataResponse = responseData.sku;
-          console.log("fetchSkuData>>> skuDataResponse:", skuDataResponse);
           setSkuData({
             description: skuDataResponse.description || "",
             hasUnlimitedStock: skuDataResponse.hasUnlimitedStock || false,
@@ -616,6 +462,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               skuDataResponse.hasStockNotifications || false,
             isFeatured: skuDataResponse.isFeatured || false,
           });
+
           setCheckOfferChecked(skuDataResponse.hasStockNotifications);
         } else {
           console.error(
@@ -687,15 +534,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = parseFloat(e.target.value);
-
-    // Verifica si alertStock es mayor o igual al nuevo stock
-    if (checkOfferChecked && alertStock !== null && alertStock >= value) {
-      toast.error(
-        "El stock debe ser mayor que el stock mínimo para la alerta."
-      );
-      return;
-    }
-    setStockQuantity(value ? value : null);
+    setStockQuantity(isNaN(value) ? 0 : value); // Asegúrate de que 0 se trate correctamente
   };
 
   const handleSkuData = async (
@@ -706,7 +545,6 @@ const CrearProductoSimple: React.FC = ({}) => {
     hasStockNotifications: boolean,
     isFeatured: boolean
   ) => {
-    console.log("handleSkuData>>>");
     try {
       const token = getCookie("AdminTokenAuth");
       const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
@@ -729,7 +567,6 @@ const CrearProductoSimple: React.FC = ({}) => {
 
       if (response.status >= 200 && response.status < 300) {
         console.log("SKU data updated successfully");
-        toast.success("Datos de la SKU actualizados correctamente");
       } else {
         console.error("Error updating SKU data:", response.statusText);
         toast.error("Error al actualizar los datos de la SKU");
@@ -877,9 +714,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             );
           }
 
-          if (stockQuantity && productId && skuId && alertStock !== null) {
-            await handleStockSku(productId, skuId, stockQuantity, alertStock);
-          }
+          await handleStockSku(productId, skuId, stockQuantity, alertStock);
 
           for (const image of selectedImages) {
             await addProductImage(
@@ -941,7 +776,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             name: productType.name,
           })
         );
-
+        setDescription(productData.description || "");
         setFormData({
           ...formData,
           name: productData.name,
@@ -1008,8 +843,9 @@ const CrearProductoSimple: React.FC = ({}) => {
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 800,
+        maxWidthOrHeight: 1600,
         useWebWorker: true,
+        initialQuality: 1,
       };
 
       // Convert Blob to File
@@ -1244,34 +1080,36 @@ const CrearProductoSimple: React.FC = ({}) => {
             </div>
             <div className="">
               <label className="font-normal ">Descripción Producto</label>
-              <textarea
-                className="min-h-40 shadow rounded block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                name="descripcionProducto"
-                cols={30}
-                rows={5}
-                value={formData.description}
+              <ReactQuill
+                value={description}
                 onChange={handleDescriptionChange}
-              ></textarea>
-              <div className="flex justify-between items-center mt-2">
+                modules={{
+                  toolbar: [
+                    [{ header: "1" }, { header: "2" }, { font: [] }],
+                    [{ size: [] }],
+                    ["bold", "italic", "underline", "strike", "blockquote"],
+                    [{ list: "ordered" }, { list: "bullet" }],
+                    ["link"],
+                  ],
+                }}
+                formats={[
+                  "header",
+                  "font",
+                  "size",
+                  "bold",
+                  "italic",
+                  "underline",
+                  "strike",
+                  "blockquote",
+                  "list",
+                  "bullet",
+                  "link",
+                ]}
+              />
+
+              <div className="flex justify-end items-center mt-2">
                 <div className="text-left text-sm text-gray-500">
                   {charCount}/{maxLength} caracteres
-                </div>
-                <div className="flex items-center text-right text-sm text-gray-500">
-                  <span>Arrastra aquí para expandir</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    className="size-6 ml-2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18"
-                    />
-                  </svg>
                 </div>
               </div>
             </div>
@@ -1685,7 +1523,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               image={mainImage || ""} // Asegurar que se pasa una cadena no nula
               crop={crop}
               zoom={zoom}
-              aspect={4 / 4}
+              aspect={2 / 3}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}

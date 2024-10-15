@@ -204,18 +204,49 @@ const ManualOrder: React.FC = () => {
     }
   };
 
-  const handleAddItem = () => {
+  const fetchStockForVariation = async (productId: string, skuId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      const data = await response.json();
+      let stock = 0;
+      if (data.code === 0 && data.skuInventories.length > 0) {
+        stock = data.skuInventories.reduce(
+          (acc: number, inventory: any) => acc + inventory.quantity,
+          0
+        );
+      }
+
+      return stock;
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      return 0;
+    }
+  };
+
+  const handleAddItem = async () => {
     if (!selectedProduct) return;
 
     let skuId = selectedProduct.skuId;
     let name = selectedProduct.name;
+    let productId = selectedProduct.id;
+    let availableStock = 0;
 
     if (selectedProduct.hasVariations && selectedVariation) {
       const variation = variations.find((v) => v.id === selectedVariation);
       if (variation) {
         skuId = variation.id;
-        name = variation.formattedAttributes; // Mostrar los atributos formateados
+        name = variation.formattedAttributes;
+        availableStock = await fetchStockForVariation(productId, skuId);
       }
+    } else {
+      availableStock = await fetchStockForVariation(productId, skuId);
+    }
+
+    if (availableStock <= 0) {
+      toast.error("El producto seleccionado no tiene stock.");
+      return;
     }
 
     if (!skuId || (selectedProduct.hasVariations && !selectedVariation)) {
@@ -225,10 +256,27 @@ const ManualOrder: React.FC = () => {
       return;
     }
 
-    const existingItem = selectedItems.find((item) => item.skuId === skuId);
-    if (!existingItem) {
-      setSelectedItems([...selectedItems, { skuId, name, quantity: 1 }]);
-    }
+    setSelectedItems((prevItems) => {
+      const existingItem = prevItems.find((item) => item.skuId === skuId);
+
+      if (existingItem) {
+        const updatedQuantity = existingItem.quantity + 1;
+
+        // Verificar que la nueva cantidad no supere el stock disponible
+        if (updatedQuantity > availableStock) {
+          toast.error("No hay suficiente stock disponible.");
+          return prevItems;
+        }
+
+        // Actualizar la cantidad del producto existente
+        return prevItems.map((item) =>
+          item.skuId === skuId ? { ...item, quantity: updatedQuantity } : item
+        );
+      }
+
+      // Si no existe, agrega un nuevo producto a la lista
+      return [...prevItems, { skuId, name, quantity: 1 }];
+    });
 
     // Limpiar los selectores
     setSelectedProduct(null);
@@ -764,6 +812,7 @@ const ManualOrder: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <select
                     className="border rounded p-2 w-full"
+                    value={selectedProduct?.id || ""}
                     onChange={(e) => handleProductChange(e.target.value)}
                   >
                     <option value="">Selecciona un producto</option>
