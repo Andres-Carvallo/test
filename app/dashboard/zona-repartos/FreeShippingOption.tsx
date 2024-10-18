@@ -1,5 +1,3 @@
-// components/FreeShippingOption.tsx
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
@@ -49,7 +47,12 @@ const FreeShippingOption: React.FC<any> = ({}) => {
   }, []);
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewValue(e.target.value);
+    const value = e.target.value;
+
+    // Usar una expresión regular para permitir solo números y evitar negativos
+    const numericValue = value.replace(/[^0-9]/g, ""); // Solo permite números positivos
+
+    setNewValue(numericValue);
   };
 
   const handleUpdate = async () => {
@@ -88,7 +91,7 @@ const FreeShippingOption: React.FC<any> = ({}) => {
             Monto mínimo para envío gratis:
           </label>
           <input
-            type="number"
+            type="text" // Cambiado a 'text' para manejar las validaciones manualmente
             value={newValue}
             onChange={handleValueChange}
             className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
