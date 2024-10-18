@@ -12,6 +12,11 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader";
 
+import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css"; // Import styles
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
 const VariationForm: React.FC<any> = ({
   index,
   variation,
@@ -228,6 +233,7 @@ const VariationForm: React.FC<any> = ({
       }
     }
   };
+
   const handleStockQuantityChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -241,7 +247,7 @@ const VariationForm: React.FC<any> = ({
       return;
     }
 
-    setStockQuantity(value ? value : null);
+    setStockQuantity(!isNaN(value) ? value : null);
   };
 
   const handleAlertStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -327,12 +333,9 @@ const VariationForm: React.FC<any> = ({
   };
   const handleSubmit = async (event: any) => {
     event.preventDefault();
-    if (
-      !variation.hasUnlimitedStock &&
-      (stockQuantity === null || stockQuantity <= 0)
-    ) {
+    if (!variation.hasUnlimitedStock && stockQuantity === null) {
       toast.error(
-        "El stock es 0 o nulo. No puedes publicar o actualizar esta variación."
+        "El stock es nulo. No puedes publicar o actualizar esta variación."
       );
       return; // No continuar con la ejecución
     }
@@ -542,13 +545,17 @@ const VariationForm: React.FC<any> = ({
     >
       <div className="w-full">
         <label htmlFor="description">Descripción</label>
-        <textarea
-          className="min-h-80 block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-          name="description"
+        <ReactQuill
+          className=" block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md  "
+          theme="snow"
           value={variation.description}
-          onChange={(e) => handleDescriptionChange(e, currentVariationIndex)}
-          maxLength={maxDescriptionLength}
-          disabled={useBaseDescription} // Deshabilitar la textarea si se usa la descripción base
+          onChange={(content) =>
+            onDescriptionChange(
+              { target: { value: content } },
+              currentVariationIndex
+            )
+          }
+          readOnly={useBaseDescription} // Deshabilitar la edición si se usa la descripción base
         />
         <div className="mt-2 flex items-center">
           <input

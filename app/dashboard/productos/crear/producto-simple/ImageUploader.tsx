@@ -131,9 +131,9 @@ const ImageUploader: React.FC<any> = ({
       }
       const options = {
         maxSizeMB: 1, // Ajusta el tamaño máximo permitido
-        maxWidthOrHeight: 1200, // Ajusta las dimensiones máximas permitidas
+        maxWidthOrHeight: 1900, // Ajusta las dimensiones máximas permitidas
         useWebWorker: true,
-        initialQuality: 0.8, // Ajusta la calidad inicial para mantener mejor calidad visual
+        initialQuality: 0.95, // Ajusta la calidad inicial para mantener mejor calidad visual
       };
       const compressedFile = await imageCompression(
         croppedImage as File,

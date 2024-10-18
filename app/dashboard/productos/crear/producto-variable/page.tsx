@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import CrearVariable from "./CrearVariable_starken";
+import CrearVariable from "./CrearVariable";
 
 export const metadata: Metadata = {
   title: "Crear Producto Varibale",

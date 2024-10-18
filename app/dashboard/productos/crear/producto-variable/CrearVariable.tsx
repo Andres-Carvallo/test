@@ -22,6 +22,11 @@ import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";
 import Link from "next/link";
 
+import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css"; // Import styles
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
 interface ImageData {
   name: string;
   type: string;
@@ -93,8 +98,9 @@ const CrearVariable: React.FC = () => {
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 800,
+        maxWidthOrHeight: 1600,
         useWebWorker: true,
+        initialQuality: 1,
       };
 
       const file = new File([croppedImage], originalFileName, {
@@ -183,10 +189,10 @@ const CrearVariable: React.FC = () => {
     hasFeaturedBaseSku: false,
     isFeatured: false,
     measures: {
-      length: 1,
-      width: 1,
-      height: 1,
-      weight: 0.2,
+      length: 0,
+      width: 0,
+      height: 0,
+      weight: 0,
     },
     previewImage: {
       name: "",
@@ -409,16 +415,14 @@ const CrearVariable: React.FC = () => {
       [name]: parseFloat(value) || null,
     }));
   };
-  const handleDescriptionChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    const { value } = event.target;
+  const handleDescriptionChange = (value: string) => {
     setFormData((prevFormData) => ({
       ...prevFormData,
       description: value,
     }));
-
-    // Actualiza la longitud de la descripción
     setDescriptionLength(value.length);
   };
+
   const handleCancel = () => {
     handleClearImage(setMainImage);
     setVariations([]);
@@ -443,7 +447,7 @@ const CrearVariable: React.FC = () => {
         length: 1,
         width: 1,
         height: 1,
-        weight: 0.2,
+        weight: 1,
       },
       previewImage: {
         name: "pixelup.cl",
@@ -1056,35 +1060,32 @@ const CrearVariable: React.FC = () => {
                   >
                     Descripción Producto Base
                   </label>
-                  <textarea
-                    className="min-h-40 shadow block p-2 mt-2 py-3 w-full text-sm text-dark bg-white border border-dark/30 focus:ring-primary focus:border-primary"
-                    style={{ borderRadius: "var(--radius)" }}
-                    name="descripcion"
-                    id="descripcion"
+                  <ReactQuill
                     value={formData.description}
                     onChange={handleDescriptionChange}
-                    maxLength={maxDescriptionLength}
+                    modules={{
+                      toolbar: [
+                        [{ header: "1" }, { header: "2" }, { font: [] }],
+                        [{ list: "ordered" }, { list: "bullet" }],
+                        ["bold", "italic", "underline", "strike"],
+                        ["link"],
+                      ],
+                    }}
+                    formats={[
+                      "header",
+                      "font",
+                      "list",
+                      "bullet",
+                      "bold",
+                      "italic",
+                      "underline",
+                      "strike",
+                      "link",
+                    ]}
                   />
-                  <div className="flex justify-between items-center mt-2">
+                  <div className="flex justify-end items-center mt-2">
                     <div className="text-left text-sm text-gray-500">
                       {descriptionLength}/{maxDescriptionLength} caracteres
-                    </div>
-                    <div className="flex items-center text-right text-sm text-gray-500">
-                      <span>Arrastra aquí para expandir</span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        className="size-6 ml-2"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M8.25 6.75 12 3m0 0 3.75 3.75M12 3v18"
-                        />
-                      </svg>
                     </div>
                   </div>
                 </div>
@@ -1574,7 +1575,7 @@ const CrearVariable: React.FC = () => {
               image={mainImage || ""} // Asegurar que se pasa una cadena no nula
               crop={crop}
               zoom={zoom}
-              aspect={4 / 4}
+              aspect={2 / 3}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}
