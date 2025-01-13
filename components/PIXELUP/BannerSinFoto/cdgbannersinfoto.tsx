@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -83,7 +84,7 @@ const BannerSinFoto: React.FC<BannerSinFotoProps> = ({ BannerSinFotoData }) => {
     return <div>Error: {error.message}</div>;
   }
   return (
-    <div className="p-6 mt-8">
+    <div className="p-6 mt-2">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
           {bannerData?.title}
@@ -109,12 +110,12 @@ const BannerSinFoto: React.FC<BannerSinFotoProps> = ({ BannerSinFotoData }) => {
             {IconosData.map((icono, index) => (
               <div
                 key={index}
-                className="flex items-center justify-center"
+                className="flex items-center justify-center pb-5"
               >
                 <img
                   src={icono}
                   alt=""
-                  className="max-w-full sm:max-w-[80%]"
+                  className="max-w-[125px] sm:max-w-[80%]"
                   style={{ borderRadius: "var(--radius)" }}
                 />
               </div>

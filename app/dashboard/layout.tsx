@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Loader from "@/components/common/Loader";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/HeaderDashboard";
+import Sidebar from "@/components/Core/Sidebar";
+import Header from "@/components/Core/HeaderDashboard";
 import { getCookie, deleteCookie } from "cookies-next";
 import { useRouter, usePathname } from "next/navigation";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
@@ -41,7 +41,6 @@ export default function RootLayout({
           throw new Error("User data not found");
         }
       } catch (error) {
-        console.error("Error al obtener el usuario o token inválido: ", error);
         handleLogout();
       }
     }

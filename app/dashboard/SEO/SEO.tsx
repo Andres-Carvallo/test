@@ -5,7 +5,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
-import Modal from "@/components/Modals/ModalSeo";
+import Modal from "@/components/Core/Modals/ModalSeo";
 import { getCroppedImg } from "@/lib/cropImage";
 
 const Hero: React.FC = () => {
@@ -165,9 +165,9 @@ const Hero: React.FC = () => {
       }
       const options = {
         maxSizeMB: 1, // Ajusta el tamaño máximo permitido
-        maxWidthOrHeight: 1200, // Ajusta las dimensiones máximas permitidas
+        maxWidthOrHeight: 1900, // Ajusta las dimensiones máximas permitidas
         useWebWorker: true,
-        initialQuality: 0.8, // Ajusta la calidad inicial para mantener mejor calidad visual
+        initialQuality: 0.9, // Ajusta la calidad inicial para mantener mejor calidad visual
       };
       const compressedFile = await imageCompression(
         croppedImage as File,

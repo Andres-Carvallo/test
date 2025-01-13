@@ -67,7 +67,7 @@ const PostDetail: React.FC = () => {
       <p className="text-gray-700 dark:text-gray-300 mb-4">
         Published on {new Date(post.creationDate).toLocaleDateString()}
       </p>
-      <div className="prose dark:prose-dark mb-4">
+      <div className="prose max-w-none dark:prose-invert prose-img:rounded-lg prose-img:mx-auto mb-4">
         <div dangerouslySetInnerHTML={{ __html: post.detailContent }} />
       </div>
       {post.previewImage?.url && (

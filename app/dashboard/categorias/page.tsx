@@ -5,7 +5,7 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import axios from "axios";
 import CreateCategory from "@/components/Products/Category/CreateCategory";
 import EditCategory from "@/components/Products/Category/EditCategory";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 
 const CategoriasPage: React.FC = () => {
   const { productType, setProductType } = useAPI();

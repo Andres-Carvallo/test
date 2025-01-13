@@ -1,5 +1,5 @@
 "use client";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import ContentBienvenida from "@/components/conMantenedor/ContentBienvenida";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -55,7 +55,7 @@ function BannerSinFotoBO() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "0a109d60-29c9-428f-b03c-60316cebd34d";
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNERSINFOTO_ID}`;
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(

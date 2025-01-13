@@ -6,22 +6,28 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader";
-import Modal from "@/components/Modals/ModalSeo";
+import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
+import { useRevalidation } from "@/app/Context/RevalidationContext";
 
 function Colecciones() {
+  const { triggerRevalidation } = useRevalidation();
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
   const editFormRef = useRef<HTMLDivElement>(null);
+  // Nuevo estado para indicar qué imagen está siendo recortada
+  const [isPreviewImageModalOpen, setIsPreviewImageModalOpen] = useState(false);
+
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
+  const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,17 +37,26 @@ function Colecciones() {
   const [mainImageColeccion, setMainImageColeccion] = useState<string | null>(
     null
   );
+  const [mainPreviewColeccion, setPreviewImageColeccion] = useState<
+    string | null
+  >(null);
   const [editingCollectionId, setEditingCollectionId] = useState<string | null>(
     null
   );
   const [imageModified, setImageModified] = useState<boolean>(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [formDataColeccion, setFormDataColeccion] = useState<any>({
-    bannerTitle: "",
-    bannerText: "",
+    bannerTitle: "fbmjoyas.cl",
+    bannerText: "fbmjoyas.cl",
     title: "",
-    landingText: "pixelup",
+    landingText: "fbmjoyas.cl",
     mainImage: {
+      name: "",
+      type: "",
+      size: null,
+      data: "",
+    },
+    previewImage: {
       name: "",
       type: "",
       size: null,
@@ -74,7 +89,7 @@ function Colecciones() {
     "e2b1263f-7cd3-42b9-b08a-8d26e59d91d8",
     "6f1fc389-c295-418e-b43d-c12f1351bfc8",
     "eb1f78e0-f6e4-4a5a-89e1-eca0b1b97ff1",
-    "ac61d5e9-93c0-44c5-96ae-a69ac64dab5d"
+    "ac61d5e9-93c0-44c5-96ae-a69ac64dab5d",
   ]; // Reemplaza estos IDs con los reales
 
   // States for image cropping
@@ -125,6 +140,66 @@ function Colecciones() {
     []
   );
 
+  const handlePreviewCrop = async () => {
+    if (!mainPreviewColeccion) return;
+
+    try {
+      const croppedImage = await getCroppedImg(
+        mainPreviewColeccion,
+        croppedAreaPixels
+      );
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1080, // Ajusta el tamaño según sea necesario
+        useWebWorker: true,
+        initialQuality: 1,
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const imageInfo = {
+        name: fileName, // Usa el nombre del archivo almacenado
+        type: compressedFile.type,
+        size: compressedFile.size,
+        data: base64,
+      };
+
+      // Actualizamos el estado con la imagen recortada y comprimida
+      setFormDataColeccion((prevFormData: any) => ({
+        ...prevFormData,
+        previewImage: imageInfo, // Actualiza la imagen de vista previa en el formData
+      }));
+      setPreviewImageColeccion(base64);
+      setIsPreviewImageModalOpen(false); // Cierra el modal después del recorte
+      setIsPreviewImageUploaded(true);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
+    }
+  };
+
+  const handlePreviewImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFileName(file.name); // Guarda el nombre del archivo
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setPreviewImageColeccion(result);
+        setIsPreviewImageUploaded(true); // Indica que la imagen fue cargada
+        setIsPreviewImageModalOpen(true); // Abre el modal de recorte para preview
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCrop = async () => {
     if (!mainImageColeccion) return;
 
@@ -140,9 +215,9 @@ function Colecciones() {
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 1600,
+        maxWidthOrHeight: 1900,
         useWebWorker: true,
-        initialQuality: 0.8,
+        initialQuality: 1,
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -182,7 +257,22 @@ function Colecciones() {
     setMainImageColeccion(
       formDataColeccion.mainImage.url || formDataColeccion.mainImage.data
     );
-    setIsMainImageUploaded(false); // Reiniciar el estado
+    setIsMainImageUploaded(false);
+    // Reiniciar el estado
+  };
+
+  const handleClearImageMobile = () => {
+    setPreviewImageColeccion(null);
+    setIsPreviewImageUploaded(false);
+    setFormDataColeccion((prevFormData: any) => ({
+      ...prevFormData,
+      previewImage: {
+        name: "",
+        type: "",
+        size: null,
+        data: "",
+      },
+    }));
   };
 
   const handleProductChange = (selectedOption: any) => {
@@ -214,7 +304,7 @@ function Colecciones() {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=1&pageSize=300&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -270,23 +360,65 @@ function Colecciones() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar que haya al menos un producto seleccionado
+    if (selectedProducts.length === 0) {
+      toast.error(
+        "Debes seleccionar al menos un producto para crear la colección."
+      );
+      return;
+    }
+
+    if (!formDataColeccion.title.trim()) {
+      toast.error("Por favor, ingresa un nombre para la colección.");
+      return;
+    }
+
+    // Solo validar imágenes si es una nueva colección
+    if (!isEditing) {
+      if (!isMainImageUploaded) {
+        toast.error("Por favor, sube una imagen principal antes de continuar.");
+        return;
+      }
+
+      if (!isPreviewImageUploaded) {
+        toast.error(
+          "Por favor, sube una imagen para móvil antes de continuar."
+        );
+        return;
+      }
+    }
+
     if (nameError) {
       return;
     }
     setLoading(true);
 
-    const data = {
-      ...formDataColeccion,
+    // Preparar los datos base
+    let data: any = {
+      bannerTitle: formDataColeccion.bannerTitle,
+      bannerText: formDataColeccion.bannerText,
+      title: formDataColeccion.title,
+      landingText: formDataColeccion.landingText,
       products: selectedProducts.map((product) => ({
         id: product.value,
       })),
     };
 
+    // Solo incluir imágenes si han sido modificadas
+    if (isMainImageUploaded) {
+      data.mainImage = formDataColeccion.mainImage;
+    }
+
+    if (isPreviewImageUploaded) {
+      data.previewImage = formDataColeccion.previewImage;
+    }
+
     const token = getCookie("AdminTokenAuth");
 
     try {
       if (isEditing && editingCollectionId) {
-        // Actualizar la colección existente
+        // Actualizar colección existente
         await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${editingCollectionId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           data,
@@ -297,9 +429,17 @@ function Colecciones() {
             },
           }
         );
+
+        await triggerRevalidation(["collections"]);
         toast.success("Colección actualizada con éxito!");
       } else {
-        // Crear nueva colección
+        // Para nueva colección, asegurarse de que ambas imágenes estén incluidas
+        if (!data.mainImage || !data.previewImage) {
+          toast.error("Se requieren ambas imágenes para crear una colección");
+          setLoading(false);
+          return;
+        }
+
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           data,
@@ -310,16 +450,24 @@ function Colecciones() {
             },
           }
         );
+
+        await triggerRevalidation(["collections"]);
         toast.success("Colección creada con éxito!");
       }
 
-      // Resetear estados después de la creación o actualización
+      // Resetear el estado después de crear/actualizar
       setFormDataColeccion({
-        bannerTitle: "",
-        bannerText: "",
+        bannerTitle: "fbmjoyas.cl",
+        bannerText: "fbmjoyas.cl",
         title: "",
-        landingText: "pixelup",
+        landingText: "fbmjoyas.cl",
         mainImage: {
+          name: "",
+          type: "",
+          size: null,
+          data: "",
+        },
+        previewImage: {
           name: "",
           type: "",
           size: null,
@@ -327,21 +475,24 @@ function Colecciones() {
         },
       });
       setMainImageColeccion(null);
+      setPreviewImageColeccion(null);
       setSelectedProducts([]);
       fetchCollections();
     } catch (error) {
       console.error("Error al enviar datos:", error);
+      toast.error("Error al procesar la solicitud");
     } finally {
       setIsEditing(false);
       setLoading(false);
       setIsMainImageUploaded(false);
+      setIsPreviewImageUploaded(false);
     }
   };
 
   const handleDelete = async (collectionID: string) => {
     try {
       const token = getCookie("AdminTokenAuth");
-      const response = await axios.delete(
+      await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections/${collectionID}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
@@ -350,12 +501,20 @@ function Colecciones() {
           },
         }
       );
-      console.log("Colección eliminada:", response.data);
-      fetchCollections(); // Vuelve a cargar las colecciones después de eliminar una
+
+      // Usar el contexto para revalidar
+      await triggerRevalidation(["collections"]);
+      toast.success("Colección eliminada con éxito!");
+      fetchCollections();
     } catch (error) {
       console.error("Error al eliminar la colección:", error);
+      toast.error("Error al eliminar la colección");
     }
   };
+  const [mobileImageColeccion, setMobileImageColeccion] = useState<
+    string | null
+  >(null);
+  const [isMobileImageUploaded, setIsMobileImageUploaded] = useState(false);
 
   const handleEdit = async (collectionID: any) => {
     try {
@@ -392,6 +551,12 @@ function Colecciones() {
         bannerText: collection.bannerText,
         title: collection.title,
         landingText: "pixelup",
+        previewImage: {
+          name: collection.bannerTitle,
+          type: "image/jpeg",
+          size,
+          data: mainImageBase64,
+        },
         mainImage: {
           name: collection.bannerTitle,
           type: "image/jpeg",
@@ -417,10 +582,16 @@ function Colecciones() {
 
   const handleCancelEdit = () => {
     setFormDataColeccion({
-      bannerTitle: "",
-      bannerText: "",
+      bannerTitle: "fbmjoyas.cl",
+      bannerText: "fbmjoyas.cl",
       title: "",
-      landingText: "pixelup",
+      previewImage: {
+        name: "",
+        type: "",
+        size: null,
+        data: "",
+      },
+      landingText: "fbmjoyas.cl",
       mainImage: {
         name: "",
         type: "",
@@ -481,6 +652,65 @@ function Colecciones() {
 
   const SkeletonLoader = () => <Loader />;
 
+  const handleMobileImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFileName(file.name); // Almacena el nombre del archivo
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setMobileImageColeccion(result);
+        setIsMobileImageUploaded(true); // Indicar que una nueva imagen ha sido cargada
+        setIsModalOpen(true); // Abrir el modal para recortar
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleMobileCrop = async () => {
+    if (!mobileImageColeccion) return;
+
+    try {
+      const croppedImage = await getCroppedImg(
+        mobileImageColeccion,
+        croppedAreaPixels
+      );
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1900,
+        useWebWorker: true,
+        initialQuality: 1,
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const imageInfo = {
+        name: fileName, // Usa el nombre del archivo almacenado
+        type: compressedFile.type,
+        size: compressedFile.size,
+        data: base64,
+      };
+
+      setFormDataColeccion((prevFormData: any) => ({
+        ...prevFormData,
+        previewImage: imageInfo, // Nueva imagen para mobile
+      }));
+      setMobileImageColeccion(base64);
+      setIsModalOpen(false);
+      setIsMobileImageUploaded(true);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
+    }
+  };
+
   return (
     <section>
       <Breadcrumb pageName="Colecciones" />
@@ -510,12 +740,12 @@ function Colecciones() {
                   >
                     Colección
                   </th>
-                  <th
+                  {/*                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell"
                   >
-                    Titulo Colección
-                  </th>
+                    Título Colección
+                  </th> */}
                   <th
                     scope="col"
                     className="px-6 hidden py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -553,11 +783,11 @@ function Colecciones() {
                         {collection.title}
                       </div>
                     </td>
-                    <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
+                    {/*                     <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
                       <div className="text-sm text-gray-900">
                         {collection.bannerTitle}
                       </div>
-                    </td>
+                    </td> */}
                     <td className="px-6 py-4 md:whitespace-nowrap hidden">
                       <div className="text-sm text-gray-900">
                         {collection.bannerText}
@@ -661,7 +891,7 @@ function Colecciones() {
                 style={{ borderRadius: "var(--radius)" }}
               />
             </label>
-            <label className="block mt-4">
+            {/*             <label className="block mt-4">
               <h3 className="font-normal text-primary">
                 Título Banner <span className="text-primary">*</span>
               </h3>
@@ -674,7 +904,7 @@ function Colecciones() {
                 className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
                 style={{ borderRadius: "var(--radius)" }}
               />
-            </label>
+            </label> 
 
             <label className="block mt-4">
               <h3 className="font-normal text-primary">
@@ -689,7 +919,7 @@ function Colecciones() {
                 className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
                 style={{ borderRadius: "var(--radius)" }}
               />
-            </label>
+            </label>*/}
 
             <div>
               <input
@@ -758,7 +988,66 @@ function Colecciones() {
                         <span className="font-semibold">Subir Imagen</span>
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG o Webp (800x800px)
+                        PNG, JPG o Webp (800x800px)
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              )}
+            </div>
+            <div className="mt-4">
+              <input
+                type="file"
+                accept="image/*"
+                id="previewImage"
+                className="hidden"
+                onChange={handlePreviewImageChange}
+              />
+              {isPreviewImageUploaded ? (
+                <div className="flex flex-col items-center mt-10 ">
+                  <h4 className="font-normal text-primary text-center text-slate-600 w-full">
+                    Tu fotografía{" "}
+                    <span className="text-dark">
+                      {formDataColeccion.previewImage.name}
+                    </span>{" "}
+                    ha sido cargada.
+                    <br /> Actualiza para ver los cambios.
+                  </h4>
+                  <button
+                    className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full text-xs mt-4"
+                    onClick={handleClearImageMobile}
+                  >
+                    <span className="self-center">Seleccionar otra Imagen</span>
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="font-normal text-primary">
+                    Foto Mobile y Tablet <span className="text-primary">*</span>
+                  </h3>
+                  <label
+                    htmlFor="previewImage"
+                    className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
+                  >
+                    <div className="flex flex-col justify-center items-center">
+                      <svg
+                        className="w-12 h-12 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Subir Imagen</span>
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG o Webp (800x800px)
                       </p>
                     </div>
                   </label>
@@ -895,7 +1184,12 @@ function Colecciones() {
             <div className="mt-4 flex justify-between">
               <button
                 type="submit"
-                className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6"
+                disabled={selectedProducts.length === 0}
+                className={`shadow ${
+                  selectedProducts.length === 0
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-primary hover:bg-secondary"
+                } w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6`}
                 style={{ borderRadius: "var(--radius)" }}
               >
                 {isEditing ? "Actualizar Colección" : "Crear Colección"}
@@ -924,7 +1218,7 @@ function Colecciones() {
               image={mainImageColeccion || ""} // Asegurar que se pasa una cadena no nula
               crop={crop}
               zoom={zoom}
-              aspect={5 / 1}
+              aspect={1920 / 200}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}
@@ -969,6 +1263,44 @@ function Colecciones() {
           </div>
         </Modal>
       )}
+
+      {isPreviewImageModalOpen && (
+        <Modal
+          showModal={isPreviewImageModalOpen}
+          onClose={() => setIsPreviewImageModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainPreviewColeccion || ""} // Usar la imagen de vista previa
+              crop={crop}
+              zoom={zoom}
+              aspect={1080 / 300} // Puedes ajustar el aspecto según sea necesario
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+          </div>
+          <div className="flex justify-between w-full">
+            <button
+              onClick={handlePreviewCrop}
+              className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Recortar y Subir
+            </button>
+            <button
+              onClick={() => {
+                setPreviewImageColeccion(null);
+                setIsPreviewImageUploaded(false);
+                setIsPreviewImageModalOpen(false); // Cierra el modal para vista previa
+              }}
+              className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Cancelar
+            </button>
+          </div>
+        </Modal>
+      )}
+
       {isDeleteModalVisible && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

@@ -1,10 +1,8 @@
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
-import Navbar01 from "@/components/PIXELUP/Navbar/Navbar01/Navbar01";
 import Footer02 from "@/components/PIXELUP/Footer/Footer02/Footer02";
 import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
-import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import { Metadata } from "next";
 
@@ -20,8 +18,9 @@ export default function RootLayout({
   return (
     <>
       <MarqueeTOP />
-      <Navbar04 />
+      <Navbar02 />
       <div>{children}</div>
+      <Footer01 />
       <Footer02 />
     </>
   );

@@ -12,7 +12,7 @@ const Categoria01 = () => {
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "cb50bccd-aff7-4ac7-8e13-8d784ad125ac";
+      const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA01_ID}`;
 
       const BannersCategory = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -43,34 +43,32 @@ const Categoria01 = () => {
     >
       {bannerData && (
         <div>
-          <div className=" py-6 sm:py-8 lg:py-12">
+          <div className="sm:py-8">
             <div className="mx-auto max-w-screen-2xl px-4 md:px-8">
-              <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:mb-12 lg:text-3xl ">
+{/*               <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:mb-12 lg:text-3xl ">
                 Categorías Destacadas 
-              </h2>
+              </h2> */}
 
               <div className="flex flex-wrap gap-6 items-center align-middle justify-center">
                 {/* product - start */}
                 {bannerData.map((banner: any) => (
                   <div
-                    className="flex-1 max-w-[200px] min-w-[200px] "
+                    className="flex-1 max-w-[200px] min-w-[200px]"
                     key={banner.id}
                   >
                     <Link
                       href={banner.buttonLink}
-                      className="group relative flex flex-wrap h-96 items-end overflow-hidden rounded-lg bg-gray-100 p-4 shadow-lg"
+                      className="group relative flex flex-wrap h-96 items-end overflow-hidden rounded-lg bg-gray-100 shadow-lg"
                     >
                       <img
                         src={banner.mainImage.url}
                         loading="lazy"
                         alt="Colección Diosa Madre"
-                        className="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
+                        className="absolute inset-0 h-full w-full object-cover object-center transition duration-300 group-hover:scale-110"
                       />
-                      <div className="relative w-full text-center bg-white rounded-xl p-2 font-bold ">
-                        <h3 className="text-xl text-dark">{banner.title}</h3>
-                        <p className="mt-1 text-sm text-black hidden">
-                          {banner.landingText}
-                        </p>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                      <div className="relative w-full p-4 text-center">
+                        <h3 className="text-xl font-bold text-white">{banner.title}</h3>
                       </div>
                     </Link>
                   </div>

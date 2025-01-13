@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import Modal from "@/components/Modals/ModalSeo"; // Asegúrate de importar el modal
+import Modal from "@/components/Core/Modals/ModalSeo"; // Asegúrate de importar el modal
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
@@ -143,9 +143,9 @@ const BannerPrincipalBO: React.FC = () => {
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 2000,
+        maxWidthOrHeight: 1900,
         useWebWorker: true,
-        initialQuality: 1,
+        initialQuality: 0.95,
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -647,10 +647,10 @@ const BannerPrincipalBO: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-between w-full ">
+            <div className="flex justify-between w-full gap-2">
               <button
                 onClick={handleCrop}
-                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               >
                 Recortar y Subir
               </button>
@@ -660,7 +660,7 @@ const BannerPrincipalBO: React.FC = () => {
                   setIsMainImageUploaded(false);
                   setIsModalOpen(false);
                 }}
-                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
               >
                 Cancelar
               </button>

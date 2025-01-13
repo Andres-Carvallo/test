@@ -1,5 +1,5 @@
 "use client";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import React, { useEffect, useState, useRef } from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import { obtenerZonasRepartosBO } from "@/app/utils/obtenerZonasRepartosBO";
@@ -51,7 +51,7 @@ function ZonasRepartos() {
     communes: [],
   });
 
-  const showDeleteModal = (zoneId: any) => {
+  const showDeleteModal = (zoneId:any) => {
     setZoneToDelete(zoneId);
     setIsDeleteModalVisible(true);
   };
@@ -84,6 +84,9 @@ function ZonasRepartos() {
       hideDeleteModal();
     }
   };
+
+
+
 
   useEffect(() => {
     if (selectedCommunes.length > 0) {
@@ -506,7 +509,7 @@ function ZonasRepartos() {
     <>
       <title>Zonas de Repartos</title>
       <section className="p-10">
-        <FreeShippingOption />
+      <FreeShippingOption />
         <div className="shadow-md  rounded-lg p-4 bg-white my-6 overflow-x-auto">
           <div
             ref={ZonasRef}
@@ -864,7 +867,7 @@ function ZonasRepartos() {
             </button>
           </div>
         </div>
-        {/* Modal de confirmación de eliminación */}
+              {/* Modal de confirmación de eliminación */}
         {isDeleteModalVisible && (
           <div className="fixed z-10 inset-0 overflow-y-auto">
             <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

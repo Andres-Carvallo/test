@@ -10,6 +10,7 @@ import Head from "next/head";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import Destacados01 from "../../Destacados/Destacado01";
 
 interface Variation {
   id: string;
@@ -37,7 +38,7 @@ const ProductDetail01: React.FC = () => {
   const [variations, setVariations] = useState<Variation[]>([]);
   const [isOutOfStock, setIsOutOfStock] = useState(false);
   const [stock, setStock] = useState<number | null>(null);
-
+  const [showModal, setShowModal] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState<Variation | any>(
     null
   );
@@ -149,11 +150,11 @@ const ProductDetail01: React.FC = () => {
   const [isTouching, setIsTouching] = useState(false);
 
   const moveSlide = (direction: any) => {
-    const newIndex = (currentSlide + direction + thumbnails.length) % thumbnails.length;
+    const newIndex =
+      (currentSlide + direction + thumbnails.length) % thumbnails.length;
     setCurrentSlide(newIndex);
     setSelectedThumbnail(thumbnails[newIndex].imageUrl); // Asegúrate de cambiar también la miniatura seleccionada
   };
-  
 
   const handleTouchStart = (e: any) => {
     setStartX(e.touches[0].clientX);
@@ -183,10 +184,10 @@ const ProductDetail01: React.FC = () => {
     return (
       <>
         {/* Carrusel deslizable solo para pantallas pequeñas */}
-        <div className="md:hidden">
+        <div className="">
           <div className="relative max-w-4xl mx-auto overflow-hidden">
             <button
-              className="absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 z-10"
+              className="lg:hidden absolute top-1/2 left-0 transform -translate-y-1/2 bg-[#4D4D4D] text-white p-2 z-10"
               onClick={() => moveSlide(-1)}
             >
               &#10094;
@@ -199,17 +200,23 @@ const ProductDetail01: React.FC = () => {
               onTouchEnd={handleTouchEnd}
             >
               {thumbnails.map((thumbnail, index) => (
-                <div key={index} className="slide min-w-full box-border">
+                <div
+                  key={index}
+                  className="slide min-w-full box-border"
+                >
                   <img
                     src={thumbnail.imageUrl}
                     alt={`Slide ${index + 1}`}
-                    className="w-full rounded"
+                    className="w-full"
+                    style={{
+                      borderRadius: "var(--radius)",
+                    }}
                   />
                 </div>
               ))}
             </div>
             <button
-              className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 z-10"
+              className="lg:hidden absolute top-1/2 right-0 transform -translate-y-1/2 bg-[#4D4D4D] text-white p-2 z-10"
               onClick={() => moveSlide(1)}
             >
               &#10095;
@@ -222,11 +229,11 @@ const ProductDetail01: React.FC = () => {
                   alt="Miniatura"
                   className={`object-cover cursor-pointer shadow-md ${
                     selectedThumbnail === thumbnail.imageUrl
-                      ? "border-2 border-blue-500"
+                      ? "border-2 border-primary"
                       : ""
                   }`}
                   style={{
-                    width: "50px",
+                    width: "18%",
                     height: "auto",
                     borderRadius: "var(--radius)",
                   }}
@@ -238,7 +245,7 @@ const ProductDetail01: React.FC = () => {
         </div>
 
         {/* Visualización original para pantallas más grandes */}
-        <div className="hidden md:flex md:flex-col gap-4 justify-center items-center md:items-start mt-4 md:mt-0 md:mr-4">
+        {/*         <div className="hidden md:flex md:flex-col gap-4 justify-center items-center md:items-start mt-4 md:mt-0 md:mr-4">
           {thumbnails.map((thumbnail, index) => (
             <img
               key={thumbnail.id}
@@ -257,7 +264,7 @@ const ProductDetail01: React.FC = () => {
               onClick={() => handleThumbnailClick(index)}
             />
           ))}
-        </div>
+        </div> */}
       </>
     );
   };
@@ -271,32 +278,36 @@ const ProductDetail01: React.FC = () => {
   const customOrder = ["XS", "S", "M", "L", "XL", "XXL"];
 
   const sortAttributes = (attributeName: string, values: string[]) => {
-    // Si el atributo es "TALLA", "TALLAS", "TAMAÑO" o "TAMAÑOS", usa el orden personalizado
+    // Intentamos convertir todos los valores a números primero.
+    const allValuesAreNumbers = values.every((value) => !isNaN(Number(value)));
+
+    if (allValuesAreNumbers) {
+      // Ordena todos los valores como números si todos son numéricos.
+      return values.sort((a, b) => Number(a) - Number(b));
+    }
+
+    // Si no todos son números, aplicamos el orden personalizado o alfabético.
     if (
       attributeName.toLowerCase() === "talla" ||
       attributeName.toLowerCase() === "tallas" ||
       attributeName.toLowerCase() === "tamaño" ||
       attributeName.toLowerCase() === "tamaños"
     ) {
+      const customOrder = ["XS", "S", "M", "L", "XL", "XXL"];
       return values.sort((a, b) => {
         const indexA = customOrder.indexOf(a);
         const indexB = customOrder.indexOf(b);
-
-        // Si alguno de los valores no está en el customOrder, colócalo al final
         if (indexA === -1) return 1;
         if (indexB === -1) return -1;
-
         return indexA - indexB;
       });
     }
 
-    // Para todos los demás atributos, ordena alfabéticamente o numéricamente
-    return values.sort((a, b) => {
-      if (!isNaN(Number(a)) && !isNaN(Number(b))) {
-        return Number(a) - Number(b);
-      }
-      return a.localeCompare(b);
-    });
+    // Ordena lexicográficamente si no es un atributo de talla.
+    return values.sort((a, b) => a.localeCompare(b));
+  };
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
   const [variationsQuantity, setVariationsQuantity] = useState(0);
   const fetchVariations = useCallback(async () => {
@@ -607,7 +618,7 @@ const ProductDetail01: React.FC = () => {
       toast.error("Debe seleccionar todos los atributos.");
       return; // Evita que el producto se agregue al carrito
     }
-  
+
     if (selectedVariation) {
       addToCartHandler(selectedVariation.id, quantity);
     } else if (!hasVariations) {
@@ -616,134 +627,153 @@ const ProductDetail01: React.FC = () => {
       console.error("No se ha seleccionado una variación válida.");
     }
   };
-  
+
   const areAllAttributesSelected = () => {
     if (!variations.length) return true; // Si no hay variaciones, no se requiere selección de atributos
-  
+
     // Encuentra todos los atributos requeridos basados en las variaciones
     const requiredAttributes = Object.keys(currentAttributes);
-    
+
     // Verifica si todos los atributos requeridos han sido seleccionados
     const selectedAttributesKeys = Object.keys(selectedAttributes);
-    
+
     // Compara que el número de atributos seleccionados sea igual al número de atributos requeridos
     if (selectedAttributesKeys.length !== requiredAttributes.length) {
       return false;
     }
-    
+
     // Verifica si existe una variación que coincida con los atributos seleccionados
     const matchingVariation = variations.find((variation) => {
       return variation.attributes.every((attr) => {
         return selectedAttributes[attr.label] === attr.value;
       });
     });
-    
+
     // Retorna si existe una variación válida con los atributos seleccionados
     return !!matchingVariation;
   };
-  
 
   const hasAttributes = () => {
     return Object.keys(currentAttributes).length > 0;
   };
-
+  const IconosData = [
+    "/img/iconos/hechoamano.png",
+    "/img/iconos/plata950.png",
+    "/img/iconos/unico.png",
+    "/img/iconos/emprendedora.png",
+    "/img/iconos/slowfashion.png",
+    "/img/iconos/conamor.png",
+  ];
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-16">
-      <head>
-        <title>{productName}</title>
-        <meta name="description" content={description} />
-        <meta property="og:image" content={mainImageUrl} />
+    <>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 md:mt-16">
+        {/* <head>
+          <title>{productName}</title>
+          <meta
+            name="description"
+            content={description}
+          />
+          <meta
+            property="og:image"
+            content={mainImageUrl}
+          />
 
-        <meta property="og:title" content={productName} />
-        <meta property="og:description" content={description} />
-        <link
-          rel="canonical"
-          href={`${process.env.NEXT_PUBLIC_BASE_URL}tienda/productos/${id}`}
-        />
-      </head>
-      {isLoading ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 animate-pulse">
-          <div className="flex flex-col md:flex-row -mx-4">
-            <div className="md:flex-1 px-4">
-              <div className="flex items-center justify-center">
-                <div className="flex flex-col justify-center items-center space-y-2 mr-4">
-                  <div className="flex flex-col gap-4 justify-start items-center">
-                    {[1, 2, 3, 4, 5].map((index) => (
+          <meta
+            property="og:title"
+            content={productName}
+          />
+          <meta
+            property="og:description"
+            content={description}
+          />
+          <link
+            rel="canonical"
+            href={`${process.env.NEXT_PUBLIC_BASE_URL}/tienda/productos/${id}`}
+          />
+        </head> */}
+        {isLoading ? (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 animate-pulse pb-32">
+            <div className="flex flex-col md:flex-row -mx-4">
+              <div className="md:flex-1 px-4">
+                <div className="flex items-center justify-center">
+                  <div className="flex flex-col justify-center items-center space-y-2 mr-4">
+                    <div className="flex flex-col gap-4 justify-start items-center">
+                      {[1, 2, 3, 4, 5].map((index) => (
+                        <div
+                          key={index}
+                          className="w-20 h-20 bg-gray-200 rounded"
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="w-[500px] h-[500px] bg-gray-200 rounded"></div>
+                </div>
+              </div>
+              <div className="md:flex-1 px-4 ml-4 space-y-6">
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                  <div className="flex space-x-2">
+                    {[1, 2, 3].map((index) => (
                       <div
                         key={index}
-                        className="w-20 h-20 bg-gray-200 rounded"
+                        className="h-10 w-10 bg-gray-200 rounded"
                       ></div>
                     ))}
                   </div>
                 </div>
-                <div className="w-[500px] h-[500px] bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded w-1/2"></div>
               </div>
-            </div>
-            <div className="md:flex-1 px-4 ml-4 space-y-6">
-              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-              <div className="space-y-4">
-                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </div>
-              <div className="space-y-4">
-                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-                <div className="flex space-x-2">
-                  {[1, 2, 3].map((index) => (
-                    <div
-                      key={index}
-                      className="h-10 w-10 bg-gray-200 rounded"
-                    ></div>
-                  ))}
-                </div>
-              </div>
-              <div className="h-12 bg-gray-200 rounded w-1/2"></div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col lg:flex-row -mx-4">
-          <div className="md:flex-1 px-4">
-            <div className=" md:hidden">
-              <h1 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
-                {productName}
-              </h1>
-              <p className="text-gray-500 text-sm flex gap-3">
-                Categoría: {categories.join(", ")}
-                {reviewAverageScore !== null && totalReviews !== null && (
-                  <span className="flex items-center ml-2">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < reviewAverageScore
-                            ? "text-yellow-500"
-                            : "text-gray-300"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885 a1 1 0 00.95-.69L9.049.775z" />
-                      </svg>
-                    ))}
-                    <span className="ml-1 text-gray-600">
-                      {reviewAverageScore} ({totalReviews})
+        ) : (
+          <div className="flex flex-col lg:flex-row -mx-4">
+            <div className="md:flex-1 px-4">
+              <div className=" md:hidden">
+                <h1 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
+                  {productName}
+                </h1>
+                <p className="text-gray-500 text-sm flex gap-3">
+                  Categoría: {categories.join(", ")}
+                  {reviewAverageScore !== null && totalReviews !== null && (
+                    <span className="flex items-center ml-2">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < reviewAverageScore
+                              ? "text-yellow-500"
+                              : "text-gray-300"
+                          }`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885 a1 1 0 00.95-.69L9.049.775z" />
+                        </svg>
+                      ))}
+                      <span className="ml-1 text-gray-600">
+                        {reviewAverageScore} ({totalReviews})
+                      </span>
                     </span>
-                  </span>
-                )}
-              </p>
-            </div>
-            <div className="flex md:flex-row flex-col-reverse items-center justify-center">
-              {/* Miniaturas ajustadas para ser colocadas a la izquierda en escritorios y debajo en móviles */}
-              <div className="flex flex-row md:flex-col gap-4 justify-center items-center md:items-start mt-4 md:mt-0 md:mr-4">
-                {renderThumbnails()}
+                  )}
+                </p>
               </div>
-              {/* Imagen principal ajustada para ser cuadrada y responsive */}
-              <div
+              <div className="flex md:flex-row flex-col-reverse items-center justify-center">
+                {/* Miniaturas ajustadas para ser colocadas a la izquierda en escritorios y debajo en móviles */}
+                <div className="flex flex-row md:flex-col gap-4 justify-center items-center md:items-start mt-4 md:mt-0 md:mr-4">
+                  {renderThumbnails()}
+                </div>
+                {/* Imagen principal ajustada para ser cuadrada y responsive */}
+                {/*               <div
                 className="w-full md:w-[500px] md:h-[500px] bg-gray-100 md:flex items-center justify-center shadow-md mb-4 md:mb-0 hidden "
                 style={{ borderRadius: "var(--radius)" }}
               >
@@ -752,115 +782,225 @@ const ProductDetail01: React.FC = () => {
                   alt="Producto"
                   className="object-cover max-w-full h-auto md:h-full md:w-full rounded-lg"
                 />
+              </div> */}
               </div>
             </div>
-          </div>
 
-          <div className="md:flex-1 px-4 ml-4 md:ml-24 lg:ml-4 mt-2 md:mt-8">
-            <div className="hidden md:block">
-              <h1 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
-                {productName}
-              </h1>
+            <div className="md:flex-1 px-4 ml-4 md:ml-24 lg:ml-4 mt-2 md:mt-8">
+              <div className="hidden md:block">
+                <h1 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
+                  {productName}
+                </h1>
 
-              <p className="text-gray-500 text-sm flex gap-3">
-                Categoría: {categories.join(", ")}
-                {reviewAverageScore !== null && totalReviews !== null && (
-                  <span className="flex items-center ml-2">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < reviewAverageScore
-                            ? "text-yellow-500"
-                            : "text-gray-300"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885 a1 1 0 00.95-.69L9.049.775z" />
-                      </svg>
-                    ))}
-                    <span className="ml-1 text-gray-600">
-                      {Math.floor(reviewAverageScore * 10) / 10} ({totalReviews}
-                      )
-                    </span>
-                  </span>
-                )}
-              </p>
-            </div>
-
-            <div className="flex items-center space-x-4 my-4">
-              {selectedVariation &&
-              selectedVariation.offers &&
-              selectedVariation.offers.length > 0 ? (
-                <div className="flex items-center">
-                  <div className="rounded-lg bg-background flex py-2 px-3">
-                    <div className="flex flex-col">
-                      {" "}
-                      <span className="font-bold text-primary text-3xl line-through mr-4">
-                        ${selectedVariationPrice?.toLocaleString("es-CL")}
+                <p className="text-gray-500 text-sm flex gap-3">
+                  Categoría: {categories.join(", ")}
+                  {reviewAverageScore !== null && totalReviews !== null && (
+                    <span className="flex items-center ml-2">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < reviewAverageScore
+                              ? "text-yellow-500"
+                              : "text-gray-300"
+                          }`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885 a1 1 0 00.95-.69L9.049.775z" />
+                        </svg>
+                      ))}
+                      <span className="ml-1 text-gray-600">
+                        {Math.floor(reviewAverageScore * 10) / 10} (
+                        {totalReviews})
                       </span>
-                      <span className="font-bold text-red-700 text-3xl mr-2">
-                        $
-                        {selectedVariation.offers[0].unitPrice.toLocaleString(
-                          "es-CL"
-                        )}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-4 my-4">
+                {selectedVariation &&
+                selectedVariation.offers &&
+                selectedVariation.offers.length > 0 ? (
+                  <div className="flex items-center">
+                    <div className="rounded-lg  flex py-2 px-3">
+                      <div className="flex flex-col">
+                        {" "}
+                        <span className="font-bold text-primary text-3xl line-through mr-4">
+                          ${selectedVariationPrice?.toLocaleString("es-CL")}
+                        </span>
+                        <span className="font-bold text-red-700 text-3xl mr-2">
+                          $
+                          {selectedVariation.offers[0].unitPrice.toLocaleString(
+                            "es-CL"
+                          )}
+                        </span>
+                      </div>
+                      <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
+                        Dcto. {discountPercentage}%
                       </span>
                     </div>
-                    <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
-                      Dcto. {discountPercentage}%
+                  </div>
+                ) : (
+                  <div className="rounded-lg flex py-2 pr-3">
+                    <span className="font-bold text-primary text-3xl">
+                      {selectedVariationPrice !== null ? (
+                        <span>
+                          ${selectedVariationPrice.toLocaleString("es-CL")}
+                        </span>
+                      ) : variations.length === 2 ? (
+                        // Muestra solo el precio si hay una sola variación
+                        <span>
+                          ${parseFloat(minPrice).toLocaleString("es-CL")}
+                        </span>
+                      ) : (
+                        <span>
+                          {minPrice !== "No disponible" &&
+                          maxPrice !== "No disponible" ? (
+                            parseFloat(minPrice) === parseFloat(maxPrice) ? (
+                              // Muestra solo un precio si el mínimo y el máximo son iguales
+                              <span>
+                                ${parseFloat(minPrice).toLocaleString("es-CL")}
+                              </span>
+                            ) : (
+                              // Muestra el rango de precios si son diferentes
+                              `$${parseFloat(minPrice).toLocaleString(
+                                "es-CL"
+                              )} - $${parseFloat(maxPrice).toLocaleString(
+                                "es-CL"
+                              )}`
+                            )
+                          ) : (
+                            "Precio no disponible"
+                          )}
+                        </span>
+                      )}
                     </span>
                   </div>
-                </div>
-              ) : (
-                <div className="rounded-lg bg-background flex py-2 pr-3">
-                  <span className="font-bold text-primary text-3xl">
-                    {selectedVariationPrice !== null ? (
-                      <span>
-                        ${selectedVariationPrice.toLocaleString("es-CL")}
-                      </span>
-                    ) : variations.length === 2 ? (
-                      // Muestra solo el precio si hay una sola variación
-                      <span>
-                        ${parseFloat(minPrice).toLocaleString("es-CL")}
-                      </span>
-                    ) : (
-                      <span>
-                        {minPrice !== "No disponible" &&
-                        maxPrice !== "No disponible" ? (
-                          parseFloat(minPrice) === parseFloat(maxPrice) ? (
-                            // Muestra solo un precio si el mínimo y el máximo son iguales
-                            <span>
-                              ${parseFloat(minPrice).toLocaleString("es-CL")}
-                            </span>
-                          ) : (
-                            // Muestra el rango de precios si son diferentes
-                            `$${parseFloat(minPrice).toLocaleString(
-                              "es-CL"
-                            )} - $${parseFloat(maxPrice).toLocaleString(
-                              "es-CL"
-                            )}`
-                          )
-                        ) : (
-                          "Precio no disponible"
-                        )}
-                      </span>
+                )}
+              </div>
+
+              <div className="mt-4">
+                <h3 className="text-lg font-bold text-foreground mb-4">
+                  Acerca del producto
+                </h3>
+
+                <div dangerouslySetInnerHTML={{ __html: description }} />
+              </div>
+
+              {hasAttributes() && (
+                <div className="mt-4 border-t border-gray-100">
+                  <div className="flex flex-col space-y-4 mt-2">
+                    {Object.entries(currentAttributes).map(
+                      ([attributeName, attributeValues]) => (
+                        <div key={attributeName}>
+                          <h4 className="text-primary font-semibold">
+                            {capitalizeFirstLetter(attributeName)}:
+                          </h4>
+                          <div className="flex space-x-3">
+                            {attributeValues.map((value, index) => (
+                              <button
+                                key={`${attributeName}-${index}`}
+                                className={`px-3 py-1 ${
+                                  selectedAttributes[attributeName] === value
+                                    ? "bg-primary text-white" // Cuando está seleccionado
+                                    : disabledAttributes[attributeName] &&
+                                      disabledAttributes[attributeName][index]
+                                    ? "bg-gray-200 text-gray-500 " // Cuando está deshabilitado (no disponible)
+                                    : "bg-white text-gray-800 border " // Estado normal
+                                }`}
+                                onClick={() =>
+                                  handleAttributeChange(attributeName, value)
+                                }
+                              >
+                                {capitalizeFirstLetter(value)}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/*                         <button className="flex flex-wrap gap-2 py-2 items-center mt-4 underline" onClick={() => setShowModal(true)}>
+            Guia de tallas
+              </button> */}
+                        </div>
+                      )
                     )}
-                  </span>
+                    <button
+                      className="text-[#78a4df] font-medium flex flex-wrap gap-2 py-2 items-center mt-4 underline"
+                      onClick={() => setShowModal(true)}
+                    >
+                      Guía de tallas
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
 
-            <div className="mt-4">
-              <h3 className="text-lg font-bold text-foreground">
-                Acerca del producto
-              </h3>
-              <h2 className="mt-4 text-gray-700 text-[16px] break-all">
-                {description}
-              </h2>
+              <div className="flex flex-wrap gap-2 py-4  items-center mt-4">
+                {variationsQuantity <= 1 && (stock === 0 || stock === null) ? (
+                  <span className="text-red-600 font-bold">
+                    No hay existencias
+                  </span>
+                ) : (
+                  <>
+                    {/*                   <div className="flex flex-col items-center space-y-2">
+                    <div className="text-center text-[0.5rem] uppercase text-gray-400 tracking-wide font-semibold">
+                      Cantidad
+                    </div>
+                    <div className="relative w-[80px]">
+                      <select
+                        onChange={(e) => setQuantity(parseInt(e.target.value))}
+                        className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
+                      >
+                        {Array.from({ length: 10 }, (_, i) => (
+                          <option className="text-center" key={i}>
+                            {i + 1}
+                          </option>
+                        ))}
+                      </select>
+                      <svg
+                        className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                        />
+                      </svg>
+                    </div>
+                  </div> */}
 
-              <div className="mt-10 flex flex-wrap">
-                <div>
+                    <button
+                      onClick={handleAddToCart}
+                      style={{
+                        borderRadius: "var(--radius)",
+                      }}
+                      className={`md:max-w-96 w-full h-16 px-6 py-2 text-[0.8rem] md:text-md font-semibold bg-primary text-white hover:text-black hover:border hover:border-black hover:bg-transparent ${
+                        hasVariations &&
+                        (!attributeSelected || !areAllAttributesSelected())
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : ""
+                      }`}
+                      disabled={
+                        hasVariations &&
+                        (!attributeSelected || !areAllAttributesSelected())
+                      }
+                    >
+                      {hasVariations &&
+                      (!attributeSelected || !areAllAttributesSelected())
+                        ? "Selecciona las Variaciones"
+                        : "Añadir al Carrito"}
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-wrap">
+                {/*                 <div>
                   <p>
                     {enabledForDelivery ? (
                       <div className="flex">
@@ -951,120 +1091,73 @@ const ProductDetail01: React.FC = () => {
                         </span>
                         <small className="px-2 text-red-800 self-center">
                           Retiro No Disponible
-                        </small>
+                        </small> 
                       </div>
                     )}
                   </p>
-                </div>
-                <div className="mt-4 lg:mt-0 w-auto">
+                </div> */}
+                <div className="relative md:max-w-96 w-full mt-4 lg:mt-2 border border-1 border-gray-300 py-6 flex justify-center">
+                  {/* Texto sobre el borde superior */}
+                  <span className="absolute -top-2 bg-white px-2 text-sm font-semibold">
+                    Medios de Pago
+                  </span>
                   <img
-                    src="/img/pixelup/wplus.svg"
-                    className="h-10 px-2"
+                    src="/img/pixelup/webp.webp"
+                    className="h-16 px-2"
                     alt="LogoWebpay"
                   />
                 </div>
               </div>
             </div>
+          </div>
+        )}
 
-            {hasAttributes() && (
-              <div className="mt-4">
-                <div className="flex flex-col space-y-4 mt-2">
-                  {Object.entries(currentAttributes).map(
-                    ([attributeName, attributeValues]) => (
-                      <div key={attributeName}>
-                        <h4>{attributeName}:</h4>
-                        <div className="flex space-x-2">
-                          {attributeValues.map((value, index) => (
-                            <button
-                              key={`${attributeName}-${index}`}
-                              className={`px-3 py-1 rounded border ${
-                                selectedAttributes[attributeName] === value
-                                  ? "bg-primary text-white" // Cuando está seleccionado
-                                  : disabledAttributes[attributeName] &&
-                                    disabledAttributes[attributeName][index]
-                                  ? "bg-gray-200 text-gray-500 " // Cuando está deshabilitado (no disponible)
-                                  : "bg-white text-gray-800" // Estado normal
-                              }`}
-                              onClick={() =>
-                                handleAttributeChange(attributeName, value)
-                              }
-                            >
-                              {value}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-2 py-4  items-center mt-4">
-              {variationsQuantity <= 1 && (stock === 0 || stock === null) ? (
-                <span className="text-red-600 font-bold">
-                  No hay existencias
-                </span>
-              ) : (
-                <>
-                  <div className="flex flex-col items-center space-y-2">
-                    <div className="text-center text-[0.5rem] uppercase text-gray-400 tracking-wide font-semibold">
-                      Cantidad
-                    </div>
-                    <div className="relative w-[80px]">
-                      <select
-                        onChange={(e) => setQuantity(parseInt(e.target.value))}
-                        className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
-                      >
-                        {Array.from({ length: 10 }, (_, i) => (
-                          <option className="text-center" key={i}>
-                            {i + 1}
-                          </option>
-                        ))}
-                      </select>
-                      <svg
-                        className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  <button
-  onClick={handleAddToCart}
-  className={`h-14 px-6 py-2 text-[0.8rem] md:text-md font-semibold rounded-xl bg-primary text-white hover:bg-secondary hover:text-primary ${
-    hasVariations && (!attributeSelected || !areAllAttributesSelected())
-      ? "bg-gray-400 cursor-not-allowed"
-      : ""
-  }`}
-  disabled={
-    hasVariations && (!attributeSelected || !areAllAttributesSelected())
-  }
->
-  {hasVariations && (!attributeSelected || !areAllAttributesSelected())
-    ? "Selecciona todas las Variaciones"
-    : "Agregar al Carrito"}
-</button>
-
-                </>
-              )}
+        <div className="py-12 md:py-20 grid grid-cols-2 items-center justify-center rounded-md bg-background sm:grid-cols-6 ">
+          {IconosData.map((icono, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-center pb-5"
+            >
+              <img
+                src={icono}
+                alt=""
+                className="max-w-[125px] sm:max-w-[80%]"
+                style={{ borderRadius: "var(--radius)" }}
+              />
             </div>
+          ))}
+        </div>
+        <Destacados01 text="TE PUEDE GUSTAR" />
+        <Stars
+          reviewAverageScore={reviewAverageScore}
+          totalReviews={totalReviews}
+        />
+      </div>
+      {showModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-2 right-4 text-4xl"
+            >
+              &times;
+            </button>
+            <img
+              src="/img/Tabladetallas/TabladeTallas.webp"
+              alt="Tabla de Tallas"
+              className="max-w-full max-h-full object-contain"
+              style={{ maxWidth: "80vw", maxHeight: "80vh" }}
+            />
           </div>
         </div>
       )}
-      <Stars
-        reviewAverageScore={reviewAverageScore}
-        totalReviews={totalReviews}
-      />
-    </div>
+    </>
   );
 };
 

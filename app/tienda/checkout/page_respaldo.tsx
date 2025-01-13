@@ -4,7 +4,7 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import axios from "axios";
 import toast from "react-hot-toast";
-import CartList from "@/components/CartCanva/CartList";
+import CartList from "@/components/Core/CartCanva/CartList";
 import { useRouter } from "next/navigation";
 import { Customer, ItemAvailability } from "@/types/types";
 import { jwtDecode } from "jwt-decode";

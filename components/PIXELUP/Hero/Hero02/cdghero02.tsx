@@ -63,7 +63,7 @@ const Hero02: React.FC<Hero02Props> = ({ Hero02Data }) => {
 
   const currentImage = bannerData.images[0];
   return (
-<div className="container mx-auto max-w-7xl relative">
+<div className="md:container mx-auto max-w-7xl relative">
   <div className=" lg:px-0 mt-24 flex justify-center">
     <div
       className="relative w-full h-[600px] bg-cover bg-center"

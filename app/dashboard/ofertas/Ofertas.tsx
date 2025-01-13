@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from "react";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import { getCookie } from "cookies-next";
 import Link from "next/link";
 import axios from "axios";

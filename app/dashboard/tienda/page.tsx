@@ -7,6 +7,7 @@ import BannersCategoriasBO from "@/components/conMantenedor/Mantenedores/Banners
 import Hero01BO from "@/components/PIXELUP/Hero/Hero01/BackOffice/Hero01BO";
 import Hero02BO from "@/components/PIXELUP/Hero/Hero02/BackOffice/Hero02BO";
 import FrasesBO from "@/components/PIXELUP/Frases/BackOffice/FrasesBO";
+import BannerTienda01BOMobile from "@/components/PIXELUP/BannerTienda/BannerTienda01Mobile/BackOffice/BannerTienda01BOMobile";
 
 export default function BannerTienda() {
   return (
@@ -18,6 +19,13 @@ export default function BannerTienda() {
       >
         <h4 className="uppercase font-bold mb-4">Banner Tienda</h4>
         <BannerTienda01BO />
+      </div>
+      <div
+        className="shadow-md border-primary mt-6 p-4 bg-white "
+        style={{ borderRadius: "var(--radius)" }}
+      >
+        <h4 className="uppercase font-bold mb-4">Banner Tienda Mobile</h4>
+        <BannerTienda01BOMobile />
       </div>
     </section>
   );

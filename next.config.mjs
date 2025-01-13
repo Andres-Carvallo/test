@@ -21,6 +21,9 @@ const nextConfig = {
       },
     ];
   },
+  images: {
+    domains: ["mcwni7uydbmr5rxa.public.blob.vercel-storage.com"],
+  },
 };
 
 export default nextConfig;

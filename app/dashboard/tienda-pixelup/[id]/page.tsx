@@ -5,12 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import Loader from "@/components/common/Loader"; // Usa tu componente de Loader si es necesario
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb"; // Usa tu componente de Breadcrumb si es necesario
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb"; // Usa tu componente de Breadcrumb si es necesario
 import Link from "next/link";
 import toast from "react-hot-toast";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css"; // Importar los estilos de Quill
-import Modal from "@/components/Modals/ModalSeo";
+import Modal from "@/components/Core/Modals/ModalSeo";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -90,7 +90,7 @@ export default function DetalleCanje() {
 
       if (paymentMethod === "MONEY") {
         const orderId = response.data.exchange.orderId;
-        const checkoutUrl = `${process.env.NEXT_PUBLIC_PIXELUP_URL}/order-checkout?orderId=${orderId}`;
+        const checkoutUrl = `${process.env.NEXT_PUBLIC_CHECKOUT_URL}/order-checkout?orderId=${orderId}`;
         router.push(checkoutUrl);
       } else {
         toast.success(
@@ -102,11 +102,8 @@ export default function DetalleCanje() {
       setShowModal(false); // Cerrar el modal después de la compra
     } catch (error: any) {
       console.error("Error en la compra:", error.response?.data || error);
-
-      // Mostrar el error en un toast y cerrar el modal
-      toast.error(`${error.response?.data?.message || error.message}`);
+      toast.error(`Error: ${error.response?.data?.message || error.message}`);
       setLoadingPurchase(false); // Terminamos el proceso de compra
-      setShowModal(false); // Cerrar el modal en caso de error
     }
   };
 
@@ -120,166 +117,162 @@ export default function DetalleCanje() {
   }
 
   return (
-    <>
-      <title>{exchange.name}</title>
-      <section className="p-10">
-        <Breadcrumb pageName="Detalle del Canje" />
-        <div className="flex justify-between w-full mb-4">
+    <section className="min-h-screen bg-gray-50">
+      {/* Header mejorado */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-8">
+        <div className=" mx-auto px-4">
+          <Breadcrumb pageName="Detalle del Canje" />
           <Link
             href="/dashboard/tienda-pixelup/"
-            className="px-4 py-2 bg-primary text-white rounded-md"
+            className="inline-flex items-center px-4 py-2 bg-white/20 
+                     hover:bg-white/30 text-white rounded-lg transition-colors"
           >
-            Volver
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Volver a la tienda
           </Link>
         </div>
+      </div>
 
-        {/* Detalle del Canje con estilo de portada */}
-        <div className="max-w-[900px] mx-auto bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Imagen principal tipo banner */}
-          <div className="relative">
-            {exchange.mainImageUrl ? (
-              <img
-                src={exchange.mainImageUrl}
-                alt={exchange.name}
-                className="w-full h-48 object-cover"
-              />
-            ) : (
-              <div className="w-full h-48 bg-gray-300 flex items-center justify-center">
-                <p className="text-gray-500">Imagen no disponible</p>
-              </div>
-            )}
+      {/* Contenido principal mejorado */}
+      <div className=" mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Banner y logo */}
+          <div className="relative h-96">
+            <img
+              src={exchange?.mainImageUrl}
+              alt={exchange?.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
-            {/* Imagen de la compañía en formato circular */}
-            {exchange.companyImageUrl ? (
-              <img
-                src={exchange.companyImageUrl}
-                alt={exchange.companyName}
-                className="absolute -bottom-12 left-6 w-36 h-36 rounded-full border-4 border-white object-cover shadow-lg"
-              />
-            ) : (
-              <div className="absolute -bottom-12 left-6 w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
-                <p className="text-gray-500">Imagen no disponible</p>
-              </div>
-            )}
+            <img
+              src={exchange?.companyImageUrl}
+              alt={exchange?.companyName}
+              className="absolute -bottom-16 left-8 w-32 h-32 rounded-xl
+                       border-4 border-white bg-white object-cover shadow-xl"
+            />
           </div>
 
-          {/* Información del canje */}
-          <div className="p-6 pt-16">
-            <h1 className="text-3xl font-bold mb-4 text-center">
-              {exchange.name || "Nombre no disponible"}
+          {/* Contenido */}
+          <div className="p-8 pt-20">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+              {exchange?.name}
             </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              {exchange?.companyName}
+            </p>
 
-            {/* Destacar Créditos y Precio */}
-            <div className="flex justify-around mb-6 bg-gray-100 p-4 rounded-lg">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-rosa">
-                  {exchange.creditAmount !== undefined
-                    ? exchange.creditAmount.toLocaleString("es-CL")
-                    : "N/A"}
-                </h2>
-                <p className="text-gray-700">PixelCoins</p>
-              </div>
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-700">
-                  {exchange.stock > 0 ? exchange.stock : "Agotado"}
-                </h2>
-                <p className="text-gray-700">Stock</p>
-              </div>
-              {exchange.product?.productPricings &&
-              exchange.product.productPricings.length > 0 ? (
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-rosa">
-                    $
-                    {exchange.product.productPricings[0].amount.toLocaleString(
-                      "es-CL"
-                    )}
-                  </h2>
-                  <p className="text-gray-700">Precio CLP</p>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-gray-500">N/A</h2>
-                  <p className="text-gray-700">Precio no disponible</p>
-                </div>
-              )}
-            </div>
-
-            {/* Botones de compra */}
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                {/* Botón para canjear con PixelCoins */}
-                <button
-                  className={`bg-dark w-full hover:bg-rosa text-white py-2 px-4 rounded-md ${
-                    exchange.stock === 0 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  onClick={() => openPurchaseModal("PIXELCOINS")}
-                  disabled={exchange.stock === 0 || loadingPurchase}
-                >
-                  {loadingPurchase ? "Procesando..." : "Canjear con PixelCoins"}
-                </button>
-              </div>
-
-              <div>
-                {/* Botón para comprar con dinero */}
-                <button
-                  className={`bg-dark w-full hover:bg-rosa text-white py-2 px-4 rounded-md ${
-                    exchange.stock === 0 ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  onClick={() => openPurchaseModal("MONEY")}
-                  disabled={exchange.stock === 0 || loadingPurchase}
-                >
-                  {loadingPurchase ? "Procesando..." : "Comprar"}
-                </button>
-              </div>
-            </div>
-
-            {/* Descripción extendida */}
-            <div className="mt-10 px-4 pb-6">
-              {exchange.extendedDescription ? (
-                <ReactQuill
-                  value={exchange.extendedDescription}
-                  readOnly={true}
-                  theme="bubble"
-                  className="text-gray-700 mt-2"
-                />
-              ) : (
-                <p className="text-gray-500">
-                  Descripción extendida no disponible
+            {/* Stats mejorados - Ajustado para móvil */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10">
+              <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
+                <p className="text-2xl sm:text-3xl font-bold text-rosa mb-1">
+                  {exchange?.creditAmount?.toLocaleString("es-CL")}
                 </p>
-              )}
+                <p className="text-sm text-gray-600">PixelCoins</p>
+              </div>
+
+              <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
+                  {exchange?.product?.productPricings?.[0]?.amount
+                    ? `$${exchange.product.productPricings[0].amount.toLocaleString(
+                        "es-CL"
+                      )}`
+                    : "N/A"}
+                </p>
+                <p className="text-sm text-gray-600">Precio CLP</p>
+              </div>
+
+              <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
+                  {exchange?.stock || "Agotado"}
+                </p>
+                <p className="text-sm text-gray-600">Stock Disponible</p>
+              </div>
+            </div>
+
+            {/* Botones de acción - Ajustados para móvil */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-12">
+              <button
+                onClick={() => openPurchaseModal("PIXELCOINS")}
+                disabled={!exchange?.stock || loadingPurchase}
+                className="bg-gray-800 hover:bg-gray-900 text-white py-3 px-6
+                          rounded-xl font-medium transition-all duration-300
+                          disabled:opacity-50 disabled:cursor-not-allowed
+                          transform hover:scale-[1.02]"
+              >
+                {loadingPurchase ? "Procesando..." : "Canjear con PixelCoins"}
+              </button>
+
+              <button
+                onClick={() => openPurchaseModal("MONEY")}
+                disabled={!exchange?.stock || loadingPurchase}
+                className="bg-rosa hover:bg-rosa/90 text-white py-3 px-6
+                          rounded-xl font-medium transition-all duration-300
+                          disabled:opacity-50 disabled:cursor-not-allowed
+                          transform hover:scale-[1.02]"
+              >
+                {loadingPurchase ? "Procesando..." : "Comprar"}
+              </button>
+            </div>
+
+            {/* Descripción */}
+            <div className="prose max-w-none">
+              <ReactQuill
+                value={exchange?.extendedDescription}
+                readOnly={true}
+                theme="bubble"
+                className="text-gray-700"
+              />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Modal de confirmación */}
-        <Modal
-          showModal={showModal}
-          onClose={() => setShowModal(false)}
-        >
-          <h2 className="text-xl font-semibold mb-4">
-            Confirmar compra con{" "}
-            {paymentMethod === "MONEY" ? "dinero" : "PixelCoins"}
+      {/* Modal mejorado */}
+      <Modal
+        showModal={showModal}
+        onClose={() => setShowModal(false)}
+      >
+        <div className="p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Confirmar {paymentMethod === "MONEY" ? "compra" : "canje"}
           </h2>
-          <p className="mb-6">
-            ¿Estás seguro de que deseas realizar esta compra?
+          <p className="text-gray-600 mb-6">
+            ¿Estás seguro de que deseas{" "}
+            {paymentMethod === "MONEY" ? "comprar" : "canjear"}
+            este producto?
           </p>
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end gap-4">
             <button
-              className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md"
               onClick={() => setShowModal(false)}
+              className="px-6 py-2 border border-gray-300 rounded-lg
+                       text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Cancelar
             </button>
             <button
-              className="bg-rosa text-white py-2 px-4 rounded-md"
               onClick={handlePurchase}
               disabled={loadingPurchase}
+              className="px-6 py-2 bg-rosa text-white rounded-lg
+                       hover:bg-rosa/90 transition-colors disabled:opacity-50"
             >
               {loadingPurchase ? "Procesando..." : "Confirmar"}
             </button>
           </div>
-        </Modal>
-      </section>
-    </>
+        </div>
+      </Modal>
+    </section>
   );
 }

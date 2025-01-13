@@ -10,6 +10,8 @@ import BannerPrincipal03BO from "@/components/PIXELUP/BannerPrincipal/BannerPrin
 import BannerPrincipal02BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02BO";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/BackOffice/MarqueeBO";
 import BannerSinFotoBO from "@/components/PIXELUP/BannerSinFoto/BackOffice/BannerSinFotoBO";
+import BannerPrincipal02BOMobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02BOMobile";
+import Categoria02BO from "@/components/PIXELUP/Categorias/Categoria02/CategoriaBO02";
 
 export default function BannerHome() {
   return (
@@ -25,6 +27,16 @@ export default function BannerHome() {
         </div>
         <MarqueeTOP />
       </div>
+      <div
+        className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
+        style={{ borderRadius: "var(--radius)" }}
+      >
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Barra Superior</div>
+          <div>/ Home</div>
+        </div>
+        <Categoria02BO />
+      </div>
 
       <div
         className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
@@ -34,17 +46,27 @@ export default function BannerHome() {
           <div>Banner</div>
           <div>/ Home</div>
         </div>
-        <BannerPrincipal03BO />
+        <BannerPrincipal02BO />
+      </div>
+      <div
+        className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
+        style={{ borderRadius: "var(--radius)" }}
+      >
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Banner Mobile</div>
+          <div>/ Home</div>
+        </div>
+        <BannerPrincipal02BOMobile />
       </div>
       <div
         className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
         <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
-          <div>Hero</div>
+          <div>Mensaje Bienvendia</div>
           <div>/ Home</div>
         </div>
-        <Hero01BO />
+        <BannerSinFotoBO />
       </div>
 {/*       <div
         className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
@@ -56,7 +78,7 @@ export default function BannerHome() {
         </div>
         <BannersCategoriasBO />
       </div> */}
-{/*       <div
+      <div
         className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
@@ -65,8 +87,8 @@ export default function BannerHome() {
           <div>/ Home</div>
         </div>
         <Hero02BO />
-      </div> */}
-{/*       <div
+      </div>
+      <div
         className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >
@@ -75,7 +97,7 @@ export default function BannerHome() {
           <div>/ Home</div>
         </div>
         <FrasesBO />
-      </div> */}
+      </div>
     </section>
   );
 }

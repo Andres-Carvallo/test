@@ -4,6 +4,7 @@ import { getCookie } from "cookies-next";
 import VariationForm from "./VariationForm";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useRevalidation } from "@/app/Context/RevalidationContext";
 
 interface Variation {
   description: string;
@@ -60,6 +61,8 @@ function VariationsComponente({
   const [currentVariationIndex, setCurrentVariationIndex] = useState<
     number | null
   >(null);
+
+  const { triggerRevalidation } = useRevalidation();
 
   useEffect(() => {
     fetchAttributes();
@@ -388,13 +391,13 @@ function VariationsComponente({
   };
   const handleDeleteVariation = async (skuId: string, index: number) => {
     if (!skuId) {
-      // Si no hay ID, elimina la variación del estado local
       setVariations((prevVariations: any) =>
         prevVariations.filter((_: any, i: number) => i !== index)
       );
       toast.success("Variación eliminada con éxito");
       return;
     }
+
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const idVariable = searchParams.get("productVariableId");
@@ -411,8 +414,9 @@ function VariationsComponente({
       );
 
       if (response.status === 200) {
+        await triggerRevalidation();
         toast.success("Variación eliminada con éxito");
-        fetchVariations(); // Call fetchVariations to update the list
+        fetchVariations();
       } else {
         console.error("Error deleting variation:", response.statusText);
       }

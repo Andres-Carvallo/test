@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -26,6 +26,8 @@ interface Product {
   hasFeaturedBaseSku: boolean;
 }
 
+import { useRevalidation } from "@/app/Context/RevalidationContext";
+
 export default function ProductPageBO() {
   // Estados
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,7 @@ export default function ProductPageBO() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
+  const { triggerRevalidation } = useRevalidation();
 
   // Efecto para cargar los productos iniciales
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function ProductPageBO() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Efecto para actualizar los productos filtrados cuando cambian las categorías o el término de búsqueda
+  // Efecto para filtrar productos según la búsqueda y las categorías seleccionadas
   useEffect(() => {
     const filtered = products.filter(
       (product) =>
@@ -62,16 +65,18 @@ export default function ProductPageBO() {
             product.productTypes.some((type) => type.name === category)
           ))
     );
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
-    setFilteredProducts(filtered);
 
-    const pages = Math.ceil(filtered.length / pageSize);
-    setTotalPages(pages);
+    setFilteredProducts(filtered); // Actualiza los productos filtrados
+    setTotalPages(Math.ceil(filtered.length / pageSize)); // Actualiza el total de páginas
+    setCurrentPage(1); // Reinicia la paginación a la primera página al cambiar búsqueda o categorías
+  }, [products, searchTerm, selectedCategories, pageSize]);
 
+  // Efecto para manejar la paginación de los productos filtrados
+  useEffect(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    setPaginatedProducts(filtered.slice(startIndex, endIndex));
-  }, [products, searchTerm, selectedCategories, currentPage, pageSize]);
+    setPaginatedProducts(filteredProducts.slice(startIndex, endIndex)); // Actualiza los productos paginados
+  }, [filteredProducts, currentPage, pageSize]);
 
   // Manejo de Cambio de Página
   const handlePageChange = (pageNumber: number) => {
@@ -200,6 +205,8 @@ export default function ProductPageBO() {
   const updateProduct = async (product: Product, updates: Partial<Product>) => {
     try {
       const token = getCookie("AdminTokenAuth");
+
+      // Primero actualizamos el producto
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${product.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -214,6 +221,18 @@ export default function ProductPageBO() {
           },
         }
       );
+
+      // Luego revalidamos usando fetch con el tag
+      await fetch("/api/revalidate?tag=products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // También usamos el contexto de revalidación
+      await triggerRevalidation();
+
       toast.success("Producto actualizado");
       fetchProductos();
     } catch (error) {
@@ -237,6 +256,7 @@ export default function ProductPageBO() {
   const deleteProduct = async (id: string) => {
     try {
       const token = getCookie("AdminTokenAuth");
+
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -246,6 +266,18 @@ export default function ProductPageBO() {
           },
         }
       );
+
+      // Revalidamos usando fetch con el tag
+      await fetch("/api/revalidate?tag=products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // También usamos el contexto de revalidación
+      await triggerRevalidation();
+
       toast.success("Producto eliminado");
       fetchProductos();
     } catch (error) {

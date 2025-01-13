@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Image from "next/image";
 
 const BannerPrincipal = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
@@ -43,9 +44,9 @@ const BannerPrincipal = () => {
           id="banner"
           className="w-full z-10 animate-pulse"
         >
-          <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-gray-300 before:opacity-50 before:z-10">
+          <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-gray-300 before:opacity-00 before:z-10">
             <div className="absolute inset-0 w-full h-full bg-gray-200"></div>
-            <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+            <div className="min-h-[200px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
               <div className="h-8 bg-gray-300 rounded w-3/4 mb-6"></div>
               <div className="h-4 bg-gray-300 rounded w-1/2 mb-4"></div>
               <div className="h-10 bg-gray-300 rounded w-1/4"></div>
@@ -54,29 +55,12 @@ const BannerPrincipal = () => {
         </section>
       ) : (
         bannerData && (
-          <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
+          <div className="hidden relative lg:flex items-start justify-center w-full overflow-hidden">
             <img
               src={bannerData.images[0].mainImage.url}
               alt={bannerData.images[0].title}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="w-full h-auto object-contain transition-opacity duration-1000 ease-in-out"
             />
-            <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-              <h2 className="sm:text-4xl text-2xl font-bold mb-6">
-                {bannerData.images[0].title}
-              </h2>
-              <p
-                className="text-center text-gray-200"
-                dangerouslySetInnerHTML={{
-                  __html: bannerData.images[0].landingText,
-                }}
-              />
-              <a
-                href={bannerData.images[0].buttonLink}
-                className="mt-8 hidden bg-transparent text-white text-base font-semibold py-2.5 px-6 border-2 border-white rounded hover:bg-white hover:text-black transition duration-300 ease-in-out"
-              >
-                {bannerData.images[0].buttonText}
-              </a>
-            </div>
           </div>
         )
       )}

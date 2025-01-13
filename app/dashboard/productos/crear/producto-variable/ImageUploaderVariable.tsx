@@ -185,7 +185,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
   };
 
   return (
-    <div className="flex space-x-4 overflow-x-auto p-4">
+    <div className="flex  overflow-x-auto p-4">
       <div className="flex flex-wrap gap-2">
         {variationImages.map((image, index) => (
           <div
@@ -258,7 +258,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
               <span className="font-semibold">Subir Imagen</span>
             </p>
             <p className="text-xs text-gray-500 text-center">
-            PNG, JPG o Webp (800x800px)
+              PNG, JPG o Webp (800x800px)
             </p>
           </div>
           <input
@@ -273,7 +273,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
 
       {isCropModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-[#00000080]">
-          <div className="bg-white  rounded-lg shadow-lg relative w-full max-w-xl mx-auto p-10">
+          <div className="bg-white  rounded-lg shadow-lg relative w-[400px] mx-2 p-4 pt-8">
             <div className="relative h-96 w-full">
               <Cropper
                 image={imageSrc}
@@ -285,7 +285,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
                 onCropComplete={handleCropComplete}
               />
             </div>
-            <div className="flex flex-col justify-end mt-4">
+            <div className="flex flex-col justify-end mt-4 ">
               <input
                 type="range"
                 value={zoom}
@@ -296,16 +296,16 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
                 className="zoom-range w-full custom-range mb-4"
               />
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-2">
                 <button
                   onClick={handleSaveCroppedImage}
-                  className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                  className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
                 >
                   Recortar y Subir
                 </button>
                 <button
                   onClick={() => setIsCropModalOpen(false)}
-                  className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                  className="bg-red-800 text-[13px] md:text-[16px] hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
                 >
                   Cancelar
                 </button>

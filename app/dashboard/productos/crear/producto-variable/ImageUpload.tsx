@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage"; // Asegúrate de tener esta función implementada
-import Modal from "@/components/Modals/ModalSeo";
+import Modal from "@/components/Core/Modals/ModalSeo";
 function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
   const [image, setImage] = useState<any>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });

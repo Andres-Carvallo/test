@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 const config = {
-  siteUrl: process.env.NEXT_PUBLIC_BASE_URL || "http://pixelup.cl",
+  siteUrl: process.env.NEXT_PUBLIC_BASE_URL || "http:/fbmjoyas.cl",
   generateRobotsTxt: true, // Generará un archivo robots.txt
   changefreq: "daily",
   priority: 0.7,

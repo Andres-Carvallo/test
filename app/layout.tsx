@@ -1,6 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import {
-  Inter,
   Roboto_Mono,
   Kalam,
   Oswald,
@@ -10,11 +10,14 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { APIContextProvider } from "@/app/Context/ProductTypeContext";
-import toast, { Toaster } from "react-hot-toast";
-import { Providers } from "./providers";
-import { Analytics } from "@vercel/analytics/react";
+import { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { FloatingWhatsApp } from "react-floating-whatsapp";
+import { RevalidationProvider } from "@/app/Context/RevalidationContext";
+import Head from "next/head";
+import { NavbarProvider } from "./Context/NavbarContext";
+import { AuthProvider } from "./Context/AuthContext";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -74,8 +77,11 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="es">
-      <header>
+    <html
+      lang="es"
+      className="light"
+    >
+      <Head>
         <script
           async
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
@@ -101,6 +107,10 @@ export default function RootLayout({
           content="es"
         />
         <meta
+          name="googlebot"
+          content="index, follow"
+        />
+        <meta
           name="author"
           content="PixelUP"
         />
@@ -121,19 +131,21 @@ export default function RootLayout({
           property="og:type"
           content="website"
         />
-      </header>
-      <APIContextProvider SiteId={SiteId}>
-        <Analytics />
-
-        <body
-          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} `}
-        >
-          <Providers>
-            <Toaster />
-            <div className="md:min-h-screen ">{children}</div>
-          </Providers>
-        </body>
-      </APIContextProvider>
+      </Head>
+      <body
+        className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} `}
+      >
+        <AuthProvider>
+          <RevalidationProvider>
+            <NavbarProvider>
+              <APIContextProvider SiteId={SiteId}>
+                <Toaster />
+                <div className="md:min-h-screen ">{children}</div>
+              </APIContextProvider>
+            </NavbarProvider>
+          </RevalidationProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

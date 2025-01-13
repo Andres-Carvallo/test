@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Marquee from "react-fast-marquee";
 import Image from "next/image";
-import MailchimpForm from "@/components/PIXELUP/MailChimp/MailchimpForm";
+import MailchimpForm from "@/components/Core/MailChimp/MailchimpForm";
 import axios from "axios";
 
 interface FooterProps {
@@ -49,20 +49,44 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
             <img
               alt="Logo"
               className="h-40 object-cover mx-auto"
-              src={process.env.NEXT_PUBLIC_LOGO_WHITE}
+              src={process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
           </div>
-          <div className="text-center lg:text-left xl:col-span-6 mt-12 grid grid-cols gap-8 xl:mt-0 mx-12">
+          <div className="block md:hidden col-span-2 lg:col-span-3 ml-auto md:mt-10 lg:mt-0 mt-8 text-secondary">
+            <div className="max-w-md mx-auto w-full px-4 lg:px-0">
+              <h3 className="text-sm font-bold tracking-wider uppercase justify-center text-center">
+              Suscríbete al newsletter y entérate de novedades y descuentos especiales
+              </h3>
+{/*               <p className="mt-2 uppercase">
+                Suscríbete al newsletter y entérate de novedades y descuentos especiales
+              </p> */}
+              {/*           <form className="mt-4">
+            <input
+              type="email"
+              placeholder="Ingresa tu mail"
+              className="w-full p-2 text-black border-2 border-gray-400"
+            />
+            <button
+              type="submit"
+              className="mt-3 w-full bg-foreground hover:bg-secondary p-2 text-secondary hover:text-primary"
+            >
+              Suscribirse
+            </button>
+          </form> */}
+              <MailchimpForm />
+            </div>
+          </div>
+          <div className="text-center lg:text-left xl:col-span-6 mt-6 md:mt-12 grid grid-cols gap-8 xl:mt-0 mx-12">
             <div className="md:grid md:grid-cols-3 md:gap-16 text-secondary">
               <div>
-                <h3 className="underline text-sm font-bold tracking-wider uppercase">
+{/*                 <h3 className="underline text-sm font-bold tracking-wider uppercase">
                   LINKS DIRECTOS
-                </h3>
+                </h3> */}
                 <ul className="mt-4 space-y-2">
                   <li>
                     <a
                       className="text-base hover:underline "
-                      href="#"
+                      href="/tienda"
                     >
                       TIENDA
                     </a>
@@ -70,7 +94,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   <li>
                     <a
                       className="text-base hover:underline "
-                      href="#"
+                      href="/tienda?categoria=1d19d4b5-3269-4bd1-a97e-e575b40a5450"
                     >
                       ANILLOS
                     </a>
@@ -78,7 +102,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   <li>
                     <a
                       className="text-base hover:underline "
-                      href="#"
+                      href="/tienda?categoria=49db2d0e-8fa6-46cc-a944-9bb23619e483"
                     >
                       COLGANTES
                     </a>
@@ -86,7 +110,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   <li>
                     <a
                       className="text-base hover:underline "
-                      href="#"
+                      href="/tienda?categoria=fbacdd2f-3bd4-4d75-a60e-fb62d9389cd3"
                     >
                       PULSERAS
                     </a>
@@ -94,7 +118,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   <li>
                     <a
                       className="text-base hover:underline "
-                      href="#"
+                      href="/tienda?categoria=48ddc8fc-09da-4f4f-b7a7-aec5e76dbfff"
                     >
                       AROS
                     </a>
@@ -105,9 +129,9 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
 
               {collections.length > 0 && (
                 <div>
-                  <h3 className="underline text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
+{/*                   <h3 className="underline text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
                     Colecciones
-                  </h3>
+                  </h3> */}
                   <ul className="mt-4 space-y-2">
                     {collections.map((collection) => (
                       <li key={collection.id}>
@@ -123,9 +147,9 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                 </div>
               )}
               <div>
-                <h3 className="underline text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
+{/*                 <h3 className="underline text-sm font-bold tracking-wider uppercase mt-8 md:mt-0">
                   OTROS
-                </h3>
+                </h3> */}
                 <ul className="mt-4 space-y-2">
                 <li>
                 <button className="hover:underline text-base font-medium" onClick={() => setShowModal(true)}>
@@ -135,7 +159,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                 <li>
                     <a
                       className="text-base hover:underline "
-                      href="#"
+                      href="/fbm"
                     >
                       FBM
                     </a>
@@ -143,20 +167,21 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                   <li>
                     <a
                       className="text-base hover:underline "
-                      href="#"
+                      target="_blank"
+                      href="https://api.whatsapp.com/send?phone=+56991634170&text=Hola!%20Te%20has%20contactado%20con%20Flora%20de%20FBM%20Joyas,%20cu%C3%A9ntame%20en%20qu%C3%A9%20puedo%20ayudarte."
                     >
                       CONTACTO
                     </a>
                   </li>
 
-                  <li>
+{/*                   <li>
                     <a
                       className="text-base hover:underline "
                       href="#"
                     >
                       TÉRMINOS Y CONDICIONES
                     </a>
-                  </li>
+                  </li> */}
                 </ul>
               </div>
               {/*             <div className="col-span-2 lg:col-span-8">
@@ -172,14 +197,14 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
         </div> */}
             </div>
           </div>
-          <div className="col-span-2 lg:col-span-3 lg:flex ml-auto md:mt-16 lg:mt-0 mt-8 text-secondary">
+          <div className="hidden md:block col-span-2 lg:col-span-3 lg:flex ml-auto md:mt-10 lg:mt-0 mt-8 text-secondary">
             <div className="max-w-md mx-auto w-full px-4 lg:px-0">
-              <h3 className="text-sm font-bold tracking-wider uppercase ">
-                ¡Se parte de la comunidad!
+              <h3 className="text-sm font-bold tracking-wider uppercase justify-center text-center">
+              Suscríbete al newsletter y entérate de novedades y descuentos especiales
               </h3>
-              <p className="mt-2 ">
-                Suscríbete para enterarte de nuestras novedades
-              </p>
+{/*               <p className="mt-2 uppercase">
+                Suscríbete al newsletter y entérate de novedades y descuentos especiales
+              </p> */}
               {/*           <form className="mt-4">
             <input
               type="email"
@@ -201,11 +226,11 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
         <div className="mt-8 border-t border-gray-100 pt-8 md:ml-0 ml-4">
           <div className="sm:flex sm:justify-between">
             <p className="text-xs text-gray-200">
-              &copy; 2024. FBM Joyas. All rights reserved.
+              &copy; {new Date().getFullYear()} FBM Joyas. All rights reserved.
             </p>
 
             <ul className="col-span-2 flex justify-start gap-6 lg:col-span-5 lg:justify-end  md:mt-0 mt-4">
-              <li>
+{/*               <li>
                 <a
                   href="#"
                   rel="noreferrer"
@@ -226,7 +251,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                     />
                   </svg>
                 </a>
-              </li>
+              </li> */}
 
               <li>
                 <a
@@ -252,7 +277,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                 </a>
               </li>
 
-              <li>
+{/*               <li>
                 <a
                   href="#"
                   rel="noreferrer"
@@ -270,7 +295,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                     <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
                   </svg>
                 </a>
-              </li>
+              </li> */}
 
               {/*           <li>
             <a

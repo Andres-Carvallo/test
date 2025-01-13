@@ -17,7 +17,7 @@ interface BannerData {
   images: BannerImage[];
 }
 
-const BannerPrincipal01: React.FC = () => {
+const BannerPrincipal03: React.FC = () => {
   const [bannerData, setBannerData] = useState<BannerData | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -88,7 +88,7 @@ const BannerPrincipal01: React.FC = () => {
   return (
     <section
       id="banner"
-      className="w-full"
+      className="w-full max-h-[450px]"
     >
       <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
       {/*         <div className="absolute inset-0 w-full h-full overflow-hidden">
@@ -155,4 +155,4 @@ const BannerPrincipal01: React.FC = () => {
   );
 };
 
-export default BannerPrincipal01;
+export default BannerPrincipal03;

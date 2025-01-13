@@ -1,5 +1,5 @@
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import TableUsers from "@/components/Tables/TableUsers";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
+import TableUsers from "@/components/Core/Tables/TableUsers";
 
 import { Metadata } from "next";
 export const metadata: Metadata = {

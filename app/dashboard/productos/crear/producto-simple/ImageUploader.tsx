@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { getCookie } from "cookies-next"; // asegúrate de tener cookies-next instalado
 import Loader from "@/components/common/Loader";
-import Modal from "@/components/Modals/ModalSeo";
+import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";
@@ -282,7 +282,7 @@ const ImageUploader: React.FC<any> = ({
               <span className="font-semibold">Subir Imagen</span>
             </p>
             <p className="text-xs text-gray-500 text-center">
-            PNG, JPG o Webp (800x800px)
+              PNG, JPG o Webp (800x800px)
             </p>
           </div>
           <input
@@ -326,10 +326,10 @@ const ImageUploader: React.FC<any> = ({
                 className="zoom-range w-full custom-range"
               />
             </div>
-            <div className="flex justify-between w-full">
+            <div className="flex justify-between w-full gap-2">
               <button
                 onClick={handleCrop}
-                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               >
                 Recortar y Subir
               </button>
@@ -339,7 +339,7 @@ const ImageUploader: React.FC<any> = ({
                   setIsModalOpen(false);
                   setIsLoading(false);
                 }}
-                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-red-800 text-[13px] md:text-[16px] hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
               >
                 Cancelar
               </button>

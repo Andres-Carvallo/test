@@ -5,6 +5,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader-t";
 import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
+import { getCurrentStock } from "@/app/utils/HandleStockSku";
 
 interface Product {
   id: string;
@@ -61,11 +62,29 @@ interface SelectedItem {
 }
 
 const ManualOrder: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalProductName, setModalProductName] = useState("");
+  const [modalConfirmCallback, setModalConfirmCallback] = useState<
+    (() => void) | null
+  >(null);
+
+  const openModal = (productName: string, confirmCallback: () => void) => {
+    setModalProductName(productName);
+    setModalConfirmCallback(() => confirmCallback);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalProductName("");
+    setModalConfirmCallback(null);
+  };
+
   const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
   const [communes, setCommunes] = useState<{ id: string; name: string }[]>([]);
   const [shippingCommunes, setShippingCommunes] = useState<Commune[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [loadingAttributes, setLoadingAttributes] = useState<boolean>(false);
   const [enabledCommunes, setEnabledCommunes] = useState<string[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [selectedCommune, setSelectedCommune] = useState<string>("");
@@ -104,7 +123,7 @@ const ManualOrder: React.FC = () => {
 
   const fetchProducts = async () => {
     const token = getCookie("AdminTokenAuth");
-    const data = await obtenerProductosBO(1, 50, token as string);
+    const data = await obtenerProductosBO(1, 500, token as string);
     setProducts(data.products);
   };
 
@@ -157,6 +176,7 @@ const ManualOrder: React.FC = () => {
     setSelectedVariation(""); // Reset the selected variation when product changes
 
     if (selected && selected.hasVariations) {
+      setLoadingAttributes(true);
       const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus?statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -199,29 +219,9 @@ const ManualOrder: React.FC = () => {
       );
 
       setVariations(variationsWithAttributes);
+      setLoadingAttributes(false);
     } else {
       setVariations([]);
-    }
-  };
-
-  const fetchStockForVariation = async (productId: string, skuId: string) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      const data = await response.json();
-      let stock = 0;
-      if (data.code === 0 && data.skuInventories.length > 0) {
-        stock = data.skuInventories.reduce(
-          (acc: number, inventory: any) => acc + inventory.quantity,
-          0
-        );
-      }
-
-      return stock;
-    } catch (error) {
-      console.error("Error fetching stock:", error);
-      return 0;
     }
   };
 
@@ -230,23 +230,14 @@ const ManualOrder: React.FC = () => {
 
     let skuId = selectedProduct.skuId;
     let name = selectedProduct.name;
-    let productId = selectedProduct.id;
-    let availableStock = 0;
 
     if (selectedProduct.hasVariations && selectedVariation) {
       const variation = variations.find((v) => v.id === selectedVariation);
       if (variation) {
         skuId = variation.id;
-        name = variation.formattedAttributes;
-        availableStock = await fetchStockForVariation(productId, skuId);
+        name = `${selectedProduct.name} - ${variation.formattedAttributes}`;
+        console.log("Variación seleccionada:", variation);
       }
-    } else {
-      availableStock = await fetchStockForVariation(productId, skuId);
-    }
-
-    if (availableStock <= 0) {
-      toast.error("El producto seleccionado no tiene stock.");
-      return;
     }
 
     if (!skuId || (selectedProduct.hasVariations && !selectedVariation)) {
@@ -256,26 +247,41 @@ const ManualOrder: React.FC = () => {
       return;
     }
 
+    // Verificar el stock disponible
+    console.log("Verificando stock para SKU:", skuId);
+    const availableStock = await getCurrentStock(selectedProduct.id, skuId);
+    console.log("Stock disponible:", availableStock);
+
+    if (availableStock === 0) {
+      // Abrir modal en lugar de window.confirm
+      openModal(name, () => {
+        setSelectedItems((prevItems) => {
+          const existingItem = prevItems.find((item) => item.skuId === skuId);
+
+          if (existingItem) {
+            return prevItems.map((item) =>
+              item.skuId === skuId
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            );
+          } else {
+            return [...prevItems, { skuId, name, quantity: 1 }];
+          }
+        });
+      });
+      return;
+    }
+
     setSelectedItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.skuId === skuId);
 
       if (existingItem) {
-        const updatedQuantity = existingItem.quantity + 1;
-
-        // Verificar que la nueva cantidad no supere el stock disponible
-        if (updatedQuantity > availableStock) {
-          toast.error("No hay suficiente stock disponible.");
-          return prevItems;
-        }
-
-        // Actualizar la cantidad del producto existente
         return prevItems.map((item) =>
-          item.skuId === skuId ? { ...item, quantity: updatedQuantity } : item
+          item.skuId === skuId ? { ...item, quantity: item.quantity + 1 } : item
         );
+      } else {
+        return [...prevItems, { skuId, name, quantity: 1 }];
       }
-
-      // Si no existe, agrega un nuevo producto a la lista
-      return [...prevItems, { skuId, name, quantity: 1 }];
     });
 
     // Limpiar los selectores
@@ -807,13 +813,15 @@ const ManualOrder: React.FC = () => {
               <Loader />
             ) : (
               <div className="px-4 pt-8 rounded bg-white mt-6 p-10">
-                <p className="text-xl font-medium">Detalle de la Orden</p>
-                <p className="text-gray-400 mb-4">Selecciona los productos</p>
+                <p className="text-xl font-medium pb-3 border-b border-dark mb-4">
+                  Detalle de la Orden
+                </p>
+                <p className="text-dark mb-4">Agrega productos a la orden:</p>
                 <div className="grid grid-cols-2 gap-4">
                   <select
                     className="border rounded p-2 w-full"
-                    value={selectedProduct?.id || ""}
                     onChange={(e) => handleProductChange(e.target.value)}
+                    value={selectedProduct ? selectedProduct.id : ""}
                   >
                     <option value="">Selecciona un producto</option>
                     {products.map((product) => (
@@ -834,23 +842,29 @@ const ManualOrder: React.FC = () => {
                           : "grid-cols-1"
                       }`}
                     >
-                      {selectedProduct.hasVariations && (
-                        <select
-                          className="border rounded p-2 w-full"
-                          onChange={(e) => setSelectedVariation(e.target.value)}
-                          value={selectedVariation}
-                        >
-                          <option value="">Selecciona una Variación</option>
-                          {variations.map((variation) => (
-                            <option
-                              key={variation.id}
-                              value={variation.id}
-                            >
-                              {variation.formattedAttributes}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                      {selectedProduct &&
+                        selectedProduct.hasVariations &&
+                        (loadingAttributes ? (
+                          <p>Cargando atributos...</p>
+                        ) : (
+                          <select
+                            className="border rounded p-2 w-full"
+                            onChange={(e) =>
+                              setSelectedVariation(e.target.value)
+                            }
+                            value={selectedVariation}
+                          >
+                            <option value="">Selecciona una Variación</option>
+                            {variations.map((variation) => (
+                              <option
+                                key={variation.id}
+                                value={variation.id}
+                              >
+                                {variation.formattedAttributes}
+                              </option>
+                            ))}
+                          </select>
+                        ))}
                       <button
                         type="button"
                         className="bg-dark text-white rounded p-2 w-full"
@@ -864,8 +878,11 @@ const ManualOrder: React.FC = () => {
                     </div>
                   )}
                 </div>
-
-                <div className="space-y-4 mt-4">
+                <div className="w-full mt-6 border-t pt-4 border-dark">
+                  {" "}
+                  <h3>Productos seleccionados:</h3>
+                </div>
+                <div className="space-y-4  py-6">
                   {selectedItems.map((item) => (
                     <div
                       key={item.skuId}
@@ -906,6 +923,33 @@ const ManualOrder: React.FC = () => {
           </div>
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] ">
+            <p className="mb-4">
+              El stock para <strong>{modalProductName}</strong> es 0.
+            </p>
+            <p className="mb-4">¿Deseas agregarlo de todas maneras?</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={closeModal}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (modalConfirmCallback) modalConfirmCallback();
+                  closeModal();
+                }}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

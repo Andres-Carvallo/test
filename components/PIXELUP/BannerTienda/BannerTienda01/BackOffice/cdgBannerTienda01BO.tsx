@@ -5,7 +5,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import Modal from "@/components/Modals/ModalSeo"; // Asegúrate de importar el modal
+import Modal from "@/components/Core/Modals/ModalSeo"; // Asegúrate de importar el modal
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
@@ -35,18 +35,18 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formDataHero, setFormDataHero] = useState<any>({
-    title: "",
-    landingText: "",
-    buttonLink: "pixelup.cl",
-    buttonText: "pixelup.cl",
+    title: "fbmjoyas.cl",
+    landingText: "fbmjoyas.cl",
+    buttonLink: "fbmjoyas.cl",
+    buttonText: "fbmjoyas.cl",
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [updatedBannerData, setUpdatedBannerData] = useState({
-    title: "",
-    landingText: "",
-    buttonLink: "",
-    buttonText: "",
-    mainImageLink: "",
+    title: "fbmjoyas.cl",
+    landingText: "fbmjoyas.cl",
+    buttonLink: "fbmjoyas.cl",
+    buttonText: "fbmjoyas.cl",
+    mainImageLink: "fbmjoyas.cl",
     orderNumber: 1, // Modifica este valor según tu lógica
     mainImage: {
       name: "",
@@ -231,7 +231,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 2000,
+        maxWidthOrHeight: 1900,
         useWebWorker: true,
         initialQuality: 1,
       };
@@ -293,20 +293,20 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
     >
       <div>
         {bannerData && (
-          <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
+          <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-0 before:z-10">
             <img
               src={bannerData[0].mainImage.url}
               alt="Banner Image"
               className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-              <h1 className="sm:text-4xl text-2xl font-bold mb-6">
+            <div className="min-h-[200px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+              {/*               <h1 className="sm:text-4xl text-2xl font-bold mb-6">
                 {bannerData[0].title}
-              </h1>
-              <p
+              </h1> */}
+              {/*               <p
                 className="text-center text-gray-200"
                 dangerouslySetInnerHTML={{ __html: bannerData[0].landingText }}
-              />
+              /> */}
             </div>
           </div>
         )}
@@ -324,10 +324,10 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
         <div className="grid gap-4"></div>
-        <h3 className="font-normal text-primary">
+        {/*         <h3 className="font-normal text-primary">
           Titulo <span className="text-primary">*</span>
-        </h3>
-        <input
+        </h3> */}
+        {/*         <input
           type="text"
           name="title"
           value={formDataHero.title}
@@ -335,7 +335,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
           placeholder="Title"
-        />
+        /> 
         <input
           type="text"
           name="mainImageLink"
@@ -377,7 +377,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
               caracteres extras no seran mostrados.
             </div>
           </div>
-        )}
+        )}*/}
         <div>
           <input
             type="file"
@@ -493,7 +493,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
               image={mainImageHero || ""} // Asegurar que se pasa una cadena no nula
               crop={crop}
               zoom={zoom}
-              aspect={5 / 1}
+              aspect={1920 / 200}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}

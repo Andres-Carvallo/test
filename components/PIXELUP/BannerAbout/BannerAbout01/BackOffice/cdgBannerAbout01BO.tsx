@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import Modal from "@/components/Modals/ModalSeo";
+import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";
@@ -27,18 +27,18 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
   const [originalFileName, setOriginalFileName] = useState<string>("");
 
   const [formDataHero, setFormDataHero] = useState<any>({
-    title: "",
-    landingText: "",
-    buttonLink: "",
-    buttonText: "",
+    title: "fbmjoyas.cl",
+    landingText: "fbmjoyas.cl",
+    buttonLink: "fbmjoyas.cl",
+    buttonText: "fbmjoyas.cl",
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [updatedBannerData, setUpdatedBannerData] = useState({
-    title: "",
-    landingText: "",
-    buttonLink: "",
-    buttonText: "",
-    mainImageLink: "",
+    title: "fbmjoyas.cl",
+    landingText: "fbmjoyas.cl",
+    buttonLink: "fbmjoyas.cl",
+    buttonText: "fbmjoyas.cl",
+    mainImageLink: "fbmjoyas.cl",
     orderNumber: 1, // Modifica este valor según tu lógica
     mainImage: {
       name: "",
@@ -203,9 +203,9 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
       }
       const options = {
         maxSizeMB: 1, // Ajusta el tamaño máximo permitido
-        maxWidthOrHeight: 1200, // Ajusta las dimensiones máximas permitidas
+        maxWidthOrHeight: 1900, // Ajusta las dimensiones máximas permitidas
         useWebWorker: true,
-        initialQuality: 0.8, // Ajusta la calidad inicial para mantener mejor calidad visual
+        initialQuality: 0.95, // Ajusta la calidad inicial para mantener mejor calidad visual
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -288,16 +288,16 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
                 </p>
               </div>
             </div> */
-            <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
+            <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-0 before:z-10">
               <img
                 src={bannerData.mainImage.url}
                 alt={bannerData.title}
                 className="absolute inset-0 w-full h-full object-cover"
               />
-              <div className="min-h-[300px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-                <h2 className="sm:text-4xl text-2xl font-bold mb-6">
+              <div className="min-h-[200px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
+                {/*                 <h2 className="sm:text-4xl text-2xl font-bold mb-6">
                   {bannerData.title}
-                </h2>
+                </h2> 
                 <p
                   className="text-center text-gray-200"
                   dangerouslySetInnerHTML={{
@@ -306,7 +306,7 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
                 />
                 <a className="mt-8 hidden bg-transparent text-white text-base font-semibold py-2.5 px-6 border-2 border-white rounded hover:bg-white hover:text-black transition duration-300 ease-in-out">
                   {bannerData.buttonText}
-                </a>
+                </a>*/}
               </div>
             </div>
           )}
@@ -324,10 +324,10 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <h3 className="font-normal text-primary">
+        {/*         <h3 className="font-normal text-primary">
           Título <span className="text-primary">*</span>
-        </h3>
-        <input
+        </h3> */}
+        {/*         <input
           type="text"
           name="title"
           value={formDataHero.title}
@@ -354,7 +354,7 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
           placeholder="Texto"
-        />
+        /> */}
         {/*         <div>
           <input
             type="file"
@@ -502,7 +502,7 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
                     <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG o Webp (800x800px)
+                    PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>
@@ -547,7 +547,7 @@ const About: React.FC<About01Props> = ({ About01BOData }) => {
               image={mainImageHero || ""} // Asegurar que se pasa una cadena no nula
               crop={crop}
               zoom={zoom}
-              aspect={5 / 1}
+              aspect={1920 / 200}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}

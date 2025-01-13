@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import axios from "axios";
 import OfferCanvas from "@/components/Offcanvas/OfferCanvas";
 import Link from "next/link";

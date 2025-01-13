@@ -1,17 +1,67 @@
+/* eslint-disable @next/next/no-img-element */
 import React from "react";
-import ProductGridShop from "../../components/PIXELUP/Tienda/ProductGridHome/ProductGridShop";
-import type { Metadata } from "next";
+import ProductGridShop from "@/components/Core/ProductGridHome/ProductGridShop";
+import { RevalidationProvider } from "@/app/Context/RevalidationContext";
+import BannerTienda01Mobile from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01Mobile";
+import BannerTienda01 from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01";
 
-export const metadata: Metadata = {
-  title: "Tienda",
-  description: "Tienda",
-};
-const TiendaHome = () => {
+// Componente del servidor para la carga inicial
+async function fetchInitialData(searchParams: {
+  [key: string]: string | undefined;
+}) {
+  const [productsData, productTypesData] = await Promise.all([
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&pageNumber=1&pageSize=1000&=ACTIVE`,
+      {
+        next: {
+          tags: ["products"],
+          revalidate: 3600, // Cache por 1 hora por defecto
+        },
+      }
+    ).then((res) => res.json()),
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/product-types?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&pageNumber=1&pageSize=1000`,
+      {
+        next: {
+          tags: ["categories"],
+          revalidate: 0, // Cache por 1 hora por defecto
+        },
+      }
+    ).then((res) => res.json()),
+  ]);
+
+  return {
+    products: productsData.products,
+    productTypes: productTypesData.productTypes,
+    selectedCategory: searchParams.categoria || null,
+    currentPage: searchParams.page ? parseInt(searchParams.page) : 1,
+  };
+}
+
+export default async function Tienda({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) {
+  const initialData = await fetchInitialData(searchParams);
+
   return (
-    <div>
-      <ProductGridShop />
-    </div>
+    <RevalidationProvider>
+      <title>Tienda</title>
+      <div className="w-full">
+        <div className="hidden lg:block w-full">
+          <BannerTienda01 />
+        </div>
+        <div className="block lg:hidden w-full">
+          <BannerTienda01Mobile />
+        </div>
+        <ProductGridShop
+          initialProducts={initialData.products}
+          initialProductTypes={initialData.productTypes}
+          selectedCategory={initialData.selectedCategory}
+          currentPage={initialData.currentPage}
+        />
+      </div>
+    </RevalidationProvider>
   );
-};
-
-export default TiendaHome;
+}

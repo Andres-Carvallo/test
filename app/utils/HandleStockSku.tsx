@@ -157,3 +157,41 @@ export const handleHasUnlimitedStock = async (
     console.error("Error enviando la solicitud:", error);
   }
 };
+
+export const getCurrentStock = async (productId: string, skuId: string) => {
+  const warehouseId = await getWarehouseId();
+  if (!warehouseId) {
+    console.error("No se encontró un ID de almacén.");
+    return 0; // Devuelve 0 si no se encuentra un almacén
+  }
+
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (
+      response.data &&
+      response.data.skuInventories &&
+      response.data.skuInventories.length > 0
+    ) {
+      const stock = response.data.skuInventories[0].quantity;
+      console.log("Stock disponible:", stock);
+      return stock;
+    } else {
+      console.warn(
+        "No se encontró stock para este SKU en el almacén especificado."
+      );
+      return 0; // Devuelve 0 si no se encuentra stock
+    }
+  } catch (error) {
+    console.error("Error obteniendo el stock:", error);
+    return 0; // Devuelve 0 en caso de error
+  }
+};

@@ -220,7 +220,6 @@ export function APIContextProvider({ children, SiteId }) {
         setCartItems([]);
         setCartData(null);
         setTotalItems(0);
-        console.log("No cartId found. Unable to fetch cart data.");
       }
     } catch (error) {
       console.error("Error fetching cart data:", error.message || error);

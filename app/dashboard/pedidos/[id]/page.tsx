@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesIDBO";
 import { getCookie } from "cookies-next";
 import { useParams } from "next/navigation";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import Link from "next/link";

@@ -3,7 +3,7 @@ import React, { useState, useEffect, FormEvent, useRef } from "react";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import { obtenerCuponesBO } from "@/app/utils/obtenerCuponesBO";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import { toast } from "react-hot-toast";
 import { title } from "process";
 

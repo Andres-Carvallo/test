@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import Modal from "@/components/Modals/ModalSeo"; // Asegúrate de importar el modal
+import Modal from "@/components/Core/Modals/ModalSeo"; // Asegúrate de importar el modal
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
@@ -35,11 +35,11 @@ const BannerPrincipal02BO: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [formData, setFormData] = useState<BannerImage>({
     id: "",
-    title: "latavoladelchef.cl",
-    landingText: "latavoladelchef.cl",
+    title: "fbmjoyas.cl",
+    landingText: "fbmjoyas.cl",
     buttonLink: "",
-    buttonText: "latavoladelchef.cl",
-    mainImageLink: "latavoladelchef.cl",
+    buttonText: "fbmjoyas.cl",
+    mainImageLink: "fbmjoyas.cl",
     orderNumber: 1,
     mainImage: {
       url: "",
@@ -143,9 +143,9 @@ const BannerPrincipal02BO: React.FC = () => {
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 1600,
+        maxWidthOrHeight: 1900,
         useWebWorker: true,
-        initialQuality: 0.8,
+        initialQuality: 1,
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -194,8 +194,8 @@ const BannerPrincipal02BO: React.FC = () => {
       const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL02_ID}`;
 
       const dataToSend = {
-        title: "latavoladelchef",
-        landingText: "latavoladelchef",
+        title: "FBM",
+        landingText: "FBM",
         buttonLink: formData.buttonLink,
         buttonText: "buttonText",
         mainImageLink: "mainImageLink",
@@ -381,7 +381,7 @@ const BannerPrincipal02BO: React.FC = () => {
       {skeletonLoading ? (
         <SkeletonLoader />
       ) : (
-        <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
+        <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-0 before:z-10">
           <img
             src={mainImage || formData.mainImage.url}
             alt="Banner Image"
@@ -389,7 +389,7 @@ const BannerPrincipal02BO: React.FC = () => {
           />
 
           <div className="min-h-[300px] relative z-20 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-{/*             <h2 className="text-2xl font-semibold mb-2">{formData.title}</h2>
+            {/*             <h2 className="text-2xl font-semibold mb-2">{formData.title}</h2>
             <p className="text-md text-center text-gray-200">
               {formData.landingText}
             </p> */}
@@ -458,7 +458,7 @@ const BannerPrincipal02BO: React.FC = () => {
         onSubmit={handleSubmit}
         className="px-4 mx-auto mt-8"
       >
-{/*         <h3 className="font-normal text-primary">
+        {/*         <h3 className="font-normal text-primary">
           Título <span className="text-primary">*</span>
         </h3>
         <input
@@ -469,7 +469,7 @@ const BannerPrincipal02BO: React.FC = () => {
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Title"
         /> */}
-{/*         <h3 className="font-normal text-primary">
+        {/*         <h3 className="font-normal text-primary">
           Texto <span className="text-primary">*</span>
         </h3>
         <input
@@ -494,20 +494,20 @@ const BannerPrincipal02BO: React.FC = () => {
               placeholder="Button Text"
             />
           </div>*/}
-          <div>
-            <h3 className="font-normal text-primary">
-              Link de destino <span className="text-primary">*</span>
-            </h3>
-            <input
-              type="text"
-              name="buttonLink"
-              value={formData.buttonLink}
-              onChange={handleChange}
-              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Button Link"
-            />
-          </div>
-        
+        <div>
+          <h3 className="font-normal text-primary">
+            Link de destino <span className="text-primary">*</span>
+          </h3>
+          <input
+            type="text"
+            name="buttonLink"
+            value={formData.buttonLink}
+            onChange={handleChange}
+            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
+            placeholder="Button Link"
+          />
+        </div>
+
         <div>
           <input
             type="file"
@@ -574,7 +574,7 @@ const BannerPrincipal02BO: React.FC = () => {
                     <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG o Webp (1800x400px)
+                    PNG, JPG o Webp (1800x400px)
                   </p>
                 </div>
               </label>
@@ -620,11 +620,12 @@ const BannerPrincipal02BO: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
         >
           <div className="relative h-96 w-full">
+            <p>modal</p>
             <Cropper
               image={mainImage || ""} // Asegurar que se pasa una cadena no nula
               crop={crop}
               zoom={zoom}
-              aspect={5 / 1}
+              aspect={1920 / 400}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}
@@ -647,10 +648,10 @@ const BannerPrincipal02BO: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-between w-full ">
+            <div className="flex justify-between w-full gap-2">
               <button
                 onClick={handleCrop}
-                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
               >
                 Recortar y Subir
               </button>
@@ -660,7 +661,7 @@ const BannerPrincipal02BO: React.FC = () => {
                   setIsMainImageUploaded(false);
                   setIsModalOpen(false);
                 }}
-                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
               >
                 Cancelar
               </button>
