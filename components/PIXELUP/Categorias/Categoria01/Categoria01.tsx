@@ -8,6 +8,7 @@ const Categoria01 = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [textAlign, setTextAlign] = useState<'center' | 'left' | 'right'>('center');
 
   const fetchBannerCategoryHome = async () => {
     try {
@@ -36,6 +37,10 @@ const Categoria01 = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial
 
+  const handleAlignmentChange = (alignment: 'center' | 'left' | 'right') => {
+    setTextAlign(alignment);
+  };
+
   return (
     <section
       id="banner"
@@ -45,9 +50,42 @@ const Categoria01 = () => {
         <div>
           <div className="sm:py-8">
             <div className="mx-auto max-w-screen-2xl px-4 md:px-8">
-{/*               <h2 className="mb-8 text-center text-2xl font-bold text-gray-800 md:mb-12 lg:text-3xl ">
-                Categorías Destacadas 
-              </h2> */}
+              {/* Controles de alineación */}
+              <div className="mb-4 flex justify-center gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="alignment"
+                    value="left"
+                    checked={textAlign === 'left'}
+                    onChange={() => handleAlignmentChange('left')}
+                    className="mr-2"
+                  />
+                  Izquierda
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="alignment"
+                    value="center"
+                    checked={textAlign === 'center'}
+                    onChange={() => handleAlignmentChange('center')}
+                    className="mr-2"
+                  />
+                  Centro
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="alignment"
+                    value="right"
+                    checked={textAlign === 'right'}
+                    onChange={() => handleAlignmentChange('right')}
+                    className="mr-2"
+                  />
+                  Derecha
+                </label>
+              </div>
 
               <div className="flex flex-wrap gap-6 items-center align-middle justify-center">
                 {/* product - start */}
@@ -67,8 +105,10 @@ const Categoria01 = () => {
                         className="absolute inset-0 h-full w-full object-cover object-center transition duration-300 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                      <div className="relative w-full p-4 text-center">
-                        <h3 className="text-xl font-bold text-white">{banner.title}</h3>
+                      <div className="relative w-full p-4">
+                        <h3 className={`text-xl font-bold text-white text-${textAlign}`}>
+                          {banner.title}
+                        </h3>
                       </div>
                     </Link>
                   </div>

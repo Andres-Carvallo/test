@@ -99,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </span>
       )}
       <Link
-        href={`/tienda/productos/${slugify(product.name)}`}
+        href={`/tienda/productosv1/${slugify(product.name)}`}
         className=""
       >
         {isLoading && (

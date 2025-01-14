@@ -1,7 +1,7 @@
 import React from "react";
 import BannerTienda01Mobile from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01Mobile";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01";
-import ProductDetail from "@/components/PIXELUP/ProductDetail/ProductDetail02/ProductDetail02";
+import ProductDetail from "@/components/PIXELUP/ProductDetail/ProductDetail01/ProductDetail01";
 import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
 

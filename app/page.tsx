@@ -22,6 +22,7 @@ import BannerPrincipal03 from "@/components/PIXELUP/BannerPrincipal/BannerPrinci
 import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import BannerPrincipal02Mobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02Mobile";
 import { globalConfig, getActiveFooter, getActiveNavbar } from "./config/GlobalConfig";
+import DiscountModal from '@/components/PIXELUP/Modal/DiscountModal'
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -95,17 +96,16 @@ export default async function Page() {
 
     return (
       <>
-        <MarqueeTOP />
         <ActiveNavbar />
         <BannerResponsive />
         <BannerSinFoto />
         <Categoria02 />
         <Frase01 />
-        <Destacados01 text="NEW IN" />
+        <Destacados01 text="Destacados" />
         <Hero02 />
         <Frase02 />
         <ActiveFooter/>
-
+        <DiscountModal />
         <a
           href={`https://wa.me/56978334123`}
           target="_blank"

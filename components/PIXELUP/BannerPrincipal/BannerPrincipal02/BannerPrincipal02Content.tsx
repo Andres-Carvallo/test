@@ -13,6 +13,20 @@ const BannerPrincipal02Content: React.FC = () => {
 
   const hasMultipleImages = bannerData?.images && bannerData.images.length > 1;
 
+  const handlePrev = () => {
+    if (!bannerData) return;
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? bannerData.images.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNext = () => {
+    if (!bannerData) return;
+    setCurrentIndex((prevIndex) =>
+      prevIndex === bannerData.images.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
   useEffect(() => {
     const fetchBanner = async () => {
       try {
@@ -29,15 +43,13 @@ const BannerPrincipal02Content: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (hasMultipleImages) {
+    if (bannerData && bannerData.images.length > 1) {
       const interval = setInterval(() => {
-        setCurrentIndex(
-          (prevIndex) => (prevIndex + 1) % bannerData!.images.length
-        );
+        handleNext();
       }, 8000);
       return () => clearInterval(interval);
     }
-  }, [bannerData, hasMultipleImages]);
+  }, [bannerData]);
 
   if (error) {
     return <div className="w-full text-center p-6 text-red-500">{error}</div>;
@@ -80,33 +92,45 @@ const BannerPrincipal02Content: React.FC = () => {
         ))}
       </div>
 
-      {hasMultipleImages && (
-        <>
-          <button
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 text-white bg-black/50 p-2 rounded"
-            onClick={() => {
-              if (!bannerData?.images) return;
-              setCurrentIndex((prevIndex) =>
-                prevIndex === 0 ? bannerData.images.length - 1 : prevIndex - 1
-              );
-            }}
-            aria-label="Imagen anterior"
+      {/* Controles de carrusel */}
+      {bannerData && bannerData.images.length > 1 && (
+        <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between items-center">
+          <button 
+            onClick={handlePrev}
+            className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded flex items-center justify-center text-white hover:bg-white/20 transition-colors"
           >
-            &#10094;
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
-          <button
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 text-white bg-black/50 p-2 rounded"
-            onClick={() => {
-              if (!bannerData?.images) return;
-              setCurrentIndex((prevIndex) =>
-                prevIndex === bannerData.images.length - 1 ? 0 : prevIndex + 1
-              );
-            }}
-            aria-label="Siguiente imagen"
+          <button 
+            onClick={handleNext}
+            className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded flex items-center justify-center text-white hover:bg-white/20 transition-colors"
           >
-            &#10095;
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
           </button>
-        </>
+        </div>
+      )}
+
+      {/* Indicadores de slide */}
+      {bannerData && bannerData.images.length > 1 && (
+        <div className="absolute bottom-8 inset-x-0">
+          <div className="flex justify-center gap-2">
+            {bannerData.images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`h-1.5 rounded transition-colors ${
+                  index === currentIndex 
+                    ? "w-16 bg-white" 
+                    : "w-8 bg-white/30 hover:bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       )}
     </section>
   );

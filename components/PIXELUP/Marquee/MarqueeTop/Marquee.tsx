@@ -39,7 +39,7 @@ function MarqueeTOP() {
           </h3>{" "}
         </div> */}
         <p className="text-xs sm:text-base flex-1 text-center">
-          {/* <Marquee> */}{bannerData?.contentText}{/* </Marquee> */}
+         <Marquee>{bannerData?.contentText}</Marquee>
         </p>
       </div>
     </section>

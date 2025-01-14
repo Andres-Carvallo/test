@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const Paralllax01: React.FC = () => {
+const Parallax01: React.FC = () => {
   const ParallaxData = {
     BannerId: process.env.NEXT_PUBLIC_BANNERPRINCIPAL02_ID,
   };
@@ -43,7 +43,7 @@ const Paralllax01: React.FC = () => {
     <div>
       {bannerData && (
         <div
-          className="relative mx-auto h-[450px] w-screen overflow-hidden bg-cover bg-fixed bg-center bg-no-repeat shadow-lg"
+          className="relative mx-auto h-[450px] overflow-hidden bg-cover bg-fixed bg-center bg-no-repeat shadow-lg"
           style={{ backgroundImage: `url(${bannerData[0].mainImage.url})` }}
         >
           <div className="absolute inset-0 bg-black opacity-60"></div>{" "}
@@ -67,4 +67,4 @@ const Paralllax01: React.FC = () => {
   );
 };
 
-export default Paralllax01;
+export default Parallax01;

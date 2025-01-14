@@ -33,7 +33,7 @@ const CategoriaBO03 = () => {
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true);
-      const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
+      const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA03_ID}`;
       const BannersCategory = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
@@ -68,7 +68,7 @@ const CategoriaBO03 = () => {
   };
 
   const deleteSlider = async (id: any) => {
-    const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
+    const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA03_ID}`;
     try {
       const token = getCookie("AdminTokenAuth");
       await axios.delete(
@@ -88,7 +88,7 @@ const CategoriaBO03 = () => {
 
   const SliderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
+    const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA03_ID}`;
 
     // Verificar si hay menos de 4 sliders antes de agregar uno nuevo
     if (slidersData.length >= 4) {

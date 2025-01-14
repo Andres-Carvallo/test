@@ -18,6 +18,7 @@ import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import Head from "next/head";
 import { NavbarProvider } from "./Context/NavbarContext";
 import { AuthProvider } from "./Context/AuthContext";
+import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -137,6 +138,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <RevalidationProvider>
+           {/*  <MarqueeTOP /> */}
             <NavbarProvider>
               <APIContextProvider SiteId={SiteId}>
                 <Toaster />

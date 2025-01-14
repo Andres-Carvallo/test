@@ -196,7 +196,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
           <div className="flex justify-center space-x-6">
           </div>
           <div className="text-center text-base text-gray-500 ">
-            © Copyright 2024 LaTavolaDelChef | All Rights Reserved.
+            © Copyright 2025 Pixel Up | All Rights Reserved.
           </div>
         </div>
       </div>

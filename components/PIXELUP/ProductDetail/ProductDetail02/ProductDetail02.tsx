@@ -1223,21 +1223,6 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
           </div>
         )}
 
-        <div className="py-12 md:py-20 grid grid-cols-2 items-center justify-center rounded-md bg-background sm:grid-cols-6 ">
-          {IconosData.map((icono, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-center pb-5"
-            >
-              <img
-                src={icono}
-                alt=""
-                className="max-w-[125px] sm:max-w-[80%]"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </div>
-          ))}
-        </div>
         <Destacados01 text="TE PUEDE GUSTAR" />
         <Stars
           reviewAverageScore={reviewAverageScore}

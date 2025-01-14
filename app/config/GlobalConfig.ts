@@ -2,9 +2,10 @@ import Footer01 from '@/components/PIXELUP/Footer/Footer01/Footer01';
 import Footer02 from '@/components/PIXELUP/Footer/Footer02/Footer02';
 import Footer03 from '@/components/PIXELUP/Footer/Footer03/Footer03';
 import Navbar02 from '@/components/PIXELUP/Navbar/Navbar02/Navbar02';
+import NavbarBanner from '@/components/PIXELUP/Navbar/NavbarBanner/NavbarBanner';
 
 type FooterType = 'Footer01' | 'Footer02' | 'Footer03' ;
-type NavbarType =  'Navbar02' ;
+type NavbarType =  'Navbar02'| 'NavbarBanner'  ;
 
 const footerComponents = {
   Footer01,
@@ -14,6 +15,7 @@ const footerComponents = {
 
 const navbarComponents = {
   Navbar02,
+  NavbarBanner,
 } as const;
 
 interface GlobalConfig {

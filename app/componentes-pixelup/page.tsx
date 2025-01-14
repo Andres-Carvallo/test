@@ -45,10 +45,10 @@ import {
 
 export default async function Componentes() {
   return (
-    <div className="container mx-auto py-24 px-4">
+    <div className=" mx-auto py-24 px-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8  lg:max-w-[1000px] mx-auto">
         {/* Primera fila */}
-        <Link href="/menu" className="group relative overflow-hidden rounded-xl border-2 border-gray-200 aspect-square flex items-center justify-center bg-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 min-h-[200px]">
+        <Link href="/componentes-pixelup/menu" className="group relative overflow-hidden rounded-xl border-2 border-gray-200 aspect-square flex items-center justify-center bg-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 min-h-[200px]">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
           <div className="flex flex-col items-center gap-4">
             <Bars3Icon className="w-10 h-10 text-gray-700 group-hover:text-gray-900" />
@@ -68,7 +68,7 @@ export default async function Componentes() {
           </div>
         </Link>
 
-        <Link href="/marcas" className="group relative overflow-hidden rounded-xl border-2 border-gray-200 aspect-square flex items-center justify-center bg-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 min-h-[200px]">
+        <Link href="/componentes-pixelup/marcas" className="group relative overflow-hidden rounded-xl border-2 border-gray-200 aspect-square flex items-center justify-center bg-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 min-h-[200px]">
           <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
           <div className="flex flex-col items-center gap-4">
             <BuildingStorefrontIcon className="w-10 h-10 text-gray-700 group-hover:text-gray-900" />
@@ -99,7 +99,7 @@ export default async function Componentes() {
           </div>
         </Link>
 
-        <Link href="/footer" className="group relative overflow-hidden rounded-xl border-2 border-gray-200 aspect-square flex items-center justify-center bg-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 min-h-[200px]">
+        <Link href="/componentes-pixelup/footer" className="group relative overflow-hidden rounded-xl border-2 border-gray-200 aspect-square flex items-center justify-center bg-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 min-h-[200px]">
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
           <div className="flex flex-col items-center gap-4">
             <DocumentTextIcon className="w-10 h-10 text-gray-700 group-hover:text-gray-900" />

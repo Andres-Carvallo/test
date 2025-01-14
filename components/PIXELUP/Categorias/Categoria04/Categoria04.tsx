@@ -72,7 +72,7 @@ const Categoria04 = () => {
                 <h3 className="text-3xl font-bold text-white">
                   {getDefaultBanner(bannerData?.[0]).title}
                 </h3>
-                <span className="mt-1.5 inline-block bg-primary hover:bg-secondary px-5 py-3 text-xs font-medium uppercase tracking-wide text-foreground" 
+                <span className="mt-1.5 inline-block bg-secondary hover:bg-primary px-5 py-3 text-xs font-medium uppercase tracking-wide text-foreground" 
                       style={{ borderRadius: 'var(--radius)' }}>
                   Ver más
                 </span>
@@ -93,7 +93,7 @@ const Categoria04 = () => {
                 <h3 className="text-3xl font-bold text-white">
                   {getDefaultBanner(bannerData?.[1]).title}
                 </h3>
-                <span className="mt-1.5 inline-block bg-primary hover:bg-secondary px-5 py-3 text-xs font-medium uppercase tracking-wide text-foreground"
+                <span className="mt-1.5 inline-block bg-secondary hover:bg-primary px-5 py-3 text-xs font-medium uppercase tracking-wide text-foreground"
                       style={{ borderRadius: 'var(--radius)' }}>
                   Ver más
                 </span>
@@ -114,7 +114,7 @@ const Categoria04 = () => {
                 <h3 className="text-3xl font-bold text-white">
                   {getDefaultBanner(bannerData?.[2]).title}
                 </h3>
-                <span className="mt-1.5 inline-block bg-primary hover:bg-secondary px-5 py-3 text-xs font-medium uppercase tracking-wide text-foreground"
+                <span className="mt-1.5 inline-block bg-secondary hover:bg-primary px-5 py-3 text-xs font-medium uppercase tracking-wide text-foreground"
                       style={{ borderRadius: 'var(--radius)' }}>
                   Ver más
                 </span>

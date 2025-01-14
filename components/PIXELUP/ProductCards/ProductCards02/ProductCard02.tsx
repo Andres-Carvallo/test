@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { slugify } from "@/app/utils/slugify";
 
 type ProductCardProps = {
   key: any;
@@ -63,7 +64,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
 
   const handleButtonClick = () => {
     if (product.hasVariations) {
-      window.location.href = `/tienda/productos/${product.id}`;
+      window.location.href = `/tienda/productos/${slugify(product.name)}`;
     } else {
       addToCartHandler(product.skuId, 1);
     }
@@ -77,7 +78,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
         </span>
       )}
       <div className="group block overflow-hidden rounded-xl">
-        <Link href={`/tienda/productos/${product.id}`}>
+        <Link href={`/tienda/productos/${slugify(product.name)}`}>
           <img
             src={product.mainImageUrl}
             alt={product.name}

@@ -60,7 +60,7 @@ const Categoria03 = () => {
                     <p className="text-sm mt-2">{banner.description || 'Descripción no disponible'}</p>
                     <Link 
                       href={banner.buttonLink}
-                      className="inline-block bg-primary hover:bg-secondary text-foreground font-bold py-2 px-4 rounded mt-4"
+                      className="inline-block bg-secondary hover:bg-primary text-foreground font-bold py-2 px-4 rounded mt-4"
                     >
                       Ver más
                     </Link>
