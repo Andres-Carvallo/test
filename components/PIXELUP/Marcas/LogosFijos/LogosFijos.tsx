@@ -59,18 +59,18 @@ const LogosFijos: React.FC = () => {
   }
 
   return (
-    <section>
+    <section className="bg-gray-100">
       <div className="mx-auto w-full max-w-7xl px-5  md:px-10 "> {/* py-16 md:py-24 lg:py-32 */}
 {/*         <h1 className="md:mb-12 mb-6 text-3xl leading-9 text-center font-extrabold text-foreground sm:text-4xl sm:leading-10 py-2">
           Nuestras Marcas
         </h1> */}
-        <div className="grid grid-cols-2 items-center justify-center gap-8 rounded-md bg-background p-16 px-8 py-12 sm:grid-cols-3 md:gap-16">
+        <div className="bg-gray-100 grid grid-cols-2 items-center justify-center gap-8 rounded-md bg-background p-16 px-8 py-12 sm:grid-cols-3 md:gap-16">
           {logoData.map((logo, index) => (
             <div key={index} className="flex items-center justify-center">
               <img
                 src={logo.mainImage.url || logo.mainImage.data}
                 alt={`Logo ${index + 1}`}
-                className="max-w-full sm:max-w-[80%]"
+                className="max-w-full sm:max-w-[40%]"
                 style={{ borderRadius: 'var(--radius)' }}
               />
             </div>

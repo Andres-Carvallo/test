@@ -31,55 +31,66 @@ const ProductCard: React.FC<ProductCardProps> = ({
     };
   }, [product.mainImageUrl]);
 
-  const renderPrice = () => {
-    let priceRange = {
-      min: Infinity,
-      max: -Infinity,
-    };
+  const getDisplayPrice = () => {
+    if (product.hasVariations) {
+      const ranges = product.pricingRanges[0];
+      if (!ranges) return null;
 
-    // Si el producto no tiene variaciones y tiene ofertas, mostrar solo el precio de la oferta
-    if (!product.hasVariations && product.offers && product.offers.length > 0) {
-      const offerPrice = product.offers[0].amount;
-      return <span>${offerPrice.toLocaleString("es-CL")}</span>;
-    }
+      if (isOnSale && product.offers && product.offers[0]) {
+        const offer = product.offers[0];
+        const minAmount = Number(ranges.minimumAmount) || 0;
+        const minDiscounted = Number(offer.amount) || 0;
 
-    // Verificar si tiene variaciones y rangos de precios
-    if (product.hasVariations && product.pricingRanges) {
-      priceRange.min = Math.min(
-        priceRange.min,
-        product.pricingRanges[0].minimumAmount
-      );
-      priceRange.max = Math.max(
-        priceRange.max,
-        product.pricingRanges[0].maximumAmount
-      );
-    } else if (product.pricings) {
-      priceRange.min = Math.min(priceRange.min, product.pricings[0].amount);
-      priceRange.max = Math.max(priceRange.max, product.pricings[0].amount);
-    }
+        if (minAmount > 0 && minDiscounted > 0) {
+          return (
+            <div className="flex gap-2">
+              <span className="text-red-600">
+                ${minDiscounted.toLocaleString("es-CL")}
+              </span>
+              <span className="line-through text-gray-500">
+                ${minAmount.toLocaleString("es-CL")}
+              </span>
+            </div>
+          );
+        }
+      }
 
-    // Si existe una oferta, se debe tomar como prioridad el precio de oferta
-    if (product.offers && product.offers.length > 0) {
-      product.offers.forEach((offer: any) => {
-        priceRange.min = Math.min(priceRange.min, offer.amount);
-        priceRange.max = Math.max(priceRange.max, offer.amount);
-      });
-    }
+      const minAmount = Number(ranges.minimumAmount) || 0;
+      const maxAmount = Number(ranges.maximumAmount) || 0;
 
-    // Asegurarse de que el precio mínimo siempre sea menor al máximo
-    const finalMin = Math.min(priceRange.min, priceRange.max);
-    const finalMax = Math.max(priceRange.min, priceRange.max);
+      if (minAmount > 0 && maxAmount > 0) {
+        return (
+          <span>
+            ${maxAmount.toLocaleString("es-CL")} - $
+            {minAmount.toLocaleString("es-CL")}
+          </span>
+        );
+      }
 
-    // Mostrar el rango o un solo precio si son iguales
-    if (finalMin === finalMax) {
-      return <span>${finalMin.toLocaleString("es-CL")}</span>;
+      return null;
     } else {
-      return (
-        <span>
-          ${finalMin.toLocaleString("es-CL")} - $
-          {finalMax.toLocaleString("es-CL")}
-        </span>
-      );
+      const price = Number(product.pricings?.[0]?.amount) || 0;
+      if (!price) return null;
+
+      if (isOnSale && product.offers && product.offers[0]) {
+        const offer = product.offers[0];
+        const offerPrice = Number(offer.amount) || 0;
+
+        if (price > 0 && offerPrice > 0) {
+          return (
+            <div className="flex gap-2">
+              <span className="text-red-600">
+                ${offerPrice.toLocaleString("es-CL")}
+              </span>
+              <span className="line-through text-gray-500">
+                ${price.toLocaleString("es-CL")}
+              </span>
+            </div>
+          );
+        }
+      }
+
+      return <span>${price.toLocaleString("es-CL")}</span>;
     }
   };
 
@@ -99,7 +110,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </span>
       )}
       <Link
-        href={`/tienda/productosv1/${slugify(product.name)}`}
+        href={`/tienda/productos/${slugify(product.name)}`}
         className=""
       >
         {isLoading && (
@@ -117,7 +128,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <div className="max-w-[150px] md:max-w-[200px]">
           <p className="text-primary text-base mt-4">{product.name}</p>
         </div>
-        <p className="text-primary font-extrabold mt-2">{renderPrice()}</p>
+        <div className="mt-2">
+          <div className="mt-1 text-sm">{getDisplayPrice()}</div>
+        </div>
       </Link>
     </div>
   );

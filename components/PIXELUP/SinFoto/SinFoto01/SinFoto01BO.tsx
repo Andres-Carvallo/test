@@ -1,23 +1,24 @@
 "use client";
-import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
-import ContentBienvenida from "@/components/conMantenedor/ContentBienvenida";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTiendaBO";
-import { Content } from "next/font/google";
+import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css"; // Importar estilos para ReactQuill
 
-function BannerSinFotoBO() {
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
+function SinFoto01BO() {
   const [loading, setLoading] = useState(false);
 
   const [welcomeData, setWelcomeData] = useState({
     title: "",
     contentText: "",
   });
+
   const fetchWelcomeBanner = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERSINFOTO_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_ID}`;
 
       const Token = getCookie("AdminTokenAuth");
       const productTypeResponse = await axios.get(
@@ -33,16 +34,13 @@ function BannerSinFotoBO() {
       const bannerImage = productTypeResponse.data.contentBlock;
       setWelcomeData(bannerImage);
     } catch (error) {
-      console.error("Error al obtener los tipos de producto:", error);
-      // Manejar el error según sea necesario
+      console.error("Error al obtener los datos del banner:", error);
     } finally {
       setLoading(false); // Ocultar el indicador de carga
     }
   };
-  const handleChangeWelcome = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = event.target;
+
+  const handleChangeWelcome = (value: string, name: string) => {
     setWelcomeData({
       ...welcomeData,
       [name]: value,
@@ -55,7 +53,7 @@ function BannerSinFotoBO() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERSINFOTO_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_ID}`;
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
@@ -72,8 +70,6 @@ function BannerSinFotoBO() {
         }
       );
       // Limpiar el formulario después de enviar los datos
-
-      // Manejar cualquier otra lógica necesaria después del envío exitoso
       setWelcomeData({
         title: "",
         contentText: "",
@@ -82,7 +78,6 @@ function BannerSinFotoBO() {
       fetchWelcomeBanner();
     } catch (error) {
       console.error("Error al enviar los datos:", error);
-      // Manejar el error según sea necesario
     } finally {
       setLoading(false); // Ocultar el indicador de carga
     }
@@ -90,59 +85,84 @@ function BannerSinFotoBO() {
 
   useEffect(() => {
     fetchWelcomeBanner();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Debería ejecutarse solo en el montaje inicial
+  }, []);
+
+  const modules = {
+    toolbar: [
+      [{ header: "1" }, { header: "2" }, { font: [] }],
+      [{ size: [] }],
+      ["bold", "italic", "underline", "strike", "blockquote"],
+      [
+        { list: "ordered" },
+        { list: "bullet" },
+        { indent: "-1" },
+        { indent: "+1" },
+      ],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
   return (
     <>
       <div className="flex flex-col gap-4">
         {/* bienvenida */}
-        <div className=" ">
+        <div className="">
           <div className=" mt-2">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
-                {welcomeData?.title}
-              </h1>
+              <h2 className="text-center text-7xl md:text-8xl font-semibold text-dark mb-2 font-brush">
+                Hola
+              </h2>
+              {/* Renderizando el título con HTML */}
+              <div
+                className="text-center text-3xl font-semibold text-primary sm:text-4xl"
+                dangerouslySetInnerHTML={{ __html: welcomeData?.title }}
+              />
               <div className="mt-4">
-                <p className="mt-4 text-center text-lg text-primary">
-                  {welcomeData?.contentText}
-                </p>
+                {/* Renderizando el contenido con HTML */}
+                <p
+                  className="mt-4 text-center text-lg text-dark"
+                  dangerouslySetInnerHTML={{ __html: welcomeData?.contentText }}
+                />
               </div>
-
-              {/*               <div className="flex justify-center items-center">
-                                 <div className="grid grid-cols-2 items-center justify-center rounded-md bg-background py-12 sm:grid-cols-6 ">
-                {IconosData.map((icono, index) => (
-                    <div key={index} className="flex items-center justify-center">
-                    <img src={icono} alt="" className="max-w-full sm:max-w-[80%]" style={{ borderRadius: 'var(--radius)' }}/>
-                    </div>
-                    ))}
-                </div> 
-              </div> */}
             </div>
           </div>
 
           <form
             onSubmit={handleSubmitWelcomeBanner}
-            className=" mx-auto mt-8"
+            className="mx-auto mt-8"
           >
-            {" "}
-            <input
-              type="text"
-              name="title"
-              onChange={handleChangeWelcome}
-              className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Título"
-            />
-            <input
-              type="text"
-              name="contentText"
-              onChange={handleChangeWelcome}
-              className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Texto"
-            />
+            {/* Editor de título con ReactQuill */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Título
+              </label>
+              <ReactQuill
+                value={welcomeData.title}
+                onChange={(value) => handleChangeWelcome(value, "title")}
+                className="mt-1 h-auto bg-white"
+                modules={modules}
+              />
+            </div>
+
+            {/* Contenido con ReactQuill */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contenido
+              </label>
+              <ReactQuill
+                value={welcomeData.contentText}
+                onChange={(value) => handleChangeWelcome(value, "contentText")}
+                className="mt-1 h-auto bg-white"
+                modules={modules}
+              />
+            </div>
+
+            {/* Botón de envío */}
             <button
               type="submit"
               disabled={loading}
-              className="text-secondary bg-primary hover:bg-secondary hover:text-primary focus:ring-4   font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2  dark:hover:bg-dark  inline-flex items-center"
+              className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
             >
               <svg
                 aria-hidden="true"
@@ -172,4 +192,4 @@ function BannerSinFotoBO() {
   );
 }
 
-export default BannerSinFotoBO;
+export default SinFoto01BO;

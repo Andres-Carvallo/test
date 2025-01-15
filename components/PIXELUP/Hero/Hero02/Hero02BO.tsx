@@ -3,26 +3,21 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import "react-quill/dist/quill.snow.css";
 import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css";
 
-interface HeroProps {
-  HeroBOData: {
-    BannerId: string;
-    BannerImageId: string;
-  };
-}
+// Cargar react-quill dinámicamente para evitar problemas de SSR (Server-Side Rendering)
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
-const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
-  const { BannerId, BannerImageId } = HeroBOData;
+
+const Hero02BO: React.FC = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
-  const [mainImageHero03, setMainImageHero03] = useState<string | null>(null);
+  const [mainImageHero, setMainImageHero] = useState<string | null>(null);
   const [formDataHero, setFormDataHero] = useState<any>({
     title: "",
     landingText: "",
     buttonLink: "",
-    buttonText: "pixelup.cl",
+    buttonText: "",
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [updatedBannerData, setUpdatedBannerData] = useState({
@@ -40,15 +35,18 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     },
   });
 
+  const MAX_CHARACTERS = 450;
+  const ALERT_CHARACTERS = 449;
+
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = "c058147c-ee25-4ad5-bd6c-a1efa98dfe68";
-      const bannerImageId = "b7b9b02a-b09a-4f7f-a389-c2b4d331bb4c";
-
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO02_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO02_IMGID}`;
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${siteId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -58,7 +56,6 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       );
 
       const bannerImage = productTypeResponse.data.bannerImage;
-
       setBannerData(bannerImage);
       setFormDataHero({
         title: bannerImage.title,
@@ -91,14 +88,6 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       setFormDataHero({ ...formDataHero, landingText: value });
     }
   };
-  const MAX_CHARACTERS = 1600;
-  const ALERT_CHARACTERS = 449;
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Tab") {
-      e.preventDefault(); // Prevenir comportamiento predeterminado del Tab
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,15 +101,16 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
         orderNumber: formDataHero.orderNumber,
       };
 
-      if (!mainImageHero03) {
+      if (!mainImageHero) {
         delete updatedDataWithoutImage.mainImage;
       }
 
       // Send updated data to the server
-      const bannerId = "c058147c-ee25-4ad5-bd6c-a1efa98dfe68";
-      const bannerImageId = "b7b9b02a-b09a-4f7f-a389-c2b4d331bb4c";
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO02_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO02_IMGID}`;
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${siteId}`,
         updatedDataWithoutImage,
         {
           headers: {
@@ -178,6 +168,12 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     setImage(null); // Limpiar la imagen seleccionada
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Tab") {
+      e.preventDefault(); // Prevenir comportamiento predeterminado del Tab
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -209,33 +205,38 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       id="banner"
       className="w-full"
     >
-      <section className="w-full bg-foreground/5">
-        <div className="text-gray-600 body-font">
-          {bannerData && (
-            <div className="max-w-6xl mx-auto w-full px-4 md:px-0 py-12 md:py-24 flex flex-col md:flex-row items-center justify-center">
-              {/* Contenedor de imagen con centrado completo en dispositivos móviles */}
-              <div className="flex w-full md:flex-1 items-center justify-center mb-6 md:mb-0">
-                <img
-                  alt={bannerData.title}
-                  className="object-cover shadow-lg rounded-lg w-96"
-                  src={bannerData.mainImage.url}
+      <div>
+        {bannerData && (
+          <div className="px-0 md:px-6 lg:px-0 mt-0 md:mt-18 flex justify-center">
+    <div
+      className="relative w-full h-[800px] md:h-[600px] bg-cover bg-center"
+      style={{ borderRadius: "var(--radius)" }}
+    >
+              <img
+                src={bannerData.mainImage.url}
+                alt={bannerData.title}
+                className="absolute inset-0 w-full h-full object-cover rounded-lg"
                 />
-              </div>
-              {/* Contenedor de texto centrado completamente en dispositivos móviles */}
-              <div className="w-full md:flex-1 flex flex-col items-center text-center md:items-start md:text-left">
-                {/* <h4 className="text-primary text-lg md:text-xl mt-6 md:mt-0">{subtitulo}</h4> */}
-                <h1 className="mt-2 text-3xl md:text-5xl font-bold leading-tight text-foreground">
-                  {bannerData.title}
-                </h1>
-                <p
-                  className="text-base md:text-lg text-foreground py-3"
+      <div className="absolute top-1/2 left-1/2 lg:left-[24%] transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-4 md:p-8 rounded-lg shadow-lg max-w-lg text-gray-800 w-[90%] md:w-full">
+      <h2 className="text-2xl font-bold mb-4">{bannerData.title}</h2>
+                <div
+                  className="mb-4 editortexto"
                   dangerouslySetInnerHTML={{ __html: bannerData.landingText }}
                 />
+                {/*                     <p className="mb-4">{bannerData.buttonLink}</p>
+                 */}{" "}
+                <a
+                  
+                  className="text-blue-500 hover:underline text-right"
+                >
+                  {bannerData.buttonText}
+                </a>
               </div>
             </div>
-          )}
-        </div>
-      </section>
+          </div>
+        )}
+      </div>
+
 
       <form
         onSubmit={handleSubmit}
@@ -248,21 +249,9 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <div className="grid gap-4">
-          {/*           <div>
-            <span className="font-bold uppercase">Link de destino </span>
-            <input
-              type="text"
-              name="buttonLink"
-              value={formData.buttonLink}
-              onChange={handleChange}
-              className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Button Link"
-            />
-          </div> */}
-        </div>
+        <div className="grid gap-4"></div>
         <h3 className="font-normal text-primary">
-          Titulo <span className="text-primary">*</span>
+          Título <span className="text-primary">*</span>
         </h3>
         <input
           type="text"
@@ -271,7 +260,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
-          placeholder="Title"
+          placeholder="Título"
         />
         <input
           type="text"
@@ -281,40 +270,92 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />{" "}
         <h3 className="font-normal text-primary">
-          Texto <span className="text-primary">*</span>
+          Primer Párrafo <span className="text-primary">*</span>
         </h3>
         <ReactQuill
           value={formDataHero.landingText}
           onChange={handleEditorChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
-          placeholder="Landing Text"
+          placeholder="Contenido"
           onKeyDown={handleKeyDown}
         />
+        <div className="text-right text-sm text-gray-600">
+          {formDataHero.landingText.length}/{MAX_CHARACTERS}
+        </div>
+        {formDataHero.landingText.length > ALERT_CHARACTERS && (
+          <div
+            className="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
+            role="alert"
+          >
+            <svg
+              className="flex-shrink-0 inline w-4 h-4 me-3"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="sr-only">Info</span>
+            <div>
+              <span className="font-medium">Limite Alcanzado!</span> Los
+              caracteres extras no seran mostrados.
+            </div>
+          </div>
+        )}
+        <div>
+          <h3 className="font-normal text-primary">
+            Texto Botón <span className="text-primary">*</span>
+          </h3>
+          <input
+            type="text"
+            name="buttonText"
+            value={formDataHero.buttonText}
+            onChange={handleChange}
+            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+            style={{ borderRadius: "var(--radius)" }}
+            placeholder="Texto"
+          />
+        </div>
+        <div>
+          <h3 className="font-normal text-primary">
+            Link Botón <span className="text-primary">*</span>
+          </h3>
+          <input
+            type="text"
+            name="buttonLink"
+            value={formDataHero.buttonLink}
+            onChange={handleChange}
+            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+            style={{ borderRadius: "var(--radius)" }}
+            placeholder="Link Botón"
+          />
+        </div>
         <div>
           <input
             type="file"
             accept="image/*"
-            id="mainImageHero03"
+            id="mainImageHero"
             className="hidden"
             onChange={(e) =>
-              handleImageChange(e, setMainImageHero03, "mainImage")
+              handleImageChange(e, setMainImageHero, "mainImage")
             }
           />
-          {mainImageHero03 ? (
+          {mainImageHero ? (
             <div>
               <h3 className="font-normal text-primary">
                 Foto <span className="text-primary">*</span>
               </h3>
               <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
                 <img
-                  src={mainImageHero03}
+                  src={mainImageHero}
                   alt="Main Image"
                   className="w-full"
                 />
                 <button
                   className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                  onClick={() => handleClearImage(setMainImageHero03)}
+                  onClick={() => handleClearImage(setMainImageHero)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -339,7 +380,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
                 Foto <span className="text-primary">*</span>
               </h3>
               <label
-                htmlFor="mainImageHero03"
+                htmlFor="mainImageHero"
                 className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10"
                 style={{ borderRadius: "var(--radius)" }}
               >
@@ -400,4 +441,4 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
   );
 };
 
-export default Hero;
+export default Hero02BO;

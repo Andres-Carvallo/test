@@ -38,7 +38,7 @@ const LogosDinamicos: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_LOGOSDINAMICO_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_LOGOSCARRUSEL_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -60,7 +60,7 @@ const LogosDinamicos: React.FC = () => {
   }
 
   return (
-    <div className="">
+    <div className="bg-gray-100">
       <div className="mx-auto rounded-lg p-2  ">{/* md:pb-16 py-12 md:py-20  */}
 {/*         <h3 className="mb-2 mt-6 text-center text-2xl font-bold text-gray-900 dark:text-white md:text-3xl">
           Nuestras Alianzas

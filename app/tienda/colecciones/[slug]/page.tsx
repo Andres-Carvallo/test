@@ -58,6 +58,16 @@ async function getPriceForVariableProduct(product: any) {
   return { minimumAmount: null, maximumAmount: null };
 }
 
+async function fetchProductsWithOffers() {
+  const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?siteId=${siteId}&pageNumber=1&pageSize=50&hasValidOffers=true`,
+    { next: { tags: ["products"] } }
+  );
+  const data = await response.json();
+  return data.products || [];
+}
+
 export default async function DetalleColeccion({
   params,
 }: {
@@ -66,6 +76,7 @@ export default async function DetalleColeccion({
   try {
     // Obtener todas las colecciones
     const { collections } = await getCollections();
+    const productsWithOffers = await fetchProductsWithOffers();
 
     // Encontrar la colección que coincida con el slug
     const collectionFound = collections.find(
@@ -91,16 +102,34 @@ export default async function DetalleColeccion({
           stock = await fetchStockForProduct(product.id, product.skuId);
         }
 
+        // Verificar si el producto tiene ofertas válidas
+        const productWithOffer = productsWithOffers.find(
+          (p: any) => p.id === product.id
+        );
+        const hasValidOffer = !!productWithOffer;
+
         if (product.hasVariations) {
           const pricingRanges = await getPriceForVariableProduct(product);
-          return { ...product, pricingRanges: [pricingRanges], stock };
+          return {
+            ...product,
+            pricingRanges: [pricingRanges],
+            stock,
+            offers: hasValidOffer ? productWithOffer.offers : [],
+            hasValidOffer,
+          };
         } else {
           const priceData = await fetchPriceForProduct(
             product.id,
             product.skuId
           );
           const price = priceData?.skuPricings?.[0]?.unitPrice || null;
-          return { ...product, pricings: [{ amount: price }], stock };
+          return {
+            ...product,
+            pricings: [{ amount: price }],
+            stock,
+            offers: hasValidOffer ? productWithOffer.offers : [],
+            hasValidOffer,
+          };
         }
       })
     );

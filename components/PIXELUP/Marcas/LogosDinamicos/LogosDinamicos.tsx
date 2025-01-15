@@ -60,7 +60,7 @@ const LogosDinamicos: React.FC = () => {
   }
 
   return (
-    <div className="relative py-8 ">{/*  bg-gray-100 */}
+    <div className="relative py-8 bg-gray-100">{/*  bg-gray-100 */}
 {/*       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
         <Image
           src="/fran/logo_02.png"
@@ -73,17 +73,19 @@ const LogosDinamicos: React.FC = () => {
       <Marquee
         speed={20}
         gradient={false}
-        className="" /* py-8 */
+        pauseOnHover={true}
+        loop={0}
+        className=""
       >
         {logoData.map((logo, index) => (
           <div
             key={index}
-            className="rounded-full w-56 h-56 flex items-center justify-center mx-4" /* w-32 h-32 */
+            className="rounded-full w-40 h-40 flex items-center justify-center mx-16"
           >
             <img
               src={logo.mainImage.url || logo.mainImage.data}
               alt={`Logo ${index + 1}`}
-              className="w-56 h-56 object-contain " /* rounded-full w-28 h-28*/
+              className="w-32 h-32 object-contain"
             />
           </div>
         ))}

@@ -1,25 +1,23 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import dynamic from "next/dynamic";
-import "react-quill/dist/quill.snow.css";
+import Modal from "@/components/Core/Modals/ModalSeo";
+import Cropper from "react-easy-crop";
+import imageCompression from "browser-image-compression";
+import { getCroppedImg } from "@/lib/cropImage";
 
-// Cargar react-quill dinámicamente para evitar problemas de SSR (Server-Side Rendering)
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-
-interface HeroProps {
-  HeroBOData: {
-    BannerId: string;
-    BannerImageId: string;
-  };
-}
-
-const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
-  const { BannerId, BannerImageId } = HeroBOData;
+const Hero01BO: React.FC = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
+  const [originalFileName, setOriginalFileName] = useState<string>("");
+
   const [formDataHero, setFormDataHero] = useState<any>({
     title: "",
     landingText: "",
@@ -42,18 +40,15 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     },
   });
 
-  const MAX_CHARACTERS = 450;
-  const ALERT_CHARACTERS = 449;
-
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_HERO02_ID}`;
-      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO02_IMGID}`;
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO01_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO01_IMGID}`;
+
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${siteId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -90,12 +85,6 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     setFormDataHero({ ...formDataHero, [name]: value });
   };
 
-  const handleEditorChange = (value: string) => {
-    if (value.length <= MAX_CHARACTERS) {
-      setFormDataHero({ ...formDataHero, landingText: value });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -113,11 +102,10 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       }
 
       // Send updated data to the server
-      const bannerId = `${process.env.NEXT_PUBLIC_HERO02_ID}`;
-      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO02_IMGID}`;
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO01_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO01_IMGID}`;
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${siteId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         updatedDataWithoutImage,
         {
           headers: {
@@ -134,6 +122,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       // Handle error
     } finally {
       setLoading(false); // Ocultar el indicador de carga
+      setIsMainImageUploaded(false);
     }
   };
 
@@ -144,11 +133,12 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      setOriginalFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
         setImage(result);
-
+        setIsModalOpen(true);
         const imageInfo = {
           name: file.name,
           type: file.type,
@@ -175,9 +165,65 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
     setImage(null); // Limpiar la imagen seleccionada
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Tab") {
-      e.preventDefault(); // Prevenir comportamiento predeterminado del Tab
+  const convertToBase64 = (file: Blob) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleCrop = async () => {
+    if (!mainImageHero) return;
+
+    try {
+      const croppedImage = await getCroppedImg(
+        mainImageHero,
+        croppedAreaPixels
+      );
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+      const options = {
+        maxSizeMB: 1, // Ajusta el tamaño máximo permitido
+        maxWidthOrHeight: 1200, // Ajusta las dimensiones máximas permitidas
+        useWebWorker: true,
+        initialQuality: 0.95, // Ajusta la calidad inicial para mantener mejor calidad visual
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const imageInfo = {
+        name: originalFileName,
+        type: compressedFile.type,
+        size: compressedFile.size,
+        data: base64,
+      };
+      setFormDataHero((prevFormDataHero: any) => ({
+        ...prevFormDataHero,
+        mainImage: imageInfo,
+      }));
+      setUpdatedBannerData((prevData: any) => ({
+        ...prevData,
+        mainImage: imageInfo,
+      }));
+      setMainImageHero(base64);
+      setIsModalOpen(false);
+      setIsMainImageUploaded(true);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
     }
   };
 
@@ -212,38 +258,31 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
       id="banner"
       className="w-full"
     >
-      <div>
-        {bannerData && (
-          <div className="px-0 md:px-6 lg:px-0 mt-0 md:mt-18 flex justify-center">
-    <div
-      className="relative w-full h-[800px] md:h-[600px] bg-cover bg-center"
-      style={{ borderRadius: "var(--radius)" }}
-    >
+      <section className="w-full bg-foreground/5">
+        <div className="text-gray-600 body-font">
+          {bannerData && (
+            <div className="container py-10 mx-auto flex flex-col items-center space-y-6 md:space-y-0 md:flex-row md:space-x-4 max-w-3xl">
               <img
+                className="w-full sm:w-2/3 md:w-1/3 xl:w-2/4 object-cover object-center rounded"
+                alt="hero"
                 src={bannerData.mainImage.url}
-                alt="FBM Joyas"
-                className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                />
-      <div className="absolute top-1/2 left-1/2 lg:left-[24%] transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-4 md:p-8 rounded-lg shadow-lg max-w-lg text-gray-800 w-[90%] md:w-full">
-      <h2 className="text-2xl font-bold mb-4">{bannerData.title}</h2>
-                <div
-                  className="mb-4 editortexto"
-                  dangerouslySetInnerHTML={{ __html: bannerData.landingText }}
-                />
-                {/*                     <p className="mb-4">{bannerData.buttonLink}</p>
-                 */}{" "}
-                <a
-                  
-                  className="text-blue-500 hover:underline text-right"
-                >
+                style={{ borderRadius: "var(--radius)" }}
+              />
+              <div className="w-full text-center md:text-left md:pl-4">
+                <h4 className="text-primary text-lg md:text-xl mt-6 md:mt-0 break-words overflow-hidden">
                   {bannerData.buttonText}
-                </a>
+                </h4>
+                <h1 className="mt-2 text-3xl md:text-4xl font-bold leading-tight text-foreground break-words overflow-hidden">
+                  {bannerData.title}
+                </h1>
+                <p className="text-base md:text-lg text-foreground py-3 break-words overflow-hidden">
+                  {bannerData.landingText}
+                </p>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-
+          )}
+        </div>
+      </section>
 
       <form
         onSubmit={handleSubmit}
@@ -256,7 +295,33 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <div className="grid gap-4"></div>
+        <div className="grid gap-4">
+          <div>
+            <h3 className="font-normal text-primary">
+              Encabezado <span className="text-primary">*</span>
+            </h3>
+            <input
+              type="text"
+              name="buttonText"
+              value={formDataHero.buttonText}
+              onChange={handleChange}
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
+              placeholder="Button Text"
+            />
+          </div>
+          {/*           <div>
+            <span className="font-bold uppercase">Link de destino </span>
+            <input
+              type="text"
+              name="buttonLink"
+              value={formData.buttonLink}
+              onChange={handleChange}
+              className="block w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+              placeholder="Button Link"
+            />
+          </div> */}
+        </div>
         <h3 className="font-normal text-primary">
           Título <span className="text-primary">*</span>
         </h3>
@@ -267,7 +332,7 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
-          placeholder="Título"
+          placeholder="Title"
         />
         <input
           type="text"
@@ -277,69 +342,18 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />{" "}
         <h3 className="font-normal text-primary">
-          Primer Párrafo <span className="text-primary">*</span>
+          Texto <span className="text-primary">*</span>
         </h3>
-        <ReactQuill
+        <input
+          type="text"
+          name="landingText"
           value={formDataHero.landingText}
-          onChange={handleEditorChange}
+          onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
           style={{ borderRadius: "var(--radius)" }}
-          placeholder="Contenido"
-          onKeyDown={handleKeyDown}
+          placeholder="Landing Text"
         />
-        <div className="text-right text-sm text-gray-600">
-          {formDataHero.landingText.length}/{MAX_CHARACTERS}
-        </div>
-        {formDataHero.landingText.length > ALERT_CHARACTERS && (
-          <div
-            className="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
-            role="alert"
-          >
-            <svg
-              className="flex-shrink-0 inline w-4 h-4 me-3"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-            </svg>
-            <span className="sr-only">Info</span>
-            <div>
-              <span className="font-medium">Limite Alcanzado!</span> Los
-              caracteres extras no seran mostrados.
-            </div>
-          </div>
-        )}
-        <div>
-          <h3 className="font-normal text-primary">
-            Texto Botón <span className="text-primary">*</span>
-          </h3>
-          <input
-            type="text"
-            name="buttonText"
-            value={formDataHero.buttonText}
-            onChange={handleChange}
-            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-            style={{ borderRadius: "var(--radius)" }}
-            placeholder="Texto"
-          />
-        </div>
-        <div>
-          <h3 className="font-normal text-primary">
-            Link Botón <span className="text-primary">*</span>
-          </h3>
-          <input
-            type="text"
-            name="buttonLink"
-            value={formDataHero.buttonLink}
-            onChange={handleChange}
-            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-            style={{ borderRadius: "var(--radius)" }}
-            placeholder="Link Botón"
-          />
-        </div>
-        <div>
+        {/*         <div>
           <input
             type="file"
             accept="image/*"
@@ -409,7 +423,84 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
                     <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG o Webp (800x800px)
+                    SVG, PNG, JPG or GIF (MAX. 800x400px)
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
+        </div> */}
+        <div>
+          <input
+            type="file"
+            accept="image/*"
+            id="mainImageHero"
+            className="hidden"
+            onChange={(e) =>
+              handleImageChange(e, setMainImageHero, "mainImage")
+            }
+          />
+          {isMainImageUploaded ? (
+            <div className="flex flex-col items-center mt-3 relative">
+              <h4 className="font-normal text-primary text-center text-slate-600 w-full">
+                Tu fotografía{" "}
+                <span className="text-dark">
+                  {" "}
+                  {formDataHero.mainImage.name}
+                </span>{" "}
+                ya ha sido cargada.
+                <br /> Actualiza para ver los cambios.
+              </h4>
+
+              <button
+                className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full   text-xs mt-4"
+                onClick={() => handleClearImage(setMainImageHero)}
+              >
+                <span className="self-center">Seleccionar otra Imagen</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div>
+              <h3 className="font-normal text-primary">
+                Foto <span className="text-primary">*</span>
+              </h3>
+              <label
+                htmlFor="mainImageHero"
+                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
+              >
+                <div className="flex flex-col justify-center items-center">
+                  <svg
+                    className="w-12 h-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Subir Imagen</span>
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    PNG, JPG o Webp (400x500px)
                   </p>
                 </div>
               </label>
@@ -444,8 +535,62 @@ const Hero: React.FC<HeroProps> = ({ HeroBOData }) => {
           {loading ? "Loading..." : "Actualizar Banner"}
         </button>
       </form>
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImageHero || ""} // Asegurar que se pasa una cadena no nula
+              crop={crop}
+              zoom={zoom}
+              aspect={3 / 4}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+            <div className="controls"></div>
+          </div>
+          <div className="flex flex-col  justify-end ">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range "
+              />
+            </div>
+
+            <div className="flex justify-between w-full ">
+              <button
+                onClick={handleCrop}
+                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setMainImageHero(null);
+                  setIsMainImageUploaded(false);
+                  setIsModalOpen(false);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </section>
   );
 };
 
-export default Hero;
+export default Hero01BO;

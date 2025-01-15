@@ -194,7 +194,20 @@ const CreateOrEditPost: React.FC = () => {
     }
   }, []);
 
-  const modules = {
+  // Definimos dos configuraciones diferentes de módulos para los editores
+  const previewModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["clean"],
+    ],
+    clipboard: {
+      matchVisual: false,
+    },
+  };
+
+  const detailModules = {
     toolbar: [
       [{ header: [1, 2, 3, 4, 5, 6, false] }],
       [{ size: ["small", false, "large", "huge"] }],
@@ -209,10 +222,20 @@ const CreateOrEditPost: React.FC = () => {
     clipboard: {
       matchVisual: false,
     },
-    // @ts-ignore
     imageResize: {
       modules: ["Resize", "DisplaySize"],
-    },
+      displaySize: true,
+      handleStyles: {
+        backgroundColor: '#ec4899',
+        border: 'none',
+        borderRadius: '50%'
+      },
+      parchment: {
+        image: {
+          attributes: ['width']
+        }
+      }
+    }
   };
 
   const formats = [
@@ -488,55 +511,44 @@ const CreateOrEditPost: React.FC = () => {
               </div>
             </div>
 
-            {/* Tabs para los editores */}
-            <div className="mt-6">
-              <div className="border-b border-gray-200 dark:border-gray-700">
-                <nav className="-mb-px flex space-x-8">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("preview")}
-                    className={`${
-                      activeTab === "preview"
-                        ? "border-pink-500 text-pink-600 dark:text-pink-400"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400"
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                  >
-                    Vista Previa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("detail")}
-                    className={`${
-                      activeTab === "detail"
-                        ? "border-pink-500 text-pink-600 dark:text-pink-400"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400"
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                  >
-                    Contenido Detallado
-                  </button>
-                </nav>
-              </div>
-
-              {/* Editor Contenido */}
-              <div
-                className="mt-4"
-                style={{ minHeight: "600px" }}
-              >
+            {/* Reemplazar la sección de Tabs y Editor por esto: */}
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Editor de Vista Previa */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Vista Previa (máx. 500 caracteres)
+                </h3>
                 <ReactQuill
-                  value={
-                    activeTab === "preview" ? previewContent : detailContent
-                  }
+                  value={previewContent}
                   onChange={(content) => {
-                    if (activeTab === "preview") {
+                    // Limitar a 500 caracteres
+                    const textOnly = content.replace(/<[^>]*>/g, '');
+                    if (textOnly.length <= 500) {
                       setPreviewContent(content);
-                    } else {
-                      setDetailContent(content);
                     }
                   }}
-                  modules={modules}
+                  modules={previewModules}
+                  formats={["header", "bold", "italic", "underline", "list", "bullet"]}
+                  theme="snow"
+                  className="h-[400px]"
+                />
+                <p className="mt-2 text-sm text-gray-500">
+                  {500 - previewContent.replace(/<[^>]*>/g, '').length} caracteres restantes
+                </p>
+              </div>
+
+              {/* Editor de Contenido Detallado */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Contenido Detallado
+                </h3>
+                <ReactQuill
+                  value={detailContent}
+                  onChange={setDetailContent}
+                  modules={detailModules}
                   formats={formats}
                   theme="snow"
-                  className="h-[600px]"
+                  className="h-[400px]"
                 />
               </div>
             </div>
@@ -731,6 +743,22 @@ const styles = `
 
   .dark .ql-snow .ql-fill {
     fill: #f472b6;
+  }
+
+  .ql-editor p {
+    clear: both;
+    margin-top: 1em;
+  }
+
+  .ql-editor img {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+    margin: 1em 0;
+  }
+
+  .image-resizer {
+    clear: none !important;
   }
 `;
 

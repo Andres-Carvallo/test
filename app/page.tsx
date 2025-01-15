@@ -6,14 +6,11 @@ import HomeForm from "@/components/Core/ContactForm/Home";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
 import BannerPrincipal from "@/components/conMantenedor/BannerPrincipal";
 import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
-import BannerSinFoto from "@/components/PIXELUP/BannerSinFoto/BannerSinFoto";
 import Categoria02 from "@/components/PIXELUP/Categorias/Categoria02/Categoria02";
 import Frase01 from "@/components/PIXELUP/Frases/Frase01/Frase01";
 import Carrusel from "@/components/PIXELUP/Carrusel/Carrusel";
 import Frase02 from "@/components/PIXELUP/Frases/Frase02/Frase02";
-import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
-import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
 import BannerPrincipal02 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import Destacados01 from "@/components/PIXELUP/Destacados/Destacado01";
 import Colecciones from "@/components/conMantenedor/colecciones";
@@ -23,6 +20,8 @@ import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrinci
 import BannerPrincipal02Mobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02Mobile";
 import { globalConfig, getActiveFooter, getActiveNavbar } from "./config/GlobalConfig";
 import DiscountModal from '@/components/PIXELUP/Modal/DiscountModal'
+import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
+import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -98,7 +97,7 @@ export default async function Page() {
       <>
         <ActiveNavbar />
         <BannerResponsive />
-        <BannerSinFoto />
+        <SinFoto01 />
         <Categoria02 />
         <Frase01 />
         <Destacados01 text="Destacados" />

@@ -47,7 +47,7 @@ const Colecciones: React.FC<ColeccionesProps> = ({
                   key={product.id}
                   product={product}
                   addToCartHandler={addToCartHandler}
-                  isOnSale={product.offers && product.offers.length > 0}
+                  isOnSale={product.hasValidOffer}
                   stock={product.stock}
                 />
               ))}

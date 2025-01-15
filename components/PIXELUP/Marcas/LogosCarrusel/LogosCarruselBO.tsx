@@ -34,7 +34,7 @@ const LogosDinamicosBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_LOGOSDINAMICO_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_LOGOSCARRUSEL_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -103,7 +103,7 @@ const LogosDinamicosBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_LOGODINAMICO_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_LOGOSCARRUSEL_ID}`;
 
       const dataToSend = {
         title: "Logo Marca", // Valor por defecto
@@ -151,7 +151,7 @@ const LogosDinamicosBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_LOGODINAMICO_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_LOGOSCARRUSEL_ID}`;
 
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${logoId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,

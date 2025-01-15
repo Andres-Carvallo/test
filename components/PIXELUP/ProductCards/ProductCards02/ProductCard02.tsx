@@ -17,48 +17,56 @@ const ProductCard02: React.FC<ProductCardProps> = ({
   stock,
 }) => {
   const renderPrice = () => {
-    let priceRange = {
-      min: Infinity,
-      max: -Infinity,
-    };
-  
-    // Verificar si tiene variaciones y rangos de precios
-    if (product.hasVariations && product.pricingRanges) {
-      priceRange.min = Math.min(
-        priceRange.min,
-        product.pricingRanges[0].minimumAmount
-      );
-      priceRange.max = Math.max(
-        priceRange.max,
-        product.pricingRanges[0].maximumAmount
-      );
-    } else if (product.pricings) {
-      priceRange.min = Math.min(priceRange.min, product.pricings[0].amount);
-      priceRange.max = Math.max(priceRange.max, product.pricings[0].amount);
+    // Para productos con variaciones
+    if (product.hasVariations) {
+      const ranges = product.pricingRanges?.[0];
+      if (!ranges) return null;
+
+      if (isOnSale && product.offers && product.offers[0]) {
+        const offer = product.offers[0];
+        const minAmount = Number(ranges.minimumAmount) || 0;
+        const minDiscounted = Number(offer.amount) || 0;
+
+        if (minAmount > 0 && minDiscounted > 0) {
+          return (
+            <div className="flex gap-2">
+              <span className="text-red-600">${minDiscounted.toLocaleString("es-CL")}</span>
+              <span className="line-through text-gray-500">${minAmount.toLocaleString("es-CL")}</span>
+            </div>
+          );
+        }
+      }
+
+      const minAmount = Number(ranges.minimumAmount) || 0;
+      const maxAmount = Number(ranges.maximumAmount) || 0;
+
+      if (minAmount > 0 && maxAmount > 0) {
+        return <span>${minAmount.toLocaleString("es-CL")} - ${maxAmount.toLocaleString("es-CL")}</span>;
+      }
+    } 
+    // Para productos sin variaciones
+    else {
+      const price = Number(product.pricings?.[0]?.amount) || 0;
+      if (!price) return null;
+
+      if (isOnSale && product.offers && product.offers[0]) {
+        const offer = product.offers[0];
+        const offerPrice = Number(offer.amount) || 0;
+
+        if (price > 0 && offerPrice > 0) {
+          return (
+            <div className="flex gap-2">
+              <span className="text-red-600">${offerPrice.toLocaleString("es-CL")}</span>
+              <span className="line-through text-gray-500">${price.toLocaleString("es-CL")}</span>
+            </div>
+          );
+        }
+      }
+
+      return <span>${price.toLocaleString("es-CL")}</span>;
     }
-  
-    // Si existe una oferta, se debe tomar como prioridad el precio de oferta
-    if (product.offers && product.offers.length > 0) {
-      product.offers.forEach((offer: any) => {
-        priceRange.min = Math.min(priceRange.min, offer.amount);
-        priceRange.max = Math.max(priceRange.max, offer.amount);
-      });
-    }
-  
-    // Asegurarse de que el precio mínimo siempre sea menor al máximo
-    const finalMin = Math.min(priceRange.min, priceRange.max);
-    const finalMax = Math.max(priceRange.min, priceRange.max);
-  
-    // Mostrar el rango o un solo precio si son iguales
-    if (finalMin === finalMax) {
-      return <span>${finalMin.toLocaleString("es-CL")}</span>;
-    } else {
-      return (
-        <span>
-          ${finalMin.toLocaleString("es-CL")} - ${finalMax.toLocaleString("es-CL")}
-        </span>
-      );
-    }
+
+    return null;
   };
   
 

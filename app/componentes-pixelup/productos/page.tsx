@@ -7,6 +7,7 @@ import Destacados01 from "@/components/PIXELUP/Destacados/Destacado01";
 import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import ProductCard02 from "@/components/PIXELUP/ProductCards/ProductCards02/ProductCard02";
 import ProductCard03 from "@/components/PIXELUP/ProductCards/ProductCards03/ProductCard03";
+import ProductCard04 from '@/components/PIXELUP/ProductCards/ProductCards04/ProductCards04';
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -38,6 +39,10 @@ export default function Productos() {
         <Destacados01 
           text="Tipo de Producto 3 - Detalle 3"
           ProductCardComponent={ProductCard03}
+        />
+        <Destacados01 
+          text="Tipo de Producto 4 - Detalle 4"
+          ProductCardComponent={ProductCard04}
         />
       </>
     );
