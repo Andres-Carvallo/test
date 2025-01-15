@@ -26,6 +26,8 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -86,13 +88,18 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("¿Estás seguro de eliminar esta categoría?")) return;
+  const handleDelete = async (categoryId: string) => {
+    setCategoryToDelete(categoryId);
+    setIsDeleteModalOpen(true);
+  };
 
-    const token = getCookie("AdminTokenAuth");
+  const executeDelete = async () => {
+    if (!categoryToDelete) return;
+    
     try {
+      const token = getCookie("AdminTokenAuth");
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/article-categories/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/article-categories/${categoryToDelete}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -100,10 +107,10 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
         }
       );
       fetchCategories();
-      onCategoryCreated();
+      setIsDeleteModalOpen(false);
+      setCategoryToDelete(null);
     } catch (error) {
       console.error("Error deleting category:", error);
-      setError("Error al eliminar la categoría");
     }
   };
 
@@ -164,7 +171,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                    className="mt-1 py-2 block w-full border rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
                     required
                   />
                 </div>
@@ -176,7 +183,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
                     type="text"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                    className="mt-1 py-2 border block w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
                   />
                 </div>
               </div>
@@ -280,6 +287,68 @@ const CategoryModal: React.FC<CategoryModalProps> = ({
           </div>
         </div>
       </div>
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Overlay */}
+          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+          
+          {/* Modal */}
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              {/* Ícono de advertencia */}
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+                <svg 
+                  className="h-6 w-6 text-red-600 dark:text-red-200" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  strokeWidth="1.5" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+              
+              {/* Contenido del modal */}
+              <div className="mt-3 text-center sm:mt-5">
+                <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+                  Confirmar eliminación de categoría
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    ¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer y podría afectar a los posts asociados.
+                  </p>
+                </div>
+              </div>
+              
+              {/* Botones */}
+              <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                <button
+                  type="button"
+                  className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-2"
+                  onClick={executeDelete}
+                >
+                  Eliminar
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setCategoryToDelete(null);
+                  }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

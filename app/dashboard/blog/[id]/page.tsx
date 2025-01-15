@@ -11,6 +11,99 @@ interface Post {
   creationDate: string;
 }
 
+const styles = `
+  .prose {
+    max-width: none;
+  }
+
+  .prose img {
+    max-width: 100%;
+    height: auto;
+    display: inline-block;
+    margin: 1em 0;
+  }
+
+  .prose p {
+    clear: both;
+    margin-top: 1em;
+  }
+
+  /* Estilos para los encabezados */
+  .prose h1 {
+    font-size: 2em;
+    margin-top: 0.67em;
+    margin-bottom: 0.67em;
+  }
+
+  .prose h2 {
+    font-size: 1.5em;
+    margin-top: 0.83em;
+    margin-bottom: 0.83em;
+  }
+
+  .prose h3 {
+    font-size: 1.17em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  /* Estilos para las listas */
+  .prose ul, .prose ol {
+    padding-left: 2em;
+    margin: 1em 0;
+  }
+
+  .prose ul {
+    list-style-type: disc;
+  }
+
+  .prose ol {
+    list-style-type: decimal;
+  }
+
+  /* Estilos para blockquotes */
+  .prose blockquote {
+    border-left: 4px solid #e5e7eb;
+    padding-left: 1em;
+    margin: 1em 0;
+  }
+
+  /* Estilos para código */
+  .prose pre {
+    background-color: #f3f4f6;
+    padding: 1em;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+  }
+
+  .prose code {
+    background-color: #f3f4f6;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+  }
+
+  /* Modo oscuro */
+  .dark .prose {
+    color: #e5e7eb;
+  }
+
+  .dark .prose blockquote {
+    border-left-color: #4b5563;
+  }
+
+  .dark .prose pre,
+  .dark .prose code {
+    background-color: #374151;
+  }
+`;
+
+// Agrega los estilos al documento
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
+}
+
 const PostDetail: React.FC = () => {
   const { id } = useParams();
   const [post, setPost] = useState<Post | null>(null);
@@ -75,12 +168,10 @@ const PostDetail: React.FC = () => {
             </div>
           )}
 
-          <div className="prose prose-lg dark:prose-invert max-w-none">
-            <div
-              dangerouslySetInnerHTML={{ __html: post.detailContent }}
-              className="text-gray-800 dark:text-gray-200"
-            />
-          </div>
+          <div 
+            dangerouslySetInnerHTML={{ __html: post.detailContent }}
+            className="prose prose-lg dark:prose-invert max-w-none text-gray-800 dark:text-gray-200"
+          />
         </article>
       ) : (
         <div className="flex justify-center items-center h-screen">
