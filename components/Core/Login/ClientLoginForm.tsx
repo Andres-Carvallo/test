@@ -15,19 +15,29 @@ function ClientLoginForm() {
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   
-  // Modificar los estados para usar localStorage
-  const [loginAttempts, setLoginAttempts] = useState(() => {
-    const saved = localStorage.getItem('clientLoginAttempts');
-    return saved ? parseInt(saved) : 0;
-  });
-
-  const [lockoutTime, setLockoutTime] = useState<number | null>(() => {
-    const saved = localStorage.getItem('clientLockoutTime');
-    const time = saved ? parseInt(saved) : null;
-    return time && time > Date.now() ? time : null;
-  });
-
+  // Modificar los estados para usar localStorage con comprobación del lado del cliente
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockoutTime, setLockoutTime] = useState<number | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+
+  // Añadir efecto para inicializar los valores desde localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedAttempts = localStorage.getItem('clientLoginAttempts');
+      const savedLockoutTime = localStorage.getItem('clientLockoutTime');
+      
+      if (savedAttempts) {
+        setLoginAttempts(parseInt(savedAttempts));
+      }
+      
+      if (savedLockoutTime) {
+        const time = parseInt(savedLockoutTime);
+        if (time > Date.now()) {
+          setLockoutTime(time);
+        }
+      }
+    }
+  }, []);
 
   // Añadir efectos para persistir datos
   useEffect(() => {

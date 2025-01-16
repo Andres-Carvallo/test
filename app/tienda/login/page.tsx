@@ -1,10 +1,16 @@
-import ClientLoginForm from "@/components/Core/Login/ClientLoginForm";
+import { default as dynamicImport } from 'next/dynamic'
 
-export default function Login() {
+const ClientLoginForm = dynamicImport(
+  () => import('@/components/Core/Login/ClientLoginForm'),
+  { ssr: false }
+)
+
+export default function TiendaLoginPage() {
   return (
-    <>
-      <title>Login - Tienda</title>
+    <div>
       <ClientLoginForm />
-    </>
+    </div>
   );
 }
+
+export const dynamic = 'force-dynamic';
