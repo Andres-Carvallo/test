@@ -65,7 +65,7 @@ const BannerPrincipal02MobileContent: React.FC = () => {
           >
             <Link
               href={image.buttonLink || "#"}
-              target="_blank"
+              /* target="_blank" */
               rel="noopener noreferrer"
               aria-label={image.title}
             >

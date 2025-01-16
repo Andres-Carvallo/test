@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import CheckoutPago from "@/components/Checkout/CheckoutPago";
+import CheckoutPago from "@/components/Core/Checkout/CheckoutPago";
 import { Suspense } from "react";
 import Loader from "@/components/common/Loader";
 

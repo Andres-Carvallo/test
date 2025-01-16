@@ -93,9 +93,13 @@ function RegisterForm() {
 
   const validateForm = () => {
     const validationErrors = [];
-    if (password.length < 8) {
-      validationErrors.push("La contraseña debe tener al menos 8 caracteres.");
+    
+    // Nueva validación de contraseña
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      validationErrors.push("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo (!@#$%^&*).");
     }
+    
     if (password !== repeatPassword) {
       validationErrors.push("Las contraseñas no coinciden.");
     }
