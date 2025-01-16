@@ -293,6 +293,25 @@ const BannerPrincipal02BOMobile: React.FC = () => {
     });
   };
 
+  const formatUrl = (url: string): string => {
+    if (!url) return '';
+    
+    try {
+      // Intenta crear un objeto URL para validar
+      new URL(url);
+      return url; // Si es una URL válida, la devuelve tal cual
+    } catch {
+      // Si no es una URL válida, aplicamos el formato
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      if (url.startsWith('www.')) {
+        return `https://${url}`;
+      }
+      return `https://www.${url}`;
+    }
+  };
+
   const handleMobileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -300,10 +319,13 @@ const BannerPrincipal02BOMobile: React.FC = () => {
       const token = getCookie("AdminTokenAuth");
       const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL02MOBILE_ID}`;
 
+      // Formateamos la URL justo antes de enviar
+      const formattedButtonLink = formatUrl(mobileFormData.buttonLink);
+
       const dataToSend = {
         title: "fbmjoyas.cl",
         landingText: "fbmjoyas.cl",
-        buttonLink: mobileFormData.buttonLink,
+        buttonLink: formattedButtonLink, // Usamos la URL formateada
         buttonText: "fbmjoyas.cl",
         mainImageLink: "fbmjoyas.cl",
         orderNumber: mobileFormData.orderNumber,
@@ -476,7 +498,7 @@ const BannerPrincipal02BOMobile: React.FC = () => {
             value={mobileFormData.buttonLink}
             onChange={handleMobileChange}
             className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-            placeholder="Button Link"
+            placeholder="Ejemplo: facebook.com/mitienda o https://www.facebook.com/mitienda"
           />
         </div>
 

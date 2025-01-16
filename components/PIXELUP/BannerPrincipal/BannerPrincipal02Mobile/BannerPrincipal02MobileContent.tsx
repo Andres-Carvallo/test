@@ -54,32 +54,32 @@ const BannerPrincipal02MobileContent: React.FC = () => {
       aria-label="Banner principal móvil"
     >
       <div className="relative w-full">
-        {bannerData.images.map((image, index) => (
-          <div
-            key={index}
-            className={`transition-opacity duration-1000 ease-in-out ${
-              index === currentIndex
-                ? "opacity-100 relative"
-                : "opacity-0 absolute inset-0"
-            }`}
-          >
-            <Link
-              href={image.buttonLink || "#"}
-              /* target="_blank" */
-              rel="noopener noreferrer"
-              aria-label={image.title}
+        <Link
+          href={bannerData.images[currentIndex].buttonLink || "#"}
+          /* target="_blank" */
+          rel="noopener noreferrer"
+          aria-label={bannerData.images[currentIndex].title}
+          className="block w-full"
+        >
+          {bannerData.images.map((image, index) => (
+            <div
+              key={index}
+              className="w-full"
+              style={{ position: index === currentIndex ? 'relative' : 'absolute', top: 0, left: 0 }}
             >
               <img
                 src={image.mainImage.url}
                 alt={image.title}
                 width={768}
                 height={500}
-                className="w-full object-cover"
+                className={`w-full object-cover transition-opacity duration-1000 ease-in-out ${
+                  index === currentIndex ? "opacity-100" : "opacity-0"
+                }`}
                 loading={index === 0 ? "eager" : "lazy"}
               />
-            </Link>
-          </div>
-        ))}
+            </div>
+          ))}
+        </Link>
       </div>
 
       {hasMultipleImages && (

@@ -105,9 +105,34 @@ const BannerPrincipal02BO: React.FC = () => {
     fetchBannerHome();
   }, []);
 
+  const formatUrl = (url: string): string => {
+    if (!url) return '';
+    
+    try {
+      // Intenta crear un objeto URL para validar
+      new URL(url);
+      return url; // Si es una URL válida, la devuelve tal cual
+    } catch {
+      // Si no es una URL válida, aplicamos el formato
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      if (url.startsWith('www.')) {
+        return `https://${url}`;
+      }
+      return `https://www.${url}`;
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    if (name === 'buttonLink') {
+      // Guardamos el valor tal cual el usuario lo escribe
+      setFormData({ ...formData, [name]: value });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -193,10 +218,13 @@ const BannerPrincipal02BO: React.FC = () => {
       const token = getCookie("AdminTokenAuth");
       const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL02_ID}`;
 
+      // Formateamos la URL justo antes de enviar
+      const formattedButtonLink = formatUrl(formData.buttonLink);
+
       const dataToSend = {
         title: "pixelup.cl",
         landingText: "pixelup.cl",
-        buttonLink: formData.buttonLink,
+        buttonLink: formattedButtonLink, // Usamos la URL formateada
         buttonText: "pixelup.cl",
         mainImageLink: "pixelup.cl",
         orderNumber: formData.orderNumber,
@@ -504,7 +532,7 @@ const BannerPrincipal02BO: React.FC = () => {
             value={formData.buttonLink}
             onChange={handleChange}
             className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-            placeholder="Button Link"
+            placeholder="Ejemplo: facebook.com/mitienda o https://www.facebook.com/mitienda"
           />
         </div>
 
