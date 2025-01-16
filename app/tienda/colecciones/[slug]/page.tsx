@@ -65,7 +65,11 @@ async function fetchProductsWithOffers() {
     { next: { tags: ["products"] } }
   );
   const data = await response.json();
-  return data.products || [];
+  const productsWithOffersMap = (data.products || []).reduce((acc: any, product: any) => {
+    acc[product.id] = product.offers;
+    return acc;
+  }, {});
+  return productsWithOffersMap;
 }
 
 export default async function DetalleColeccion({
@@ -76,7 +80,7 @@ export default async function DetalleColeccion({
   try {
     // Obtener todas las colecciones
     const { collections } = await getCollections();
-    const productsWithOffers = await fetchProductsWithOffers();
+    const productsWithOffersMap = await fetchProductsWithOffers();
 
     // Encontrar la colección que coincida con el slug
     const collectionFound = collections.find(
@@ -103,10 +107,8 @@ export default async function DetalleColeccion({
         }
 
         // Verificar si el producto tiene ofertas válidas
-        const productWithOffer = productsWithOffers.find(
-          (p: any) => p.id === product.id
-        );
-        const hasValidOffer = !!productWithOffer;
+        const productOffers = productsWithOffersMap[product.id] || [];
+        const hasValidOffer = productOffers.length > 0;
 
         if (product.hasVariations) {
           const pricingRanges = await getPriceForVariableProduct(product);
@@ -114,7 +116,7 @@ export default async function DetalleColeccion({
             ...product,
             pricingRanges: [pricingRanges],
             stock,
-            offers: hasValidOffer ? productWithOffer.offers : [],
+            offers: productOffers,
             hasValidOffer,
           };
         } else {
@@ -127,7 +129,7 @@ export default async function DetalleColeccion({
             ...product,
             pricings: [{ amount: price }],
             stock,
-            offers: hasValidOffer ? productWithOffer.offers : [],
+            offers: productOffers,
             hasValidOffer,
           };
         }

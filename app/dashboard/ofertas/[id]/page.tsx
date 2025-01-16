@@ -276,17 +276,35 @@ function DetalleOferta() {
       const data = await response.json();
       if (data.code === 0) {
         const currentOffers = data.skuOffers || data.offers;
+        
+        // Obtener la fecha y hora actual en Santiago de Chile
+        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+
         const expired = currentOffers.filter((offer: Offer) => {
-          const currentDate = new Date();
+          // Convertir la fecha de fin a zona horaria de Chile y establecer a 23:59:59
           const endDate = new Date(offer.endDate);
-          return endDate < currentDate;
+          const endDateChile = new Date(endDate.toLocaleString('en-US', {
+            timeZone: 'America/Santiago'
+          }));
+          endDateChile.setHours(23, 59, 59, 999);
+          
+          return endDateChile < now;
         });
 
         const activeOffers = currentOffers.filter((offer: Offer) => {
-          const currentDate = new Date();
+          // Convertir la fecha de fin a zona horaria de Chile y establecer a 23:59:59
           const endDate = new Date(offer.endDate);
-          return endDate >= currentDate;
+          const endDateChile = new Date(endDate.toLocaleString('en-US', {
+            timeZone: 'America/Santiago'
+          }));
+          endDateChile.setHours(23, 59, 59, 999);
+          
+          return endDateChile >= now;
         });
+
+        console.log('Fecha actual (Santiago):', now);
+        console.log('Ofertas activas:', activeOffers);
+        console.log('Ofertas expiradas:', expired);
 
         setOffers(activeOffers);
         setExpiredOffers(expired);

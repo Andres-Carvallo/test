@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, ChangeEvent, useCallback } from "react";
-import ModalGalleryUpload from "@/components/Products/ImgUpload/ModalGalleryUpload";
+import ModalGalleryUpload from "@/components/Core/Products/ImgUpload/ModalGalleryUpload";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";

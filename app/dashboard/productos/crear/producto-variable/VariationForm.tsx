@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { HandlePriceSku } from "@/app/utils/HandlePriceSku";
 import { handleStockSku } from "@/app/utils/HandleStockSku";
 import ImageUploaderVariable from "./ImageUploaderVariable";
-import GalleryUpload2 from "@/components/Products/ImgUpload/GalleryUploadV2";
+import GalleryUpload2 from "@/components/Core/Products/ImgUpload/GalleryUploadV2";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader";

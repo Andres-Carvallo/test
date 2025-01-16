@@ -4,15 +4,15 @@
 import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Select from "react-select";
-import GalleryUpload from "@/components/Products/ImgUpload/GalleryUploadV2";
+import GalleryUpload from "@/components/Core/Products/ImgUpload/GalleryUploadV2";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import VariablesPage from "./VariablesSection";
 import ImageUploader from "../producto-simple/ImageUploader";
 import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
-import TabCategory from "@/components/Products/Category/TabCategory";
-import CreateAtribute from "@/components/Products/CreateAtribute";
+import TabCategory from "@/components/Core/Products/Category/TabCategory";
+import CreateAtribute from "@/components/Core/Products/CreateAtribute";
 import toast from "react-hot-toast";
 import StarCheckbox from "@/components/Core/Checkbox/StarCheckbox";
 import Loader from "@/components/common/Loader";
