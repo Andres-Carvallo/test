@@ -109,7 +109,7 @@ const DiscountModal = () => {
                   Copiar
                 </button>
               </div>
-              <p className="text-sm text-white">Haz clic en "Copiar" para usar este código en tu compra</p>
+              <p className="text-sm text-white">Haz clic en COPIAR para usar este código en tu compra</p>
             </div>
           )}
           

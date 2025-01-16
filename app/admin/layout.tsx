@@ -1,5 +1,3 @@
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import Footer02 from "@/components/PIXELUP/Footer/Footer02/Footer02";
 import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";

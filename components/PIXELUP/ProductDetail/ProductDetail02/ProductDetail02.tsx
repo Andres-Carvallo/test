@@ -824,8 +824,8 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
     if (variations.some(v => v.offers && v.offers.length > 0)) {
       const lowestOfferPrice = Math.min(
         ...variations
-          .filter(v => v.offers && v.offers.length > 0)
-          .map(v => v.offers[0].unitPrice)
+          .filter(v => v.offers && v.offers.length > 0 && v.offers[0]?.unitPrice)
+          .map(v => v.offers![0].unitPrice)
       );
       const highestRegularPrice = Math.max(
         ...variations

@@ -82,7 +82,7 @@ const SinFoto03BO: React.FC = () => {
       );
 
       const responses = await Promise.all(promises);
-      const newCardsData = responses.reduce((acc, response, index) => {
+      const newCardsData = responses.reduce<{[key: string]: any}>((acc, response, index) => {
         acc[bannerIds[index]] = response.data.contentBlock;
         return acc;
       }, {});

@@ -51,10 +51,10 @@ const Categoria04 = () => {
       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <header className="text-center">
           <h2 className="text-xl font-bold text-primary sm:text-3xl">
-             "Nuestras Categorías"
+             Nuestras Categorías
           </h2>
           <p className="mx-auto mt-4 max-w-md text-foreground">
-            "Descubre nuestra selección de productos"
+            Descubre nuestra selección de productos
           </p>
         </header>
 

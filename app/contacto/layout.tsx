@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
 import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";

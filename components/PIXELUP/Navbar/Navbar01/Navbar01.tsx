@@ -15,6 +15,8 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [productosIniciales, setProductosIniciales] = useState([]);
+
   const Logo=process.env.NEXT_PUBLIC_LOGO_COLOR;
   const AdminToken = getCookie("AdminTokenAuth");
   const ClientToken = getCookie("ClientTokenAuth");
@@ -49,6 +51,27 @@ export default function Navbar() {
     }
   };
 
+    // Cargar productos iniciales
+    useEffect(() => {
+      const loadInitialData = async () => {
+        try {
+          const productsData = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            { next: { revalidate: 3600 } }
+          ).then((res) => res.json());
+  
+          if (productsData.code === 0) {
+            setProductosIniciales(productsData.products);
+          }
+        } catch (error) {
+          console.error("Error loading initial data:", error);
+        }
+      };
+  
+      loadInitialData();
+    }, []);
+
+    
   useEffect(() => {
     fetchCollections();
   }, []);
@@ -184,7 +207,7 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden xl:flex">
-              <Buscador />
+              <Buscador productosIniciales={productosIniciales}/>
             </div>
             <div className="hidden xl:flex">
               <CartCanvas />
@@ -240,7 +263,7 @@ export default function Navbar() {
               </svg>
             </button>
             <div className="">
-              <Buscador />
+              <Buscador productosIniciales={productosIniciales} />
             </div>
             <div className="self-center">
               <CartCanvas />

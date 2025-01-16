@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Hero03BO from "@/components/PIXELUP/Hero/Hero03/BackOffice/Hero03BO";
 import BannerAbout02BO from "@/components/PIXELUP/BannerAbout/BannerAbout02/BackOffice/BannerAbout02BO";
 import About01BO from "@/components/PIXELUP/About/About01/BackOffice/About01BO";
 import BannerPrincipal01BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01BO";

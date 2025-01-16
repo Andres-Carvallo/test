@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-import Stars from "@/components/Products/Detail/Stars";
+import Stars from "@/components/Core/Products/Detail/Stars";
 import Head from "next/head";
 import toast from "react-hot-toast";
 import axios from "axios";
