@@ -5,15 +5,15 @@ import { getCookie } from "cookies-next";
 import axios from "axios";
 
 const SalesSummary = dynamic(
-  () => import("@/components/PIXELUP/Dashboard/Ventas/SalesSummary"),
+  () => import("@/components/Core/Dashboard/Ventas/SalesSummary"),
   { ssr: false }
 );
-import MostSoldProducts from "@/components/PIXELUP/Dashboard/Ventas/MostSoldProducts";
-import CompareSales from "@/components/PIXELUP/Dashboard/Ventas/CompareSales";
-import PedidosTotales from "@/components/PIXELUP/Dashboard/Ventas/PedidosTotales";
-import VentasMensuales from "@/components/PIXELUP/Dashboard/Ventas/VentasMensuales";
-import VentasTotalesAnuales from "@/components/PIXELUP/Dashboard/Ventas/VentasTotalesAnuales";
-import ProductosMasVendidos from "@/components/PIXELUP/Dashboard/Ventas/ProductosMasVendidos";
+import MostSoldProducts from "@/components/Core/Dashboard/Ventas/MostSoldProducts";
+import CompareSales from "@/components/Core/Dashboard/Ventas/CompareSales";
+import PedidosTotales from "@/components/Core/Dashboard/Ventas/PedidosTotales";
+import VentasMensuales from "@/components/Core/Dashboard/Ventas/VentasMensuales";
+import VentasTotalesAnuales from "@/components/Core/Dashboard/Ventas/VentasTotalesAnuales";
+import ProductosMasVendidos from "@/components/Core/Dashboard/Ventas/ProductosMasVendidos";
 
 function StatsPage() {
   const currentYear = new Date().getFullYear();

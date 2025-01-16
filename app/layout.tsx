@@ -19,6 +19,7 @@ import Head from "next/head";
 import { NavbarProvider } from "./Context/NavbarContext";
 import { AuthProvider } from "./Context/AuthContext";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
+import GoogleAnalytics from "@/components/Core/Google/Analytics";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -83,21 +84,7 @@ export default function RootLayout({
       className="light"
     >
       <Head>
-        <script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
-          `,
-          }}
-        />
-
+        
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
@@ -136,6 +123,7 @@ export default function RootLayout({
       <body
         className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} `}
       >
+        <GoogleAnalytics          GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""}        />
         <AuthProvider>
           <RevalidationProvider>
            {/*  <MarqueeTOP /> */}

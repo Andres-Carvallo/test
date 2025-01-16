@@ -31,6 +31,9 @@ function Ofertas() {
   const [productosConOfertaIds, setProductosConOfertaIds] = useState<number[]>(
     []
   );
+  const [displayedOffers, setDisplayedOffers] = useState<Product[]>([]);
+  const [currentOffersPage, setCurrentOffersPage] = useState(1);
+  const [searchOffersText, setSearchOffersText] = useState("");
 
   useEffect(() => {
     fetchProductos();
@@ -43,6 +46,10 @@ function Ofertas() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, allProducts]);
+
+  useEffect(() => {
+    updateDisplayedOffers();
+  }, [currentOffersPage, searchOffersText, productosConOFerta]);
 
   const fetchProductos = async () => {
     try {
@@ -89,6 +96,8 @@ function Ofertas() {
         !productosConOfertaIds.includes(product.id)
     );
 
+    setTotalProducts(filteredProducts.length);
+
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     setProducts(filteredProducts.slice(startIndex, endIndex));
@@ -110,6 +119,27 @@ function Ofertas() {
 
   const totalPages = Math.ceil(totalProducts / pageSize);
 
+  const updateDisplayedOffers = () => {
+    const filteredOffers = productosConOFerta.filter((product) =>
+      product.name.toLowerCase().includes(searchOffersText.toLowerCase())
+    );
+
+    const startIndex = (currentOffersPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setDisplayedOffers(filteredOffers.slice(startIndex, endIndex));
+  };
+
+  const handleOffersSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchOffersText(event.target.value);
+    setCurrentOffersPage(1);
+  };
+
+  const handleOffersPageChange = (page: number) => {
+    setCurrentOffersPage(page);
+  };
+
+  const totalOffersPages = Math.ceil(productosConOFerta.length / pageSize);
+
   return (
     <section className="mx-10 py-10">
       <Breadcrumb pageName="Ofertas" />
@@ -118,62 +148,167 @@ function Ofertas() {
         <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6">
           <div>Ofertas Activas</div>
         </div>
-        {productosConOFerta.length > 0 ? (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Producto
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categorías
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Editar
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {productosConOFerta.map((offerProduct: any) => (
-                <tr key={offerProduct.id}>
-                  <td className="px-2 py-3 flex items-center justify-center align-middle w-fit ml-2">
-                    <img
-                      src={offerProduct.mainImageUrl}
-                      alt="User"
-                      className="rounded-full h-9 w-9 object-cover"
+
+        <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+          <div className="w-full md:w-1/2">
+            <form className="flex items-center">
+              <div className="relative w-full">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <svg
+                    aria-hidden="true"
+                    className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
                     />
-                  </td>
-                  <td className="px-6 py-4 md:whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {offerProduct.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 md:whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
-                        {offerProduct.productTypes.map((category: any) => (
-                          <button
-                            key={category.id}
-                            className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
-                          >
-                            {category.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <Link href={`/dashboard/ofertas/${offerProduct.id}`}>
-                      <div className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded">
-                        Editar Ofertas
-                      </div>
-                    </Link>
-                  </td>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2"
+                  placeholder="Buscar ofertas activas"
+                  value={searchOffersText}
+                  onChange={handleOffersSearch}
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {productosConOFerta.length > 0 ? (
+          <>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Producto
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Categorías
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Editar
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {displayedOffers.map((offerProduct: any) => (
+                  <tr key={offerProduct.id}>
+                    <td className="px-2 py-3 flex items-center justify-center align-middle w-fit ml-2">
+                      <img
+                        src={offerProduct.mainImageUrl}
+                        alt="User"
+                        className="rounded-full h-9 w-9 object-cover"
+                      />
+                    </td>
+                    <td className="px-6 py-4 md:whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {offerProduct.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 md:whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        <div className="flex justify-left flex-wrap gap-2 max-w-sm mx-auto text-sm">
+                          {offerProduct.productTypes.map((category: any) => (
+                            <button
+                              key={category.id}
+                              className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
+                            >
+                              {category.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4">
+                      <Link href={`/dashboard/ofertas/${offerProduct.id}`}>
+                        <div className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded">
+                          Editar Ofertas
+                        </div>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="my-6 flex justify-center pt-8">
+              <ul className="flex items-center -space-x-px h-10 text-base">
+                <li>
+                  <button
+                    onClick={() => handleOffersPageChange(currentOffersPage - 1)}
+                    disabled={currentOffersPage === 1}
+                    className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 ${
+                      currentOffersPage === 1 ? "cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <span className="sr-only">Previous</span>
+                    <svg
+                      className="w-3 h-3 rtl:rotate-180"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 6 10"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 1 1 5l4 4"
+                      />
+                    </svg>
+                  </button>
+                </li>
+                {Array.from({ length: totalOffersPages }, (_, index) => (
+                  <li key={index}>
+                    <button
+                      onClick={() => handleOffersPageChange(index + 1)}
+                      className={`flex items-center justify-center px-4 h-10 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
+                        currentOffersPage === index + 1
+                          ? "text-primary bg-gray-200"
+                          : "text-gray-300 bg-white"
+                      }`}
+                    >
+                      {index + 1}
+                    </button>
+                  </li>
+                ))}
+                <li>
+                  <button
+                    onClick={() => handleOffersPageChange(currentOffersPage + 1)}
+                    disabled={currentOffersPage === totalOffersPages}
+                    className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
+                      currentOffersPage === totalOffersPages ? "cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <span className="sr-only">Next</span>
+                    <svg
+                      className="w-3 h-3 rtl:rotate-180"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 6 10"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m1 9 4-4-4-4"
+                      />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </>
         ) : (
           <div className="text-center text-lg text-gray-600">
             No hay productos en oferta

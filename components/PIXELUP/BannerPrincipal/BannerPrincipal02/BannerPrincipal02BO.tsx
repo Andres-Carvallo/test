@@ -35,11 +35,11 @@ const BannerPrincipal02BO: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [formData, setFormData] = useState<BannerImage>({
     id: "",
-    title: "fbmjoyas.cl",
-    landingText: "fbmjoyas.cl",
+    title: "pixelup.cl",
+    landingText: "pixelup.cl",
     buttonLink: "",
-    buttonText: "fbmjoyas.cl",
-    mainImageLink: "fbmjoyas.cl",
+    buttonText: "pixelup.cl",
+    mainImageLink: "pixelup.cl",
     orderNumber: 1,
     mainImage: {
       url: "",
@@ -194,11 +194,11 @@ const BannerPrincipal02BO: React.FC = () => {
       const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL02_ID}`;
 
       const dataToSend = {
-        title: "FBM",
-        landingText: "FBM",
+        title: "pixelup.cl",
+        landingText: "pixelup.cl",
         buttonLink: formData.buttonLink,
-        buttonText: "buttonText",
-        mainImageLink: "mainImageLink",
+        buttonText: "pixelup.cl",
+        mainImageLink: "pixelup.cl",
         orderNumber: formData.orderNumber,
         ...(isMainImageUploaded && { mainImage: formData.mainImage }),
       };

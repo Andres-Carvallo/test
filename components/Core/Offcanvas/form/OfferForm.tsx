@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import toast from "react-hot-toast";
+import { useRevalidation } from "@/app/Context/RevalidationContext";
 
 type Offer = {
   unitPrice: any;
@@ -46,6 +47,8 @@ function OfferForm({
   setStartDate,
   fetchOffersForProduct,
 }: OfferFormProps) {
+  const { triggerRevalidation } = useRevalidation();
+
   useEffect(() => {
     const fetchCurrencyCode = async () => {
       try {
@@ -131,6 +134,15 @@ function OfferForm({
       fetchVariations();
       fetchOffersForProduct(id, skuId);
       onSave(updatedOffer);
+      
+      // Agregar revalidación de caché
+      await triggerRevalidation([
+        'products',
+        'collections',
+        `product-${id}`,
+        'offers'
+      ]);
+      
       handleMenuClose();
     } catch (error: any) {
       // Manejar errores específicos

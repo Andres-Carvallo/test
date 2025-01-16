@@ -99,11 +99,15 @@ const DropdownUser = () => {
           {userDataInfo?.avatarUrl ? (
             <img
               src={userDataInfo.avatarUrl}
-              alt="avatar"
+              alt="Avatar"
               className="h-full w-full rounded-full"
             />
           ) : (
-            <div className="h-full w-full rounded-full bg-gray-200"></div>
+            <img
+              src="/img/perfil.webp"
+              alt="Avatar"
+              className="h-full w-full rounded-full"
+            />
           )}
         </span>
 

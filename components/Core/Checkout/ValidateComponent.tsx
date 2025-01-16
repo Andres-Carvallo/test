@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Loader from "../common/Loader";
+import Loader from "@/components/common/Loader";
 interface ValidateComponentProps {
   orderId: string;
   token_ws: string;

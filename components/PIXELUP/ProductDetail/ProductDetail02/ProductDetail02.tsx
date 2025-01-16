@@ -799,26 +799,49 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
   }
 
   const renderPrice = () => {
-    if (
-      selectedVariationPrice !== null &&
-      !isNaN(selectedVariationPrice) &&
-      selectedVariationPrice > 0
-    ) {
-      return `$${selectedVariationPrice.toLocaleString("es-CL")}`;
+    // Si hay una variación seleccionada con oferta
+    if (selectedVariation && selectedVariation.offers && selectedVariation.offers.length > 0) {
+      return (
+        <div className="flex items-center">
+          <div className="rounded-lg flex py-2 px-3">
+            <div className="flex flex-col">
+              <span className="font-bold text-primary text-3xl line-through mr-4">
+                ${selectedVariationPrice?.toLocaleString("es-CL")}
+              </span>
+              <span className="font-bold text-red-700 text-3xl mr-2">
+                ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
+              </span>
+            </div>
+            <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
+              Dcto. {discountPercentage}%
+            </span>
+          </div>
+        </div>
+      );
     }
 
-    if (
-      minPrice &&
-      maxPrice &&
-      !isNaN(parseFloat(minPrice)) &&
-      !isNaN(parseFloat(maxPrice))
-    ) {
+    // Si hay variaciones con ofertas pero ninguna seleccionada
+    if (variations.some(v => v.offers && v.offers.length > 0)) {
+      const lowestOfferPrice = Math.min(
+        ...variations
+          .filter(v => v.offers && v.offers.length > 0)
+          .map(v => v.offers[0].unitPrice)
+      );
+      const highestRegularPrice = Math.max(
+        ...variations
+          .filter(v => v.pricings && v.pricings.length > 0)
+          .map(v => v.pricings[0].unitPrice)
+      );
+
+      return `$${lowestOfferPrice.toLocaleString("es-CL")} - $${highestRegularPrice.toLocaleString("es-CL")}`;
+    }
+
+    // Si no hay ofertas, mostrar el rango de precios normal
+    if (minPrice && maxPrice && !isNaN(parseFloat(minPrice)) && !isNaN(parseFloat(maxPrice))) {
       if (minPrice === maxPrice) {
         return `$${parseFloat(minPrice).toLocaleString("es-CL")}`;
       }
-      return `$${parseFloat(minPrice).toLocaleString("es-CL")} - $${parseFloat(
-        maxPrice
-      ).toLocaleString("es-CL")}`;
+      return `$${parseFloat(minPrice).toLocaleString("es-CL")} - $${parseFloat(maxPrice).toLocaleString("es-CL")}`;
     }
 
     return "Precio no disponible";

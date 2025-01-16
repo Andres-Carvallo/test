@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import Validate from "@/components/Checkout/Validate";
+import Validate from "@/components/Core/Checkout/Validate";
 import { Suspense } from "react";
 import Loader from "@/components/common/Loader";
 export const metadata: Metadata = {

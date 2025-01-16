@@ -62,7 +62,10 @@ async function fetchProductsWithOffers() {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?siteId=${siteId}&pageNumber=1&pageSize=50&hasValidOffers=true`,
-    { next: { tags: ["products"] } }
+    { 
+      cache: 'no-store',
+      next: { tags: ["products"] } 
+    }
   );
   const data = await response.json();
   const productsWithOffersMap = (data.products || []).reduce((acc: any, product: any) => {

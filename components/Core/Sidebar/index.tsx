@@ -16,6 +16,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
   const handleLinkClick = (href: string) => {
+    // Cerrar el sidebar en modo móvil
+    setSidebarOpen(false);
+    
+    // Recargar si estamos en la misma página
     if (href === pathname) {
       window.location.reload();
     }

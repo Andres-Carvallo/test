@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import CrearUsuarioForm from "@/components/Offcanvas/form/CrearUsuarioForm";
+import CrearUsuarioForm from "@/components/Core/Offcanvas/form/CrearUsuarioForm";
 
 function UserCanvas({ fetchData }: any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

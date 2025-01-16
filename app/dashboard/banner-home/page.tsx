@@ -19,7 +19,7 @@ import BannerPrincipal04BO from "@/components/PIXELUP/BannerPrincipal/BannerPrin
 
 export default function BannerHome() {
   return (
-    <section className="gap-4 flex flex-col py-10 mx-10">
+    <section className="gap-4 flex flex-col py-10 mx-4">
       <title>Content block - Home</title>
       <div
         className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
@@ -31,7 +31,16 @@ export default function BannerHome() {
         </div>
         <MarqueeTOP />
       </div>
-
+      <div
+        className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
+        style={{ borderRadius: "var(--radius)" }}
+      >
+        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
+          <div>Banner</div>
+          <div>/ Home</div>
+        </div>
+        <BannerPrincipal02BO />
+      </div>
       <div
         className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
         style={{ borderRadius: "var(--radius)" }}
@@ -163,16 +172,7 @@ export default function BannerHome() {
         <LogosCarruselBO/>
       </div>
 
-      <div
-        className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
-        style={{ borderRadius: "var(--radius)" }}
-      >
-        <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
-          <div>Banner</div>
-          <div>/ Home</div>
-        </div>
-        <BannerPrincipal02BO />
-      </div>
+
       <div
         className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
