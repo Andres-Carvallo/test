@@ -160,17 +160,18 @@ export default function DetalleCanje() {
             <img
               src={exchange?.companyImageUrl}
               alt={exchange?.companyName}
-              className="absolute -bottom-16 left-8 w-32 h-32 rounded-xl
-                       border-4 border-white bg-white object-cover shadow-xl"
+              className="absolute -bottom-16 left-1/2 transform -translate-x-1/2
+                       w-40 h-40 rounded-2xl border-2 border-gray-50 shadow-md 
+                       bg-white object-contain p-2"
             />
           </div>
 
           {/* Contenido */}
           <div className="p-8 pt-20">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2 text-center">
               {exchange?.name}
             </h1>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-gray-600 mb-8 text-center">
               {exchange?.companyName}
             </p>
 
