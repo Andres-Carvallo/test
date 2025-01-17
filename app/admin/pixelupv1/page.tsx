@@ -276,7 +276,7 @@ const ContentBlockForm = () => {
                 nombre: variable.nombre,
                 id: response.data.banner.id
               });
-            } catch (error) {
+            } catch (error: any) {
               console.error(`Error generando Banner IMG ID para ${variable.nombre}:`, error);
               console.error('Error details:', error.response?.data);
             }
@@ -291,6 +291,44 @@ const ContentBlockForm = () => {
 
     setIdsGenerados(nuevosIds);
     setVariables([]); // Limpiar la lista de variables después de generar
+  };
+
+  const handleVariableInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const lines = e.target.value.split('\n').filter(line => line.trim());
+    
+    // Procesar cada línea y determinar automáticamente el tipo
+    const nuevasVariables = lines.map(line => {
+      const nombre = line.trim();
+      let tipo = '';
+      
+      if (nombre.endsWith('_CONTENTBLOCK')) {
+        tipo = 'contentblock';
+      } else if (nombre.endsWith('_IMGID')) {
+        tipo = 'bannerIMGID';
+      } else if (nombre.endsWith('_ID')) {
+        tipo = 'bannerID';
+      }
+      
+      return { nombre, tipo };
+    }).filter(v => v.tipo); // Solo incluir variables con tipo válido
+
+    setVariables([...variables, ...nuevasVariables]);
+    setNombreVariable('');
+  };
+
+  const copiarIdsGenerados = () => {
+    const texto = idsGenerados
+      .map(item => `${item.nombre}=${item.id}`)
+      .join('\n');
+    
+    navigator.clipboard.writeText(texto)
+      .then(() => {
+        alert('IDs copiados al portapapeles');
+      })
+      .catch(err => {
+        console.error('Error al copiar:', err);
+        alert('Error al copiar los IDs');
+      });
   };
 
   if (!isAuthorized) {
@@ -331,7 +369,7 @@ const ContentBlockForm = () => {
         <p className="text-green-500 mb-4">Formulario enviado con éxito!</p>
       )}
       <div className="w-full px-10 mx-auto flex gap-6 py-20">
-        <div className="p-4 bg-white shadow-md rounded w-[400px]">
+{/*         <div className="p-4 bg-white shadow-md rounded w-[400px]">
           <h2 className="text-2xl font-bold mb-4">Crear Content Block</h2>
           <form onSubmit={handleContentSubmit}>
             <div className="mb-4">
@@ -372,9 +410,9 @@ const ContentBlockForm = () => {
               Enviar
             </button>
           </form>
-        </div>
+        </div> */}
 
-        <div className="p-4 bg-white shadow-md rounded">
+{/*         <div className="p-4 bg-white shadow-md rounded">
           <h2 className="text-2xl font-bold mt-8 mb-4">Crear Banner</h2>
           <form onSubmit={handleBannerSubmit}>
             <div className="mb-4">
@@ -462,47 +500,21 @@ const ContentBlockForm = () => {
               Enviar
             </button>
           </form>
-        </div>
+        </div> */}
 
         <div className="p-4 bg-white shadow-md rounded w-[800px]">
           <h2 className="text-2xl font-bold mb-4">Generador de Variables</h2>
           <div className="flex gap-4 mb-4">
-            <input
-              type="text"
-              placeholder="Nombre de la variable (ej: NEXT_PUBLIC_BANNERPRINCIPAL02)"
+            <textarea
+              placeholder="Ingresa las variables (una por línea)
+Ejemplo:
+VARIABLE_CONTENTBLOCK
+VARIABLE_ID
+VARIABLE_IMGID"
               value={nombreVariable}
-              onChange={(e) => setNombreVariable(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+              onChange={handleVariableInput}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]"
             />
-            <select
-              value={tipoVariable}
-              onChange={(e) => setTipoVariable(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="">Seleccionar tipo</option>
-              <option value="contentblock">Content Block</option>
-              <option value="bannerID">Banner ID</option>
-              <option value="bannerIMGID">Banner IMG ID</option>
-            </select>
-            <button
-              onClick={() => {
-                if (nombreVariable && tipoVariable) {
-                  const baseVarName = nombreVariable.endsWith('_ID') || nombreVariable.endsWith('_IMGID') 
-                    ? nombreVariable 
-                    : `${nombreVariable}_${tipoVariable === 'bannerID' ? 'ID' : 'IMGID'}`;
-                  
-                  setVariables([...variables, {
-                    nombre: baseVarName,
-                    tipo: tipoVariable
-                  }]);
-                  setNombreVariable("");
-                  setTipoVariable("");
-                }
-              }}
-              className="px-4 py-2 bg-green-500 text-white rounded-md"
-            >
-              Agregar variable
-            </button>
           </div>
 
           <div className="mb-4">
@@ -527,7 +539,29 @@ const ContentBlockForm = () => {
 
           {idsGenerados.length > 0 && (
             <div className="mt-4">
-              <h3 className="font-bold mb-2">IDs generados:</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold">IDs generados:</h3>
+                <button
+                  onClick={copiarIdsGenerados}
+                  className="flex items-center gap-2 px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded-md text-sm"
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  Copiar todos
+                </button>
+              </div>
               <div className="bg-gray-100 p-4 rounded-md">
                 {idsGenerados.map((item, index) => (
                   <div key={index} className="mb-2">
