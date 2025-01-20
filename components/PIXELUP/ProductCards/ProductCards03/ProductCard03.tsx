@@ -57,7 +57,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
                 : `$${Math.min(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")} - $${Math.max(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")}`
               }
             </span>
-            <span className="text-red-600 font-semibold text-base">
+            <span className="text-red-600 font-semibold text-lg">
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
                 : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
@@ -94,7 +94,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
             <span className="line-through text-gray-500 text-sm">
               ${normalPrice.toLocaleString("es-CL")}
             </span>
-            <span className="text-red-600 font-semibold text-base">
+            <span className="text-red-600 font-semibold text-lg">
               ${offerPrice.toLocaleString("es-CL")}
             </span>
           </div>
@@ -135,7 +135,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
           style={{ borderRadius: "var(--radius)" }}
         />
         <p className={`font-semibold mt-4 `}>{product.name}</p>
-        <p className={`font-bold mt-2 `}>{renderPrice()}</p>
+        <div className={`font-bold text-xl mt-2 min-h-[48px]`}>{renderPrice()}</div>
         <button
           type="button"
           className={`mt-4 uppercase w-full inline-flex items-center justify-center rounded-md border-2 border-transparent bg-primary md:hover:scale-105 duration-300 px-12 py-3 text-center text-base font-bold text-white transition-all ease-in-out focus:shadow`}

@@ -94,7 +94,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
             <span className="line-through text-gray-500 text-sm">
               ${normalPrice.toLocaleString("es-CL")}
             </span>
-            <span className="text-red-600 font-semibold text-base">
+            <span className="text-red-600 font-semibold text-lg">
               ${offerPrice.toLocaleString("es-CL")}
             </span>
           </div>
@@ -152,8 +152,8 @@ const ProductCard02: React.FC<ProductCardProps> = ({
               {product.name}
             </p>
           </Link>
-          <div className="flex items-center text-black">
-            <span className="text-gray-600 text-[19px]">{renderPrice()}</span>
+          <div className="flex items-center text-black min-h-[50px]">
+            <span className="text-gray-600 text-[20px]">{renderPrice()}</span>
             <div className="ml-auto flex">
               {product.hasVariations || stock === 0 ? (
                 <Link

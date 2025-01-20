@@ -2,20 +2,6 @@
 import Link from "next/link";
 import { slugify } from "@/app/utils/slugify";
 
-interface PricingRange {
-  minimumAmount: string | number;
-  maximumAmount: string | number;
-}
-
-interface PriceRange {
-  min: number;
-  max: number;
-}
-
-interface Offer {
-  amount: string | number;
-}
-
 type ProductCardProps = {
   key: any;
   product: any;
@@ -33,82 +19,68 @@ const ProductCard04: React.FC<ProductCardProps> = ({
   const renderPrice = () => {
     // Para productos con variaciones
     if (product.hasVariations) {
-      // Obtener todos los precios normales y de oferta
-      const normalPrices = product.pricingRanges.map((range: PricingRange) => ({
-        min: Number(range.minimumAmount) || 0,
-        max: Number(range.maximumAmount) || 0
-      })).filter((price: PriceRange) => price.min > 0 && price.max > 0);
+      const ranges = product.pricingRanges?.[0];
+      if (!ranges) return null;
 
-      const offerPrices = product.offers?.map((offer: Offer) => Number(offer.amount) || 0)
-        .filter((price: number) => price > 0) || [];
+      if (isOnSale && product.offers && product.offers[0]) {
+        const offer = product.offers[0];
+        const minAmount = Number(ranges.minimumAmount) || 0;
+        const minDiscounted = Number(offer.amount) || 0;
 
-      // Si hay ofertas, mostrar ambos rangos de precios
-      if (isOnSale && offerPrices.length > 0) {
-        const minNormalPrice = Math.min(...normalPrices.map((p: PriceRange) => p.min));
-        const maxNormalPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
-        const minOfferPrice = Math.min(...offerPrices);
-        const maxOfferPrice = Math.max(...offerPrices);
-
-        return (
-          <div className="flex flex-col">
-            <span className="line-through text-gray-500 text-sm">
-              {minNormalPrice === maxNormalPrice
-                ? `$${minNormalPrice.toLocaleString("es-CL")}`
-                : `$${Math.min(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")} - $${Math.max(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")}`
-              }
-            </span>
-            <span className="text-[#1B9C84] font-semibold">
-              {minOfferPrice === maxOfferPrice
-                ? `$${minOfferPrice.toLocaleString("es-CL")}`
-                : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
-              }
-            </span>
-          </div>
-        );
+        if (minAmount > 0 && minDiscounted > 0) {
+          return (
+            <div className="flex gap-2">
+              <span className="text-red-600">
+                ${minDiscounted.toLocaleString("es-CL")}
+              </span>
+              <span className="line-through text-gray-500">
+                ${minAmount.toLocaleString("es-CL")}
+              </span>
+            </div>
+          );
+        }
       }
 
-      // Si no hay ofertas, mostrar rango de precios normal
-      if (normalPrices.length > 0) {
-        const minPrice = Math.min(...normalPrices.map((p: PriceRange) => p.min));
-        const maxPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
+      const minAmount = Number(ranges.minimumAmount) || 0;
+      const maxAmount = Number(ranges.maximumAmount) || 0;
 
+      if (minAmount > 0 && maxAmount > 0) {
         return (
-          <span className="text-[#1B9C84]">
-            {minPrice === maxPrice
-              ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
-            }
+          <span>
+            ${minAmount.toLocaleString("es-CL")} - $
+            {maxAmount.toLocaleString("es-CL")}
           </span>
         );
       }
-    } else {
-      // Para productos sin variaciones
-      const normalPrice = Number(product.pricings?.[0]?.amount) || 0;
-      const offerPrice = isOnSale && product.offers?.[0]?.amount 
-        ? Number(product.offers[0].amount) 
-        : null;
+    }
+    // Para productos sin variaciones
+    else {
+      const price = Number(product.pricings?.[0]?.amount) || 0;
+      if (!price) return null;
 
-      if (offerPrice) {
-        return (
-          <div className="flex flex-col">
-            <span className="line-through text-gray-500 text-sm">
-              ${normalPrice.toLocaleString("es-CL")}
-            </span>
-            <span className="text-[#1B9C84] font-semibold">
-              ${offerPrice.toLocaleString("es-CL")}
-            </span>
-          </div>
-        );
+      if (isOnSale && product.offers && product.offers[0]) {
+        const offer = product.offers[0];
+        const offerPrice = Number(offer.amount) || 0;
+
+        if (price > 0 && offerPrice > 0) {
+          return (
+            <div className="flex gap-2">
+              <span className="text-red-600">
+                ${offerPrice.toLocaleString("es-CL")}
+              </span>
+              <span className="line-through text-gray-500">
+                ${price.toLocaleString("es-CL")}
+              </span>
+            </div>
+          );
+        }
       }
 
-      if (normalPrice > 0) {
-        return <span className="text-[#1B9C84]">${normalPrice.toLocaleString("es-CL")}</span>;
-      }
+      return <span>${price.toLocaleString("es-CL")}</span>;
     }
 
     return null;
   };
-  
 
   const handleButtonClick = () => {
     if (product.hasVariations) {
@@ -120,7 +92,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
 
   return (
     <section className="mt-4">
-      <div className="bg-[#81C4BA]/5 rounded overflow-hidden hover:shadow-xl transition-all duration-300 border border-[#81C4BA]/10 h-full flex flex-col">
+      <div className="bg-gray-50 rounded overflow-hidden hover:shadow-xl transition-all duration-300 border border-[#81C4BA]/10">
         <div className="relative aspect-square">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
             <img
@@ -142,20 +114,18 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             )}
           </div>
         </div>
-        <div className="p-4 flex flex-col flex-grow">
+        <div className="p-4">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
-            <h3 className="text-[#877EB6] font-medium mb-2 line-clamp-1">
+            <h3 className="text-primary font-medium mb-2 line-clamp-1">
               {product.name}
             </h3>
           </Link>
-          <div className="flex items-center justify-between mt-auto">
-            <div className="min-h-[48px] flex items-center">
-              {renderPrice()}
-            </div>
+          <div className="flex items-center justify-between">
+            <p className="text-primary font-medium">{renderPrice()}</p>
             {product.hasVariations || stock === 0 ? (
               <Link
                 href={`/tienda/productos/${slugify(product.name)}`}
-                className="bg-white p-2 rounded text-[#81C4BA] hover:text-[#1B9C84] hover:shadow-md transition-all"
+                className="bg-white p-2 rounded border  text-primary hover:text-secondary hover:shadow-md transition-all"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -175,7 +145,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             ) : (
               <button
                 onClick={handleButtonClick}
-                className="bg-white p-2 rounded text-[#81C4BA] hover:text-[#1B9C84] hover:shadow-md transition-all"
+                className="bg-white hover:bg-primary p-2 rounded border border-primary/10 text-primary hover:text-secondary hover:shadow-md transition-all"
               >
                 <svg
                   className="w-5 h-5"
