@@ -71,7 +71,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
         <div className="xl:grid xl:grid-cols-12 xl:gap-8 ">
           <div className="xl:col-span-2 space-y-8">
             <img
-              alt="Logo"
+              alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               className="h-40 object-cover mx-auto"
               src={process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
@@ -196,7 +196,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
           <div className="flex justify-center space-x-6">
           </div>
           <div className="text-center text-base text-gray-500 ">
-            © Copyright 2025 Pixel Up | All Rights Reserved.
+          &copy; {new Date().getFullYear()} {process.env.NEXT_PUBLIC_NOMBRE_TIENDA} | All rights reserved.
           </div>
         </div>
       </div>
@@ -211,8 +211,8 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
             >
               <img
                 className="w-48"
-                src="/img/Logo/tavola.jpeg"
-                alt="Logo"
+                src={process.env.NEXT_PUBLIC_LOGO_COLOR}
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               />
             </Link>
           </div>
@@ -351,7 +351,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
             <div className="w-full flex justify-center xl:justify-start space-x-6 mt-4">
               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
-                href="#"
+                href={process.env.NEXT_PUBLIC_INSTAGRAM}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -384,7 +384,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
               </a>
               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
-                href="#"
+                href={process.env.NEXT_PUBLIC_FACEBOOK}
               >
                 <svg
                   className="h-6 w-6 text-secondary hover:text-primary"

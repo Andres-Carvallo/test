@@ -46,8 +46,8 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
         <div className="flex justify-between items-start flex-wrap text-left mb-8 ">
           <div className="flex flex-col items-start justify-center mr-8">
             <img
-              src={img}
-              alt="Logo de FbmJoyas"
+              src={process.env.NEXT_PUBLIC_LOGO_COLOR}
+              alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               className="h-40"
             />
           </div>
@@ -167,7 +167,7 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
             <div className="flex justify-center space-x-6 mt-4">
               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
-                href="#"
+                href={process.env.NEXT_PUBLIC_INSTAGRAM}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -200,7 +200,7 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
               </a>
               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
-                href="#"
+                href={process.env.NEXT_PUBLIC_FACEBOOK}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -226,7 +226,7 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
               </a>
               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
-                href="#"
+                href={process.env.NEXT_PUBLIC_WHATSAPP}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -245,7 +245,7 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
               </a>
               <a
                 className="hover:text-secondary relative p-2 inline-flex items-center justify-center bg-primary hover:bg-secondary rounded-full"
-                href="#"
+                href={process.env.NEXT_PUBLIC_YOUTUBE}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -269,7 +269,7 @@ const Footer03: React.FC<Footer03Props> = ({ Footer03Data }) => {
 
         <div className="flex justify-between mt-1">
           <div>
-            <p>©{new Date().getFullYear()} PixelUp. All Rights Reserved.</p>
+            <p>&copy; {new Date().getFullYear()} {process.env.NEXT_PUBLIC_NOMBRE_TIENDA}. All rights reserved.</p>
           </div>
           <div className="flex">
             <a href="#">

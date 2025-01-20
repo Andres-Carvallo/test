@@ -799,49 +799,95 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
   }
 
   const renderPrice = () => {
-    // Si hay una variación seleccionada con oferta
-    if (selectedVariation && selectedVariation.offers && selectedVariation.offers.length > 0) {
-      return (
-        <div className="flex items-center">
-          <div className="rounded-lg flex py-2 px-3">
-            <div className="flex flex-col">
-              <span className="font-bold text-primary text-3xl line-through mr-4">
-                ${selectedVariationPrice?.toLocaleString("es-CL")}
-              </span>
-              <span className="font-bold text-red-700 text-3xl mr-2">
-                ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
+    // Para variación seleccionada
+    if (selectedVariation) {
+      const normalPrice = selectedVariation.pricings?.[0]?.unitPrice;
+      const offerPrice = selectedVariation.offers?.[0]?.unitPrice;
+
+      // Si tiene oferta, mostrar ambos precios
+      if (offerPrice) {
+        const discountPercentage = Math.round(
+          ((normalPrice - offerPrice) / normalPrice) * 100
+        );
+
+        return (
+          <div className="flex items-center">
+            <div className="rounded-lg flex py-2 px-3">
+              <div className="flex flex-col">
+                <span className="font-bold text-primary text-3xl line-through mr-4">
+                  ${normalPrice.toLocaleString("es-CL")}
+                </span>
+                <span className="font-bold text-red-700 text-3xl mr-2">
+                  ${offerPrice.toLocaleString("es-CL")}
+                </span>
+              </div>
+              <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
+                Dcto. {discountPercentage}%
               </span>
             </div>
-            <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
-              Dcto. {discountPercentage}%
+          </div>
+        );
+      }
+
+      // Si no tiene oferta, mostrar solo el precio normal
+      if (normalPrice) {
+        return (
+          <span className="font-bold text-primary text-3xl">
+            ${normalPrice.toLocaleString("es-CL")}
+          </span>
+        );
+      }
+    }
+
+    // Para productos con variaciones sin selección específica
+    if (variations.length > 1) {
+      const normalPrices = variations
+        .map(v => v.pricings?.[0]?.unitPrice)
+        .filter((p): p is number => p !== undefined && p > 0);
+      
+      const offerPrices = variations
+        .map(v => v.offers?.[0]?.unitPrice)
+        .filter((p): p is number => p !== undefined && p > 0);
+
+      // Si hay ofertas, mostrar ambos rangos de precios
+      if (offerPrices.length > 0) {
+        const minNormalPrice = Math.min(...normalPrices);
+        const maxNormalPrice = Math.max(...normalPrices);
+        const minOfferPrice = Math.min(...offerPrices);
+        const maxOfferPrice = Math.max(...offerPrices);
+
+        return (
+          <div className="flex flex-col">
+            <span className="font-bold text-primary text-3xl line-through">
+              {minNormalPrice === maxNormalPrice
+                ? `$${minNormalPrice.toLocaleString("es-CL")}`
+                : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
+              }
+            </span>
+            <span className="font-bold text-red-700 text-3xl">
+              {minOfferPrice === maxOfferPrice
+                ? `$${minOfferPrice.toLocaleString("es-CL")}`
+                : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
+              }
             </span>
           </div>
-        </div>
-      );
-    }
-
-    // Si hay variaciones con ofertas pero ninguna seleccionada
-    if (variations.some(v => v.offers && v.offers.length > 0)) {
-      const lowestOfferPrice = Math.min(
-        ...variations
-          .filter(v => v.offers && v.offers.length > 0 && v.offers[0]?.unitPrice)
-          .map(v => v.offers![0].unitPrice)
-      );
-      const highestRegularPrice = Math.max(
-        ...variations
-          .filter(v => v.pricings && v.pricings.length > 0)
-          .map(v => v.pricings[0].unitPrice)
-      );
-
-      return `$${lowestOfferPrice.toLocaleString("es-CL")} - $${highestRegularPrice.toLocaleString("es-CL")}`;
-    }
-
-    // Si no hay ofertas, mostrar el rango de precios normal
-    if (minPrice && maxPrice && !isNaN(parseFloat(minPrice)) && !isNaN(parseFloat(maxPrice))) {
-      if (minPrice === maxPrice) {
-        return `$${parseFloat(minPrice).toLocaleString("es-CL")}`;
+        );
       }
-      return `$${parseFloat(minPrice).toLocaleString("es-CL")} - $${parseFloat(maxPrice).toLocaleString("es-CL")}`;
+
+      // Si no hay ofertas, mostrar rango de precios normal
+      if (normalPrices.length > 0) {
+        const minPrice = Math.min(...normalPrices);
+        const maxPrice = Math.max(...normalPrices);
+
+        return (
+          <span className="font-bold text-primary text-3xl">
+            {minPrice === maxPrice
+              ? `$${minPrice.toLocaleString("es-CL")}`
+              : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
+            }
+          </span>
+        );
+      }
     }
 
     return "Precio no disponible";
@@ -979,21 +1025,15 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
               </div>
 
               <div className="flex items-center space-x-4 my-4">
-                {selectedVariation &&
-                selectedVariation.offers &&
-                selectedVariation.offers.length > 0 ? (
+                {selectedVariation && selectedVariation.offers && selectedVariation.offers.length > 0 ? (
                   <div className="flex items-center">
-                    <div className="rounded-lg  flex py-2 px-3">
+                    <div className="rounded-lg flex py-2 px-3">
                       <div className="flex flex-col">
-                        {" "}
                         <span className="font-bold text-primary text-3xl line-through mr-4">
                           ${selectedVariationPrice?.toLocaleString("es-CL")}
                         </span>
                         <span className="font-bold text-red-700 text-3xl mr-2">
-                          $
-                          {selectedVariation.offers[0].unitPrice.toLocaleString(
-                            "es-CL"
-                          )}
+                          ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
                         </span>
                       </div>
                       <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
@@ -1003,9 +1043,9 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                   </div>
                 ) : (
                   <div className="rounded-lg flex py-2 pr-3">
-                    <span className="font-bold text-primary text-3xl">
+                    <div className="font-bold text-primary text-3xl">
                       {renderPrice()}
-                    </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1197,7 +1237,7 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"
+                              d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75.75Z"
                             />
                           </svg>
                         </span>
@@ -1246,6 +1286,21 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
           </div>
         )}
 
+{/*         <div className="py-12 md:py-20 grid grid-cols-2 items-center justify-center rounded-md bg-background sm:grid-cols-6 ">
+          {IconosData.map((icono, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-center pb-5"
+            >
+              <img
+                src={icono}
+                alt=""
+                className="max-w-[125px] sm:max-w-[80%]"
+                style={{ borderRadius: "var(--radius)" }}
+              />
+            </div>
+          ))}
+        </div> */}
         <Destacados01 text="TE PUEDE GUSTAR" />
         <Stars
           reviewAverageScore={reviewAverageScore}

@@ -229,7 +229,7 @@ function Ofertas() {
                     <td className="py-4">
                       <Link href={`/dashboard/ofertas/${offerProduct.id}`}>
                         <div className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded">
-                          Editar Ofertas
+                          Ver / Editar Ofertas
                         </div>
                       </Link>
                     </td>

@@ -47,7 +47,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
         <div className="xl:grid xl:grid-cols-12 xl:gap-8">
           <div className="xl:col-span-2 space-y-8">
             <img
-              alt="Logo"
+              alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               className="h-40 object-cover mx-auto"
               src={process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
@@ -159,16 +159,16 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
                 <li>
                     <a
                       className="text-base hover:underline "
-                      href="/fbm"
+                      href="/"
                     >
-                      FBM
+                      NOSOTROS
                     </a>
                   </li>
                   <li>
                     <a
                       className="text-base hover:underline "
                       target="_blank"
-                      href="https://api.whatsapp.com/send?phone=+56991634170&text=Hola!%20Te%20has%20contactado%20con%20Flora%20de%20FBM%20Joyas,%20cu%C3%A9ntame%20en%20qu%C3%A9%20puedo%20ayudarte."
+                      href={process.env.NEXT_PUBLIC_WHATSAPP_LINK}
                     >
                       CONTACTO
                     </a>
@@ -226,7 +226,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
         <div className="mt-8 border-t border-gray-100 pt-8 md:ml-0 ml-4">
           <div className="sm:flex sm:justify-between">
             <p className="text-xs text-gray-200">
-              &copy; {new Date().getFullYear()} FBM Joyas. All rights reserved.
+              &copy; {new Date().getFullYear()} {process.env.NEXT_PUBLIC_NOMBRE_TIENDA} | All rights reserved.
             </p>
 
             <ul className="col-span-2 flex justify-start gap-6 lg:col-span-5 lg:justify-end  md:mt-0 mt-4">
@@ -255,7 +255,7 @@ const Footer: React.FC<FooterProps> = ({ FooterData }) => {
 
               <li>
                 <a
-                  href="https://www.instagram.com/fbm_art/"
+                  href={process.env.NEXT_PUBLIC_INSTAGRAM}
                   rel="noreferrer"
                   target="_blank"
                   className="text-secondary transition hover:opacity-35"

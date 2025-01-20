@@ -44,7 +44,7 @@ interface ProductDetail02Props {
   product: any;
 }
 
-const ProductDetail02: React.FC<ProductDetail02Props> = ({
+const ProductDetail01: React.FC<ProductDetail02Props> = ({
   product: initialProduct,
 }) => {
   const [variations, setVariations] = useState<Variation[]>([]);
@@ -774,26 +774,95 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
   }
 
   const renderPrice = () => {
-    if (
-      selectedVariationPrice !== null &&
-      !isNaN(selectedVariationPrice) &&
-      selectedVariationPrice > 0
-    ) {
-      return `$${selectedVariationPrice.toLocaleString("es-CL")}`;
+    // Para variación seleccionada
+    if (selectedVariation) {
+      const normalPrice = selectedVariation.pricings?.[0]?.unitPrice;
+      const offerPrice = selectedVariation.offers?.[0]?.unitPrice;
+
+      // Si tiene oferta, mostrar ambos precios
+      if (offerPrice) {
+        const discountPercentage = Math.round(
+          ((normalPrice - offerPrice) / normalPrice) * 100
+        );
+
+        return (
+          <div className="flex items-center">
+            <div className="rounded-lg flex py-2 px-3">
+              <div className="flex flex-col">
+                <span className="font-bold text-primary text-3xl line-through mr-4">
+                  ${normalPrice.toLocaleString("es-CL")}
+                </span>
+                <span className="font-bold text-red-700 text-3xl mr-2">
+                  ${offerPrice.toLocaleString("es-CL")}
+                </span>
+              </div>
+              <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
+                Dcto. {discountPercentage}%
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      // Si no tiene oferta, mostrar solo el precio normal
+      if (normalPrice) {
+        return (
+          <span className="font-bold text-primary text-3xl">
+            ${normalPrice.toLocaleString("es-CL")}
+          </span>
+        );
+      }
     }
 
-    if (
-      minPrice &&
-      maxPrice &&
-      !isNaN(parseFloat(minPrice)) &&
-      !isNaN(parseFloat(maxPrice))
-    ) {
-      if (minPrice === maxPrice) {
-        return `$${parseFloat(minPrice).toLocaleString("es-CL")}`;
+    // Para productos con variaciones sin selección específica
+    if (variations.length > 1) {
+      const normalPrices = variations
+        .map(v => v.pricings?.[0]?.unitPrice)
+        .filter((p): p is number => p !== undefined && p > 0);
+      
+      const offerPrices = variations
+        .map(v => v.offers?.[0]?.unitPrice)
+        .filter((p): p is number => p !== undefined && p > 0);
+
+      // Si hay ofertas, mostrar ambos rangos de precios
+      if (offerPrices.length > 0) {
+        const minNormalPrice = Math.min(...normalPrices);
+        const maxNormalPrice = Math.max(...normalPrices);
+        const minOfferPrice = Math.min(...offerPrices);
+        const maxOfferPrice = Math.max(...offerPrices);
+
+        return (
+          <div className="flex flex-col">
+            <span className="font-bold text-primary text-3xl line-through">
+              {minNormalPrice === maxNormalPrice
+                ? `$${minNormalPrice.toLocaleString("es-CL")}`
+                : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
+              }
+            </span>
+            <span className="font-bold text-red-700 text-3xl">
+              {minOfferPrice === maxOfferPrice
+                ? `$${minOfferPrice.toLocaleString("es-CL")}`
+                : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
+              }
+            </span>
+          </div>
+        );
       }
-      return `$${parseFloat(minPrice).toLocaleString("es-CL")} - $${parseFloat(
-        maxPrice
-      ).toLocaleString("es-CL")}`;
+
+      // Si no hay ofertas, mostrar rango de precios normal
+      if (normalPrices.length > 0) {
+        const minPrice = Math.min(...normalPrices);
+        const maxPrice = Math.max(...normalPrices);
+
+        return (
+          <span className="font-bold text-primary text-3xl">
+            {minPrice === maxPrice
+              ? `$${minPrice.toLocaleString("es-CL")}`
+              : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
+            }
+          </span>
+        );
+      }
     }
 
     return "Precio no disponible";
@@ -950,34 +1019,11 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
               </div>
 
               <div className="flex items-center space-x-4 my-4">
-                {selectedVariation &&
-                selectedVariation.offers &&
-                selectedVariation.offers.length > 0 ? (
-                  <div className="flex items-center">
-                    <div className="rounded-lg flex py-2 px-3">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-primary text-3xl line-through mr-4">
-                          ${selectedVariationPrice?.toLocaleString("es-CL")}
-                        </span>
-                        <span className="font-bold text-red-700 text-3xl mr-2">
-                          $
-                          {selectedVariation.offers[0].unitPrice.toLocaleString(
-                            "es-CL"
-                          )}
-                        </span>
-                      </div>
-                      <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
-                        Dcto. {discountPercentage}%
-                      </span>
-                    </div>
+                <div className="rounded-lg flex py-2 pr-3">
+                  <div className="font-bold text-primary text-3xl">
+                    {renderPrice()}
                   </div>
-                ) : (
-                  <div className="rounded-lg flex py-2 pr-3">
-                    <span className="font-bold text-primary text-3xl">
-                      {renderPrice()}
-                    </span>
-                  </div>
-                )}
+                </div>
               </div>
 
               <div className="mt-4">
@@ -987,6 +1033,45 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                 <div dangerouslySetInnerHTML={{ __html: description }} />
               </div>
 
+              {/* Sección de variaciones */}
+              {hasAttributes() && (
+                <div className="mt-4 border-t border-gray-100">
+                  <div className="flex flex-col space-y-4 mt-2">
+                    {Object.entries(currentAttributes).map(([attributeName, attributeValues]) => (
+                      <div key={attributeName}>
+                        <h4 className="text-primary font-semibold">
+                          {capitalizeFirstLetter(attributeName)}:
+                        </h4>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {attributeValues.map((value, index) => {
+                            const isDisabled = disabledAttributes[attributeName]?.[index] || false;
+                            const isSelected = selectedAttributes[attributeName] === value;
+
+                            return (
+                              <button
+                                key={value}
+                                onClick={() => handleAttributeChange(attributeName, value)}
+                                disabled={isDisabled}
+                                className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                                  isSelected
+                                    ? "border-primary bg-primary text-white"
+                                    : isDisabled
+                                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    : "border-gray-200 hover:border-primary"
+                                }`}
+                              >
+                                {value}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sección de delivery y retiro */}
               <div className="mt-10 flex flex-col md:flex-row md:items-start">
                 <div className="flex flex-col w-full">
                   <p>
@@ -1187,4 +1272,4 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
   );
 };
 
-export default ProductDetail02;
+export default ProductDetail01;

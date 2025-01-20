@@ -50,6 +50,9 @@ function DetalleOferta() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
+  // Agregar este estado para controlar los acordeones
+  const [activeAccordion, setActiveAccordion] = useState<'active' | 'expired' | null>('active');
+
   const handleVariationSelect = async (variation: any) => {
     console.log("Variación seleccionada:", variation);
     setSelectedVariation(variation);
@@ -291,7 +294,11 @@ function DetalleOferta() {
           }));
           endDateChile.setHours(23, 59, 59, 999);
           
-          return endDateChile < now;
+          // Añadir un día a la fecha de fin
+          const dayAfterEnd = new Date(endDateChile);
+          dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+          
+          return dayAfterEnd < now;
         });
 
         const activeOffers = currentOffers.filter((offer: Offer) => {
@@ -302,12 +309,16 @@ function DetalleOferta() {
           }));
           endDateChile.setHours(23, 59, 59, 999);
           
-          return endDateChile >= now;
+          // Añadir un día a la fecha de fin
+          const dayAfterEnd = new Date(endDateChile);
+          dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+          
+          return dayAfterEnd >= now;
         });
 
-        console.log('Fecha actual (Santiago):', now);
+/*         console.log('Fecha actual (Santiago):', now);
         console.log('Ofertas activas:', activeOffers);
-        console.log('Ofertas expiradas:', expired);
+        console.log('Ofertas expiradas:', expired); */
 
         setOffers(activeOffers);
         setExpiredOffers(expired);
@@ -568,6 +579,7 @@ function DetalleOferta() {
 
           const allOffers = response.data.skuOffers || [];
           
+          
           // Filtrar solo las ofertas activas
           const activeOffers = allOffers.filter((offer: any) => {
             const endDate = new Date(offer.endDate);
@@ -632,39 +644,41 @@ function DetalleOferta() {
             </div>
           </div>
         </div>
-        <div className="mx-12 mb-4 flex items-center justify-between gap-4">
+        <div className="mx-4 md:mx-12 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div
-            className="flex-1 shadow rounded flex items-center p-4 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+            className="flex-1 shadow rounded p-4 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
             role="alert"
           >
-            <svg
-              className="flex-shrink-0 inline w-4 h-4 me-3"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-            </svg>
-            <span className="sr-only">Info</span>
-            <div>
-              Presiona el botón <span className="font-bold">Crear Oferta </span>
-              en cualquier producto y luego elige la variación que quieres editar.
+            <div className="flex items-start md:items-center">
+              <svg
+                className="flex-shrink-0 inline w-4 h-4 me-3 mt-1 md:mt-0"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+              </svg>
+              <span className="sr-only">Info</span>
+              <div>
+                Presiona el botón <span className="font-bold">Crear Oferta </span>
+                en cualquier producto y luego elige la variación que quieres editar.
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
             {product?.hasVariations && (
               <button
                 onClick={handleCreateBulkOffer}
-                className="px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap"
+                className="flex-1 sm:flex-none px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center"
               >
                 Crear Oferta Masiva
               </button>
             )}
             <button
               onClick={handleBulkDeleteOffers}
-              className="px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors whitespace-nowrap"
+              className="flex-1 sm:flex-none px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-center"
             >
               Eliminar Ofertas Activas
             </button>
@@ -817,134 +831,163 @@ function DetalleOferta() {
           </div>
         )}
 
-        <div className="w-full">
+        <div className="w-full max-w-[1500px] mx-auto space-y-4 px-4 mt-8">
           {(selectedVariation || (product && !product.hasVariations)) && (
-            <div className="pb-6">
-              <h2 className="text-center font-semibold uppercase py-6">
-                Ofertas Activas
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
-                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                      <th className="px-2 py-2">Precio Oferta</th>
-                      <th className="px-2 py-2">Fecha de Inicio</th>
-                      <th className="px-2 py-2">Fecha de Fin</th>
-                      <th className="px-2 py-2">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {offers.length ? (
-                      offers.map((offer) => (
-                        <tr
-                          key={offer.id}
-                          className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                        >
-                          <td className="px-2 py-2">
-                            ${offer.unitPrice.toLocaleString("es-CL")}
-                          </td>
-                          <td className="px-2 py-2">
-                            {" "}
-                            {offer.startDate.split("-").reverse().join("/")}
-                          </td>
-                          <td className="px-2 py-2">
-                            {offer.endDate.split("-").reverse().join("/")}
-                          </td>
-                          <td className="px-2 py-2 flex justify-center gap-2">
-                            <button
-                              onClick={() => handleEditOffer(offer.id)}
-                              className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteOffer(offer.id)}
-                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
-                            >
-                              Eliminar
-                            </button>
-                          </td>
+            <>
+              {/* Acordeón de Ofertas Activas */}
+              <div className="border rounded-lg overflow-hidden">
+                <button
+                  className={`w-full px-6 py-4 flex justify-between items-center ${
+                    activeAccordion === 'active' ? 'bg-gray-600 text-white' : 'bg-gray-100'
+                  }`}
+                  onClick={() => setActiveAccordion(activeAccordion === 'active' ? null : 'active')}
+                >
+                  <h2 className="font-semibold uppercase">Ofertas Activas</h2>
+                  <svg
+                    className={`w-6 h-6 transform transition-transform ${
+                      activeAccordion === 'active' ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {activeAccordion === 'active' && (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                          <th className="px-2 py-2">Precio Oferta</th>
+                          <th className="px-2 py-2">Fecha de Inicio</th>
+                          <th className="px-2 py-2">Fecha de Fin</th>
+                          <th className="px-2 py-2">Acciones</th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={4}
-                          className="px-2 py-2"
-                        >
-                          No hay ofertas disponibles
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {offers.length ? (
+                          offers.map((offer) => (
+                            <tr
+                              key={offer.id}
+                              className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                            >
+                              <td className="px-2 py-2">
+                                ${offer.unitPrice.toLocaleString("es-CL")}
+                              </td>
+                              <td className="px-2 py-2">
+                                {offer.startDate.split("-").reverse().join("/")}
+                              </td>
+                              <td className="px-2 py-2">
+                                {offer.endDate.split("-").reverse().join("/")}
+                              </td>
+                              <td className="px-2 py-2 flex justify-center gap-2">
+                                <button
+                                  onClick={() => handleEditOffer(offer.id)}
+                                  className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteOffer(offer.id)}
+                                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                                >
+                                  Eliminar
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="px-2 py-2">
+                              No hay ofertas disponibles
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-        <div className="w-full">
-          {(selectedVariation || (product && !product.hasVariations)) && (
-            <div className="pb-6">
-              <h2 className="text-center font-semibold uppercase py-6">
-                Ofertas Expiradas
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
-                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                      <th className="px-2 py-2">Precio Oferta</th>
-                      <th className="px-2 py-2">Fecha de Inicio</th>
-                      <th className="px-2 py-2">Fecha de Fin</th>
-                      <th className="px-2 py-2">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {expiredOffers.length ? (
-                      expiredOffers.map((offer) => (
-                        <tr
-                          key={offer.id}
-                          className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
-                        >
-                          <td className="px-2 py-2">
-                            ${offer.unitPrice.toLocaleString("es-CL")}
-                          </td>
-                          <td className="px-2 py-2">
-                            {" "}
-                            {offer.startDate.split("-").reverse().join("/")}
-                          </td>
-                          <td className="px-2 py-2">
-                            {offer.endDate.split("-").reverse().join("/")}
-                          </td>
-                          <td className="px-2 py-2 flex justify-center gap-2">
-                            <button
-                              onClick={() => handleEditOffer(offer.id)}
-                              className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteOffer(offer.id)}
-                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
-                            >
-                              Eliminar
-                            </button>
-                          </td>
+
+              {/* Acordeón de Ofertas Expiradas */}
+              <div className="border rounded-lg overflow-hidden">
+                <button
+                  className={`w-full px-6 py-4 flex justify-between items-center ${
+                    activeAccordion === 'expired' ? 'bg-gray-600 text-white' : 'bg-gray-100'
+                  }`}
+                  onClick={() => setActiveAccordion(activeAccordion === 'expired' ? null : 'expired')}
+                >
+                  <h2 className="font-semibold uppercase">Ofertas Expiradas</h2>
+                  <svg
+                    className={`w-6 h-6 transform transition-transform ${
+                      activeAccordion === 'expired' ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {activeAccordion === 'expired' && (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                          <th className="px-2 py-2">Precio Oferta</th>
+                          <th className="px-2 py-2">Fecha de Inicio</th>
+                          <th className="px-2 py-2">Fecha de Fin</th>
+                          <th className="px-2 py-2">Acciones</th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={4}
-                          className="px-2 py-2"
-                        >
-                          No hay ofertas expiradas disponibles
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        {expiredOffers.length ? (
+                          expiredOffers.map((offer) => (
+                            <tr
+                              key={offer.id}
+                              className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                            >
+                              <td className="px-2 py-2">
+                                ${offer.unitPrice.toLocaleString("es-CL")}
+                              </td>
+                              <td className="px-2 py-2">
+                                {offer.startDate.split("-").reverse().join("/")}
+                              </td>
+                              <td className="px-2 py-2">
+                                {offer.endDate.split("-").reverse().join("/")}
+                              </td>
+                              <td className="px-2 py-2 flex justify-center gap-2">
+                                <button
+                                  onClick={() => handleEditOffer(offer.id)}
+                                  className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
+                                >
+                                  Editar
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteOffer(offer.id)}
+                                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                                >
+                                  Eliminar
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="px-2 py-2">
+                              No hay ofertas expiradas disponibles
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

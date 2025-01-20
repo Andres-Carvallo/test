@@ -799,26 +799,89 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   }
 
   const renderPrice = () => {
-    if (
-      selectedVariationPrice !== null &&
-      !isNaN(selectedVariationPrice) &&
-      selectedVariationPrice > 0
-    ) {
-      return `$${selectedVariationPrice.toLocaleString("es-CL")}`;
+    // Para variación seleccionada con oferta
+    if (selectedVariation) {
+      if (selectedVariation.offers?.length > 0) {
+        return (
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-medium text-red-600">
+              ${selectedVariation.offers[0].unitPrice.toLocaleString('es-CL')}
+            </span>
+            <span className="text-lg text-gray-500 line-through">
+              ${selectedVariationPrice?.toLocaleString('es-CL')}
+            </span>
+            <span className="bg-red-100 text-red-600 text-sm px-2 py-1 rounded">
+              {discountPercentage}% Dcto.
+            </span>
+          </div>
+        );
+      } else if (selectedVariationPrice) {
+        return <span className="text-2xl">${selectedVariationPrice.toLocaleString("es-CL")}</span>;
+      }
     }
 
-    if (
-      minPrice &&
-      maxPrice &&
-      !isNaN(parseFloat(minPrice)) &&
-      !isNaN(parseFloat(maxPrice))
-    ) {
-      if (minPrice === maxPrice) {
-        return `$${parseFloat(minPrice).toLocaleString("es-CL")}`;
+    // Para productos con variaciones y ofertas (cuando no hay variación seleccionada)
+    if (variations.length > 1) {
+      // Obtener todos los precios normales y de oferta válidos
+      const normalPrices = variations
+        .map(v => v.pricings?.[0]?.unitPrice)
+        .filter((p): p is number => p !== undefined && p > 0);
+      
+      const offerPrices = variations
+        .map(v => v.offers?.[0]?.unitPrice)
+        .filter((p): p is number => p !== undefined && p > 0);
+
+      // Si hay ofertas, mostrar ambos rangos de precios
+      if (offerPrices.length > 0) {
+        const minNormalPrice = Math.min(...normalPrices);
+        const maxNormalPrice = Math.max(...normalPrices);
+        const minOfferPrice = Math.min(...offerPrices);
+        const maxOfferPrice = Math.max(...offerPrices);
+
+        return (
+          <div className="flex flex-col">
+            <span className="text-2xl text-gray-500 line-through">
+              {minNormalPrice === maxNormalPrice
+                ? `$${minNormalPrice.toLocaleString("es-CL")}`
+                : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
+              }
+            </span>
+            <span className="text-2xl font-medium text-red-600">
+              {minOfferPrice === maxOfferPrice
+                ? `$${minOfferPrice.toLocaleString("es-CL")}`
+                : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
+              }
+            </span>
+          </div>
+        );
       }
-      return `$${parseFloat(minPrice).toLocaleString("es-CL")} - $${parseFloat(
-        maxPrice
-      ).toLocaleString("es-CL")}`;
+
+      // Si no hay ofertas, mostrar rango de precios normal
+      if (normalPrices.length > 0) {
+        const minPrice = Math.min(...normalPrices);
+        const maxPrice = Math.max(...normalPrices);
+
+        return (
+          <span className="text-2xl">
+            {minPrice === maxPrice
+              ? `$${minPrice.toLocaleString("es-CL")}`
+              : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
+            }
+          </span>
+        );
+      }
+    }
+
+    // Para precio base sin variaciones
+    if (minPrice && maxPrice && !isNaN(parseFloat(minPrice)) && !isNaN(parseFloat(maxPrice))) {
+      if (minPrice === maxPrice) {
+        return <span className="text-2xl">${parseFloat(minPrice).toLocaleString("es-CL")}</span>;
+      }
+      return (
+        <span className="text-2xl">
+          ${parseFloat(minPrice).toLocaleString("es-CL")} - ${parseFloat(maxPrice).toLocaleString("es-CL")}
+        </span>
+      );
     }
 
     return "Precio no disponible";
@@ -870,23 +933,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
               <div>
                 <h1 className="text-2xl font-medium mb-2">{productName}</h1>
                 <div className="flex items-center gap-2">
-                  {selectedVariation?.offers?.length > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-medium text-red-600">
-                        ${selectedVariation.offers[0].unitPrice.toLocaleString('es-CL')}
-                      </span>
-                      <span className="text-lg text-gray-500 line-through">
-                        ${selectedVariationPrice?.toLocaleString('es-CL')}
-                      </span>
-                      <span className="bg-red-100 text-red-600 text-sm px-2 py-1 rounded">
-                        {discountPercentage}% Dcto.
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-2xl">
-                      ${selectedVariationPrice?.toLocaleString('es-CL')}
-                    </span>
-                  )}
+                  {renderPrice()}
                   {reviewAverageScore && (
                     <div className="flex items-center gap-1">
                       <span>{reviewAverageScore}</span>
