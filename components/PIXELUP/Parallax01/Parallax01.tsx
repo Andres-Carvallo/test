@@ -56,9 +56,11 @@ const Parallax01: React.FC = () => {
               {/*           <div className="mt-4 text-lg sm:text-xl font-bold text-primary-foreground">
             {subtitulo}
           </div> */}
-              <p className="mt-8 text-lg sm:text-xl leading-7 text-secondary max-w-3xl font-kalam px-10">
-                {bannerData[0].landingText}
-              </p>
+              <div
+                className="mt-8 text-lg sm:text-xl leading-7 text-secondary max-w-3xl font-kalam px-10"
+                dangerouslySetInnerHTML={{ __html: bannerData[0].landingText }}
+              />
+
             </div>
           </div>
         </div>
