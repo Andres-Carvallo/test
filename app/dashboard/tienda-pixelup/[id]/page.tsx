@@ -119,29 +119,30 @@ export default function DetalleCanje() {
   return (
     <section className="min-h-screen bg-gray-50">
       {/* Header mejorado */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-8">
-        <div className=" mx-auto px-4">
-          <Breadcrumb pageName="Detalle del Canje" />
-          <Link
-            href="/dashboard/tienda-pixelup/"
-            className="inline-flex items-center px-4 py-2 bg-white/20 
-                     hover:bg-white/30 text-white rounded-lg transition-colors"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 text-white py-8">
+        <div className="mx-auto px-4">
+          <div className="flex items-center">
+            <Link
+              href="/dashboard/tienda-pixelup/"
+              className="inline-flex items-center px-4 py-2 bg-white/20 
+                       hover:bg-white/30 text-white rounded-lg transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Volver a la tienda
-          </Link>
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Volver a la tienda
+            </Link>
+          </div>
         </div>
       </div>
 

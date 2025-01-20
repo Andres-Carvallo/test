@@ -41,7 +41,7 @@ export default function Productos() {
           ProductCardComponent={ProductCard03}
         />
         <Destacados01 
-          text="Tipo de Producto 4 - Detalle 4"
+          text="Tipo de Producto 4"
           ProductCardComponent={ProductCard04}
         />
       </>

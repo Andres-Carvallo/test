@@ -975,7 +975,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                       <button
                         key={value}
                         onClick={() => handleAttributeChange(attributeName, value)}
-                        className={`min-w-[48px] h-12 flex items-center justify-center border rounded-lg ${
+                        className={`px-3 py-1 min-w-[48px] h-12 flex items-center justify-center border rounded-lg ${
                           selectedAttributes[attributeName] === value
                             ? 'border-black bg-black text-white'
                             : 'border-gray-200 hover:border-gray-300'

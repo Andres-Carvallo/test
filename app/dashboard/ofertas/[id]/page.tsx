@@ -53,6 +53,9 @@ function DetalleOferta() {
   // Agregar este estado para controlar los acordeones
   const [activeAccordion, setActiveAccordion] = useState<'active' | 'expired' | null>('active');
 
+  // Agregar un nuevo estado para almacenar los precios de oferta
+  const [currentOfferPrices, setCurrentOfferPrices] = useState<Record<string, number | null>>({});
+
   const handleVariationSelect = async (variation: any) => {
     console.log("Variación seleccionada:", variation);
     setSelectedVariation(variation);
@@ -192,9 +195,10 @@ function DetalleOferta() {
         const attributesByVariation: Record<string, any[]> = {};
         const pricesByVariation: Record<string, number | null> = {};
         const offersByVariation: Record<string, boolean> = {};
+        const offerPricesByVariation: Record<string, number | null> = {};
 
         const fetchTasks = filteredVariations.map(async (variation: any) => {
-          const [attributes, price, hasOffer] = await Promise.all([
+          const [attributes, price, [hasOffer, offerPrice]] = await Promise.all([
             fetchAttributesForVariation(id as string, variation.id),
             fetchPriceForVariation(id as string, variation.id),
             fetchHasOfferForVariation(id as string, variation.id),
@@ -202,12 +206,14 @@ function DetalleOferta() {
           attributesByVariation[variation.id] = attributes;
           pricesByVariation[variation.id] = price;
           offersByVariation[variation.id] = hasOffer;
+          offerPricesByVariation[variation.id] = offerPrice;
         });
 
         await Promise.all(fetchTasks);
         setCurrentAttributes(attributesByVariation);
         setCurrentPrices(pricesByVariation);
         setVariationsWithOffers(offersByVariation);
+        setCurrentOfferPrices(offerPricesByVariation);
 
         setSku(filteredVariations);
       } else {
@@ -337,7 +343,7 @@ function DetalleOferta() {
   const fetchHasOfferForVariation = async (
     productId: string,
     skuId: string
-  ): Promise<boolean> => {
+  ): Promise<[boolean, number | null]> => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
@@ -350,10 +356,26 @@ function DetalleOferta() {
         }
       );
       const data = await response.json();
-      return data.skuOffers && data.skuOffers.length > 0;
+      
+      // Obtener la fecha actual en la zona horaria de Chile
+      const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+      
+      // Filtrar ofertas activas
+      const activeOffers = data.skuOffers?.filter((offer: any) => {
+        const endDate = new Date(offer.endDate);
+        const endDateChile = new Date(endDate.toLocaleString('en-US', {
+          timeZone: 'America/Santiago'
+        }));
+        endDateChile.setHours(23, 59, 59, 999);
+        
+        return endDateChile >= now;
+      });
+
+      // Retornar si hay ofertas y el precio de la primera oferta activa (si existe)
+      return [activeOffers && activeOffers.length > 0, activeOffers?.[0]?.unitPrice || null];
     } catch (error) {
       console.error("Error al obtener el skuOffers de la variación:", error);
-      return false;
+      return [false, null];
     }
   };
 
@@ -692,6 +714,7 @@ function DetalleOferta() {
                 <tr>
                   <th className="px-2 py-2">Imagen</th>
                   <th className="px-2 py-2">Precio Normal</th>
+                  <th className="px-2 py-2">Precio Oferta</th>
                   <th className="px-2 py-2">Atributos</th>
                   <th className="px-2 py-2">Oferta</th>
                   <th className="px-2 py-2">Crear/Editar</th>
@@ -719,6 +742,13 @@ function DetalleOferta() {
                               "es-CL"
                             )}`
                           : "N/A"}
+                      </td>
+                      <td className="px-2 py-2 border border-gray-300">
+                        {currentOfferPrices[item.id] ? (
+                          `$${currentOfferPrices[item.id]?.toLocaleString("es-CL")}`
+                        ) : (
+                          "Sin oferta"
+                        )}
                       </td>
                       <td className="px-2 py-2 border border-gray-300 text-center">
                         <div className="current-attributes">
@@ -791,6 +821,13 @@ function DetalleOferta() {
                             "es-CL"
                           )}`
                         : "N/A"}
+                    </td>
+                    <td className="px-2 py-2 border border-gray-300">
+                      {currentOfferPrices[product.skuId] ? (
+                        `$${currentOfferPrices[product.skuId]?.toLocaleString("es-CL")}`
+                      ) : (
+                        "Sin oferta"
+                      )}
                     </td>
                     <td className="px-2 py-2 border border-gray-300 text-center">
                       <span>No hay atributos disponibles</span>

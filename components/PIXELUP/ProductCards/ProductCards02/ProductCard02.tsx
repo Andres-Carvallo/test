@@ -57,7 +57,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
                 : `$${Math.min(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")} - $${Math.max(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")}`
               }
             </span>
-            <span className="text-red-600 font-semibold">
+            <span className="text-red-600 font-semibold text-base">
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
                 : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
@@ -94,7 +94,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
             <span className="line-through text-gray-500 text-sm">
               ${normalPrice.toLocaleString("es-CL")}
             </span>
-            <span className="text-red-600 font-semibold">
+            <span className="text-red-600 font-semibold text-base">
               ${offerPrice.toLocaleString("es-CL")}
             </span>
           </div>
