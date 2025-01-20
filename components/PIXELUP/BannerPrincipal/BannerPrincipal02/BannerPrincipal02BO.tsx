@@ -532,7 +532,7 @@ const BannerPrincipal02BO: React.FC = () => {
             value={formData.buttonLink}
             onChange={handleChange}
             className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-            placeholder="Ejemplo: facebook.com/mitienda o https://www.facebook.com/mitienda"
+            placeholder="Ejemplo: pixelup.cl o https://www.pixelup.cl/"
           />
         </div>
 

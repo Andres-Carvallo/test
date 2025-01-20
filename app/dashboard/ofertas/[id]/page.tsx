@@ -322,9 +322,9 @@ function DetalleOferta() {
           return dayAfterEnd >= now;
         });
 
-/*         console.log('Fecha actual (Santiago):', now);
+         console.log('Fecha actual (Santiago):', now);
         console.log('Ofertas activas:', activeOffers);
-        console.log('Ofertas expiradas:', expired); */
+        console.log('Ofertas expiradas:', expired); 
 
         setOffers(activeOffers);
         setExpiredOffers(expired);
@@ -362,13 +362,18 @@ function DetalleOferta() {
       
       // Filtrar ofertas activas
       const activeOffers = data.skuOffers?.filter((offer: any) => {
+        // Convertir la fecha de fin a zona horaria de Chile y establecer a 23:59:59
         const endDate = new Date(offer.endDate);
         const endDateChile = new Date(endDate.toLocaleString('en-US', {
           timeZone: 'America/Santiago'
         }));
         endDateChile.setHours(23, 59, 59, 999);
         
-        return endDateChile >= now;
+        // Añadir un día a la fecha de fin para incluir todo el día actual
+        const dayAfterEnd = new Date(endDateChile);
+        dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+        
+        return dayAfterEnd >= now;
       });
 
       // Retornar si hay ofertas y el precio de la primera oferta activa (si existe)
@@ -571,7 +576,11 @@ function DetalleOferta() {
               }));
               endDateChile.setHours(23, 59, 59, 999);
               
-              return endDateChile >= now;
+              // Añadir un día a la fecha de fin
+              const dayAfterEnd = new Date(endDateChile);
+              dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+              
+              return dayAfterEnd >= now;
             });
 
             const deletePromises = activeOffers.map(async (offer: any) => {
