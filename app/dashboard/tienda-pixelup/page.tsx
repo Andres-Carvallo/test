@@ -225,7 +225,7 @@ const ExchangesGrid = () => {
         <div className="relative mx-auto px-4 max-w-6xl">
           <div className="text-center">
             <h1 className="text-4xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-100 animate-fade-in"> {/* Reducido a text-4xl y mb-2 */}
-              Tienda PixelUp
+              Tienda Pixel Up
             </h1>
             <p className="text-base text-gray-100 max-w-2xl mx-auto leading-relaxed opacity-90 animate-fade-in-up"> {/* Reducido a text-base */}
               Descubre servicios profesionales premium para impulsar tu negocio.

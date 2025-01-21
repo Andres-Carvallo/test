@@ -9,6 +9,7 @@ import OfferCanvas from "@/components/Core/Offcanvas/OfferCanvas";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import BulkOfferModal from "@/components/Core/Modals/BulkOfferModal";
+import { useRevalidation } from "@/app/Context/RevalidationContext";
 
 type Offer = {
   id: any;
@@ -56,6 +57,9 @@ function DetalleOferta() {
   // Agregar un nuevo estado para almacenar los precios de oferta
   const [currentOfferPrices, setCurrentOfferPrices] = useState<Record<string, number | null>>({});
 
+  // Agregar el hook de revalidación
+  const { triggerRevalidation } = useRevalidation();
+
   const handleVariationSelect = async (variation: any) => {
     console.log("Variación seleccionada:", variation);
     setSelectedVariation(variation);
@@ -83,8 +87,6 @@ function DetalleOferta() {
   };
 
   const handleModalConfirm = async () => {
-    // Si el producto es variable, usamos el selectedVariation.id
-    // Si no es variable, usamos product.skuId directamente
     const skuId = selectedVariation ? selectedVariation.id : product?.skuId;
 
     if (offerToDelete && skuId) {
@@ -102,14 +104,22 @@ function DetalleOferta() {
         await axios.delete(url, config);
 
         console.log("Oferta eliminada exitosamente");
+        toast.success("Oferta eliminada exitosamente");
 
+        // Revalidar el caché después de eliminar
+        await triggerRevalidation(['products']);
+        
         // Recargar la página después de eliminar la oferta
         window.location.reload();
       } catch (error) {
         console.log("Error al eliminar la oferta:", error);
+        toast.error("Error al eliminar la oferta");
+      } finally {
+        setShowModal(false);
       }
     } else {
       console.log("Faltan datos para eliminar la oferta");
+      toast.error("Faltan datos para eliminar la oferta");
     }
   };
 
@@ -139,13 +149,18 @@ function DetalleOferta() {
         formattedOffer,
         config
       );
+      
       console.log("Oferta actualizada con éxito:", response.data);
       toast.success("Oferta actualizada exitosamente");
+
+      // Revalidar el caché después de actualizar
+      await triggerRevalidation(['products']);
 
       fetchOffersForProduct(updatedOffer.productId, updatedOffer.skuId);
       setIsOffcanvasOpen(false);
     } catch (error) {
       console.log("Error al actualizar la oferta:", error);
+      toast.error("Error al actualizar la oferta");
     }
   };
 
@@ -268,6 +283,21 @@ function DetalleOferta() {
   useEffect(() => {
     if (product) {
       fetchOffersForProduct(id as string, product.skuId);
+      // Para productos simples, verificar ofertas al cargar
+      if (!product.hasVariations) {
+        const checkOffers = async () => {
+          try {
+            const [hasOffer, offerPrice] = await fetchHasOfferForVariation(id as string, product.skuId);
+            setVariationsWithOffers({ [product.id]: hasOffer });
+            if (offerPrice) {
+              setCurrentOfferPrices({ [product.skuId]: offerPrice });
+            }
+          } catch (error) {
+            console.error("Error al verificar ofertas:", error);
+          }
+        };
+        checkOffers();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
@@ -328,6 +358,27 @@ function DetalleOferta() {
 
         setOffers(activeOffers);
         setExpiredOffers(expired);
+
+        // Si es un producto simple, actualizar el estado de oferta y precio de oferta
+        if (!product?.hasVariations && currentOffers.length > 0) {
+          const activeOffer = currentOffers.find((offer: Offer) => {
+            const endDate = new Date(offer.endDate);
+            const endDateChile = new Date(endDate.toLocaleString('en-US', {
+              timeZone: 'America/Santiago'
+            }));
+            endDateChile.setHours(23, 59, 59, 999);
+            
+            const dayAfterEnd = new Date(endDateChile);
+            dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+            
+            return dayAfterEnd >= now;
+          });
+
+          if (activeOffer) {
+            setVariationsWithOffers({ [product.id]: true });
+            setCurrentOfferPrices({ [product.skuId]: activeOffer.unitPrice });
+          }
+        }
       } else {
         console.error("Error al obtener las ofertas:", data.message);
         setOffers([]);
@@ -517,7 +568,8 @@ function DetalleOferta() {
 
       const results = await Promise.all(promises);
       const successCount = results.filter(result => result).length;
-
+          // Revalidar el caché después de actualizar
+      await triggerRevalidation(['products']);
       if (successCount === variations.length) {
         toast.success(`Se crearon ofertas para todas las variaciones (${successCount}/${variations.length})`);
       } else {
@@ -638,6 +690,8 @@ function DetalleOferta() {
 
       if (successCount > 0) {
         toast.success(`Se eliminaron ${successCount} ofertas activas exitosamente`);
+        // Revalidar el caché después de eliminar en masa
+        await triggerRevalidation(['products']);
       } else {
         toast.success('No se encontraron ofertas activas para eliminar');
       }

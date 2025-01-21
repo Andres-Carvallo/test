@@ -90,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <span className="text-primary">
             {minPrice === maxPrice
               ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
+              : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
             }
           </span>
         );
