@@ -34,7 +34,7 @@ export default function Navbar03() {
               <img
                 className="w-32 h-auto object-contain max-h-14"
                 src={Logo}
-                alt="Logo"
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               />
             </Link>
           </div>

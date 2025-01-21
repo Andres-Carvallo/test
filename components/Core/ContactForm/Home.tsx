@@ -52,9 +52,9 @@ export default function HomeForm() {
         <div className="grid md:grid-cols-2 justify-center items-center max-md:text-center gap-8">
           <div className="max-w-md mx-auto p-4">
             <h2 className="text-4xl md:text-5xl font-extrabold my-6 md:!leading-[55px] uppercase">
-              Encarga tu joya
+              Encarga tu pedido
             </h2>
-            <p className="text-base">Haz tu pedido personalizado con FBM</p>
+            <p className="text-base">Haz tu pedido personalizado con {process.env.NEXT_PUBLIC_NOMBRE_TIENDA}</p>
             <div className="my-8 space-y-6">
               <input
                 name="name"

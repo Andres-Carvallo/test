@@ -143,7 +143,7 @@ export default function Navbar() {
               <img
                 className="h-24 w-24"
                 src={LogoMobile}
-                alt="FBM Joyas"
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               />
             </Link>
           </div>
@@ -367,13 +367,13 @@ export default function Navbar() {
                 <li
                   className={
                     pathname ===
-                    "https://api.whatsapp.com/send?phone=+56991634170&text=Hola!%20Te%20has%20contactado%20con%20Flora%20de%20FBM%20Joyas,%20cu%C3%A9ntame%20en%20qu%C3%A9%20puedo%20ayudarte."
+                    "https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
                       ? "text-primary"
                       : ""
                   }
                 >
                   <Link
-                    href="https://api.whatsapp.com/send?phone=+56991634170&text=Hola!%20Te%20has%20contactado%20con%20Flora%20de%20FBM%20Joyas,%20cu%C3%A9ntame%20en%20qu%C3%A9%20puedo%20ayudarte."
+                    href="https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
                     target="_blank"
                     className="font-semibold text-primary text-base"
                   >
@@ -402,7 +402,7 @@ export default function Navbar() {
               <img
                 className="h-24 w-24"
                 src={Logo}
-                alt="FBM Joyas"
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               />
             </Link>
           </div>
@@ -471,7 +471,7 @@ export default function Navbar() {
               <img
                 className="w-40"
                 src={LogoMobile}
-                alt="FBM Joyas"
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               />
             </Link>
           </div>
@@ -696,13 +696,13 @@ export default function Navbar() {
             <li
               className={
                 pathname ===
-                "https://api.whatsapp.com/send?phone=+56978334123&text=Hola!%20Te%20has%20contactado%20con%20Flora%20de%20FBM%20Joyas,%20cu%C3%A9ntame%20en%20qu%C3%A9%20puedo%20ayudarte."
+                "https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
                   ? "text-primary"
                   : "text-primary"
               }
             >
               <Link
-                href="https://api.whatsapp.com/send?phone=+56978334123&text=Hola!%20Te%20has%20contactado%20con%20Flora%20de%20FBM%20Joyas,%20cu%C3%A9ntame%20en%20qu%C3%A9%20puedo%20ayudarte."
+                href="https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
                 target="_blank"
                 className="hover:text-primary text-base font-medium uppercase"
               >

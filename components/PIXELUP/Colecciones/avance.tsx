@@ -31,17 +31,18 @@ import React, {
     const [mainImageColeccion, setMainImageColeccion] = useState<string | null>(
       null
     );
+    const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl';
     const [editingCollectionId, setEditingCollectionId] = useState<string | null>(
       null
     );
     const [imageModified, setImageModified] = useState<boolean>(false);
     const [nameError, setNameError] = useState<string | null>(null);
     const [formDataColeccion, setFormDataColeccion] = useState<any>({
-      bannerTitle: "fbmjoyas.cl",
-      bannerText: "fbmjoyas.cl",
+      bannerTitle: nombreTienda,
+      bannerText: nombreTienda,
       previewImage: "",
       title: "",
-      landingText: "fbmjoyas.cl",
+      landingText: nombreTienda,
       mainImage: {
         name: "",
         type: "",
@@ -325,10 +326,10 @@ import React, {
   
         // Resetear estados después de la creación o actualización
         setFormDataColeccion({
-          bannerTitle: "fbmjoyas.cl",
-          bannerText: "fbmjoyas.cl",
+          bannerTitle: nombreTienda,
+          bannerText: nombreTienda,
           title: "",
-          landingText: "pixelup",
+          landingText: nombreTienda,
           mainImage: {
             name: "",
             type: "",
@@ -429,10 +430,10 @@ import React, {
   
     const handleCancelEdit = () => {
       setFormDataColeccion({
-        bannerTitle: "fbmjoyas.cl",
-        bannerText: "fbmjoyas.cl",
+        bannerTitle: nombreTienda,
+        bannerText: nombreTienda,
         title: "",
-        landingText: "fbmjoyas.cl",
+        landingText: nombreTienda,
         mainImage: {
           name: "",
           type: "",

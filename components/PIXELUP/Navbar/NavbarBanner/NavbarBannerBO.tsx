@@ -33,13 +33,14 @@ import React, {
     const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
     const [bannerData, setBannerData] = useState<BannerImage[]>([]);
     const [currentIndex, setCurrentIndex] = useState<number>(0);
+    const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl';
     const [formData, setFormData] = useState<BannerImage>({
       id: "",
-      title: "fbmjoyas.cl",
-      landingText: "fbmjoyas.cl",
+      title: nombreTienda,
+      landingText: nombreTienda,
       buttonLink: "",
       buttonText: "",
-      mainImageLink: "fbmjoyas.cl",
+      mainImageLink: nombreTienda,
       orderNumber: 1,
       mainImage: {
         url: "",

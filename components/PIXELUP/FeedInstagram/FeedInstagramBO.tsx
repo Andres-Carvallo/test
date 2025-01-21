@@ -308,7 +308,7 @@ const FeedInstagramBO: React.FC = () => {
 
         {showPreview && (
           <section className="py-20 bg-[#F5F7F2]">
-            <div className="container mx-auto px-6">
+            <div className="mx-auto px-6">
               <h2 className="text-4xl font-kalam text-[#4A6741] mb-12 text-center">
                 <span className="text-sm uppercase tracking-[0.3em] block mb-3 text-[#8BA888] font-montserrat">
                   Social

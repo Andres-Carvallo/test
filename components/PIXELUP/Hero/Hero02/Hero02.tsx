@@ -62,7 +62,7 @@ const Hero02: React.FC= () => {
     >
       <img
         src={currentImage.mainImage.url}
-        alt="FBM Joyas"
+        alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl'}
         className="absolute inset-0 w-full h-full object-cover rounded-lg"
       />
       <div className="absolute top-1/2 left-1/2 lg:left-[24%] transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-75 p-4 md:p-8 rounded-lg shadow-lg max-w-lg text-gray-800 w-[90%] md:w-full">

@@ -27,6 +27,7 @@ const BannerColeccion01BO: React.FC<BannerAboutProps> = ({
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
 
   const [bannerData, setBannerData] = useState<any | null>(null);
+  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA;
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
   // States for image cropping
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -35,18 +36,18 @@ const BannerColeccion01BO: React.FC<BannerAboutProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formDataHero, setFormDataHero] = useState<any>({
-    title: "fbmjoyas.cl",
-    landingText: "fbmjoyas.cl",
-    buttonLink: "fbmjoyas.cl",
-    buttonText: "fbmjoyas.cl",
+    title: nombreTienda,
+    landingText: nombreTienda,
+    buttonLink: nombreTienda,
+    buttonText: nombreTienda,
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [updatedBannerData, setUpdatedBannerData] = useState({
-    title: "fbmjoyas.cl",
-    landingText: "fbmjoyas.cl",
-    buttonLink: "fbmjoyas.cl",
-    buttonText: "fbmjoyas.cl",
-    mainImageLink: "fbmjoyas.cl",
+    title: nombreTienda,
+    landingText: nombreTienda,
+    buttonLink: nombreTienda,
+    buttonText: nombreTienda,
+    mainImageLink: nombreTienda,
     orderNumber: 1, // Modifica este valor según tu lógica
     mainImage: {
       name: "",

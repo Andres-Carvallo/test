@@ -49,7 +49,7 @@ export default function Navbar() {
             <img
               className="h-auto w-24"
               src={process.env.NEXT_PUBLIC_LOGO_COLOR || "/img/3.png"}
-              alt="Logo"
+              alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
             />
           </Link>
         </div>

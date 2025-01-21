@@ -37,6 +37,7 @@ function Colecciones() {
   const [mainImageColeccion, setMainImageColeccion] = useState<string | null>(
     null
   );
+  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl';
   const [mainPreviewColeccion, setPreviewImageColeccion] = useState<
     string | null
   >(null);
@@ -46,10 +47,10 @@ function Colecciones() {
   const [imageModified, setImageModified] = useState<boolean>(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const [formDataColeccion, setFormDataColeccion] = useState<any>({
-    bannerTitle: "fbmjoyas.cl",
-    bannerText: "fbmjoyas.cl",
+    bannerTitle: nombreTienda,
+    bannerText: nombreTienda,
     title: "",
-    landingText: "fbmjoyas.cl",
+    landingText: nombreTienda,
     mainImage: {
       name: "",
       type: "",
@@ -457,10 +458,10 @@ function Colecciones() {
 
       // Resetear el estado después de crear/actualizar
       setFormDataColeccion({
-        bannerTitle: "fbmjoyas.cl",
-        bannerText: "fbmjoyas.cl",
+        bannerTitle: nombreTienda,
+        bannerText: nombreTienda,
         title: "",
-        landingText: "fbmjoyas.cl",
+        landingText: nombreTienda,
         mainImage: {
           name: "",
           type: "",
@@ -582,8 +583,8 @@ function Colecciones() {
 
   const handleCancelEdit = () => {
     setFormDataColeccion({
-      bannerTitle: "fbmjoyas.cl",
-      bannerText: "fbmjoyas.cl",
+      bannerTitle: nombreTienda,
+      bannerText: nombreTienda,
       title: "",
       previewImage: {
         name: "",
@@ -591,7 +592,7 @@ function Colecciones() {
         size: null,
         data: "",
       },
-      landingText: "fbmjoyas.cl",
+      landingText: nombreTienda,
       mainImage: {
         name: "",
         type: "",

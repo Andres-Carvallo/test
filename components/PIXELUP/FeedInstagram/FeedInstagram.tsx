@@ -65,7 +65,7 @@ export default function FeedInstagram() {
 
   return (
     <section className="bg-gray-100  "> {/* bg-[#F5F7F2] */}
-      <div className="container mx-auto px-6 py-4">
+      <div className="mx-auto px-6 py-4">
         <h2 className="text-4xl   mb-12 text-center"> {/* font-kalam text-[#4A6741] */}
           <span className="text-sm uppercase tracking-[0.3em] block mb-3  "> {/* font-montserrat text-[#8BA888] */}
             Social

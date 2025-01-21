@@ -94,7 +94,7 @@ export default function Navbar() {
                 <img
                   className="w-24"
                   src={Logo}
-                  alt="FBM Joyas"
+                  alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
                 />
               </Link>
             </div>
@@ -322,7 +322,7 @@ export default function Navbar() {
               <img
                 className="w-48"
                 src={Logo}
-                alt="FBM Joyas"
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA} 
               />
             </Link>
           </div>

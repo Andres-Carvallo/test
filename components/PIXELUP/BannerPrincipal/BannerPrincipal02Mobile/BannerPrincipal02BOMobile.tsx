@@ -33,17 +33,18 @@ const BannerPrincipal02BOMobile: React.FC = () => {
   const mobileFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isMobilePreviewImageUploaded, setIsMobilePreviewImageUploaded] =
     useState(false);
+  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl';
   const [mobileBannerData, setMobileBannerData] = useState<MobileBannerImage[]>(
     []
   );
   const [currentMobileIndex, setCurrentMobileIndex] = useState<number>(0);
   const [mobileFormData, setMobileFormData] = useState<MobileBannerImage>({
     id: "",
-    title: "fbmjoyas.cl",
-    landingText: "fbmjoyas.cl",
+    title: nombreTienda,
+    landingText: nombreTienda,
     buttonLink: "",
-    buttonText: "fbmjoyas.cl",
-    mainImageLink: "fbmjoyas.cl",
+    buttonText: nombreTienda,
+    mainImageLink: nombreTienda,
     orderNumber: 1,
     mainImage: {
       url: "",
@@ -86,11 +87,11 @@ const BannerPrincipal02BOMobile: React.FC = () => {
         setMobileFileName(initialImage.mainImage.name);
         setMobileFormData({
           id: initialImage.id,
-          title: "fbmjoyas.cl",
-          landingText: "fbmjoyas.cl",
+          title: nombreTienda,
+          landingText: nombreTienda,
           buttonLink: initialImage.buttonLink,
-          buttonText: "fbmjoyas.cl",
-          mainImageLink: "fbmjoyas.cl",
+          buttonText: nombreTienda,
+          mainImageLink: nombreTienda,
           orderNumber: initialImage.orderNumber,
           mainImage: initialImage.mainImage,
         });
@@ -323,11 +324,11 @@ const BannerPrincipal02BOMobile: React.FC = () => {
       const formattedButtonLink = formatUrl(mobileFormData.buttonLink);
 
       const dataToSend = {
-        title: "fbmjoyas.cl",
-        landingText: "fbmjoyas.cl",
+        title: nombreTienda,
+        landingText: nombreTienda,
         buttonLink: formattedButtonLink, // Usamos la URL formateada
-        buttonText: "fbmjoyas.cl",
-        mainImageLink: "fbmjoyas.cl",
+        buttonText: nombreTienda,
+        mainImageLink: nombreTienda,
         orderNumber: mobileFormData.orderNumber,
         ...(isMobileMainImageUploaded && {
           mainImage: mobileFormData.mainImage,
