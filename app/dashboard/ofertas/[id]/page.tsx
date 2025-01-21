@@ -113,13 +113,11 @@ function DetalleOferta() {
         window.location.reload();
       } catch (error) {
         console.log("Error al eliminar la oferta:", error);
-        toast.error("Error al eliminar la oferta");
       } finally {
         setShowModal(false);
       }
     } else {
       console.log("Faltan datos para eliminar la oferta");
-      toast.error("Faltan datos para eliminar la oferta");
     }
   };
 
@@ -160,7 +158,6 @@ function DetalleOferta() {
       setIsOffcanvasOpen(false);
     } catch (error) {
       console.log("Error al actualizar la oferta:", error);
-      toast.error("Error al actualizar la oferta");
     }
   };
 
@@ -585,7 +582,6 @@ function DetalleOferta() {
       }
     } catch (error) {
       console.error("Error al crear ofertas en masa:", error);
-      toast.error("Error al crear las ofertas en masa");
     }
   };
 
@@ -704,7 +700,6 @@ function DetalleOferta() {
       
     } catch (error) {
       console.error("Error al eliminar ofertas en masa:", error);
-      toast.error("Error al eliminar las ofertas");
     } finally {
       setShowBulkDeleteModal(false);
     }
