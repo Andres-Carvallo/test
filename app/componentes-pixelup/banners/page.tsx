@@ -20,11 +20,7 @@ export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportam
 export default async function banners() {
     return (
       <>
-          <div className="inline-flex items-center justify-center w-full">
-    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
-    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Banner 01</span>
-</div>
-        <BannerPrincipal04/>
+
           <div className="inline-flex items-center justify-center w-full">
     <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Banner 01</span>
@@ -40,6 +36,11 @@ export default async function banners() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Banner 03</span>
 </div>
         <BannerPrincipal03/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Banner 04</span>
+</div>
+        <BannerPrincipal04/>
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Parallax 01</span>

@@ -90,20 +90,22 @@ const BannerPrincipal02Content: React.FC = () => {
 
       {/* Controles de carrusel */}
       {bannerData && bannerData.images.length > 1 && (
-        <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between items-center">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between items-center px-2 sm:px-4">
           <button 
             onClick={handlePrev}
-            className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="w-10 h-10 sm:w-12 sm:h-12 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors touch-manipulation"
+            aria-label="Imagen anterior"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button 
             onClick={handleNext}
-            className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="w-10 h-10 sm:w-12 sm:h-12 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors touch-manipulation"
+            aria-label="Siguiente imagen"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
