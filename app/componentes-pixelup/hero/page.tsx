@@ -6,6 +6,7 @@ import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
 import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
 import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
+import Hero05 from "@/components/PIXELUP/Hero/Hero05/Hero05";
 import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 import SinFoto02 from "@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02";
 import SinFoto03 from "@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03";
@@ -45,6 +46,11 @@ export default async function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Hero 04</span>
 </div>
 <Hero04/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Hero 05</span>
+</div>
+<Hero05/>
 
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>

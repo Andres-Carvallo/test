@@ -4,7 +4,6 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import Loader from "@/components/common/Loader";
 import dynamic from "next/dynamic";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
@@ -297,14 +296,14 @@ const FeedInstagramBO: React.FC = () => {
   return (
     <section className="w-full mx-auto">
       <div className="bg-white p-4 mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+{/*         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <button
             onClick={() => setShowPreview(!showPreview)}
             className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200"
           >
             {showPreview ? "Ocultar Vista Previa" : "Mostrar Vista Previa"}
           </button>
-        </div>
+        </div> */}
 
         {showPreview && (
           <section className="py-20 bg-[#F5F7F2]">
