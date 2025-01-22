@@ -18,10 +18,10 @@ const SinFoto03BO: React.FC = () => {
   }>({});
 
   const bannerIds = [
-    process.env.NEXT_PUBLIC_CARD01_ID ?? "",
-    process.env.NEXT_PUBLIC_CARD02_ID ?? "",
-    process.env.NEXT_PUBLIC_CARD03_ID ?? "",
-    process.env.NEXT_PUBLIC_CARD04_ID ?? "",
+    process.env.NEXT_PUBLIC_CARD01_CONTENTBLOCK ?? "",
+    process.env.NEXT_PUBLIC_CARD02_CONTENTBLOCK ?? "",
+    process.env.NEXT_PUBLIC_CARD03_CONTENTBLOCK ?? "",
+    process.env.NEXT_PUBLIC_CARD04_CONTENTBLOCK ?? "",
   ];
 
   const handleChangeCards = (

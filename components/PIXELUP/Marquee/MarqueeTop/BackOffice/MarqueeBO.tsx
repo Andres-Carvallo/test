@@ -31,7 +31,7 @@ function MarqueeTOP() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_CONTENTBLOCK}`;
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
@@ -67,7 +67,7 @@ function MarqueeTOP() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_CONTENTBLOCK}`;
       const Token = getCookie("AdminTokenAuth");
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,

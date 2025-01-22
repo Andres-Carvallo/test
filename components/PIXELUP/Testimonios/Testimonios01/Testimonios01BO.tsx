@@ -84,7 +84,7 @@ const TestimoniosBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_CONTENTBLOCK}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -118,7 +118,7 @@ const TestimoniosBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_CONTENTBLOCK}`;
 
       // Crear el nuevo testimonio
       const nuevoTestimonioData = {
@@ -168,7 +168,7 @@ const TestimoniosBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_CONTENTBLOCK}`;
 
       // Primero obtenemos los testimonios actuales
       const response = await axios.get(

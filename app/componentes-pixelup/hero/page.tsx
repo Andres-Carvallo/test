@@ -57,10 +57,10 @@ export default async function hero() {
 </div>
         <SinFoto02           
                   WelcomeData={{
-                    BannerId: process.env.NEXT_PUBLIC_SINFOTO02_ID || "",
-                    Box1Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX1_ID || "",
-                    Box2Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX2_ID || "",
-                    Box3Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX3_ID || "",
+                    BannerId: process.env.NEXT_PUBLIC_SINFOTO02_CONTENTBLOCK || "",
+                    Box1Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX1_CONTENTBLOCK || "",
+                    Box2Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX2_CONTENTBLOCK || "",
+                    Box3Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX3_CONTENTBLOCK || "",
                   }}/>
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>

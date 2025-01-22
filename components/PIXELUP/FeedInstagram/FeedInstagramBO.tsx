@@ -118,7 +118,7 @@ const FeedInstagramBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_CONTENTBLOCK}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -185,7 +185,7 @@ const FeedInstagramBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_CONTENTBLOCK}`;
 
       // Limpiar la URL antes de guardarla
       const urlLimpia = limpiarURLInstagram(nuevoTestimonio.nombre);
@@ -238,7 +238,7 @@ const FeedInstagramBO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_CONTENTBLOCK}`;
 
       // Primero obtenemos los testimonios actuales
       const response = await axios.get(

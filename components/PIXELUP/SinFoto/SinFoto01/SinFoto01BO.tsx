@@ -18,7 +18,7 @@ function SinFoto01BO() {
   const fetchWelcomeBanner = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_CONTENTBLOCK}`;
 
       const Token = getCookie("AdminTokenAuth");
       const productTypeResponse = await axios.get(
@@ -53,7 +53,7 @@ function SinFoto01BO() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_CONTENTBLOCK}`;
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(

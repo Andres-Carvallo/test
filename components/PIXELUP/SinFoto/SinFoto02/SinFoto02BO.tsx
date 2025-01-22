@@ -49,11 +49,11 @@ interface AxiosError {
 }
 
 const SinFoto02BO: React.FC<any> = () => {
-  const BannerId = process.env.NEXT_PUBLIC_SINFOTO02_ID || "";
+  const BannerId = process.env.NEXT_PUBLIC_SINFOTO02_CONTENTBLOCK || "";
   const BannerImageId = process.env.NEXT_PUBLIC_SINFOTO02_IMGID || "";
-  const Box1Id = process.env.NEXT_PUBLIC_SINFOTO02_BOX1_ID || "";
-  const Box2Id = process.env.NEXT_PUBLIC_SINFOTO02_BOX2_ID || "";
-  const Box3Id = process.env.NEXT_PUBLIC_SINFOTO02_BOX3_ID || "";
+  const Box1Id = process.env.NEXT_PUBLIC_SINFOTO02_BOX1_CONTENTBLOCK || "";
+  const Box2Id = process.env.NEXT_PUBLIC_SINFOTO02_BOX2_CONTENTBLOCK || "";
+  const Box3Id = process.env.NEXT_PUBLIC_SINFOTO02_BOX3_CONTENTBLOCK || "";
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

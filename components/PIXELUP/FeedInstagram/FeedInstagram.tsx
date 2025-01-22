@@ -29,7 +29,7 @@ export default function FeedInstagram() {
 
   const fetchPosts = async () => {
     try {
-      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_FEEDINSTAGRAM_CONTENTBLOCK}`;
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {

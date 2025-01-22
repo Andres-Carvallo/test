@@ -147,7 +147,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
                 </span>
               ))}
 
-          <Link href={`/tienda/productos/${product.id}`}>
+          <Link href={`/tienda/productos/${slugify(product.name)}`}>
             <p className="text-[18px] font-bold text-black truncate block capitalize">
               {product.name}
             </p>
@@ -157,7 +157,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
             <div className="ml-auto flex">
               {product.hasVariations || stock === 0 ? (
                 <Link
-                  href={`/tienda/productos/${product.id}`}
+                  href={`/tienda/productos/${slugify(product.name)}`}
                   className="text-primary hover:text-secondary hover:bg-primary rounded-full p-2"
                 >
                   <svg

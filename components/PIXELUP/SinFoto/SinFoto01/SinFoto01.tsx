@@ -14,7 +14,7 @@ const SinFoto01: React.FC = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_SINFOTO01_CONTENTBLOCK}`;
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || null;
       const WelcomeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${siteId}`

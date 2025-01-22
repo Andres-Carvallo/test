@@ -24,7 +24,7 @@ export default function Testimonios01() {
 
   const fetchTestimonios = async () => {
     try {
-      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_ID}`;
+      const contentBlockId = `${process.env.NEXT_PUBLIC_TESTIMONIOS_CONTENTBLOCK}`;
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
