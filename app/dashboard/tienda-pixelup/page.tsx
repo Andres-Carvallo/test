@@ -229,7 +229,6 @@ const ExchangesGrid = () => {
             </h1>
             <p className="text-base text-gray-100 max-w-2xl mx-auto leading-relaxed opacity-90 animate-fade-in-up"> {/* Reducido a text-base */}
               Descubre servicios profesionales premium para impulsar tu negocio.
-              
             </p>
           </div>
         </div>

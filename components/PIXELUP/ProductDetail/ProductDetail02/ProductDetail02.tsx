@@ -1099,12 +1099,12 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                         </div>
                       )
                     )}
-                    <button
+{/*                     <button
                       className="text-[#78a4df] font-medium flex flex-wrap gap-2 py-2 items-center mt-4 underline"
                       onClick={() => setShowModal(true)}
                     >
                       Guía de tallas
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               )}

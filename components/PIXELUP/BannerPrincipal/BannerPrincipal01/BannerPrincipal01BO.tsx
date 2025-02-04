@@ -467,7 +467,7 @@ const BannerPrincipal01BO: React.FC = () => {
           value={formData.title}
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-          placeholder="Title"
+          placeholder="Título"
         />
         <h3 className="font-normal text-primary">
           Texto <span className="text-primary">*</span>
@@ -478,7 +478,7 @@ const BannerPrincipal01BO: React.FC = () => {
           value={formData.landingText}
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-          placeholder="Landing Text"
+          placeholder="Texto"
         />
         {/*         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
           <div>

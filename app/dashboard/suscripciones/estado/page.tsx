@@ -182,17 +182,17 @@ const RenovarSuscripcion = () => {
 
   return (
     <>
-      <div className="relative font-[sans-serif] before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-50 before:z-10">
-        <img
-          src="/img/bg-login.png"
-          alt="Banner Image"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="min-h-[120px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-          <h2 className="sm:text-2xl text-xl font-bold uppercase">
-            Renueva Tu Suscripción
-          </h2>
-          <p className="text-lg text-center text-gray-200"></p>
+      <div className="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 text-white py-8">
+        <div className="absolute inset-0 bg-grid-white/[0.1] bg-[size:16px_16px]"></div>
+        <div className="relative mx-auto px-4 max-w-6xl">
+          <div className="text-center">
+            <h1 className="text-4xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-100 animate-fade-in">
+              Renueva Tu Suscripción
+            </h1>
+            <p className="text-base text-gray-100 max-w-2xl mx-auto leading-relaxed opacity-90 animate-fade-in-up">
+              Mantén activos todos los beneficios de tu suscripción PixelUp
+            </p>
+          </div>
         </div>
       </div>
       <div className="flex flex-col items-center   bg-gray-100">

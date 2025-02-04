@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import { UserData } from "@/types/UserData";
-import UserCanvas from "@/components/Core/Offcanvas/UserCanvas";
+import UserCanvas from "../Offcanvas/UserCanvas";
 import { useEffect, useState } from "react";
 import { getCookie } from "cookies-next";
 import { obtenerUsuario } from "@/app/utils/obtenerUsuario";
@@ -51,12 +51,8 @@ const TableUsers = () => {
   };
 
   const handleDelete = async () => {
-    const nonSUUsersCount = usuarios.filter(
-      (user) => user.role.name !== "SU"
-    ).length;
-
-    if (nonSUUsersCount <= 1) {
-      alert("No se puede eliminar el último usuario no SU.");
+    if (usuarios.length <= 1) {
+      alert("No se puede eliminar el último usuario.");
       setShowConfirmationModal(false);
       return;
     }
@@ -112,12 +108,6 @@ const TableUsers = () => {
                 </th>
                 <th
                   scope="col"
-                  className="min-w-[120px] py-4 px-4 font-medium text-secondary dark:text-white"
-                >
-                  ROL
-                </th>
-                <th
-                  scope="col"
                   className="py-4 px-4 font-medium text-primary dark:text-white"
                 >
                   Acciones
@@ -141,13 +131,7 @@ const TableUsers = () => {
                           className="rounded-full"
                         />
                       ) : (
-                        <img
-                          width={112}
-                          height={112}
-                          src="/img/perfil.webp"
-                          alt="Avatar"
-                          className="rounded-full"
-                        />
+                        <span className="h-12 w-12 rounded-full bg-gray-300"></span>
                       )}
                     </span>
                   </td>
@@ -160,11 +144,6 @@ const TableUsers = () => {
                   <td className="border-b border-dark py-5 px-4 dark:border-strokedark">
                     <p className="text-black dark:text-white">
                       {userDetail.email}
-                    </p>
-                  </td>
-                  <td className="border-b border-dark py-5 px-4 dark:border-dark">
-                    <p className="inline-flex rounded-full text-secondary bg-primary py-1 px-3 text-sm font-medium">
-                      {userDetail.role.name}
                     </p>
                   </td>
                   <td className="border-b border-dark py-5 px-4 dark:border-strokedark">

@@ -26,7 +26,7 @@ const BannerPrincipal01: React.FC = () => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL03_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`

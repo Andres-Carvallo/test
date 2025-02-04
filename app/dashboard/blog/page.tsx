@@ -1,12 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import CategoryModal from "./components/CategoryModal";
 import CategoryPills from "./components/CategoryPills";
+import Modal from "@/components/Core/Modals/ModalSeo";
+import Cropper from "react-easy-crop";
+import { getCroppedImg } from "@/lib/cropImage";
+import imageCompression from "browser-image-compression";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -55,25 +59,90 @@ const CreateOrEditPost: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
 
-  const handleImageUpload = (
+  // Agregar estados para el cropper
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentImageType, setCurrentImageType] = useState<'preview' | 'detail' | null>(null);
+  const [tempImage, setTempImage] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+
+  const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    setImage: (image: ImageData) => void
+    type: 'preview' | 'detail'
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      setFileName(file.name);
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64Data = reader.result?.toString().split(",")[1] || "";
-        setImage({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-          data: `data:${file.type};base64,${base64Data}`,
-        });
+        setTempImage(reader.result as string);
+        setCurrentImageType(type);
+        setIsModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleCrop = async () => {
+    if (!tempImage || !fileName) return;
+
+    try {
+      const croppedImage = await getCroppedImg(tempImage, croppedAreaPixels);
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1900,
+        useWebWorker: true,
+        initialQuality: 0.95,
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const imageInfo: ImageData = {
+        name: fileName,
+        type: compressedFile.type,
+        size: compressedFile.size,
+        url: URL.createObjectURL(compressedFile),
+        data: base64,
+      };
+
+      if (currentImageType === 'preview') {
+        setPreviewImage(imageInfo);
+      } else {
+        setDetailImage(imageInfo);
+      }
+
+      setIsModalOpen(false);
+      setTempImage(null);
+      setCurrentImageType(null);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
+    }
+  };
+
+  const convertToBase64 = (file: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -339,7 +408,7 @@ const CreateOrEditPost: React.FC = () => {
                     .sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime())
                     .map((post) => (
                       <option key={post.id} value={post.id} className="flex justify-between">
-                        {`${post.title}                                ${new Date(post.creationDate).toLocaleDateString()}`}
+                        {`[${new Date(post.creationDate).toLocaleDateString()}] ${post.title}                                `}
                       </option>
                     ))}
                 </select>
@@ -493,9 +562,7 @@ const CreateOrEditPost: React.FC = () => {
                         <input
                           type="file"
                           className="hidden"
-                          onChange={(e) =>
-                            handleImageUpload(e, setPreviewImage)
-                          }
+                          onChange={(e) => handleImageUpload(e, 'preview')}
                           accept="image/*"
                         />
                       </label>
@@ -556,7 +623,7 @@ const CreateOrEditPost: React.FC = () => {
                         <input
                           type="file"
                           className="hidden"
-                          onChange={(e) => handleImageUpload(e, setDetailImage)}
+                          onChange={(e) => handleImageUpload(e, 'detail')}
                           accept="image/*"
                         />
                       </label>
@@ -694,6 +761,62 @@ const CreateOrEditPost: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de recorte */}
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setTempImage(null);
+            setCurrentImageType(null);
+          }}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={tempImage || ""}
+              crop={crop}
+              zoom={zoom}
+              aspect={16 / 9}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+          </div>
+          <div className="flex flex-col justify-end">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="zoom-range w-full custom-range"
+              />
+            </div>
+            <div className="flex justify-between w-full gap-2">
+              <button
+                onClick={handleCrop}
+                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setTempImage(null);
+                  setCurrentImageType(null);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

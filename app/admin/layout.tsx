@@ -18,7 +18,7 @@ export default function RootLayout({
       <MarqueeTOP />
       <Navbar02 />
       <div>{children}</div>
-      <Footer01 />
+      {/* <Footer01 /> */}
       <Footer02 />
     </>
   );
