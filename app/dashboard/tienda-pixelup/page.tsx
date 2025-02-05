@@ -227,7 +227,7 @@ const ExchangesGrid = () => {
     <>
       <title>Tienda - PixelUp</title>
       {/* Hero Section con altura mínima */}
-      <div className="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 text-white py-8">
+      <div className="relative hidden bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 text-white py-8">
         {" "}
         {/* Reducido de py-16 a py-8 */}
         <div className="absolute inset-0 bg-grid-white/[0.1] bg-[size:16px_16px]"></div>

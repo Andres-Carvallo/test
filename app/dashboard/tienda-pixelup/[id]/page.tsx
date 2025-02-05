@@ -147,10 +147,10 @@ export default function DetalleCanje() {
       </div>
 
       {/* Contenido principal mejorado */}
-      <div className=" mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="px-auto pb-12">
+        <div className="w-full bg-white">
           {/* Banner y logo */}
-          <div className="relative h-96">
+          <div className="relative h-48">
             <img
               src={exchange?.mainImageUrl}
               alt={exchange?.name}
@@ -161,32 +161,32 @@ export default function DetalleCanje() {
             <img
               src={exchange?.companyImageUrl}
               alt={exchange?.companyName}
-              className="absolute -bottom-16 left-1/2 transform -translate-x-1/2
-                       w-40 h-40 rounded-2xl border-2 border-gray-50 shadow-md 
+              className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
+                       w-24 h-24 rounded-2xl border-2 border-gray-50 shadow-md 
                        bg-white object-contain p-2"
             />
           </div>
 
           {/* Contenido */}
-          <div className="p-8 pt-20">
-            <h1 className="text-4xl font-bold text-gray-800 mb-2 text-center">
+          <div className="p-8 pt-16">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
               {exchange?.name}
             </h1>
-            <p className="text-xl text-gray-600 mb-8 text-center">
+            <p className="text-lg text-gray-600 mb-8 text-center">
               {exchange?.companyName}
             </p>
 
             {/* Stats mejorados - Ajustado para móvil */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10">
               <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
-                <p className="text-2xl sm:text-3xl font-bold text-rosa mb-1">
+                <p className="text-xl sm:text-xl font-bold text-rosa mb-1">
                   {exchange?.creditAmount?.toLocaleString("es-CL")}
                 </p>
                 <p className="text-sm text-gray-600">PixelCoins</p>
               </div>
 
               <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
-                <p className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
+                <p className="text-xl sm:text-xl font-bold text-gray-800 mb-1">
                   {exchange?.product?.productPricings?.[0]?.amount
                     ? `$${exchange.product.productPricings[0].amount.toLocaleString(
                         "es-CL"
@@ -197,7 +197,7 @@ export default function DetalleCanje() {
               </div>
 
               <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
-                <p className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
+                <p className="text-xl sm:text-xl font-bold text-gray-800 mb-1">
                   {exchange?.stock || "Agotado"}
                 </p>
                 <p className="text-sm text-gray-600">Stock Disponible</p>
@@ -209,7 +209,7 @@ export default function DetalleCanje() {
               <button
                 onClick={() => openPurchaseModal("PIXELCOINS")}
                 disabled={!exchange?.stock || loadingPurchase}
-                className="bg-gray-800 hover:bg-gray-900 text-white py-3 px-6
+                className="bg-rosa hover:bg-rosa/90 text-white py-3 px-6
                           rounded-xl font-medium transition-all duration-300
                           disabled:opacity-50 disabled:cursor-not-allowed
                           transform hover:scale-[1.02]"
@@ -220,7 +220,7 @@ export default function DetalleCanje() {
               <button
                 onClick={() => openPurchaseModal("MONEY")}
                 disabled={!exchange?.stock || loadingPurchase}
-                className="bg-rosa hover:bg-rosa/90 text-white py-3 px-6
+                className="bg-gray-800 hover:bg-gray-900 text-white py-3 px-6
                           rounded-xl font-medium transition-all duration-300
                           disabled:opacity-50 disabled:cursor-not-allowed
                           transform hover:scale-[1.02]"

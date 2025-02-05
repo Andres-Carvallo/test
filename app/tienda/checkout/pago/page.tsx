@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const Pago = () => {
   return (
-    <div className="container pb-16 pt-8">
+    <div className="pb-16 pt-8">
       <CheckoutPago />
     </div>
   );
