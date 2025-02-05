@@ -99,7 +99,7 @@ ol {
 }
 
 @layer base {
-  :root  {
+  :root {
     --background: 125 100% 100%;
     --foreground: 125 5% 10%;
     --card: 125 50% 100%;
@@ -121,7 +121,7 @@ ol {
     --ring: 125 0% 0%;
     --radius: 0.5rem;
   }
-  .dark  {
+  .dark {
     --background: 125 50% 10%;
     --foreground: 125 5% 100%;
     --card: 125 50% 10%;
@@ -142,7 +142,7 @@ ol {
     --input: 125 30% 50%;
     --ring: 125 0% 0%;
     --radius: 0.5rem;
-  }  
+  }
 }
 
 /* Estilos para ReactQuill */
@@ -167,6 +167,18 @@ ol {
 .ql-editor {
   min-height: 150px;
   font-size: 0.875rem;
+}
+
+/* Estilos específicos para la descripción en las cards */
+.prose .ql-editor {
+  font-size: 0.75rem !important; /* Tamaño más pequeño para el texto */
+  line-height: 1.2 !important; /* Altura de línea más compacta */
+  min-height: auto !important; /* Permitir altura automática */
+}
+
+.prose .ql-editor p {
+  margin: 0 !important; /* Eliminar márgenes entre párrafos */
+  font-size: 0.75rem !important;
 }
 
 /* Ajustar el margen inferior del contenedor del editor */
