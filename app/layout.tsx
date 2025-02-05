@@ -20,6 +20,7 @@ import { NavbarProvider } from "./Context/NavbarContext";
 import { AuthProvider } from "./Context/AuthContext";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
 import GoogleAnalytics from "@/components/Core/Google/Analytics";
+import { useRouter, usePathname } from "next/navigation";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -60,6 +61,9 @@ export default function RootLayout({
 }>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [siteStatus, setSiteStatus] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const ActiveSiteCheck = async () => {
@@ -68,7 +72,15 @@ export default function RootLayout({
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/sites/${id}`
         );
-        console.log(response.data);
+        setSiteStatus(response.data.site.statusCode);
+
+        if (
+          response.data.site.statusCode === "SUBSCRIPTION_PENDING" &&
+          !pathname.startsWith("/admin") &&
+          !pathname.startsWith("/dashboard")
+        ) {
+          router.push("/subscription-pending");
+        }
       } catch (error) {
         setError(error as Error);
       } finally {
@@ -76,7 +88,7 @@ export default function RootLayout({
       }
     };
     ActiveSiteCheck();
-  }, []);
+  }, [router, pathname]);
 
   return (
     <html
@@ -84,7 +96,6 @@ export default function RootLayout({
       className="light"
     >
       <Head>
-        
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
@@ -123,10 +134,12 @@ export default function RootLayout({
       <body
         className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} `}
       >
-        <GoogleAnalytics          GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""}        />
+        <GoogleAnalytics
+          GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""}
+        />
         <AuthProvider>
           <RevalidationProvider>
-           {/*  <MarqueeTOP /> */}
+            {/*  <MarqueeTOP /> */}
             <NavbarProvider>
               <APIContextProvider SiteId={SiteId}>
                 <Toaster />

@@ -89,7 +89,7 @@ const Hero05BO: React.FC = () => {
     newServiceSubtitle: "NUEVO",
     newServiceDescription: "Incluye baño relajante y masaje",
     primaryButtonText: "Reserva tu cita",
-    secondaryButtonText: "Nuestros servicios"
+    secondaryButtonText: "Nuestros servicios",
   });
 
   const [mainImage, setMainImage] = useState<string | null>(null);
@@ -128,12 +128,17 @@ const Hero05BO: React.FC = () => {
     try {
       const additionalInfo = JSON.parse(data.buttonText);
       setAdditionalData({
-        subtitle: additionalInfo.subtitle || "Peluquería canina de especialidad",
+        subtitle:
+          additionalInfo.subtitle || "Peluquería canina de especialidad",
         newServiceTitle: additionalInfo.newServiceTitle || "Spa Day Canino",
         newServiceSubtitle: additionalInfo.newServiceSubtitle || "NUEVO",
-        newServiceDescription: additionalInfo.newServiceDescription || "Incluye baño relajante y masaje",
-        primaryButtonText: additionalInfo.primaryButtonText || "Reserva tu cita",
-        secondaryButtonText: additionalInfo.secondaryButtonText || "Nuestros servicios"
+        newServiceDescription:
+          additionalInfo.newServiceDescription ||
+          "Incluye baño relajante y masaje",
+        primaryButtonText:
+          additionalInfo.primaryButtonText || "Reserva tu cita",
+        secondaryButtonText:
+          additionalInfo.secondaryButtonText || "Nuestros servicios",
       });
     } catch (e) {
       console.error("Error parsing additional data:", e);
@@ -142,8 +147,12 @@ const Hero05BO: React.FC = () => {
 
     setContent({
       ...parsedContent,
-      title: parsedContent.title || "Rosamonte, el lugar indicado para el cuidado de tu mascota",
-      landingText: parsedContent.landingText || "Un lugar donde pueden estar seguros de que nosotras amaremos y respetaremos a tu perrin...",
+      title:
+        parsedContent.title ||
+        "Rosamonte, el lugar indicado para el cuidado de tu mascota",
+      landingText:
+        parsedContent.landingText ||
+        "Un lugar donde pueden estar seguros de que nosotras amaremos y respetaremos a tu perrin...",
       buttonLink: parsedContent.buttonLink || "/servicios",
       mainImageLink: parsedContent.mainImageLink || "",
       orderNumber: parsedContent.orderNumber || 1,
@@ -231,15 +240,24 @@ const Hero05BO: React.FC = () => {
 
       // Aseguramos la estructura correcta pero manteniendo valores existentes
       const defaultData = {
-        title: content.title || "Rosamonte, el lugar indicado para el cuidado de tu mascota",
-        landingText: content.landingText || "Un lugar donde pueden estar seguros de que nosotras amaremos y respetaremos a tu perrin...",
+        title:
+          content.title ||
+          "Rosamonte, el lugar indicado para el cuidado de tu mascota",
+        landingText:
+          content.landingText ||
+          "Un lugar donde pueden estar seguros de que nosotras amaremos y respetaremos a tu perrin...",
         buttonText: JSON.stringify({
-          subtitle: additionalData.subtitle || "Peluquería canina de especialidad",
+          subtitle:
+            additionalData.subtitle || "Peluquería canina de especialidad",
           newServiceTitle: additionalData.newServiceTitle || "Spa Day Canino",
           newServiceSubtitle: additionalData.newServiceSubtitle || "NUEVO",
-          newServiceDescription: additionalData.newServiceDescription || "Incluye baño relajante y masaje",
-          primaryButtonText: additionalData.primaryButtonText || "Reserva tu cita",
-          secondaryButtonText: additionalData.secondaryButtonText || "Nuestros servicios"
+          newServiceDescription:
+            additionalData.newServiceDescription ||
+            "Incluye baño relajante y masaje",
+          primaryButtonText:
+            additionalData.primaryButtonText || "Reserva tu cita",
+          secondaryButtonText:
+            additionalData.secondaryButtonText || "Nuestros servicios",
         }),
         buttonLink: content.buttonLink || "/servicios",
         mainImageLink: content.mainImageLink || "",
@@ -371,7 +389,7 @@ const Hero05BO: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto mt-12">
       <h3 className="text-lg font-semibold mb-4">Vista Previa</h3>
-      
+
       {/* Vista previa del Hero Section */}
       <section className="py-24 bg-white border rounded-lg mb-12">
         <div className="max-w-7xl mx-auto px-4">
@@ -385,9 +403,7 @@ const Hero05BO: React.FC = () => {
                   {content.title}
                 </h1>
               </div>
-              <p className="text-lg text-gray-600">
-                {content.landingText}
-              </p>
+              <p className="text-lg text-gray-600">{content.landingText}</p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <button className="bg-[#81C4BA] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all">
                   {additionalData.primaryButtonText}
@@ -400,7 +416,11 @@ const Hero05BO: React.FC = () => {
 
             <div className="relative">
               <img
-                src={mainImage || content.mainImage.data || "https://placedog.net/800/600"}
+                src={
+                  mainImage ||
+                  content.mainImage.data ||
+                  "https://placedog.net/800/600"
+                }
                 alt="Imagen principal"
                 className="rounded shadow-xl w-full h-auto"
               />
@@ -421,7 +441,7 @@ const Hero05BO: React.FC = () => {
       </section>
 
       <h3 className="text-lg font-semibold mb-4">Editar Hero Section</h3>
-      
+
       <form
         onSubmit={handleSubmit}
         className="space-y-6"
@@ -460,7 +480,9 @@ const Hero05BO: React.FC = () => {
           </label>
           <textarea
             value={content.landingText}
-            onChange={(e) => setContent({ ...content, landingText: e.target.value })}
+            onChange={(e) =>
+              setContent({ ...content, landingText: e.target.value })
+            }
             className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
             rows={4}
             placeholder="Descripción principal..."
@@ -475,7 +497,12 @@ const Hero05BO: React.FC = () => {
             <input
               type="text"
               value={additionalData.primaryButtonText}
-              onChange={(e) => setAdditionalData({ ...additionalData, primaryButtonText: e.target.value })}
+              onChange={(e) =>
+                setAdditionalData({
+                  ...additionalData,
+                  primaryButtonText: e.target.value,
+                })
+              }
               className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
             />
           </div>
@@ -486,7 +513,12 @@ const Hero05BO: React.FC = () => {
             <input
               type="text"
               value={additionalData.secondaryButtonText}
-              onChange={(e) => setAdditionalData({ ...additionalData, secondaryButtonText: e.target.value })}
+              onChange={(e) =>
+                setAdditionalData({
+                  ...additionalData,
+                  secondaryButtonText: e.target.value,
+                })
+              }
               className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
             />
           </div>
@@ -495,12 +527,17 @@ const Hero05BO: React.FC = () => {
         <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Etiqueta "Nuevo"
+              Etiqueta Nuevo
             </label>
             <input
               type="text"
               value={additionalData.newServiceSubtitle}
-              onChange={(e) => setAdditionalData({ ...additionalData, newServiceSubtitle: e.target.value })}
+              onChange={(e) =>
+                setAdditionalData({
+                  ...additionalData,
+                  newServiceSubtitle: e.target.value,
+                })
+              }
               className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
             />
           </div>
@@ -511,7 +548,12 @@ const Hero05BO: React.FC = () => {
             <input
               type="text"
               value={additionalData.newServiceTitle}
-              onChange={(e) => setAdditionalData({ ...additionalData, newServiceTitle: e.target.value })}
+              onChange={(e) =>
+                setAdditionalData({
+                  ...additionalData,
+                  newServiceTitle: e.target.value,
+                })
+              }
               className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
             />
           </div>
@@ -522,7 +564,12 @@ const Hero05BO: React.FC = () => {
             <input
               type="text"
               value={additionalData.newServiceDescription}
-              onChange={(e) => setAdditionalData({ ...additionalData, newServiceDescription: e.target.value })}
+              onChange={(e) =>
+                setAdditionalData({
+                  ...additionalData,
+                  newServiceDescription: e.target.value,
+                })
+              }
               className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
             />
           </div>

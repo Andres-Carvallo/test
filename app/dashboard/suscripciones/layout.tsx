@@ -69,6 +69,7 @@ export default function RootLayout({
 
   return (
     <>
+      <title>Suscripciones</title>
       <div>{children}</div>
     </>
   );
