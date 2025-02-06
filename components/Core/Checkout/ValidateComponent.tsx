@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Loader from "@/components/common/Loader";
 interface ValidateComponentProps {
   orderId: string;
-  token_ws: string;
+  token_ws?: string; // Hacemos el token_ws opcional
 }
 
 const ValidateComponent: React.FC<ValidateComponentProps> = ({
@@ -20,14 +20,29 @@ const ValidateComponent: React.FC<ValidateComponentProps> = ({
       const handleValidate = async () => {
         setIsLoading(true);
 
-        const data = {
-          statusCode: "PAYMENT_COMPLETED",
-          confirmTransactionInfo: {
-            paymentGatewayToken: token_ws,
-          },
-        };
-
         try {
+          // Verificar si es una anulación (TBK_TOKEN presente)
+          const searchParams = new URLSearchParams(window.location.search);
+          const tbkToken = searchParams.get("TBK_TOKEN");
+
+          if (tbkToken) {
+            console.log("Anulación detectada, redirigiendo a pago...");
+            router.push(`/tienda/checkout/pago?orderId=${orderId}`);
+            return;
+          }
+
+          // Si no es anulación, proceder con la validación normal
+          if (!token_ws) {
+            throw new Error("No se encontró token de validación");
+          }
+
+          const data = {
+            statusCode: "PAYMENT_COMPLETED",
+            confirmTransactionInfo: {
+              paymentGatewayToken: token_ws,
+            },
+          };
+
           console.log(data, "data incoming");
           const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
           const response = await fetch(
@@ -41,29 +56,37 @@ const ValidateComponent: React.FC<ValidateComponentProps> = ({
             }
           );
 
-          if (!response.ok) {
-            throw new Error(`API call failed with status ${response.status}`);
+          // Leemos la respuesta JSON una sola vez
+          const responseData = await response.json();
+          console.log("Response data:", responseData);
+
+          // Verificamos el código de respuesta de la API
+          if (responseData.code === 0) {
+            console.log("Transacción exitosa!");
+            router.push(`/tienda/checkout/ok/${orderId}`);
+            return;
           }
 
-          console.log("Data sent successfully!");
-          console.log(response);
-          router.push(`/tienda/checkout/ok/${orderId}`);
+          // Si el código no es 0, lanzamos un error con el mensaje de la API
+          throw new Error(responseData.message || "Error en la transacción");
         } catch (error) {
-          console.error("Error sending data:", error);
+          console.error("Error en la validación:", error);
+          // Esperamos un momento antes de redirigir en caso de error
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           router.push(`/tienda/checkout/error?orderId=${orderId}`);
         } finally {
           setIsLoading(false);
+          setIsValidationDone(true);
         }
       };
 
-      handleValidate(); // Call the validation function when the component mounts
-      setIsValidationDone(true);
+      handleValidate();
     }
-  }, [isValidationDone, orderId, router, token_ws]); // Empty dependency array ensures the effect runs only once on mount
+  }, [isValidationDone, orderId, router, token_ws]);
 
   return (
     <div>
-      <div className=" text-center min-h-[70vh]  flex flex-col items-center justify-center">
+      <div className="text-center min-h-[70vh] flex flex-col items-center justify-center">
         <div>
           <div role="status">
             <svg

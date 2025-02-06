@@ -25,6 +25,21 @@ interface ZoneData {
   communes: { id: string; name: string }[];
 }
 
+interface Region {
+  id: string;
+  name: string;
+}
+
+interface Commune {
+  id: string;
+  name: string;
+}
+
+interface CommuneWithRegion extends Commune {
+  regionId: string;
+  regionName: string;
+}
+
 function ZonasRepartos() {
   const endOfPageRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
@@ -33,11 +48,13 @@ function ZonasRepartos() {
   const [error, setError] = useState<Error | null>(null);
   const [zonas, setZonas] = useState<Zone[]>([]);
   const { addToCartHandler, products, setProducts } = useAPI();
-  const [regions, setRegions] = useState([]);
-  const [communes, setCommunes] = useState<{ id: any }[]>([]);
+  const [regions, setRegions] = useState<Region[]>([]);
+  const [communes, setCommunes] = useState<Commune[]>([]);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCommune, setSelectedCommune] = useState("");
-  const [selectedCommunes, setSelectedCommunes] = useState<any[]>([]);
+  const [selectedCommunes, setSelectedCommunes] = useState<CommuneWithRegion[]>(
+    []
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [zoneToDelete, setZoneToDelete] = useState(null);
@@ -51,7 +68,7 @@ function ZonasRepartos() {
     communes: [],
   });
 
-  const showDeleteModal = (zoneId:any) => {
+  const showDeleteModal = (zoneId: any) => {
     setZoneToDelete(zoneId);
     setIsDeleteModalVisible(true);
   };
@@ -84,9 +101,6 @@ function ZonasRepartos() {
       hideDeleteModal();
     }
   };
-
-
-
 
   useEffect(() => {
     if (selectedCommunes.length > 0) {
@@ -362,14 +376,23 @@ function ZonasRepartos() {
       const selectedCommuneObj = communes.find(
         (commune) => commune.id === selectedCommune
       );
-      if (selectedCommuneObj) {
+      const selectedRegionObj = regions.find(
+        (region) => region.id === selectedRegion
+      );
+      if (selectedCommuneObj && selectedRegionObj) {
         const isCommuneAlreadySelected = selectedCommunes.some(
-          (c: { id: string; name: string }) => c.id === selectedCommuneObj.id
+          (c) => c.id === selectedCommuneObj.id
         );
         if (!isCommuneAlreadySelected) {
+          const communeWithRegion: CommuneWithRegion = {
+            id: selectedCommuneObj.id,
+            name: selectedCommuneObj.name,
+            regionId: selectedRegionObj.id,
+            regionName: selectedRegionObj.name,
+          };
           setSelectedCommunes((prevCommunes) => [
             ...prevCommunes,
-            selectedCommuneObj,
+            communeWithRegion,
           ]);
         }
       }
@@ -384,23 +407,36 @@ function ZonasRepartos() {
   };
   const addAllCommunes = () => {
     if (communes.length > 0) {
-      const newCommunes = communes.filter(
-        (commune) =>
-          !selectedCommunes.some(
-            (selectedCommune) => selectedCommune.id === commune.id
-          )
+      const selectedRegionObj = regions.find(
+        (region) => region.id === selectedRegion
       );
 
-      if (newCommunes.length > 0) {
-        setSelectedCommunes((prevCommunes) => [
-          ...prevCommunes,
-          ...newCommunes,
-        ]);
-        toast.success("Todas las comunas de la región han sido agregadas.");
-      } else {
-        toast.error(
-          "Todas las comunas de esta región ya han sido seleccionadas."
-        );
+      if (selectedRegionObj) {
+        const newCommunes: CommuneWithRegion[] = communes
+          .filter(
+            (commune) =>
+              !selectedCommunes.some(
+                (selectedCommune) => selectedCommune.id === commune.id
+              )
+          )
+          .map((commune) => ({
+            id: commune.id,
+            name: commune.name,
+            regionId: selectedRegionObj.id,
+            regionName: selectedRegionObj.name,
+          }));
+
+        if (newCommunes.length > 0) {
+          setSelectedCommunes((prevCommunes) => [
+            ...prevCommunes,
+            ...newCommunes,
+          ]);
+          toast.success("Todas las comunas de la región han sido agregadas.");
+        } else {
+          toast.error(
+            "Todas las comunas de esta región ya han sido seleccionadas."
+          );
+        }
       }
     } else {
       toast.error("No hay comunas para agregar en esta región.");
@@ -431,6 +467,17 @@ function ZonasRepartos() {
         }
       );
       const currencyCodeId = currencyResponse.data.currencyCodes[0].id;
+
+      // Crear el array de comunas con la información de región que ya viene en la respuesta
+      const communesWithRegions: CommuneWithRegion[] = zone.communes.map(
+        (commune: any) => ({
+          id: commune.id,
+          name: commune.name,
+          regionId: commune.region.id,
+          regionName: commune.region.name,
+        })
+      );
+
       setIsEditing(true);
       productsRef.current?.scrollIntoView({ behavior: "smooth" });
       setZoneData({
@@ -440,12 +487,9 @@ function ZonasRepartos() {
         description: zone.description,
         amount: zone.amount,
         statusCode: zone.statusCode,
-        communes: zone.communes.map((commune: any) => ({
-          id: commune.id,
-          name: commune.name,
-        })),
+        communes: zone.communes,
       });
-      setSelectedCommunes(zone.communes);
+      setSelectedCommunes(communesWithRegions);
     } catch (error) {
       console.error("Error editing zone:", error);
       toast.error("Error al editar la zona.");
@@ -509,7 +553,7 @@ function ZonasRepartos() {
     <>
       <title>Zonas de Repartos</title>
       <section className="p-10">
-      <FreeShippingOption />
+        <FreeShippingOption />
         <div className="shadow-md  rounded-lg p-4 bg-white my-6 overflow-x-auto">
           <div
             ref={ZonasRef}
@@ -823,38 +867,68 @@ function ZonasRepartos() {
             <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
               <div>Comunas Seleccionadas:</div>
             </div>
-            <div>
-              {selectedCommunes.map((commune) => (
-                <div
-                  key={commune.id}
-                  className="inline-block mr-2 mb-2 p-2 border border-dashed border-dark rounded-lg"
-                >
-                  <div className="flex">
-                    <p className="font-bold uppercase text-md">
-                      {commune.name}
-                    </p>
-                    <button
-                      onClick={() => removeCommune(commune.id)}
-                      className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-4 h-4"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                      Región
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Comuna
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {selectedCommunes
+                    .sort((a, b) =>
+                      (a.regionName || "").localeCompare(b.regionName || "")
+                    )
+                    .map((commune) => (
+                      <tr key={commune.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {commune.regionName || "Región no disponible"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {commune.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            onClick={() => removeCommune(commune.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                              />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
           </div>
           <div className="mt-4">
@@ -867,7 +941,7 @@ function ZonasRepartos() {
             </button>
           </div>
         </div>
-              {/* Modal de confirmación de eliminación */}
+        {/* Modal de confirmación de eliminación */}
         {isDeleteModalVisible && (
           <div className="fixed z-10 inset-0 overflow-y-auto">
             <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

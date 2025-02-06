@@ -31,7 +31,7 @@ const FreeShippingOption: React.FC<any> = ({}) => {
         );
 
         if (option) {
-          const isEnabled = option.value !== "99999999";
+          const isEnabled = option.value !== null;
           setEnableMinAmount(isEnabled);
           setFreeShippingOption({
             id: option.id,
@@ -60,7 +60,7 @@ const FreeShippingOption: React.FC<any> = ({}) => {
 
   const handleToggleChange = async (checked: boolean) => {
     setEnableMinAmount(checked);
-    
+
     if (!checked) {
       // Si se desactiva el switch, actualizar automáticamente
       if (!freeShippingOption) return;
@@ -69,7 +69,7 @@ const FreeShippingOption: React.FC<any> = ({}) => {
         await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/options/${freeShippingOption.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
-            value: "99999999",
+            value: null,
           },
           {
             headers: {
@@ -78,10 +78,12 @@ const FreeShippingOption: React.FC<any> = ({}) => {
             },
           }
         );
-        toast.success("Envío gratis sin monto mínimo configurado exitosamente.");
+        toast.success(
+          "Envío gratis sin monto mínimo configurado exitosamente."
+        );
         setFreeShippingOption((prev) => ({
           id: prev ? prev.id : "",
-          value: "99999999",
+          value: null,
         }));
       } catch (error) {
         console.error("Error updating free shipping option:", error);
@@ -95,7 +97,7 @@ const FreeShippingOption: React.FC<any> = ({}) => {
   const handleUpdate = async () => {
     if (!freeShippingOption) return;
 
-    const valueToSend = enableMinAmount ? newValue : "99999999";
+    const valueToSend = enableMinAmount ? newValue : null;
 
     try {
       await axios.put(
