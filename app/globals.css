@@ -152,7 +152,6 @@ ol {
 }
 
 .ql-container {
-  min-height: 150px;
   border-bottom-left-radius: 0.375rem;
   border-bottom-right-radius: 0.375rem;
 }
@@ -162,11 +161,6 @@ ol {
   border-top-right-radius: 0.375rem;
   background-color: #f9fafb;
   border-color: #e5e7eb;
-}
-
-.ql-editor {
-  min-height: 150px;
-  font-size: 0.875rem;
 }
 
 /* Estilos específicos para la descripción en las cards */
@@ -184,4 +178,13 @@ ol {
 /* Ajustar el margen inferior del contenedor del editor */
 .quill-container {
   margin-bottom: 2.5rem;
+}
+
+#descriptionTeindaPixelup .ql-editor p {
+  line-height: 1.2 !important;
+  font-size: 13px !important;
+}
+
+#descriptionTeindaPixelup .ql-editor {
+  min-height: 60px !important;
 }

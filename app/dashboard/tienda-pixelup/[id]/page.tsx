@@ -118,34 +118,6 @@ export default function DetalleCanje() {
 
   return (
     <section className="min-h-screen bg-gray-50">
-      {/* Header mejorado */}
-      <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 text-white py-8">
-        <div className="mx-auto px-4">
-          <div className="flex items-center">
-            <Link
-              href="/dashboard/tienda-pixelup/"
-              className="inline-flex items-center px-4 py-2 bg-white/20 
-                       hover:bg-white/30 text-white rounded-lg transition-colors"
-            >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              Volver a la tienda
-            </Link>
-          </div>
-        </div>
-      </div>
-
       {/* Contenido principal mejorado */}
       <div className="px-auto pb-12">
         <div className="w-full bg-white">
@@ -161,82 +133,118 @@ export default function DetalleCanje() {
             <img
               src={exchange?.companyImageUrl}
               alt={exchange?.companyName}
-              className="absolute -bottom-8 left-1/2 transform -translate-x-1/2
-                       w-24 h-24 rounded-2xl border-2 border-gray-50 shadow-md 
+              className="absolute -bottom-6 sm:-bottom-8 left-1/2 transform -translate-x-1/2
+                       w-16 h-16 sm:w-24 sm:h-24 rounded-2xl border-2 border-gray-50 shadow-md 
                        bg-white object-contain p-2"
             />
+
+            {/* Botón volver reubicado */}
+            <Link
+              href="/dashboard/tienda-pixelup/"
+              className="absolute top-4 left-4 inline-flex items-center px-3 py-2 
+                       bg-black/30 hover:bg-black/40 text-white rounded-lg 
+                       transition-colors backdrop-blur-sm text-sm"
+            >
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Volver a la tienda
+            </Link>
           </div>
 
           {/* Contenido */}
-          <div className="p-8 pt-16">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">
-              {exchange?.name}
-            </h1>
-            <p className="text-lg text-gray-600 mb-8 text-center">
-              {exchange?.companyName}
-            </p>
-
-            {/* Stats mejorados - Ajustado para móvil */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10">
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
-                <p className="text-xl sm:text-xl font-bold text-rosa mb-1">
-                  {exchange?.creditAmount?.toLocaleString("es-CL")}
-                </p>
-                <p className="text-sm text-gray-600">PixelCoins</p>
+          <div className="p-3 pt-10 sm:p-6 sm:pt-14">
+            <div className="max-w-4xl mx-auto">
+              {/* Header info */}
+              <div className="flex flex-col items-center mb-4">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-800 mb-1 text-center px-2">
+                  {exchange?.name}
+                </h1>
               </div>
 
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
-                <p className="text-xl sm:text-xl font-bold text-gray-800 mb-1">
-                  {exchange?.product?.productPricings?.[0]?.amount
-                    ? `$${exchange.product.productPricings[0].amount.toLocaleString(
-                        "es-CL"
-                      )}`
-                    : "N/A"}
-                </p>
-                <p className="text-sm text-gray-600">Precio CLP</p>
+              {/* Stats y botones en un contenedor */}
+              <div className="bg-gray-100 rounded-xl p-3 sm:p-4 mb-6">
+                {/* Stats mejorados - más compactos */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="bg-white p-2 sm:p-3 rounded-lg text-center">
+                    <p className="text-base sm:text-lg font-bold text-rosa">
+                      {exchange?.creditAmount?.toLocaleString("es-CL")}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-gray-600">
+                      PixelCoins
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-2 sm:p-3 rounded-lg text-center">
+                    <p className="text-base sm:text-lg font-bold text-gray-800">
+                      {exchange?.product?.productPricings?.[0]?.amount
+                        ? `$${exchange.product.productPricings[0].amount.toLocaleString(
+                            "es-CL"
+                          )}`
+                        : "N/A"}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-gray-600">
+                      Precio CLP
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-2 sm:p-3 rounded-lg text-center">
+                    <p className="text-base sm:text-lg font-bold text-gray-800">
+                      {exchange?.stock || "Agotado"}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-gray-600">
+                      Stock Disponible
+                    </p>
+                  </div>
+                </div>
+
+                {/* Botones de acción - más compactos */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  <button
+                    onClick={() => openPurchaseModal("PIXELCOINS")}
+                    disabled={!exchange?.stock || loadingPurchase}
+                    className="bg-rosa hover:bg-rosa/90 text-white py-2 sm:py-2.5 px-4
+                              rounded-lg font-medium transition-all duration-300
+                              disabled:opacity-50 disabled:cursor-not-allowed
+                              text-xs sm:text-sm hover:shadow-lg hover:scale-105"
+                  >
+                    {loadingPurchase
+                      ? "Procesando..."
+                      : "Canjear con PixelCoins"}
+                  </button>
+
+                  <button
+                    onClick={() => openPurchaseModal("MONEY")}
+                    disabled={!exchange?.stock || loadingPurchase}
+                    className="bg-gray-800 hover:bg-gray-900 text-white py-2 sm:py-2.5 px-4
+                              rounded-lg font-medium transition-all duration-300
+                              disabled:opacity-50 disabled:cursor-not-allowed
+                              text-xs sm:text-sm hover:shadow-lg hover:scale-105"
+                  >
+                    {loadingPurchase ? "Procesando..." : "Comprar"}
+                  </button>
+                </div>
               </div>
 
-              <div className="bg-gray-50 p-4 sm:p-6 rounded-xl text-center">
-                <p className="text-xl sm:text-xl font-bold text-gray-800 mb-1">
-                  {exchange?.stock || "Agotado"}
-                </p>
-                <p className="text-sm text-gray-600">Stock Disponible</p>
+              {/* Descripción con borde superior sutil */}
+              <div className="prose max-w-none pt-4 border-t border-gray-100">
+                <ReactQuill
+                  value={exchange?.extendedDescription}
+                  readOnly={true}
+                  theme="bubble"
+                  className="text-gray-700"
+                />
               </div>
-            </div>
-
-            {/* Botones de acción - Ajustados para móvil */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-12">
-              <button
-                onClick={() => openPurchaseModal("PIXELCOINS")}
-                disabled={!exchange?.stock || loadingPurchase}
-                className="bg-rosa hover:bg-rosa/90 text-white py-3 px-6
-                          rounded-xl font-medium transition-all duration-300
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                          transform hover:scale-[1.02]"
-              >
-                {loadingPurchase ? "Procesando..." : "Canjear con PixelCoins"}
-              </button>
-
-              <button
-                onClick={() => openPurchaseModal("MONEY")}
-                disabled={!exchange?.stock || loadingPurchase}
-                className="bg-gray-800 hover:bg-gray-900 text-white py-3 px-6
-                          rounded-xl font-medium transition-all duration-300
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                          transform hover:scale-[1.02]"
-              >
-                {loadingPurchase ? "Procesando..." : "Comprar"}
-              </button>
-            </div>
-
-            {/* Descripción */}
-            <div className="prose max-w-none">
-              <ReactQuill
-                value={exchange?.extendedDescription}
-                readOnly={true}
-                theme="bubble"
-                className="text-gray-700"
-              />
             </div>
           </div>
         </div>

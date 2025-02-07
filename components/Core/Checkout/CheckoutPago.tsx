@@ -52,59 +52,68 @@ function CheckoutPago() {
 
   const applyDiscount = async () => {
     try {
-      setLoading(true); // Indicar que está cargando
+      setLoading(true);
 
-      const response = await axios.post(
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}/discount-coupons?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
-          code: discountCode,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code: discountCode,
+          }),
         }
       );
+      const data = await response.json();
 
-      if (response.data.code === 0) {
-        toast.success("Descuento aplicado con éxito");
+      if (data.code === 0) {
+        // Verificar que el descuento se aplicó correctamente
+        const orderResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        const orderData = await orderResponse.json();
 
-        // Intentar obtener la orden actualizada hasta 3 veces
-        let attempts = 0;
-        const maxAttempts = 3;
-        let success = false;
-
-        while (attempts < maxAttempts && !success) {
-          try {
-            // Esperar un poco antes de hacer el fetch
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            const updatedOrder = await obtenerOrdenesId(orderId);
-
-            // Verificar que los datos estén actualizados
-            if (
-              updatedOrder.order.discountCoupons &&
-              updatedOrder.order.discountCoupons.length > 0
-            ) {
-              setOrderDetail(updatedOrder.order);
-              setDiscountApplied(true);
-              success = true;
+        if (orderData.order.totals.discountAmount > 0) {
+          toast.success("Descuento aplicado con éxito");
+          setOrderDetail(orderData.order);
+          setDiscountApplied(true);
+        } else {
+          // Si después de 3 intentos no se actualiza, recargamos la página
+          let attempts = 0;
+          const checkDiscount = async () => {
+            if (attempts >= 3) {
+              window.location.href = window.location.href;
+              return;
             }
-          } catch (error) {
-            console.error("Intento fallido de actualizar la orden:", error);
-          }
-          attempts++;
-        }
 
-        if (!success) {
-          toast.error(
-            "Por favor, recarga la página para ver los cambios aplicados"
-          );
+            const retryResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+            );
+            const retryData = await retryResponse.json();
+
+            if (retryData.order.totals.discountAmount > 0) {
+              toast.success("Descuento aplicado con éxito");
+              setOrderDetail(retryData.order);
+              setDiscountApplied(true);
+            } else {
+              attempts++;
+              setTimeout(checkDiscount, 1000); // Esperar 1 segundo antes de reintentar
+            }
+          };
+
+          checkDiscount();
         }
       } else {
-        toast.error("Error al aplicar el descuento");
+        toast.error("Código de descuento inválido");
         setDiscountApplied(false);
       }
     } catch (error) {
-      toast.error("Error al aplicar el descuento");
       console.error("Error al aplicar el descuento:", error);
+      toast.error("Error al aplicar el descuento");
     } finally {
-      setLoading(false); // Asegurarse de que loading se desactive al terminar
+      setLoading(false);
     }
   };
 
@@ -112,50 +121,58 @@ function CheckoutPago() {
     try {
       setLoading(true);
       const couponId = orderDetail.discountCoupons[0].id;
-      const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}/discount-coupons/${couponId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
 
-      if (response.data.code === 0) {
-        toast.success("Descuento eliminado con éxito");
-
-        // Similar al apply, intentar obtener la orden actualizada
-        let attempts = 0;
-        const maxAttempts = 3;
-        let success = false;
-
-        while (attempts < maxAttempts && !success) {
-          try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-
-            const updatedOrder = await obtenerOrdenesId(orderId);
-
-            // Verificar que los datos estén actualizados (sin descuento)
-            if (
-              !updatedOrder.order.discountCoupons ||
-              updatedOrder.order.discountCoupons.length === 0
-            ) {
-              setOrderDetail(updatedOrder.order);
-              setDiscountCode("");
-              success = true;
-            }
-          } catch (error) {
-            console.error("Intento fallido de actualizar la orden:", error);
-          }
-          attempts++;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}/discount-coupons/${couponId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          method: "DELETE",
         }
+      );
+      const data = await response.json();
 
-        if (!success) {
-          toast.error(
-            "Por favor, recarga la página para ver los cambios aplicados"
-          );
+      if (data.code === 0) {
+        // Verificar que el descuento se eliminó correctamente
+        const orderResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        const orderData = await orderResponse.json();
+
+        if (orderData.order.totals.discountAmount === 0) {
+          toast.success("Descuento eliminado con éxito");
+          setOrderDetail(orderData.order);
+          setDiscountApplied(false);
+        } else {
+          // Si después de 3 intentos no se actualiza, recargamos la página
+          let attempts = 0;
+          const checkDiscountRemoval = async () => {
+            if (attempts >= 3) {
+              window.location.href = window.location.href;
+              return;
+            }
+
+            const retryResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+            );
+            const retryData = await retryResponse.json();
+
+            if (retryData.order.totals.discountAmount === 0) {
+              toast.success("Descuento eliminado con éxito");
+              setOrderDetail(retryData.order);
+              setDiscountApplied(false);
+            } else {
+              attempts++;
+              setTimeout(checkDiscountRemoval, 1000); // Esperar 1 segundo antes de reintentar
+            }
+          };
+
+          checkDiscountRemoval();
         }
       } else {
         toast.error("Error al eliminar el descuento");
       }
     } catch (error) {
-      toast.error("Error al eliminar el descuento");
       console.error("Error al eliminar el descuento:", error);
+      toast.error("Error al eliminar el descuento");
     } finally {
       setLoading(false);
     }
@@ -170,47 +187,60 @@ function CheckoutPago() {
 
   const handleSubmitOrder = async () => {
     try {
-      const paymentGatewayResponse = await axios.get(
+      const paymentGatewayResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/payment-gateways?statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      const paymentGateways = paymentGatewayResponse.data.paymentGateways;
-      const activePaymentGatewayId = paymentGateways[0].id; // Supongamos que tomamos el primer medio de pago
+      const paymentGatewayData = await paymentGatewayResponse.json();
+      const paymentGateways = paymentGatewayData.paymentGateways;
+      const activePaymentGatewayId = paymentGateways[0].id;
 
-      // Cuarta solicitud para actualizar el estado de la orden con el medio de pago correspondiente
-      const updateOrderUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
-      const updateOrderResponse = await axios.put(updateOrderUrl, {
-        statusCode: "PAYMENT_PENDING",
-        initTransactionInfo: {
-          paymentGatewayId: activePaymentGatewayId,
-          errorUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`,
-          returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/validate?orderId=${orderId}`,
-        },
-      });
+      const updateOrderResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            statusCode: "PAYMENT_PENDING",
+            initTransactionInfo: {
+              paymentGatewayId: activePaymentGatewayId,
+              errorUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`,
+              returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/validate?orderId=${orderId}`,
+            },
+          }),
+        }
+      );
+      const updateOrderData = await updateOrderResponse.json();
 
-      if (updateOrderResponse.data.code === 0) {
+      if (updateOrderData.code === 0) {
         toast(
           "¡Datos enviados correctamente y orden actualizada con medio de pago!"
         );
 
         setTransactionData({
-          token: updateOrderResponse.data.transaction.token,
-          url: updateOrderResponse.data.transaction.url,
+          token: updateOrderData.transaction.token,
+          url: updateOrderData.transaction.url,
         });
+
+        ////////////////////////////////////////////////////
+        ////////////////TRANSBANK////////////////////////////
+        ////////////////////////////////////////////////////
+
+        /*     alert(updateOrderResponse.data.transaction.token); */
 
         // Marca la orden como enviada
         setOrderSubmitted(true);
       } else {
         console.error(
           "Error al actualizar la orden con el medio de pago:",
-          updateOrderResponse.data
+          updateOrderData
         );
         toast.error("Error al actualizar la orden con el medio de pago");
-        // Redirigir a la página de error
         window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`;
       }
     } catch (error) {
       console.error("Error al enviar la orden:", error);
-      // Redirigir a la página de error
       window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/checkout/error?orderId=${orderId}`;
     }
   };

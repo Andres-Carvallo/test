@@ -247,7 +247,7 @@ const ExchangesGrid = () => {
         </div>
       </div>
 
-      <div className="mx-auto px-4 py-16 bg-gradient-to-b from-gray-50 to-white">
+      <div className="mx-auto px-4 pt-8 pb-16 bg-gradient-to-b from-gray-50 to-white">
         {/* Barra de búsqueda y filtros mejorados */}
         <div className="mb-12 space-y-4 max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-4">
@@ -257,14 +257,14 @@ const ExchangesGrid = () => {
                 placeholder="Buscar por nombre o empresa..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-6 py-4 border-2 border-gray-200 rounded-xl
+                className="w-full text-[13px] px-6 py-4 border-2 border-gray-200 rounded-xl
                          focus:outline-none focus:border-rosa transition-all duration-300
                          shadow-sm text-gray-700 bg-white/80 backdrop-blur-sm
                          hover:border-rosa/50"
               />
               <span className="absolute right-4 top-1/2 transform -translate-y-1/2">
                 <svg
-                  className="w-5 h-5 text-rosa"
+                  className="w-5 h-5 text-rosa "
                   fill="none"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -300,6 +300,7 @@ const ExchangesGrid = () => {
                 <option
                   key={category.id}
                   value={category.id}
+                  className="text-[13px]"
                 >
                   {category.name}
                 </option>
@@ -374,36 +375,68 @@ const ExchangesGrid = () => {
                       alt={exchange.name}
                       className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-500"
                     />
-                    <img
-                      src={exchange.companyImageUrl}
-                      alt={exchange.companyName}
-                      className="absolute -bottom-6 left-1/2 transform -translate-x-1/2
-                      w-16 h-16 rounded-xl border-4 border-white shadow-lg bg-white 
-                      object-contain p-1 z-20"
-                    />
+                    <div className="absolute -bottom-6 left-0 right-0 flex items-center justify-between z-20">
+                      <div className="w-full mx-4 flex items-center justify-between bg-gray-100 backdrop-blur-sm rounded-xl px-4 py-2 text-white">
+                        {/* Valor en PixelCoins */}
+                        <div className="flex flex-col items-center">
+                          <span className="text-[12px] font-bold text-rosa">
+                            {exchange.creditAmount.toLocaleString()}
+                          </span>
+                          <span className="text-[10px] text-dark">
+                            PixelCoins
+                          </span>
+                        </div>
+
+                        {/* Logo de la compañía */}
+                        <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-0">
+                          <img
+                            src={exchange.companyImageUrl}
+                            alt={exchange.companyName}
+                            className="w-16 h-16 rounded-xl border-4 border-white shadow-lg bg-white 
+                            object-contain p-1"
+                          />
+                        </div>
+
+                        {/* Valor en CLP */}
+                        <div className="flex flex-col items-center">
+                          <span className="text-[12px] font-bold text-rosa">
+                            ${exchange.creditAmount.toLocaleString()}
+                          </span>
+                          <span className="text-[10px] text-dark">CLP</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="p-4 pt-8">
-                    <h3 className="text-lg font-bold text-center text-gray-800 mb-1 group-hover:text-rosa transition-colors">
-                      {exchange.name}
-                    </h3>
-                    <p className="text-xs text-center text-gray-600 mb-2 font-medium">
-                      {exchange.companyName}
-                    </p>
+                    {/* Encabezado de la card */}
+                    <div className="">
+                      <h3 className="text-[14px] font-semibold text-center text-dark group-hover:text-rosa transition-colors line-clamp-1">
+                        {exchange.name}
+                      </h3>
+                    </div>
 
-                    <div className="prose prose-sm max-w-none">
+                    {/* Descripción del producto */}
+                    <div
+                      id="descriptionTeindaPixelup"
+                      className="mb-4"
+                    >
                       <ReactQuill
                         value={exchange.description}
                         readOnly={true}
                         theme="bubble"
-                        className="text-gray-600 min-h-[80px] max-h-[80px] overflow-hidden"
+                        modules={{ toolbar: false }}
                       />
                     </div>
 
-                    <Link href={`/dashboard/tienda-pixelup/${exchange.id}`}>
+                    {/* Botón de acción */}
+                    <Link
+                      href={`/dashboard/tienda-pixelup/${exchange.id}`}
+                      className="block"
+                    >
                       <button
-                        className="w-full mt-4 bg-gradient-to-r from-gray-800 to-gray-600
-                        text-white font-semibold py-2 px-4 rounded-xl text-sm
+                        className="w-full bg-dark
+                        text-white font-semibold py-3 px-4 rounded-xl text-sm
                         transition-all duration-300 transform hover:scale-[1.02]
                         focus:outline-none focus:ring-2 focus:ring-rosa 
                         focus:ring-opacity-50 shadow-md hover:shadow-lg"

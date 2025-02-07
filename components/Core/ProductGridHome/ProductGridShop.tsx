@@ -7,6 +7,7 @@ import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
 import Loader from "@/components/common/Loader-t";
 import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
+import ProductCard04 from "@/components/PIXELUP/ProductCards/ProductCards04/ProductCards04";
 
 interface ProductGridShopProps {
   initialProducts: any[];
@@ -226,7 +227,8 @@ const ProductGridShop = ({
                   key={product.id}
                   className="flex justify-center"
                 >
-                  <ProductCard01
+                  <ProductCard04
+                    key={product.id}
                     product={product}
                     addToCartHandler={addToCartHandler}
                     isOnSale={product.offers && product.offers.length > 0}

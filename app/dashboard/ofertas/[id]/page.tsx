@@ -24,7 +24,7 @@ type Offer = {
 function DetalleOferta() {
   const { id } = useParams();
   const [expiredOffers, setExpiredOffers] = useState<Offer[]>([]);
-
+  const { triggerRevalidation } = useRevalidation();
   const [sku, setSku] = useState<any[]>([]);
   const [product, setProduct] = useState<any>(null);
   const [currentAttributes, setCurrentAttributes] = useState<
@@ -50,15 +50,6 @@ function DetalleOferta() {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-
-  // Agregar este estado para controlar los acordeones
-  const [activeAccordion, setActiveAccordion] = useState<'active' | 'expired' | null>('active');
-
-  // Agregar un nuevo estado para almacenar los precios de oferta
-  const [currentOfferPrices, setCurrentOfferPrices] = useState<Record<string, number | null>>({});
-
-  // Agregar el hook de revalidación
-  const { triggerRevalidation } = useRevalidation();
 
   const handleVariationSelect = async (variation: any) => {
     console.log("Variación seleccionada:", variation);
@@ -87,6 +78,8 @@ function DetalleOferta() {
   };
 
   const handleModalConfirm = async () => {
+    // Si el producto es variable, usamos el selectedVariation.id
+    // Si no es variable, usamos product.skuId directamente
     const skuId = selectedVariation ? selectedVariation.id : product?.skuId;
 
     if (offerToDelete && skuId) {
@@ -102,19 +95,14 @@ function DetalleOferta() {
         const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${skuId}/offers/${offerToDelete}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
         await axios.delete(url, config);
+        await triggerRevalidation();
 
         console.log("Oferta eliminada exitosamente");
-        toast.success("Oferta eliminada exitosamente");
 
-        // Revalidar el caché después de eliminar
-        await triggerRevalidation(['products']);
-        
         // Recargar la página después de eliminar la oferta
         window.location.reload();
       } catch (error) {
         console.log("Error al eliminar la oferta:", error);
-      } finally {
-        setShowModal(false);
       }
     } else {
       console.log("Faltan datos para eliminar la oferta");
@@ -147,12 +135,10 @@ function DetalleOferta() {
         formattedOffer,
         config
       );
-      
+
+      await triggerRevalidation();
       console.log("Oferta actualizada con éxito:", response.data);
       toast.success("Oferta actualizada exitosamente");
-
-      // Revalidar el caché después de actualizar
-      await triggerRevalidation(['products']);
 
       fetchOffersForProduct(updatedOffer.productId, updatedOffer.skuId);
       setIsOffcanvasOpen(false);
@@ -207,10 +193,9 @@ function DetalleOferta() {
         const attributesByVariation: Record<string, any[]> = {};
         const pricesByVariation: Record<string, number | null> = {};
         const offersByVariation: Record<string, boolean> = {};
-        const offerPricesByVariation: Record<string, number | null> = {};
 
         const fetchTasks = filteredVariations.map(async (variation: any) => {
-          const [attributes, price, [hasOffer, offerPrice]] = await Promise.all([
+          const [attributes, price, hasOffer] = await Promise.all([
             fetchAttributesForVariation(id as string, variation.id),
             fetchPriceForVariation(id as string, variation.id),
             fetchHasOfferForVariation(id as string, variation.id),
@@ -218,14 +203,12 @@ function DetalleOferta() {
           attributesByVariation[variation.id] = attributes;
           pricesByVariation[variation.id] = price;
           offersByVariation[variation.id] = hasOffer;
-          offerPricesByVariation[variation.id] = offerPrice;
         });
 
         await Promise.all(fetchTasks);
         setCurrentAttributes(attributesByVariation);
         setCurrentPrices(pricesByVariation);
         setVariationsWithOffers(offersByVariation);
-        setCurrentOfferPrices(offerPricesByVariation);
 
         setSku(filteredVariations);
       } else {
@@ -280,21 +263,6 @@ function DetalleOferta() {
   useEffect(() => {
     if (product) {
       fetchOffersForProduct(id as string, product.skuId);
-      // Para productos simples, verificar ofertas al cargar
-      if (!product.hasVariations) {
-        const checkOffers = async () => {
-          try {
-            const [hasOffer, offerPrice] = await fetchHasOfferForVariation(id as string, product.skuId);
-            setVariationsWithOffers({ [product.id]: hasOffer });
-            if (offerPrice) {
-              setCurrentOfferPrices({ [product.skuId]: offerPrice });
-            }
-          } catch (error) {
-            console.error("Error al verificar ofertas:", error);
-          }
-        };
-        checkOffers();
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
@@ -315,67 +283,44 @@ function DetalleOferta() {
       const data = await response.json();
       if (data.code === 0) {
         const currentOffers = data.skuOffers || data.offers;
-        
+
         // Obtener la fecha y hora actual en Santiago de Chile
-        const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+        const now = new Date(
+          new Date().toLocaleString("en-US", { timeZone: "America/Santiago" })
+        );
 
         const expired = currentOffers.filter((offer: Offer) => {
           // Convertir la fecha de fin a zona horaria de Chile y establecer a 23:59:59
           const endDate = new Date(offer.endDate);
-          const endDateChile = new Date(endDate.toLocaleString('en-US', {
-            timeZone: 'America/Santiago'
-          }));
+          const endDateChile = new Date(
+            endDate.toLocaleString("en-US", {
+              timeZone: "America/Santiago",
+            })
+          );
           endDateChile.setHours(23, 59, 59, 999);
-          
-          // Añadir un día a la fecha de fin
-          const dayAfterEnd = new Date(endDateChile);
-          dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
-          
-          return dayAfterEnd < now;
+
+          return endDateChile < now;
         });
 
         const activeOffers = currentOffers.filter((offer: Offer) => {
           // Convertir la fecha de fin a zona horaria de Chile y establecer a 23:59:59
           const endDate = new Date(offer.endDate);
-          const endDateChile = new Date(endDate.toLocaleString('en-US', {
-            timeZone: 'America/Santiago'
-          }));
+          const endDateChile = new Date(
+            endDate.toLocaleString("en-US", {
+              timeZone: "America/Santiago",
+            })
+          );
           endDateChile.setHours(23, 59, 59, 999);
-          
-          // Añadir un día a la fecha de fin
-          const dayAfterEnd = new Date(endDateChile);
-          dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
-          
-          return dayAfterEnd >= now;
+
+          return endDateChile >= now;
         });
 
-         console.log('Fecha actual (Santiago):', now);
-        console.log('Ofertas activas:', activeOffers);
-        console.log('Ofertas expiradas:', expired); 
+        console.log("Fecha actual (Santiago):", now);
+        console.log("Ofertas activas:", activeOffers);
+        console.log("Ofertas expiradas:", expired);
 
         setOffers(activeOffers);
         setExpiredOffers(expired);
-
-        // Si es un producto simple, actualizar el estado de oferta y precio de oferta
-        if (!product?.hasVariations && currentOffers.length > 0) {
-          const activeOffer = currentOffers.find((offer: Offer) => {
-            const endDate = new Date(offer.endDate);
-            const endDateChile = new Date(endDate.toLocaleString('en-US', {
-              timeZone: 'America/Santiago'
-            }));
-            endDateChile.setHours(23, 59, 59, 999);
-            
-            const dayAfterEnd = new Date(endDateChile);
-            dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
-            
-            return dayAfterEnd >= now;
-          });
-
-          if (activeOffer) {
-            setVariationsWithOffers({ [product.id]: true });
-            setCurrentOfferPrices({ [product.skuId]: activeOffer.unitPrice });
-          }
-        }
       } else {
         console.error("Error al obtener las ofertas:", data.message);
         setOffers([]);
@@ -391,7 +336,7 @@ function DetalleOferta() {
   const fetchHasOfferForVariation = async (
     productId: string,
     skuId: string
-  ): Promise<[boolean, number | null]> => {
+  ): Promise<boolean> => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
@@ -404,31 +349,10 @@ function DetalleOferta() {
         }
       );
       const data = await response.json();
-      
-      // Obtener la fecha actual en la zona horaria de Chile
-      const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
-      
-      // Filtrar ofertas activas
-      const activeOffers = data.skuOffers?.filter((offer: any) => {
-        // Convertir la fecha de fin a zona horaria de Chile y establecer a 23:59:59
-        const endDate = new Date(offer.endDate);
-        const endDateChile = new Date(endDate.toLocaleString('en-US', {
-          timeZone: 'America/Santiago'
-        }));
-        endDateChile.setHours(23, 59, 59, 999);
-        
-        // Añadir un día a la fecha de fin para incluir todo el día actual
-        const dayAfterEnd = new Date(endDateChile);
-        dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
-        
-        return dayAfterEnd >= now;
-      });
-
-      // Retornar si hay ofertas y el precio de la primera oferta activa (si existe)
-      return [activeOffers && activeOffers.length > 0, activeOffers?.[0]?.unitPrice || null];
+      return data.skuOffers && data.skuOffers.length > 0;
     } catch (error) {
       console.error("Error al obtener el skuOffers de la variación:", error);
-      return [false, null];
+      return false;
     }
   };
 
@@ -520,7 +444,11 @@ function DetalleOferta() {
     setIsModalOpen(true);
   };
 
-  const handleModalSubmit = async (formData: { unitPrice: string; startDate: string; endDate: string }) => {
+  const handleModalSubmit = async (formData: {
+    unitPrice: string;
+    startDate: string;
+    endDate: string;
+  }) => {
     try {
       const token = String(getCookie("AdminTokenAuth"));
       const config = {
@@ -531,11 +459,11 @@ function DetalleOferta() {
       };
 
       const variations = sku;
-      
+
       // Validar fechas
       const startDate = new Date(formData.startDate);
       const endDate = new Date(formData.endDate);
-      
+
       if (startDate >= endDate) {
         toast.error("La fecha de inicio debe ser menor que la fecha de fin");
         return;
@@ -543,7 +471,7 @@ function DetalleOferta() {
 
       const offerData = {
         ...formData,
-        currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594"
+        currencyCodeId: "8ccc1abd-b35b-45ff-b814-b7c78fff3594",
       };
 
       const promises = variations.map(async (variation) => {
@@ -552,29 +480,36 @@ function DetalleOferta() {
             `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${variation.id}/offers?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
             {
               ...offerData,
-              unitPrice: parseFloat(offerData.unitPrice)
+              unitPrice: parseFloat(offerData.unitPrice),
             },
             config
           );
           return true;
         } catch (error) {
-          console.error(`Error al crear oferta para variación ${variation.id}:`, error);
+          console.error(
+            `Error al crear oferta para variación ${variation.id}:`,
+            error
+          );
           return false;
         }
       });
 
       const results = await Promise.all(promises);
-      const successCount = results.filter(result => result).length;
-          // Revalidar el caché después de actualizar
-      await triggerRevalidation(['products']);
+      const successCount = results.filter((result) => result).length;
+
       if (successCount === variations.length) {
-        toast.success(`Se crearon ofertas para todas las variaciones (${successCount}/${variations.length})`);
+        toast.success(
+          `Se crearon ofertas para todas las variaciones (${successCount}/${variations.length})`
+        );
+        await triggerRevalidation();
       } else {
-        toast.error(`Se crearon ${successCount} de ${variations.length} ofertas`);
+        toast.error(
+          `Se crearon ${successCount} de ${variations.length} ofertas`
+        );
       }
 
       setIsModalOpen(false);
-      
+
       // Actualizar la vista
       fetchVariations();
       if (product) {
@@ -582,6 +517,7 @@ function DetalleOferta() {
       }
     } catch (error) {
       console.error("Error al crear ofertas en masa:", error);
+      toast.error("Error al crear las ofertas en masa");
     }
   };
 
@@ -602,7 +538,9 @@ function DetalleOferta() {
       let successCount = 0;
 
       // Obtener la fecha actual en la zona horaria de Chile
-      const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+      const now = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "America/Santiago" })
+      );
 
       if (product.hasVariations) {
         // Lógica para productos variables
@@ -615,20 +553,18 @@ function DetalleOferta() {
             );
 
             const allOffers = response.data.skuOffers || [];
-            
+
             // Filtrar solo las ofertas activas
             const activeOffers = allOffers.filter((offer: any) => {
               const endDate = new Date(offer.endDate);
-              const endDateChile = new Date(endDate.toLocaleString('en-US', {
-                timeZone: 'America/Santiago'
-              }));
+              const endDateChile = new Date(
+                endDate.toLocaleString("en-US", {
+                  timeZone: "America/Santiago",
+                })
+              );
               endDateChile.setHours(23, 59, 59, 999);
-              
-              // Añadir un día a la fecha de fin
-              const dayAfterEnd = new Date(endDateChile);
-              dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
-              
-              return dayAfterEnd >= now;
+
+              return endDateChile >= now;
             });
 
             const deletePromises = activeOffers.map(async (offer: any) => {
@@ -640,9 +576,13 @@ function DetalleOferta() {
 
             await Promise.all(deletePromises);
             successCount += activeOffers.length;
+            await triggerRevalidation();
             return true;
           } catch (error) {
-            console.error(`Error al eliminar ofertas para variación ${variation.id}:`, error);
+            console.error(
+              `Error al eliminar ofertas para variación ${variation.id}:`,
+              error
+            );
             return false;
           }
         });
@@ -657,16 +597,17 @@ function DetalleOferta() {
           );
 
           const allOffers = response.data.skuOffers || [];
-          
-          
+
           // Filtrar solo las ofertas activas
           const activeOffers = allOffers.filter((offer: any) => {
             const endDate = new Date(offer.endDate);
-            const endDateChile = new Date(endDate.toLocaleString('en-US', {
-              timeZone: 'America/Santiago'
-            }));
+            const endDateChile = new Date(
+              endDate.toLocaleString("en-US", {
+                timeZone: "America/Santiago",
+              })
+            );
             endDateChile.setHours(23, 59, 59, 999);
-            
+
             return endDateChile >= now;
           });
 
@@ -679,17 +620,18 @@ function DetalleOferta() {
 
           await Promise.all(deletePromises);
           successCount = activeOffers.length;
+          await triggerRevalidation();
         } catch (error) {
           console.error("Error al eliminar ofertas:", error);
         }
       }
 
       if (successCount > 0) {
-        toast.success(`Se eliminaron ${successCount} ofertas activas exitosamente`);
-        // Revalidar el caché después de eliminar en masa
-        await triggerRevalidation(['products']);
+        toast.success(
+          `Se eliminaron ${successCount} ofertas activas exitosamente`
+        );
       } else {
-        toast.success('No se encontraron ofertas activas para eliminar');
+        toast.success("No se encontraron ofertas activas para eliminar");
       }
 
       // Actualizar la vista
@@ -697,9 +639,9 @@ function DetalleOferta() {
         fetchVariations();
       }
       fetchOffersForProduct(id as string, product.skuId);
-      
     } catch (error) {
       console.error("Error al eliminar ofertas en masa:", error);
+      toast.error("Error al eliminar las ofertas");
     } finally {
       setShowBulkDeleteModal(false);
     }
@@ -724,41 +666,40 @@ function DetalleOferta() {
             </div>
           </div>
         </div>
-        <div className="mx-4 md:mx-12 mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="mx-12 mb-4 flex items-center justify-between gap-4">
           <div
-            className="flex-1 shadow rounded p-4 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
+            className="flex-1 shadow rounded flex items-center p-4 text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800"
             role="alert"
           >
-            <div className="flex items-start md:items-center">
-              <svg
-                className="flex-shrink-0 inline w-4 h-4 me-3 mt-1 md:mt-0"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-              </svg>
-              <span className="sr-only">Info</span>
-              <div>
-                Presiona el botón <span className="font-bold">Crear Oferta </span>
-                en cualquier producto y luego elige la variación que quieres editar.
-              </div>
+            <svg
+              className="flex-shrink-0 inline w-4 h-4 me-3"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+            </svg>
+            <span className="sr-only">Info</span>
+            <div>
+              Presiona el botón <span className="font-bold">Crear Oferta </span>
+              en cualquier producto y luego elige la variación que quieres
+              editar.
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-2">
             {product?.hasVariations && (
               <button
                 onClick={handleCreateBulkOffer}
-                className="flex-1 sm:flex-none px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center"
+                className="px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors whitespace-nowrap"
               >
                 Crear Oferta Masiva
               </button>
             )}
             <button
               onClick={handleBulkDeleteOffers}
-              className="flex-1 sm:flex-none px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-center"
+              className="px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors whitespace-nowrap"
             >
               Eliminar Ofertas Activas
             </button>
@@ -772,7 +713,6 @@ function DetalleOferta() {
                 <tr>
                   <th className="px-2 py-2">Imagen</th>
                   <th className="px-2 py-2">Precio Normal</th>
-                  <th className="px-2 py-2">Precio Oferta</th>
                   <th className="px-2 py-2">Atributos</th>
                   <th className="px-2 py-2">Oferta</th>
                   <th className="px-2 py-2">Crear/Editar</th>
@@ -800,13 +740,6 @@ function DetalleOferta() {
                               "es-CL"
                             )}`
                           : "N/A"}
-                      </td>
-                      <td className="px-2 py-2 border border-gray-300">
-                        {currentOfferPrices[item.id] ? (
-                          `$${currentOfferPrices[item.id]?.toLocaleString("es-CL")}`
-                        ) : (
-                          "Sin oferta"
-                        )}
                       </td>
                       <td className="px-2 py-2 border border-gray-300 text-center">
                         <div className="current-attributes">
@@ -880,13 +813,6 @@ function DetalleOferta() {
                           )}`
                         : "N/A"}
                     </td>
-                    <td className="px-2 py-2 border border-gray-300">
-                      {currentOfferPrices[product.skuId] ? (
-                        `$${currentOfferPrices[product.skuId]?.toLocaleString("es-CL")}`
-                      ) : (
-                        "Sin oferta"
-                      )}
-                    </td>
                     <td className="px-2 py-2 border border-gray-300 text-center">
                       <span>No hay atributos disponibles</span>
                     </td>
@@ -926,163 +852,134 @@ function DetalleOferta() {
           </div>
         )}
 
-        <div className="w-full max-w-[1500px] mx-auto space-y-4 px-4 mt-8">
+        <div className="w-full">
           {(selectedVariation || (product && !product.hasVariations)) && (
-            <>
-              {/* Acordeón de Ofertas Activas */}
-              <div className="border rounded-lg overflow-hidden">
-                <button
-                  className={`w-full px-6 py-4 flex justify-between items-center ${
-                    activeAccordion === 'active' ? 'bg-gray-600 text-white' : 'bg-gray-100'
-                  }`}
-                  onClick={() => setActiveAccordion(activeAccordion === 'active' ? null : 'active')}
-                >
-                  <h2 className="font-semibold uppercase">Ofertas Activas</h2>
-                  <svg
-                    className={`w-6 h-6 transform transition-transform ${
-                      activeAccordion === 'active' ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                
-                {activeAccordion === 'active' && (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
-                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                          <th className="px-2 py-2">Precio Oferta</th>
-                          <th className="px-2 py-2">Fecha de Inicio</th>
-                          <th className="px-2 py-2">Fecha de Fin</th>
-                          <th className="px-2 py-2">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {offers.length ? (
-                          offers.map((offer) => (
-                            <tr
-                              key={offer.id}
-                              className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+            <div className="pb-6">
+              <h2 className="text-center font-semibold uppercase py-6">
+                Ofertas Activas
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                      <th className="px-2 py-2">Precio Oferta</th>
+                      <th className="px-2 py-2">Fecha de Inicio</th>
+                      <th className="px-2 py-2">Fecha de Fin</th>
+                      <th className="px-2 py-2">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {offers.length ? (
+                      offers.map((offer) => (
+                        <tr
+                          key={offer.id}
+                          className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                        >
+                          <td className="px-2 py-2">
+                            ${offer.unitPrice.toLocaleString("es-CL")}
+                          </td>
+                          <td className="px-2 py-2">
+                            {" "}
+                            {offer.startDate.split("-").reverse().join("/")}
+                          </td>
+                          <td className="px-2 py-2">
+                            {offer.endDate.split("-").reverse().join("/")}
+                          </td>
+                          <td className="px-2 py-2 flex justify-center gap-2">
+                            <button
+                              onClick={() => handleEditOffer(offer.id)}
+                              className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
                             >
-                              <td className="px-2 py-2">
-                                ${offer.unitPrice.toLocaleString("es-CL")}
-                              </td>
-                              <td className="px-2 py-2">
-                                {offer.startDate.split("-").reverse().join("/")}
-                              </td>
-                              <td className="px-2 py-2">
-                                {offer.endDate.split("-").reverse().join("/")}
-                              </td>
-                              <td className="px-2 py-2 flex justify-center gap-2">
-                                <button
-                                  onClick={() => handleEditOffer(offer.id)}
-                                  className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
-                                >
-                                  Editar
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteOffer(offer.id)}
-                                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
-                                >
-                                  Eliminar
-                                </button>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={4} className="px-2 py-2">
-                              No hay ofertas disponibles
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              {/* Acordeón de Ofertas Expiradas */}
-              <div className="border rounded-lg overflow-hidden">
-                <button
-                  className={`w-full px-6 py-4 flex justify-between items-center ${
-                    activeAccordion === 'expired' ? 'bg-gray-600 text-white' : 'bg-gray-100'
-                  }`}
-                  onClick={() => setActiveAccordion(activeAccordion === 'expired' ? null : 'expired')}
-                >
-                  <h2 className="font-semibold uppercase">Ofertas Expiradas</h2>
-                  <svg
-                    className={`w-6 h-6 transform transition-transform ${
-                      activeAccordion === 'expired' ? 'rotate-180' : ''
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {activeAccordion === 'expired' && (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
-                      <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                          <th className="px-2 py-2">Precio Oferta</th>
-                          <th className="px-2 py-2">Fecha de Inicio</th>
-                          <th className="px-2 py-2">Fecha de Fin</th>
-                          <th className="px-2 py-2">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {expiredOffers.length ? (
-                          expiredOffers.map((offer) => (
-                            <tr
-                              key={offer.id}
-                              className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleDeleteOffer(offer.id)}
+                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
                             >
-                              <td className="px-2 py-2">
-                                ${offer.unitPrice.toLocaleString("es-CL")}
-                              </td>
-                              <td className="px-2 py-2">
-                                {offer.startDate.split("-").reverse().join("/")}
-                              </td>
-                              <td className="px-2 py-2">
-                                {offer.endDate.split("-").reverse().join("/")}
-                              </td>
-                              <td className="px-2 py-2 flex justify-center gap-2">
-                                <button
-                                  onClick={() => handleEditOffer(offer.id)}
-                                  className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
-                                >
-                                  Editar
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteOffer(offer.id)}
-                                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
-                                >
-                                  Eliminar
-                                </button>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={4} className="px-2 py-2">
-                              No hay ofertas expiradas disponibles
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-2 py-2"
+                        >
+                          No hay ofertas disponibles
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-            </>
+            </div>
+          )}
+        </div>
+        <div className="w-full">
+          {(selectedVariation || (product && !product.hasVariations)) && (
+            <div className="pb-6">
+              <h2 className="text-center font-semibold uppercase py-6">
+                Ofertas Expiradas
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-gray-500 dark:text-gray-400 text-center border-collapse">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                      <th className="px-2 py-2">Precio Oferta</th>
+                      <th className="px-2 py-2">Fecha de Inicio</th>
+                      <th className="px-2 py-2">Fecha de Fin</th>
+                      <th className="px-2 py-2">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expiredOffers.length ? (
+                      expiredOffers.map((offer) => (
+                        <tr
+                          key={offer.id}
+                          className="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
+                        >
+                          <td className="px-2 py-2">
+                            ${offer.unitPrice.toLocaleString("es-CL")}
+                          </td>
+                          <td className="px-2 py-2">
+                            {" "}
+                            {offer.startDate.split("-").reverse().join("/")}
+                          </td>
+                          <td className="px-2 py-2">
+                            {offer.endDate.split("-").reverse().join("/")}
+                          </td>
+                          <td className="px-2 py-2 flex justify-center gap-2">
+                            <button
+                              onClick={() => handleEditOffer(offer.id)}
+                              className="bg-dark text-white px-2 py-1 rounded hover:bg-secondary hover:text-dark"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => handleDeleteOffer(offer.id)}
+                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-700"
+                            >
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-2 py-2"
+                        >
+                          No hay ofertas expiradas disponibles
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -1113,7 +1010,7 @@ function DetalleOferta() {
           </div>
         </div>
       )}
-      <BulkOfferModal 
+      <BulkOfferModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleModalSubmit}
@@ -1144,7 +1041,9 @@ function DetalleOferta() {
               </h3>
               <div className="mt-2 px-7 py-3">
                 <p className="text-sm text-gray-500">
-                  ¿Estás seguro de que deseas eliminar todas las ofertas activas? Esta acción eliminará todas las ofertas vigentes para todas las variaciones del producto y no se puede deshacer.
+                  ¿Estás seguro de que deseas eliminar todas las ofertas
+                  activas? Esta acción eliminará todas las ofertas vigentes para
+                  todas las variaciones del producto y no se puede deshacer.
                 </p>
               </div>
             </div>

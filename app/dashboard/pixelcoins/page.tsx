@@ -106,12 +106,20 @@ const CreditChecker = () => {
   };
 
   const shareOnFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-      window.location.href
-    )}&quote=${encodeURIComponent(
-      `¡Usa mi código de referido en PixelUp!: ${process.env.NEXT_PUBLIC_REFFERAL_CODE}`
-    )}`;
-    window.open(url, "_blank");
+    const text = `¡Usa mi código de referido en PixelUp!: ${process.env.NEXT_PUBLIC_REFFERAL_CODE}`;
+
+    const facebookShareUrl =
+      "https://www.facebook.com/dialog/share?" +
+      "app_id=966242223397117" + // Este es un app_id genérico de prueba
+      "&display=popup" +
+      "&href=" +
+      encodeURIComponent(window.location.href) +
+      "&quote=" +
+      encodeURIComponent(text) +
+      "&hashtag=" +
+      encodeURIComponent(text);
+
+    window.open(facebookShareUrl, "_blank");
   };
 
   return (
@@ -228,7 +236,7 @@ const CreditChecker = () => {
               <div className="p-6 rounded-xl bg-gray-50 border border-gray-200 shadow-sm">
                 <div className="space-y-4">
                   <p className="text-gray-600">
-                    Comparte este código con tus amigos y obtén beneficios
+                    Comparte este código con tus amigos y obtén más beneficios
                   </p>
                   <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200">
                     <span className="text-xl font-bold text-rosa">
