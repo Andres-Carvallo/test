@@ -5,6 +5,8 @@ import { HandlePriceSku } from "@/app/utils/HandlePriceSku";
 import { getCookie } from "cookies-next";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import ImageToBase64Converter from "./ImageToBase64Converter";
+import BatchCategoryCreator from "@/app/dashboard/productos/crear/carga-masiva/BatchCategoryCreator";
 
 interface Product {
   name: string;
@@ -156,15 +158,20 @@ const CargaMasiva = () => {
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Carga Masiva de Productos</h1>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          JSON de Productos
-        </label>
-        <textarea
-          className="w-full h-64 p-4 border rounded-md shadow-sm"
-          value={jsonInput}
-          onChange={handleJsonChange}
-          placeholder={`[
+      <div className="grid grid-cols-1 gap-8">
+        <ImageToBase64Converter />
+
+        <BatchCategoryCreator />
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            JSON de Productos
+          </label>
+          <textarea
+            className="w-full h-64 p-4 border rounded-md shadow-sm"
+            value={jsonInput}
+            onChange={handleJsonChange}
+            placeholder={`[
   {
     "name": "Producto 1",
     "description": "<p>Descripción del producto 1</p>",
@@ -179,44 +186,45 @@ const CargaMasiva = () => {
     }
   }
 ]`}
-        />
-      </div>
-
-      <div className="flex gap-4">
-        <button
-          onClick={handleSubmit}
-          disabled={isLoading}
-          className={`px-4 py-2 rounded-md text-white ${
-            isLoading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {isLoading ? "Procesando..." : "Crear Productos"}
-        </button>
-
-        <button
-          onClick={handleCancel}
-          className="px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700"
-        >
-          Cancelar
-        </button>
-      </div>
-
-      {isLoading && (
-        <div className="mt-6">
-          <div className="mb-2 flex justify-between text-sm text-gray-600">
-            <span>
-              Progreso: {currentProduct} de {totalProducts} productos
-            </span>
-            <span>{Math.round(progress)}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
+          />
         </div>
-      )}
+
+        <div className="flex gap-4">
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className={`px-4 py-2 rounded-md text-white ${
+              isLoading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {isLoading ? "Procesando..." : "Crear Productos"}
+          </button>
+
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700"
+          >
+            Cancelar
+          </button>
+        </div>
+
+        {isLoading && (
+          <div className="mt-6">
+            <div className="mb-2 flex justify-between text-sm text-gray-600">
+              <span>
+                Progreso: {currentProduct} de {totalProducts} productos
+              </span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
