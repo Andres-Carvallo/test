@@ -810,12 +810,12 @@ const CrearProductoSimple: React.FC = ({}) => {
           previewImage: isPreviewImageUploaded
             ? formData.previewImage
             : { ...formData.previewImage, data: productData.previewImageUrl },
-            measures: {
-              length: productData.measures?.length || 1,
-              width: productData.measures?.width || 1,
-              height: productData.measures?.height || 1,
-              weight: productData.measures?.weight || 1,
-            },
+          measures: {
+            length: productData.measures?.length || 1,
+            width: productData.measures?.width || 1,
+            height: productData.measures?.height || 1,
+            weight: productData.measures?.weight || 1,
+          },
         });
         setMainImage(productData.mainImageUrl);
         setPreviewImage(productData.previewImageUrl);
@@ -1218,59 +1218,58 @@ const CrearProductoSimple: React.FC = ({}) => {
                 </div>
               </div>
 
-
               {formData.enabledForDelivery && (
-              <div
-                id="measuresData"
-                className="grid grid-cols-1 md:grid-cols-2 gap-2"
-              >
-                <div>
-                  <label>Alto (cm):</label>
-                  <input
-                    type="number"
-                    id="height"
-                    value={formData.measures.height || 1}
-                    onChange={(e) => handleMeasureChange(e, "height")}
-                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
-                    placeholder="Ingrese el alto"
-                  />
+                <div
+                  id="measuresData"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-2"
+                >
+                  <div>
+                    <label>Alto (cm):</label>
+                    <input
+                      type="number"
+                      id="height"
+                      value={formData.measures.height || 1}
+                      onChange={(e) => handleMeasureChange(e, "height")}
+                      className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                      placeholder="Ingrese el alto"
+                    />
+                  </div>
+                  <div>
+                    <label>Largo (cm):</label>
+                    <input
+                      type="number"
+                      id="length"
+                      value={formData.measures.length || 1}
+                      onChange={(e) => handleMeasureChange(e, "length")}
+                      className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                      placeholder="Ingrese el largo"
+                    />
+                  </div>
+                  <div>
+                    <label>Ancho (cm):</label>
+                    <input
+                      type="number"
+                      id="width"
+                      value={formData.measures.width || 1}
+                      onChange={(e) => handleMeasureChange(e, "width")}
+                      className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                      placeholder="Ingrese el ancho"
+                    />
+                  </div>
+                  <div>
+                    <label>Peso (kg) :</label>
+                    <input
+                      type="number"
+                      id="weight"
+                      step="0.01"
+                      value={formData.measures.weight || 0.2}
+                      onChange={(e) => handleMeasureChange(e, "weight")}
+                      className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                      placeholder="Ingrese el peso"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label>Largo (cm):</label>
-                  <input
-                    type="number"
-                    id="length"
-                    value={formData.measures.length || 1}
-                    onChange={(e) => handleMeasureChange(e, "length")}
-                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
-                    placeholder="Ingrese el largo"
-                  />
-                </div>
-                <div>
-                  <label>Ancho (cm):</label>
-                  <input
-                    type="number"
-                    id="width"
-                    value={formData.measures.width || 1}
-                    onChange={(e) => handleMeasureChange(e, "width")}
-                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
-                    placeholder="Ingrese el ancho"
-                  />
-                </div>
-                <div>
-                  <label>Peso (kg) :</label>
-                  <input
-                    type="number"
-                    id="weight"
-                    step="0.01"
-                    value={formData.measures.weight || 0.2}
-                    onChange={(e) => handleMeasureChange(e, "weight")}
-                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
-                    placeholder="Ingrese el peso"
-                  />
-                </div>
-              </div>
-            )}
+              )}
               <div className="flex w-full">
                 <div className="self-center mx-6">
                   <StarCheckbox
@@ -1625,7 +1624,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   value={zoom}
                   min={1}
                   max={3}
-                  step={0.1}
+                  step={0.01}
                   aria-labelledby="Zoom"
                   onChange={(e) => {
                     setZoom(parseFloat(e.target.value));

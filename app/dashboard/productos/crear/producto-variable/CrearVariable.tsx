@@ -1118,7 +1118,9 @@ const CrearVariable: React.FC = () => {
                           />
                         </svg>
                         <div className="ml-3 sm:ml-5">
-                          <span className="text-sm sm:text-base font-normal">Delivery</span>
+                          <span className="text-sm sm:text-base font-normal">
+                            Delivery
+                          </span>
                         </div>
                       </label>
                     </div>
@@ -1126,7 +1128,7 @@ const CrearVariable: React.FC = () => {
                     <div className="relative w-full">
                       <input
                         className="peer hidden"
-                        id="checkbox_withdrawal" 
+                        id="checkbox_withdrawal"
                         type="checkbox"
                         name="enabledForWithdrawal"
                         checked={formData.enabledForWithdrawal}
@@ -1580,7 +1582,7 @@ const CrearVariable: React.FC = () => {
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

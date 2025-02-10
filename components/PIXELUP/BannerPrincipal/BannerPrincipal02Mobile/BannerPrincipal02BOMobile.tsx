@@ -33,7 +33,7 @@ const BannerPrincipal02BOMobile: React.FC = () => {
   const mobileFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isMobilePreviewImageUploaded, setIsMobilePreviewImageUploaded] =
     useState(false);
-  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl';
+  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "pixelup.cl";
   const [mobileBannerData, setMobileBannerData] = useState<MobileBannerImage[]>(
     []
   );
@@ -295,18 +295,18 @@ const BannerPrincipal02BOMobile: React.FC = () => {
   };
 
   const formatUrl = (url: string): string => {
-    if (!url) return '';
-    
+    if (!url) return "";
+
     try {
       // Intenta crear un objeto URL para validar
       new URL(url);
       return url; // Si es una URL válida, la devuelve tal cual
     } catch {
       // Si no es una URL válida, aplicamos el formato
-      if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
         return url;
       }
-      if (url.startsWith('www.')) {
+      if (url.startsWith("www.")) {
         return `https://${url}`;
       }
       return `https://www.${url}`;
@@ -636,7 +636,7 @@ const BannerPrincipal02BOMobile: React.FC = () => {
                 value={mobileZoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setMobileZoom(parseFloat(e.target.value));

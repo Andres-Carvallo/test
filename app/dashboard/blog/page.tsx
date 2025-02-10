@@ -64,13 +64,15 @@ const CreateOrEditPost: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentImageType, setCurrentImageType] = useState<'preview' | 'detail' | null>(null);
+  const [currentImageType, setCurrentImageType] = useState<
+    "preview" | "detail" | null
+  >(null);
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    type: 'preview' | 'detail'
+    type: "preview" | "detail"
   ) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -122,7 +124,7 @@ const CreateOrEditPost: React.FC = () => {
         data: base64,
       };
 
-      if (currentImageType === 'preview') {
+      if (currentImageType === "preview") {
         setPreviewImage(imageInfo);
       } else {
         setDetailImage(imageInfo);
@@ -249,7 +251,7 @@ const CreateOrEditPost: React.FC = () => {
 
   const executeDelete = async () => {
     if (!postToDelete) return;
-    
+
     try {
       const token = getCookie("AdminTokenAuth");
       await axios.delete(
@@ -325,21 +327,21 @@ const CreateOrEditPost: React.FC = () => {
       modules: ["Resize", "DisplaySize", "Toolbar"],
       displaySize: true,
       handleStyles: {
-        backgroundColor: '#ec4899',
-        border: 'none',
-        borderRadius: '50%'
+        backgroundColor: "#ec4899",
+        border: "none",
+        borderRadius: "50%",
       },
       toolbarStyles: {
-        backgroundColor: '#f3f4f6',
-        border: 'none',
-        borderRadius: '4px'
+        backgroundColor: "#f3f4f6",
+        border: "none",
+        borderRadius: "4px",
       },
       toolbarButtons: {
         alignLeft: true,
         alignCenter: true,
-        alignRight: true
-      }
-    }
+        alignRight: true,
+      },
+    },
   };
 
   const formats = [
@@ -358,7 +360,7 @@ const CreateOrEditPost: React.FC = () => {
     "code-block",
     "link",
     "image",
-    "width"
+    "width",
   ];
 
   // Función para refrescar las categorías
@@ -395,7 +397,9 @@ const CreateOrEditPost: React.FC = () => {
               <div className="relative">
                 <select
                   onChange={(e) => {
-                    const selectedPost = posts.find(post => post.id === e.target.value);
+                    const selectedPost = posts.find(
+                      (post) => post.id === e.target.value
+                    );
                     if (selectedPost) handleEdit(selectedPost);
                   }}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 
@@ -405,37 +409,57 @@ const CreateOrEditPost: React.FC = () => {
                 >
                   <option value="">Seleccionar un post para editar</option>
                   {posts
-                    .sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime())
+                    .sort(
+                      (a, b) =>
+                        new Date(b.creationDate).getTime() -
+                        new Date(a.creationDate).getTime()
+                    )
                     .map((post) => (
-                      <option key={post.id} value={post.id} className="flex justify-between">
-                        {`[${new Date(post.creationDate).toLocaleDateString()}] ${post.title}                                `}
+                      <option
+                        key={post.id}
+                        value={post.id}
+                        className="flex justify-between"
+                      >
+                        {`[${new Date(
+                          post.creationDate
+                        ).toLocaleDateString()}] ${
+                          post.title
+                        }                                `}
                       </option>
                     ))}
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-5 h-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
               </div>
-              
+
               {/* Botón de eliminar */}
               {editingPostId && (
                 <button
                   onClick={() => handleDelete(editingPostId)}
                   className="w-full mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
                 >
-                  <svg 
-                    className="w-5 h-5" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
                   <span>Eliminar Post Seleccionado</span>
@@ -562,7 +586,7 @@ const CreateOrEditPost: React.FC = () => {
                         <input
                           type="file"
                           className="hidden"
-                          onChange={(e) => handleImageUpload(e, 'preview')}
+                          onChange={(e) => handleImageUpload(e, "preview")}
                           accept="image/*"
                         />
                       </label>
@@ -623,7 +647,7 @@ const CreateOrEditPost: React.FC = () => {
                         <input
                           type="file"
                           className="hidden"
-                          onChange={(e) => handleImageUpload(e, 'detail')}
+                          onChange={(e) => handleImageUpload(e, "detail")}
                           accept="image/*"
                         />
                       </label>
@@ -643,17 +667,25 @@ const CreateOrEditPost: React.FC = () => {
                 <ReactQuill
                   value={previewContent}
                   onChange={(content) => {
-                    const textOnly = content.replace(/<[^>]*>/g, '');
+                    const textOnly = content.replace(/<[^>]*>/g, "");
                     if (textOnly.length <= 500) {
                       setPreviewContent(content);
                     }
                   }}
                   modules={previewModules}
-                  formats={["header", "bold", "italic", "underline", "list", "bullet"]}
+                  formats={[
+                    "header",
+                    "bold",
+                    "italic",
+                    "underline",
+                    "list",
+                    "bullet",
+                  ]}
                   theme="snow"
                 />
                 <p className="mt-2 text-sm text-gray-500">
-                  {500 - previewContent.replace(/<[^>]*>/g, '').length} caracteres restantes
+                  {500 - previewContent.replace(/<[^>]*>/g, "").length}{" "}
+                  caracteres restantes
                 </p>
               </div>
 
@@ -705,27 +737,27 @@ const CreateOrEditPost: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           {/* Overlay */}
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
-          
+
           {/* Modal */}
           <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
               {/* Ícono de advertencia */}
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
-                <svg 
-                  className="h-6 w-6 text-red-600 dark:text-red-200" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  strokeWidth="1.5" 
+                <svg
+                  className="h-6 w-6 text-red-600 dark:text-red-200"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
                   stroke="currentColor"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
                   />
                 </svg>
               </div>
-              
+
               {/* Contenido del modal */}
               <div className="mt-3 text-center sm:mt-5">
                 <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
@@ -733,11 +765,12 @@ const CreateOrEditPost: React.FC = () => {
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    ¿Estás seguro de que deseas eliminar este post? Esta acción no se puede deshacer.
+                    ¿Estás seguro de que deseas eliminar este post? Esta acción
+                    no se puede deshacer.
                   </p>
                 </div>
               </div>
-              
+
               {/* Botones */}
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
@@ -791,7 +824,7 @@ const CreateOrEditPost: React.FC = () => {
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
                 className="zoom-range w-full custom-range"

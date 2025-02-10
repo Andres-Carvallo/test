@@ -183,7 +183,6 @@ const CrearProductoSimple: React.FC = ({}) => {
     setCheckOfferChecked(false);
     setMainImage(null);
     setPreviewImage(null);
-    setPrecioNormal(null);
     setStockQuantity(null);
     setSelectedImages([]);
     setSkuImages([]);
@@ -597,18 +596,35 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [newProductId, setNewProductId] = useState<string | null>(null);
 
+  const [pendingImageChanges, setPendingImageChanges] = useState<{
+    pendingImages: any[];
+    pendingDeletions: string[];
+    currentImages: any[];
+  }>({
+    pendingImages: [],
+    pendingDeletions: [],
+    currentImages: [],
+  });
+
+  const handleImageChanges = (changes: {
+    pendingImages: any[];
+    pendingDeletions: string[];
+    currentImages: any[];
+  }) => {
+    setPendingImageChanges(changes);
+  };
+
   const handleSubmit = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
+    setIsLoading(true);
 
     const dataToSend: any = { ...formData };
 
     if (isEditMode && !isMainImageUploaded) {
       delete dataToSend.mainImage;
     }
-
-    setIsLoading(true);
 
     if (!isEditMode && !validateForm()) {
       setIsLoading(false);
@@ -627,6 +643,37 @@ const CrearProductoSimple: React.FC = ({}) => {
 
       const method = isEditMode ? "PUT" : "POST";
       const token = getCookie("AdminTokenAuth");
+
+      // Procesar las imágenes pendientes
+      if (pendingImageChanges.pendingDeletions.length > 0) {
+        for (const imageId of pendingImageChanges.pendingDeletions) {
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+        }
+      }
+
+      if (pendingImageChanges.pendingImages.length > 0) {
+        for (const newImage of pendingImageChanges.pendingImages) {
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ mainImage: newImage }),
+            }
+          );
+        }
+      }
 
       const response = await fetch(url, {
         method,
@@ -679,9 +726,29 @@ const CrearProductoSimple: React.FC = ({}) => {
               await HandlePriceSku(id, sku, precioNormal);
             }
 
-            for (const image of selectedImages) {
-              await addProductImage(id, sku, image);
+            // Procesar las imágenes pendientes de la galería para nuevo producto
+            if (pendingImageChanges.pendingImages.length > 0) {
+              for (const newImage of pendingImageChanges.pendingImages) {
+                await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${sku}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ mainImage: newImage }),
+                  }
+                );
+              }
             }
+
+            // Limpiar los cambios pendientes después de guardar
+            setPendingImageChanges({
+              pendingImages: [],
+              pendingDeletions: [],
+              currentImages: [],
+            });
 
             await triggerRevalidation();
             toast.success("Producto creado correctamente");
@@ -726,9 +793,12 @@ const CrearProductoSimple: React.FC = ({}) => {
           toast.success("Producto actualizado correctamente");
         }
       }
+
+      // Actualizar la galería
+      fetchImages(productId, skuId);
     } catch (error) {
-      console.error("Error al enviar la solicitud:", error);
-      toast.error("Error al enviar la solicitud");
+      console.error("Error al actualizar el producto:", error);
+      toast.error("Error al actualizar el producto");
     } finally {
       setIsLoading(false);
     }
@@ -1474,20 +1544,13 @@ const CrearProductoSimple: React.FC = ({}) => {
                   Galería de imágenes
                 </label>
                 <div className="flex space-x-4 overflow-x-auto">
-                  {isEditMode ? (
-                    <ImageUploader
-                      productId={productId}
-                      skuId={skuId}
-                      skuImages={skuImages}
-                      fetchImages={fetchImages}
-                    />
-                  ) : (
-                    <GalleryUpload
-                      selectedImages={selectedImages}
-                      handleImageGalleryChange={handleImageGalleryChange}
-                      handleImageRemove={handleImageRemove}
-                    />
-                  )}
+                  <ImageUploader
+                    productId={productId}
+                    skuId={skuId}
+                    skuImages={skuImages}
+                    fetchImages={fetchImages}
+                    onImagesChange={handleImageChanges}
+                  />
                 </div>
               </div>
             </div>
@@ -1561,7 +1624,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   value={zoom}
                   min={1}
                   max={3}
-                  step={0.1}
+                  step={0.01}
                   aria-labelledby="Zoom"
                   onChange={(e) => {
                     setZoom(parseFloat(e.target.value));

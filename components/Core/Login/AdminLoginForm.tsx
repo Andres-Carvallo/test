@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { setCookie } from "cookies-next";
 import Link from "next/link";
@@ -16,57 +16,6 @@ function AdminLoginForm() {
   const [error, setError] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState(() => {
-    const saved = localStorage.getItem('adminLoginAttempts');
-    return saved ? parseInt(saved) : 0;
-  });
-  const [lockoutTime, setLockoutTime] = useState<number | null>(() => {
-    const saved = localStorage.getItem('adminLockoutTime');
-    const time = saved ? parseInt(saved) : null;
-    return time && time > Date.now() ? time : null;
-  });
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-
-  useEffect(() => {
-    if (loginAttempts > 0) {
-      localStorage.setItem('adminLoginAttempts', loginAttempts.toString());
-    } else {
-      localStorage.removeItem('adminLoginAttempts');
-    }
-  }, [loginAttempts]);
-
-  useEffect(() => {
-    if (lockoutTime) {
-      localStorage.setItem('adminLockoutTime', lockoutTime.toString());
-    } else {
-      localStorage.removeItem('adminLockoutTime');
-    }
-  }, [lockoutTime]);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (lockoutTime && lockoutTime > Date.now()) {
-      timer = setInterval(() => {
-        const remaining = Math.ceil((lockoutTime - Date.now()) / 1000);
-        setRemainingSeconds(remaining);
-        
-        if (Date.now() > lockoutTime) {
-          setLockoutTime(null);
-          setLoginAttempts(0);
-          setRemainingSeconds(0);
-          localStorage.removeItem('adminLockoutTime');
-          localStorage.removeItem('adminLoginAttempts');
-        }
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [lockoutTime]);
-
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSecs = seconds % 60;
-    return `${minutes}:${remainingSecs.toString().padStart(2, '0')}`;
-  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -75,12 +24,6 @@ function AdminLoginForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    if (lockoutTime && lockoutTime > Date.now()) {
-      setError(`Error: Has excedido el número máximo de intentos. Por favor, espera ${formatTime(remainingSeconds)}`);
-      setLoading(false);
-      return;
-    }
 
     if (!executeRecaptcha) {
       console.error("Execute recaptcha not yet available");
@@ -95,7 +38,7 @@ function AdminLoginForm() {
       const data = {
         email: e.target[0].value,
         password: e.target[1].value,
-        recaptchaToken: token,
+        recaptchaToken: token, // Añadir el token de reCAPTCHA
       };
 
       const response = await axios.post(
@@ -108,23 +51,15 @@ function AdminLoginForm() {
         setCookie("AdminTokenAuth", token, {
           maxAge: 18000,
         });
-        setLoginAttempts(0);
         window.location.href = "/dashboard";
       } else {
         throw new Error("Error during login");
       }
     } catch (error) {
       console.error("Error during login:", error);
-      const newAttempts = loginAttempts + 1;
-      setLoginAttempts(newAttempts);
-
-      if (newAttempts >= 5) {
-        const lockoutEndTime = Date.now() + 5 * 60 * 1000; // 5 minutos
-        setLockoutTime(lockoutEndTime);
-        setError(`Error: Has excedido el número máximo de intentos. Por favor, espera ${formatTime(300)}`);
-      } else {
-        setError("Error de inicio de sesión. Por favor, verifica tus credenciales.");
-      }
+      setError(
+        "Error de inicio de sesión. Por favor, verifica tus credenciales."
+      );
     } finally {
       setLoading(false);
     }

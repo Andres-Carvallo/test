@@ -30,7 +30,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
   // States for image cropping
   const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl';
+  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "pixelup.cl";
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -508,7 +508,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

@@ -301,10 +301,10 @@ const BannerColeccion01BOMobile: React.FC<BannerAboutProps> = ({
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="min-h-[200px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-{/*               <h1 className="sm:text-4xl text-2xl font-bold mb-6">
+              {/*               <h1 className="sm:text-4xl text-2xl font-bold mb-6">
                 {bannerData[0].title}
               </h1> */}
-{/*               <p
+              {/*               <p
                 className="text-center text-gray-200"
                 dangerouslySetInnerHTML={{ __html: bannerData[0].landingText }}
               /> */}
@@ -325,10 +325,10 @@ const BannerColeccion01BOMobile: React.FC<BannerAboutProps> = ({
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
         <div className="grid gap-4"></div>
-{/*         <h3 className="font-normal text-primary">
+        {/*         <h3 className="font-normal text-primary">
           Titulo <span className="text-primary">*</span>
         </h3> */}
-{/*         <input
+        {/*         <input
           type="text"
           name="title"
           value={formDataHero.title}
@@ -449,7 +449,7 @@ const BannerColeccion01BOMobile: React.FC<BannerAboutProps> = ({
                     <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG o Webp (800x800px)
+                    PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>
@@ -508,7 +508,7 @@ const BannerColeccion01BOMobile: React.FC<BannerAboutProps> = ({
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

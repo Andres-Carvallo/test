@@ -394,7 +394,9 @@ const BannerPrincipal04BO: React.FC = () => {
             if (bannerData.length > 0) {
               setCurrentIndex(0);
               setFormData(bannerData[0]);
-              setMainImage(bannerData[0].mainImage.url || bannerData[0].mainImage.data);
+              setMainImage(
+                bannerData[0].mainImage.url || bannerData[0].mainImage.data
+              );
               setIsMainImageUploaded(false);
             }
           }}
@@ -412,7 +414,9 @@ const BannerPrincipal04BO: React.FC = () => {
             if (bannerData.length > 1) {
               setCurrentIndex(1);
               setFormData(bannerData[1]);
-              setMainImage(bannerData[1].mainImage.url || bannerData[1].mainImage.data);
+              setMainImage(
+                bannerData[1].mainImage.url || bannerData[1].mainImage.data
+              );
               setIsMainImageUploaded(false);
             }
           }}
@@ -432,7 +436,10 @@ const BannerPrincipal04BO: React.FC = () => {
           <div className="w-1/2 mx-auto">
             <div className="relative h-[600px] overflow-hidden group">
               <img
-                src={bannerData[currentIndex].mainImage.url || bannerData[currentIndex].mainImage.data}
+                src={
+                  bannerData[currentIndex].mainImage.url ||
+                  bannerData[currentIndex].mainImage.data
+                }
                 alt={bannerData[currentIndex].title}
                 className="absolute inset-0 w-full h-full object-cover"
               />
@@ -444,9 +451,7 @@ const BannerPrincipal04BO: React.FC = () => {
                 <h2 className="text-4xl font-bold mb-4">
                   {bannerData[currentIndex].landingText}
                 </h2>
-                <button 
-                  className="bg-white text-black px-8 py-3 uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-colors duration-300"
-                >
+                <button className="bg-white text-black px-8 py-3 uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-colors duration-300">
                   {bannerData[currentIndex].buttonText}
                 </button>
               </div>
@@ -688,7 +693,7 @@ const BannerPrincipal04BO: React.FC = () => {
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

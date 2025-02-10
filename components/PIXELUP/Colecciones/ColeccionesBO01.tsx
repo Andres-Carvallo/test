@@ -37,7 +37,7 @@ function Colecciones() {
   const [mainImageColeccion, setMainImageColeccion] = useState<string | null>(
     null
   );
-  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || 'pixelup.cl';
+  const nombreTienda = process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "pixelup.cl";
   const [mainPreviewColeccion, setPreviewImageColeccion] = useState<
     string | null
   >(null);
@@ -729,16 +729,28 @@ function Colecciones() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Foto
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Colección
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Fecha Creación
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Editar / Eliminar
                   </th>
                 </tr>
@@ -748,7 +760,11 @@ function Colecciones() {
                   <tr key={collection.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        <img src={collection.mainImageUrl} alt="" className="w-20" />
+                        <img
+                          src={collection.mainImageUrl}
+                          alt=""
+                          className="w-20"
+                        />
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -1197,7 +1213,7 @@ function Colecciones() {
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

@@ -92,10 +92,7 @@ const Hero03BO: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent,
-    service: "uno" | "dos"
-  ) => {
+  const handleSubmit = async (e: React.FormEvent, service: "uno" | "dos") => {
     e.preventDefault();
     try {
       setLoading(true);
@@ -214,8 +211,7 @@ const Hero03BO: React.FC = () => {
   );
 
   const handleCrop = async () => {
-    const mainImage =
-      activeService === "uno" ? mainImageUno : mainImageDos;
+    const mainImage = activeService === "uno" ? mainImageUno : mainImageDos;
     if (!mainImage?.data) return;
 
     try {
@@ -280,7 +276,7 @@ const Hero03BO: React.FC = () => {
       const token = getCookie("AdminTokenAuth");
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
 
-      // Fetch Servicio 
+      // Fetch Servicio
       const responseUno = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${process.env.NEXT_PUBLIC_SERVICIO_UNO_ID}/images/${process.env.NEXT_PUBLIC_SERVICIO_UNO_IMGID}?siteId=${siteId}`,
         {
@@ -327,8 +323,7 @@ const Hero03BO: React.FC = () => {
   }, []);
 
   const formData = activeService === "uno" ? formDataUno : formDataDos;
-  const mainImage =
-    activeService === "uno" ? mainImageUno : mainImageDos;
+  const mainImage = activeService === "uno" ? mainImageUno : mainImageDos;
 
   const handleClearImage = (service: "uno" | "dos") => {
     if (service === "uno") {
@@ -567,7 +562,7 @@ const Hero03BO: React.FC = () => {
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
                 className="zoom-range w-full custom-range"

@@ -106,18 +106,18 @@ const BannerPrincipal02BO: React.FC = () => {
   }, []);
 
   const formatUrl = (url: string): string => {
-    if (!url) return '';
-    
+    if (!url) return "";
+
     try {
       // Intenta crear un objeto URL para validar
       new URL(url);
       return url; // Si es una URL válida, la devuelve tal cual
     } catch {
       // Si no es una URL válida, aplicamos el formato
-      if (url.startsWith('http://') || url.startsWith('https://')) {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
         return url;
       }
-      if (url.startsWith('www.')) {
+      if (url.startsWith("www.")) {
         return `https://${url}`;
       }
       return `https://www.${url}`;
@@ -126,8 +126,8 @@ const BannerPrincipal02BO: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    if (name === 'buttonLink') {
+
+    if (name === "buttonLink") {
       // Guardamos el valor tal cual el usuario lo escribe
       setFormData({ ...formData, [name]: value });
     } else {
@@ -667,7 +667,7 @@ const BannerPrincipal02BO: React.FC = () => {
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

@@ -6,6 +6,7 @@ import { getCookie } from "cookies-next";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css"; // Importar los estilos de Quill
+import "./tienda.css";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 

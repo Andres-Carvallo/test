@@ -448,7 +448,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
                     <span className="font-semibold">Subir Imagen</span>
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG o Webp (800x800px)
+                    PNG, JPG o Webp (800x800px)
                   </p>
                 </div>
               </label>
@@ -507,7 +507,7 @@ const BannerTienda01BO: React.FC<BannerAboutProps> = ({
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.01}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

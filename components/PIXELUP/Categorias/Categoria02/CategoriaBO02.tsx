@@ -275,8 +275,7 @@ const Categoria02BO = () => {
     });
   };
 
-  const defaultImage =
-    "/img/placeholder.webp";
+  const defaultImage = "/img/placeholder.webp";
   const getDefaultBanner = (index: number) => {
     return slidersData && slidersData[index]
       ? slidersData[index]
@@ -779,7 +778,7 @@ const Categoria02BO = () => {
                     value={zoom}
                     min={1}
                     max={3}
-                    step={0.1}
+                    step={0.01}
                     aria-labelledby="Zoom"
                     onChange={(e) => {
                       setZoom(parseFloat(e.target.value));
