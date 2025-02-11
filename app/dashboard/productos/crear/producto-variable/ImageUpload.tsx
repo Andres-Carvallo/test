@@ -171,57 +171,82 @@ function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
       </div>
 
       {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        >
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={image || ""} // Asegurar que se pasa una cadena no nula
-              crop={crop}
-              zoom={zoom}
-              aspect={4 / 4}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-            />
-            <div className="controls"></div>
-          </div>
-          <div className="flex flex-col  justify-end ">
-            <div className="w-full py-6">
-              <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.01}
-                aria-labelledby="Zoom"
-                onChange={(e) => {
-                  setZoom(parseFloat(e.target.value));
-                }}
-                className="zoom-range w-full custom-range "
-              />
-            </div>
-
-            <div className="flex justify-between w-full ">
-              <button
-                onClick={handleCrop}
-                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Recortar y Subir
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg relative w-[95%] md:w-[80%] max-w-3xl p-6">
+            <div className="sticky top-0 bg-white border-b flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Recortar Imagen Principal
+              </h2>
               <button
                 onClick={() => {
                   setImage(null);
                   setIsModalOpen(false);
                 }}
-                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                Cancelar
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
+            <div className="relative h-96 w-full">
+              <Cropper
+                image={image || ""}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={handleCropComplete}
+              />
+            </div>
+            <div className="mt-6 space-y-4">
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Zoom
+                </label>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  aria-labelledby="Zoom"
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={handleCrop}
+                  className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Recortar y Continuar
+                </button>
+                <button
+                  onClick={() => {
+                    setImage(null);
+                    setIsModalOpen(false);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   );
