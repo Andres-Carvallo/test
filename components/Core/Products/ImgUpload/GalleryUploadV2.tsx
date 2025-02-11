@@ -5,6 +5,7 @@ import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";
 import Modal from "@/components/Core/Modals/ModalSeo";
+import toast from "react-hot-toast";
 
 interface Props {
   selectedImages: any[];
@@ -24,19 +25,46 @@ const GalleryUpload: React.FC<Props> = ({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
+      const totalImages = files.length + selectedImages.length;
+      if (totalImages > 4) {
+        toast.error("Solo puedes subir un máximo de 4 imágenes");
+        return;
+      }
+      setSelectedFiles(files);
+      setCurrentFileIndex(0);
       const file = files[0];
       setFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
         setMainImage(result);
-        setIsCropModalOpen(true); // Open modal for cropping
+        setIsCropModalOpen(true);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const processNextImage = () => {
+    if (currentFileIndex < selectedFiles.length - 1) {
+      setCurrentFileIndex((prev) => prev + 1);
+      const nextFile = selectedFiles[currentFileIndex + 1];
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setMainImage(result);
+        setFileName(nextFile.name);
+      };
+      reader.readAsDataURL(nextFile);
+    } else {
+      setSelectedFiles([]);
+      setCurrentFileIndex(0);
+      setIsCropModalOpen(false);
     }
   };
 
@@ -79,12 +107,13 @@ const GalleryUpload: React.FC<Props> = ({
         };
 
         handleImageGalleryChange([...selectedImages, newImage]);
-        setIsCropModalOpen(false);
+        processNextImage();
       };
 
       reader.readAsDataURL(compressedFile);
     } catch (error) {
       console.error("Error al recortar/comprimir la imagen:", error);
+      processNextImage();
     }
   };
 
@@ -95,83 +124,90 @@ const GalleryUpload: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-end w-full">
-      <label
-        htmlFor="fileInput"
-        style={{ borderRadius: "var(--radius)", zIndex: 0 }}
-        className={`shadow flex flex-col bg-white justify-center items-center border border-dashed border-gray-800 cursor-pointer ${
-          selectedImages.length > 0 ? "md:w-1/4" : "md:w-full"
-        } z-10 h-full`}
-      >
-        <div className="flex flex-col justify-center items-center p-2 text-center w-full">
-          <svg
-            className="w-12 h-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+    <div className="flex flex-col md:flex-row h-[150px]">
+      {selectedImages.length < 4 && (
+        <>
+          <label
+            htmlFor="fileInput"
+            style={{ borderRadius: "var(--radius)" }}
+            className="shadow flex flex-col bg-white justify-center items-center border border-dashed border-gray-800 cursor-pointer w-[150px] h-full shrink-0"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          {selectedImages.length > 0 ? null : (
-            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-              <span className="font-semibold">Subir Imagen</span>
-            </p>
-          )}
-          <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
-            PNG, JPG o Webp (800x800px)
-          </p>
-        </div>
-      </label>
-
-      <input
-        id="fileInput"
-        type="file"
-        multiple
-        className="hidden"
-        onChange={handleImageChange}
-      />
-
-      <div
-        className={`flex flex-wrap gap-4 md:w-3/4 md:flex-initial p-4 ${
-          selectedImages.length > 0 ? "block" : "hidden"
-        }`}
-      >
-        {selectedImages.map((image: any, index: any) => (
-          <div
-            key={index}
-            className="relative"
-          >
-            <img
-              src={image.data}
-              alt={`Image ${index}`}
-              className="w-14 h-14 object-cover rounded-md"
-            />
-            <button
-              onClick={() => handleRemoveImage(index)}
-              className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-            >
+            <div className="flex flex-col justify-center items-center p-2 text-center w-full">
               <svg
-                xmlns="http://www.w3.org/2000/svg"
+                className="w-8 h-8 text-gray-400"
                 fill="none"
                 viewBox="0 0 24 24"
-                strokeWidth={1.5}
                 stroke="currentColor"
-                className="size-3"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M6 18 18 6M6 6l12 12"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                 />
               </svg>
-            </button>
-          </div>
-        ))}
+              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
+                <span className="font-semibold">Subir Imagen</span>
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
+                PNG, JPG o Webp
+              </p>
+            </div>
+          </label>
+
+          <input
+            id="fileInput"
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageChange}
+          />
+        </>
+      )}
+
+      <div className={`flex-1 ${selectedImages.length > 0 ? "ml-4" : ""}`}>
+        <div
+          className="grid gap-4 h-full w-full"
+          style={{
+            gridTemplateColumns: `repeat(${Math.min(
+              selectedImages.length,
+              4
+            )}, 1fr)`,
+          }}
+        >
+          {selectedImages.map((image: any, index: any) => (
+            <div
+              key={index}
+              className="relative h-full w-full"
+            >
+              <div
+                className="w-full h-full bg-center bg-no-repeat bg-cover shadow rounded-md"
+                style={{ backgroundImage: `url(${image.data})` }}
+              />
+              <button
+                onClick={() => handleRemoveImage(index)}
+                className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-1.5"
+                title="Eliminar imagen"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       <ModalGalleryUpload
@@ -184,11 +220,12 @@ const GalleryUpload: React.FC<Props> = ({
           <div className="bg-white rounded-lg shadow-lg relative w-[95%] md:w-[80%] max-w-3xl p-6">
             <div className="sticky top-0 bg-white border-b flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-gray-800">
-                Recortar Imagen
+                Recortar Imagen {currentFileIndex + 1} de {selectedFiles.length}
               </h2>
               <button
                 onClick={() => {
-                  setMainImage(null);
+                  setSelectedFiles([]);
+                  setCurrentFileIndex(0);
                   setIsCropModalOpen(false);
                 }}
                 className="text-gray-500 hover:text-gray-700 transition-colors"
@@ -241,11 +278,12 @@ const GalleryUpload: React.FC<Props> = ({
                   onClick={handleCrop}
                   className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
                 >
-                  Recortar y Subir
+                  Recortar y Continuar
                 </button>
                 <button
                   onClick={() => {
-                    setMainImage(null);
+                    setSelectedFiles([]);
+                    setCurrentFileIndex(0);
                     setIsCropModalOpen(false);
                   }}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"

@@ -2,10 +2,17 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
-import { getCroppedImg } from "@/lib/cropImage"; // Asegúrate de tener esta función implementada
+import { getCroppedImg } from "@/lib/cropImage";
 import Modal from "@/components/Core/Modals/ModalSeo";
-function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
-  const [image, setImage] = useState<any>(null);
+import toast from "react-hot-toast";
+
+interface ImageUploadProps {
+  onImageChange: (imageData: any) => void;
+  preloadedImageUrl?: string | null;
+}
+
+function ImageUpload({ onImageChange, preloadedImageUrl }: ImageUploadProps) {
+  const [image, setImage] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
@@ -14,18 +21,18 @@ function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
 
   useEffect(() => {
     if (preloadedImageUrl) {
-      fetchImage(preloadedImageUrl);
+      setImage(preloadedImageUrl);
     }
   }, [preloadedImageUrl]);
 
-  const handleImageChange = (e: any) => {
-    const file = e.target.files[0];
-    console.log("Imagen cargada:", file);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       setOriginalFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as any);
+        const result = reader.result as string;
+        setImage(result);
         setIsModalOpen(true);
       };
       reader.readAsDataURL(file);
@@ -53,6 +60,7 @@ function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
         maxSizeMB: 1,
         maxWidthOrHeight: 800,
         useWebWorker: true,
+        initialQuality: 0.95,
       };
 
       const file = new File([croppedImage], originalFile.name, {
@@ -79,6 +87,7 @@ function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
       reader.readAsDataURL(compressedFile);
     } catch (error) {
       console.error("Error al recortar o comprimir la imagen:", error);
+      toast.error("Error al procesar la imagen");
     }
   };
 
@@ -87,88 +96,69 @@ function ImageUpload({ onImageChange, preloadedImageUrl }: any) {
     onImageChange(null);
   };
 
-  const fetchImage = async (url: any) => {
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      setImage(URL.createObjectURL(blob) as any);
-    } catch (error) {
-      console.error("Error al cargar la imagen:", error);
-    }
-  };
-
   return (
-    <div className="flex flex-col">
-      <div className="">
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleImageChange}
-        />
-        {image ? (
-          <div>
-            <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
-              <img
-                src={image}
-                alt="Preview Image"
-                className="w-full"
+    <div className="h-[150px] w-full">
+      {image ? (
+        <div className="relative h-full w-full">
+          <img
+            src={image}
+            alt="Imagen principal"
+            className="w-full h-full object-cover shadow rounded-md"
+          />
+          <button
+            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-1.5"
+            onClick={handleClearImage}
+            title="Eliminar imagen"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-4 h-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
               />
-              <button
-                className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                onClick={handleClearImage}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-2">
-            <label className="flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary rounded-lg cursor-pointer w-full z-10 p-2">
-              <div className="flex flex-col justify-center items-center">
-                <svg
-                  className="w-12 h-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-                  <span className="font-semibold">Subir Imagen</span>
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                  PNG, JPG o Webp (800x800px)
-                </p>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <label
+          htmlFor="imageUpload"
+          style={{ borderRadius: "var(--radius)" }}
+          className="shadow flex flex-col bg-white justify-center items-center border border-dashed border-gray-800 cursor-pointer w-full h-full relative"
+        >
+          <div className="flex flex-col justify-center items-center p-2 text-center">
+            <svg
+              className="w-8 h-8 text-gray-400 mb-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
               />
-            </label>
+            </svg>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              PNG, JPG o Webp
+            </p>
           </div>
-        )}
-      </div>
+          <input
+            id="imageUpload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageChange}
+          />
+        </label>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50">

@@ -190,7 +190,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
         <label
           htmlFor="variationImageUpload"
           style={{ borderRadius: "var(--radius)" }}
-          className="shadow flex flex-col bg-white justify-center items-center border border-dashed border-gray-800 cursor-pointer w-[150px] h-full relative"
+          className="shadow flex flex-col bg-white justify-center items-center border border-dashed border-gray-800 cursor-pointer w-[150px] h-full relative shrink-0"
         >
           <div className="flex flex-col justify-center items-center p-2 text-center">
             <svg
@@ -227,20 +227,28 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
       )}
 
       {/* Contenedor de miniaturas */}
-      <div className="flex-1 flex gap-4 overflow-x-auto pb-2 py-2">
+      <div className="flex-1">
         {isLoading ? (
-          <div className="flex items-center justify-center w-full">
+          <div className="flex items-center justify-center w-full h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <>
+          <div
+            className="grid gap-4 h-full w-full"
+            style={{
+              gridTemplateColumns: `repeat(${Math.min(
+                currentImages.length + pendingImages.length,
+                4
+              )}, 1fr)`,
+            }}
+          >
             {/* Mostrar imágenes existentes */}
             {variationImages.map((image) => {
               const isPendingDeletion = pendingDeletions.includes(image.id);
               return !isPendingDeletion ? (
                 <div
                   key={image.id}
-                  className="relative min-w-[150px] h-full"
+                  className="relative h-full w-full"
                 >
                   <div
                     className="w-full h-full bg-center bg-no-repeat bg-cover shadow rounded-md"
@@ -274,7 +282,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
             {pendingImages.map((image, index) => (
               <div
                 key={`pending-${index}`}
-                className="relative min-w-[150px] h-full"
+                className="relative h-full w-full"
               >
                 <div
                   className="w-full h-full bg-center bg-no-repeat bg-cover shadow rounded-md"
@@ -301,7 +309,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
                 </button>
               </div>
             ))}
-          </>
+          </div>
         )}
       </div>
 

@@ -119,7 +119,7 @@ const CrearVariable: React.FC = () => {
         const imageInfo = {
           name: originalFileName,
           type: compressedFile.type,
-          size: compressedFile.size, // Asegúrate de que este valor es siempre un número
+          size: compressedFile.size,
           data: base64data,
         };
 
@@ -129,12 +129,13 @@ const CrearVariable: React.FC = () => {
         }));
 
         setIsMainImageUploaded(true);
+        setIsModalOpen(false);
       };
 
       reader.readAsDataURL(compressedFile);
-      setIsModalOpen(false);
     } catch (error) {
       console.error("Error al recortar o comprimir la imagen:", error);
+      toast.error("Error al procesar la imagen");
     }
   };
 
@@ -1291,7 +1292,19 @@ const CrearVariable: React.FC = () => {
                         >
                           <button
                             className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                            onClick={() => handleClearImage(setMainImage)}
+                            onClick={() => {
+                              handleClearImage(setMainImage);
+                              setFormData((prevFormData) => ({
+                                ...prevFormData,
+                                mainImage: {
+                                  name: "",
+                                  type: "",
+                                  size: 0,
+                                  data: "",
+                                },
+                              }));
+                              setIsMainImageUploaded(false);
+                            }}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

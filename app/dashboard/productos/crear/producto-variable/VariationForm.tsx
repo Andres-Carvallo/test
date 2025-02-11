@@ -861,10 +861,16 @@ const VariationForm: React.FC<any> = ({
         <div className="grid grid-cols-4 mt-8 gap-4">
           <div className="col-span-4 md:col-span-1">
             <label className="font-normal">Imagen Principal</label>
-            <div className="mt-2">
+            <div className="mt-2 flex justify-center items-center">
               <ImageUpload
                 onImageChange={(image: any) => onMainImageChange(image, index)}
-                preloadedImageUrl={variation.mainImageUrl}
+                preloadedImageUrl={
+                  variation.mainImage?.data ||
+                  variation.mainImageUrl ||
+                  (typeof variation.mainImage === "string"
+                    ? variation.mainImage
+                    : null)
+                }
               />
             </div>
           </div>
