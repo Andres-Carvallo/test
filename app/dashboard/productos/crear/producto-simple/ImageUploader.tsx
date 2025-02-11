@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
 import { getCookie } from "cookies-next"; // asegúrate de tener cookies-next instalado
-import Loader from "@/components/common/Loader";
+import Loader from "@/components/common/Loader-t";
 import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
@@ -214,7 +214,7 @@ const ImageUploader: React.FC<any> = ({
   };
 
   return (
-    <div className="relative flex space-x-4 overflow-x-auto p-4">
+    <div className="relative flex gap-4 h-full">
       {isLoading && (
         <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-75 z-50">
           <Loader />
@@ -228,12 +228,12 @@ const ImageUploader: React.FC<any> = ({
           .map((image: any, index: any) => (
             <div
               key={image.id}
-              className="min-w-[80px] h-[80px] relative"
+              className="w-full h-full relative"
             >
               <img
                 src={image.imageUrl}
                 alt={`Image ${index + 1}`}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover rounded-md"
               />
               <button
                 className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
@@ -273,12 +273,12 @@ const ImageUploader: React.FC<any> = ({
       {pendingImages.map((image: any, index: number) => (
         <div
           key={`pending-${index}`}
-          className="min-w-[80px] h-[80px] relative"
+          className="w-full h-full relative"
         >
           <img
             src={image.data}
             alt={`Pending Image ${index + 1}`}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover rounded-md"
           />
           <button
             className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
@@ -305,10 +305,9 @@ const ImageUploader: React.FC<any> = ({
       {getTotalImagesCount() < MAX_IMAGES && (
         <label
           htmlFor="imageUpload"
-          className="min-w-[80px] p-2 flex justify-center items-center border border-dashed border-primary cursor-pointer"
-          style={{ borderRadius: "var(--radius)" }}
+          className="w-full h-full flex justify-center items-center border border-dashed border-primary cursor-pointer rounded-md"
         >
-          <div className="flex flex-col justify-center items-center">
+          <div className="flex flex-col justify-center items-center p-4">
             <svg
               className="w-12 h-12 text-gray-400"
               fill="none"
@@ -325,9 +324,7 @@ const ImageUploader: React.FC<any> = ({
             <p className="mb-2 text-sm text-gray-500 text-center">
               <span className="font-semibold">Subir Imágenes</span>
             </p>
-            <p className="text-xs text-gray-500 text-center">
-              PNG, JPG o Webp (800x800px)
-            </p>
+            <p className="text-xs text-gray-500 text-center">PNG, JPG o Webp</p>
             <p className="text-xs text-gray-500 text-center mt-1">
               Puedes seleccionar hasta {MAX_IMAGES - getTotalImagesCount()}{" "}
               {MAX_IMAGES - getTotalImagesCount() === 1 ? "imagen" : "imágenes"}
@@ -344,55 +341,86 @@ const ImageUploader: React.FC<any> = ({
         </label>
       )}
       {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={handleModalClose}
-        >
-          <div className="relative h-96 w-full">
-            <div className="absolute top-0 left-0 right-0 bg-gray-100 p-2 text-center text-sm">
-              Imagen {currentImageIndex + 1} de {imageQueue.length}
-            </div>
-            <Cropper
-              image={mainImage || ""}
-              crop={crop}
-              zoom={zoom}
-              aspect={1 / 1}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-            />
-          </div>
-          <div className="flex flex-col justify-end">
-            <div className="w-full py-6">
-              <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.01}
-                aria-labelledby="Zoom"
-                onChange={(e) => {
-                  setZoom(parseFloat(e.target.value));
-                }}
-                className="zoom-range w-full custom-range"
-              />
-            </div>
-            <div className="flex justify-between w-full gap-2">
-              <button
-                onClick={handleCrop}
-                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Recortar y Continuar
-              </button>
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Imagen {currentImageIndex + 1} de {imageQueue.length}
+                </p>
+              </div>
               <button
                 onClick={handleModalClose}
-                className="bg-red-800 text-[13px] md:text-[16px] hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                Omitir
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mainImage || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1 / 1}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={handleModalClose}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Omitir
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   );

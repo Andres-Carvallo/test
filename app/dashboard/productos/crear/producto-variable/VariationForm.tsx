@@ -87,6 +87,11 @@ const VariationForm: React.FC<any> = ({
   const { triggerRevalidation } = useRevalidation();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
+  const [pendingImageChanges, setPendingImageChanges] = useState({
+    pendingDeletions: [] as string[],
+    pendingImages: [] as any[],
+  });
+
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
     index: number
@@ -289,6 +294,7 @@ const VariationForm: React.FC<any> = ({
       return updatedVariations;
     });
   };
+
   const addProductImage = async (id: string, skuId: string, image: any) => {
     try {
       const base64data = image.data.split(",")[1]; // Obtiene solo la parte de datos
@@ -337,16 +343,14 @@ const VariationForm: React.FC<any> = ({
       toast.error(
         "El stock es nulo. No puedes publicar o actualizar esta variación."
       );
-      return; // No continuar con la ejecución
+      return;
     }
+
     const token = getCookie("AdminTokenAuth");
     const idVariable = searchParams.get("productVariableId");
     const currentVariation = variation;
-
-    // Inicializa un array para almacenar los mensajes de error
     const errorMessages = [];
 
-    // Verificación de campos obligatorios y agregado de mensajes de error específicos
     if (!isEditMode) {
       if (!currentVariation.description) {
         errorMessages.push("Descripción es obligatoria.");
@@ -373,7 +377,6 @@ const VariationForm: React.FC<any> = ({
       }
     }
 
-    // Si hay mensajes de error, mostrar toasts y retornar
     if (errorMessages.length > 0) {
       errorMessages.forEach((msg) => toast.error(msg));
       return;
@@ -420,18 +423,11 @@ const VariationForm: React.FC<any> = ({
         );
         variationId = variationResponse.data.sku.id;
       }
+
+      // Manejar precio y stock
       if (idVariable && stockQuantity !== null) {
         try {
           await HandlePriceSku(idVariable, variationId, precioNormal);
-        } catch (error) {
-          console.error("Error handling stock:", error);
-        }
-      } else {
-        console.error("Invalid input parameters for stock handling.");
-      }
-
-      if (idVariable && stockQuantity !== null) {
-        try {
           await handleStockSku(
             idVariable,
             variationId,
@@ -439,79 +435,72 @@ const VariationForm: React.FC<any> = ({
             alertStock
           );
         } catch (error) {
-          console.error("Error handling stock:", error);
-        }
-      } else {
-        console.error("Invalid input parameters for stock handling.");
-      }
-      // Verificación y recorrido de las imágenes seleccionadas
-      if (variation.selectedImages && Array.isArray(variation.selectedImages)) {
-        for (const image of variation.selectedImages) {
-          console.log("Llamando a addProductImage con imagen:", image);
-          if (idVariable !== null) {
-            await addProductImage(idVariable, variationId, image);
-          }
+          console.error("Error handling price/stock:", error);
         }
       }
-      // Manejar los atributos de la variación
-      if (variationId && attributePairs.length > 0) {
-        for (let i = 0; i < attributePairs.length; i++) {
-          const attribute = attributePairs[i];
-          if (attribute.id && attribute.value) {
-            const attributeUrl = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes/${attribute.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
-            try {
-              const existingAttributeResponse = await axios.get(attributeUrl, {
+
+      // Procesar eliminaciones de imágenes pendientes
+      if (
+        pendingImageChanges.pendingDeletions &&
+        pendingImageChanges.pendingDeletions.length > 0
+      ) {
+        await Promise.all(
+          pendingImageChanges.pendingDeletions.map((imageId) =>
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                method: "DELETE",
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
-              });
-
-              if (existingAttributeResponse.status === 200) {
-                await axios.put(
-                  attributeUrl,
-                  { value: attribute.value },
-                  {
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                  }
-                );
-              } else if (existingAttributeResponse.status === 404) {
-                await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                  { attributeId: attribute.id, value: attribute.value },
-                  {
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                  }
-                );
               }
+            )
+          )
+        );
+      }
+
+      // Procesar nuevas imágenes pendientes
+      if (
+        pendingImageChanges.pendingImages &&
+        pendingImageChanges.pendingImages.length > 0
+      ) {
+        await Promise.all(
+          pendingImageChanges.pendingImages.map((newImage) =>
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ mainImage: newImage }),
+              }
+            )
+          )
+        );
+      }
+
+      // Manejar atributos
+      if (variationId && attributePairs.length > 0) {
+        for (const attribute of attributePairs) {
+          if (attribute.id && attribute.value) {
+            try {
+              await axios.post(
+                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                { attributeId: attribute.id, value: attribute.value },
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
             } catch (error: any) {
-              if (error.response && error.response.status === 404) {
-                await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                  { attributeId: attribute.id, value: attribute.value },
-                  {
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                  }
-                );
-              } else {
-                console.error("Error al verificar el atributo:", error);
+              if (error.response?.status !== 409) {
+                console.error("Error al crear atributo:", error);
               }
             }
-
-            // Actualizar el estado de isNew a false después de la creación
-            setAttributePairs((prevPairs) => {
-              const updatedPairs = [...prevPairs];
-              updatedPairs[i].isNew = false;
-              return updatedPairs;
-            });
           }
         }
       }
@@ -520,18 +509,12 @@ const VariationForm: React.FC<any> = ({
         variationResponse.status === 200 ||
         variationResponse.status === 201
       ) {
-        // Agregar revalidación y modal después de todo el procesamiento exitoso
         await triggerRevalidation();
         setShowConfirmationModal(true);
-
         fetchVariations();
+        fetchVariationImages(idVariable, variationId);
         toast.success(
           isEditMode ? "Variación actualizada" : "Variación creada"
-        );
-      } else {
-        console.error(
-          "Error al enviar la solicitud:",
-          variationResponse.statusText
         );
       }
     } catch (error) {
@@ -868,39 +851,45 @@ const VariationForm: React.FC<any> = ({
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4">
-          <div className="w-48">
-            <h4>Imagen Principal</h4>
-            <ImageUpload
-              onImageChange={(image: any) => onMainImageChange(image, index)}
-              preloadedImageUrl={variation.mainImageUrl}
-            />
+        <div className="grid grid-cols-4 mt-8 gap-4">
+          <div className="col-span-4 md:col-span-1">
+            <label className="font-normal">Imagen Principal</label>
+            <div className="mt-2">
+              <ImageUpload
+                onImageChange={(image: any) => onMainImageChange(image, index)}
+                preloadedImageUrl={variation.mainImageUrl}
+              />
+            </div>
           </div>
-          <div>
-            <h4>Galería de Imágenes</h4>
-            {variation && variation.id ? (
-              <ImageUploaderVariable
-                productId={productId}
-                skuId={variation.id}
-                variationImages={variationImages}
-                fetchVariationImages={fetchVariationImages}
-              />
-            ) : (
-              <GalleryUpload2
-                selectedImages={variation.selectedImages || []}
-                handleImageGalleryChange={handleImageGalleryChange}
-                handleImageRemove={(index) => {
-                  handleImageGalleryChange(
-                    variation.selectedImages.filter(
-                      (_: any, i: any) => i !== index
-                    )
-                  );
-                }}
-              />
-            )}
+          <div className="col-span-4 md:col-span-3">
+            <label className="font-normal">Galería de imágenes</label>
+            <div className="h-[150px] mt-2">
+              {variation && variation.id ? (
+                <ImageUploaderVariable
+                  productId={productId}
+                  skuId={variation.id}
+                  variationImages={variationImages}
+                  fetchVariationImages={fetchVariationImages}
+                  onImagesChange={(changes) => {
+                    setPendingImageChanges(changes);
+                  }}
+                />
+              ) : (
+                <GalleryUpload2
+                  selectedImages={variation.selectedImages || []}
+                  handleImageGalleryChange={handleImageGalleryChange}
+                  handleImageRemove={(index) => {
+                    handleImageGalleryChange(
+                      variation.selectedImages.filter(
+                        (_: any, i: any) => i !== index
+                      )
+                    );
+                  }}
+                />
+              )}
+            </div>
           </div>
         </div>
-        <div></div>
 
         <div className="mt-2 flex justify-between">
           <button
@@ -920,8 +909,11 @@ const VariationForm: React.FC<any> = ({
 
       {/* Modal de Confirmación */}
       {showConfirmationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold mb-4">
+              {isEditMode ? "Variación Actualizada" : "Variación Creada"}
+            </h2>
             <p className="mb-6">¿Qué deseas hacer ahora?</p>
             <div className="flex flex-col sm:flex-row gap-4">
               <button

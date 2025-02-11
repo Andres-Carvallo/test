@@ -94,14 +94,6 @@ const CrearProductoSimple: React.FC = ({}) => {
       toast.error("El precio es requerido");
       valid = false;
     }
-    if (!skuData.hasUnlimitedStock && stockQuantity === null) {
-      toast.error("La cantidad de stock es requerida");
-      valid = false;
-    }
-    if (formData.productTypes.length === 0) {
-      toast.error("La categoría es requerida");
-      valid = false;
-    }
     if (!formData.enabledForDelivery && !formData.enabledForWithdrawal) {
       toast.error("Debe seleccionar al menos una opción: Delivery o Retiro");
       valid = false;
@@ -917,78 +909,84 @@ const CrearProductoSimple: React.FC = ({}) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const handleCancel = () => {
+    router.push("/dashboard/productos");
+  };
+
   if (isLoading) {
     return <Loader />;
   }
 
   return (
-    <>
-      <div className="relative pb-20 ">
-        <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-16 py-2 z-50">
-          <div className="flex w-full justify-between px-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-1 md:gap-2 w-full">
-              <div className="w-full px-3 py-1 h-full border-dark border rounded text-dark flex items-center gap-2 text-sm"></div>
-              Estado:{" "}
-              <span className="text-rosa">
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-16 py-2 z-50 bg-white/80">
+        <div className="flex w-full justify-between px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-1 md:gap-4 w-full">
+            <div className="w-full px-4 py-1 h-full border-dark border rounded text-dark flex items-center gap-2">
+              <span className="text-xs">Estado: </span>
+              <span className="text-rosa font-medium text-xs">
                 {isEditMode ? "Publicado" : "Borrador"}
               </span>
             </div>
 
-            <a
-              href={`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/productos/crear/producto-simple`}
-              className="relative w-full inline-flex items-center justify-start py-2 pl-3 pr-8 overflow-hidden font-medium text-sm text-white transition-all duration-150 ease-in-out rounded hover:pl-6 hover:pr-6 bg-dark group"
-            >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
-              <span className="absolute right-0 pr-2 duration-200 ease-out group-hover:translate-x-12">
-                <svg
-                  className="w-4 h-4 text-rosa"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-              </span>
-              <span className="absolute left-0 pl-2 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
-                <svg
-                  className="w-4 h-4 text-verde"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  />
-                </svg>
-              </span>
-              <span className="relative w-full text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                Nuevo Producto
-              </span>
-            </a>
             <button
-              id="createCategories"
-              onClick={() => handleOpenModal("createCategoriesModal")}
-              className="relative w-full inline-flex items-center justify-start py-2 pl-3 pr-8 overflow-hidden font-medium text-sm text-white transition-all duration-150 ease-in-out rounded hover:pl-6 hover:pr-6 bg-dark group"
+              onClick={() =>
+                (window.location.href =
+                  "/dashboard/productos/crear/producto-simple")
+              }
+              className="relative w-full inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
             >
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
-              <span className="absolute right-0 pr-2 duration-200 ease-out group-hover:translate-x-12">
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </span>
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </span>
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
+                Nuevo
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleOpenModal("createCategoriesModal")}
+              className="relative w-full inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
+            >
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-4 h-4"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
@@ -1002,14 +1000,14 @@ const CrearProductoSimple: React.FC = ({}) => {
                   />
                 </svg>
               </span>
-              <span className="absolute left-0 pl-2 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className="w-4 h-4"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
@@ -1023,56 +1021,57 @@ const CrearProductoSimple: React.FC = ({}) => {
                   />
                 </svg>
               </span>
-              <span className="relative w-full text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
                 Categorías
               </span>
             </button>
 
-            <Link
-              href="/dashboard/productos"
-              className="relative w-full inline-flex items-center justify-start py-2 pl-3 pr-8 overflow-hidden font-medium text-sm text-white transition-all duration-150 ease-in-out rounded hover:pl-6 hover:pr-6 bg-red-700 group"
+            <button
+              onClick={handleCancel}
+              className="relative w-full inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
             >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
-              <span className="absolute right-0 pr-2 duration-200 ease-out group-hover:translate-x-12">
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-600 group-hover:h-full" />
+              <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-4 h-4"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m0 0L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                   />
                 </svg>
               </span>
-              <span className="absolute left-0 pl-2 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className="w-4 h-4"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m0 0L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                   />
                 </svg>
               </span>
-              <span className="relative w-full text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
                 Cancelar
               </span>
-            </Link>
+            </button>
           </div>
         </div>
       </div>
-      <div className="w-[95%] md:w-[80%] mx-auto  bg-white  rounded-md p-6">
+
+      <div className="w-[95%] md:w-[80%] mx-auto bg-white rounded-md mt-4 p-6">
         <div className=" flex flex-col pb-8 ">
           <div className="grid grid-cols-1 2xl:grid-cols-1 gap-2">
             <div
@@ -1089,7 +1088,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                 <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
               </svg>
               <span className="sr-only">Info</span>
-              <div>
+              <div className="text-[12px]">
                 La información que cargues en el Título, Descripción y
                 Fotografía Principal, será la que aparecerá en una búsqueda
                 orgánica (SEO).
@@ -1206,25 +1205,29 @@ const CrearProductoSimple: React.FC = ({}) => {
                   />
                   <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
                   <label
-                    className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded border border-gray-300 p-4"
+                    className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded border border-gray-300 p-3 sm:p-4"
                     htmlFor="checkbox_withdrawal"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-6 h-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                      />
-                    </svg>
-                    <div className="ml-5">
-                      <span className="mt-2 font-normal">Retiro en Tienda</span>
+                    <div className="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5 sm:w-6 sm:h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                        />
+                      </svg>
+                      <div className="ml-3 sm:ml-5">
+                        <span className="text-sm sm:text-base font-normal">
+                          Retiro en Tienda
+                        </span>
+                      </div>
                     </div>
                   </label>
                 </div>
@@ -1331,7 +1334,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                     }`}
                     style={{ borderRadius: "var(--radius)" }}
                     value={stockQuantity !== null ? stockQuantity : ""}
-                    onChange={handleStockQuantityChange} // Cambia a este nuevo manejador
+                    onChange={handleStockQuantityChange}
                     name="stockProducto"
                     required
                     disabled={skuData.hasUnlimitedStock}
@@ -1411,7 +1414,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   style={{ borderRadius: "var(--radius)" }}
                   name="AlertadeStock"
                   value={alertStock !== null ? alertStock : ""}
-                  onChange={handleAlertStockChange} // Cambia a esta función
+                  onChange={handleAlertStockChange}
                   required
                 />
               </div>
@@ -1464,7 +1467,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   <label className="font-normal ">Imagen Principal</label>
                   <label
                     htmlFor="mainImage"
-                    className="shadow flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-gray-600 cursor-pointer w-full z-10"
+                    className="shadow flex mt-2 h-[150px] flex-col bg-white justify-center items-center border border-dashed border-gray-600 cursor-pointer w-full z-10"
                     style={{ borderRadius: "var(--radius)" }}
                   >
                     <div className="flex flex-col justify-center items-center">
@@ -1485,18 +1488,16 @@ const CrearProductoSimple: React.FC = ({}) => {
                         <span className="font-semibold">Subir Imagen</span>
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
-                        PNG, JPG o Webp (800x800px)
+                        PNG, JPG o Webp
                       </p>
                     </div>
                   </label>
                 </div>
               )}
             </div>
-            <div className="col-span-4 md:col-span-3 z-0">
-              <label className="font-normal text-primary">
-                Galería de imágenes
-              </label>
-              <div className="flex space-x-4 overflow-x-auto">
+            <div className="col-span-4 md:col-span-3">
+              <label className="font-normal">Galería de imágenes</label>
+              <div className="h-[150px] mt-2">
                 <ImageUploader
                   productId={productId}
                   skuId={skuId}
@@ -1507,7 +1508,11 @@ const CrearProductoSimple: React.FC = ({}) => {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div
+            className={`grid ${
+              isEditMode ? "grid-cols-2" : "grid-cols-1"
+            } gap-4`}
+          >
             <button
               className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
               style={{ borderRadius: "var(--radius)" }}
@@ -1532,41 +1537,14 @@ const CrearProductoSimple: React.FC = ({}) => {
       <div
         id="createCategoriesModal"
         tabIndex={-1}
-        className={`fixed inset-0 flex items-center justify-center z-[9999] ${
+        className={`overflow-y-auto overflow-x-hidden pt-0 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080] left-0 z-50 w-full h-[calc(100%)] ${
           openModalId === "createCategoriesModal" ? "" : "hidden"
         }`}
       >
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div className="relative w-[95%] md:w-[80%] max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-xl">
-          <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-800">Categorías</h2>
-            <button
-              onClick={handleCloseModal}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-          <div className="p-6">
-            <TabCategory
-              handleCloseModal={handleCloseModal}
-              fetchData={fetchProducTypes}
-            />
-          </div>
-        </div>
+        <TabCategory
+          handleCloseModal={handleCloseModal}
+          fetchData={fetchProducTypes}
+        />
       </div>
       <div
         id="createAttributeModal"
@@ -1714,7 +1692,7 @@ const CrearProductoSimple: React.FC = ({}) => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

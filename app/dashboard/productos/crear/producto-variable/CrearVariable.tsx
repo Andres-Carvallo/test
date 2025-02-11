@@ -398,8 +398,22 @@ const CrearVariable: React.FC = () => {
     setImage(null);
   };
 
-  const handleImageGalleryChange = (images: ImageData[]) => {
-    setSelectedImages(images);
+  const [pendingImageChanges, setPendingImageChanges] = useState<{
+    pendingImages: any[];
+    pendingDeletions: string[];
+    currentImages: any[];
+  }>({
+    pendingImages: [],
+    pendingDeletions: [],
+    currentImages: [],
+  });
+
+  const handleImageGalleryChange = (changes: {
+    pendingImages: any[];
+    pendingDeletions: string[];
+    currentImages: any[];
+  }) => {
+    setPendingImageChanges(changes);
   };
 
   const handleImageRemove = (index: number) => {
@@ -634,18 +648,75 @@ const CrearVariable: React.FC = () => {
         const { product } = responseData;
         const { id } = product;
 
-        await triggerRevalidation();
+        // Procesar las imágenes pendientes después de crear el producto
+        if (pendingImageChanges.pendingImages.length > 0) {
+          await Promise.all(
+            pendingImageChanges.pendingImages.map((newImage) =>
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}/skus/${product.skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ mainImage: newImage }),
+                }
+              )
+            )
+          );
+        }
 
-        // Ocultar el formulario base solo después de crear exitosamente
+        await triggerRevalidation();
         setShowBaseProductInfo(false);
         toast.success("Producto base creado correctamente");
         setProductId(id);
         setIsEditMode(true);
         window.location.href = `${window.location.pathname}?productVariableId=${id}`;
       } else {
+        // Procesar las imágenes en modo edición
+        if (pendingImageChanges.pendingDeletions.length > 0) {
+          await Promise.all(
+            pendingImageChanges.pendingDeletions.map((imageId) =>
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuIdBase}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                {
+                  method: "DELETE",
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              )
+            )
+          );
+        }
+
+        if (pendingImageChanges.pendingImages.length > 0) {
+          await Promise.all(
+            pendingImageChanges.pendingImages.map((newImage) =>
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuIdBase}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ mainImage: newImage }),
+                }
+              )
+            )
+          );
+        }
+
         await triggerRevalidation();
         toast.success("Producto base actualizado correctamente");
       }
+
+      // Limpiar los cambios pendientes después de procesar
+      setPendingImageChanges({
+        pendingImages: [],
+        pendingDeletions: [],
+        currentImages: [],
+      });
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al procesar la solicitud");
@@ -716,23 +787,27 @@ const CrearVariable: React.FC = () => {
 
   return (
     <div>
-      <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-16 py-8 z-50">
+      <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-16 py-2 z-50 bg-white/80">
         <div className="flex w-full justify-between px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-1 md:gap-4 w-full">
-            <div className="w-full  px-4 py-1 h-full  border-dark border rounded text-dark flex items-center gap-2">
-              Estado:{" "}
-              <span className="text-rosa">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-1 md:gap-4 w-full">
+            <div className="w-full px-4 py-1 h-full border-dark border rounded text-dark flex items-center gap-2">
+              <span className="text-xs">Estado: </span>
+              <span className="text-rosa font-medium text-xs">
                 {variations.length > 0 ? "Publicado" : "Borrador"}
               </span>
             </div>
-            <a
-              href={`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/productos/crear/producto-variable`}
-              className="relative w-full  inline-flex  items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
+
+            <button
+              onClick={() =>
+                (window.location.href =
+                  "/dashboard/productos/crear/producto-variable")
+              }
+              className="relative w-full inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
             >
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
                 <svg
-                  className="w-5 h-5 text-rosa"
+                  className="w-3.5 h-3.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -742,13 +817,13 @@ const CrearVariable: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
               </span>
               <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
                 <svg
-                  className="w-5 h-5 text-verde"
+                  className="w-3.5 h-3.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -758,18 +833,18 @@ const CrearVariable: React.FC = () => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
               </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
-                Nuevo Producto
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
+                Nuevo
               </span>
-            </a>
+            </button>
+
             <button
-              id="createCategories"
               onClick={() => handleOpenModal("createCategoriesModal")}
-              className="relative w-full  inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group "
+              className="relative w-full inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
             >
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
@@ -777,9 +852,9 @@ const CrearVariable: React.FC = () => {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  strokeWidth="{1.5}"
+                  strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-6"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
@@ -800,7 +875,7 @@ const CrearVariable: React.FC = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className="size-6"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
@@ -814,15 +889,14 @@ const CrearVariable: React.FC = () => {
                   />
                 </svg>
               </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
                 Categorías
               </span>
             </button>
 
             <button
-              id="createAttribute"
               onClick={() => handleOpenModal("createAttributeModal")}
-              className="relative w-full  inline-flex  items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
+              className="relative w-full inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-dark group"
             >
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
@@ -830,61 +904,61 @@ const CrearVariable: React.FC = () => {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  strokeWidth="{1.5}"
+                  strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-6"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                    d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
                   />
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                    d="M6 6h.008v.008H6V6Z"
                   />
                 </svg>
               </span>
-              <span className="absolute left-0 pl-1 -translate-x-12 group-hover:translate-x-0 ease-out duration-200 ">
+              <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className="size-6"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                    d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
                   />
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                    d="M6 6h.008v.008H6V6Z"
                   />
                 </svg>
               </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
                 Atributos
               </span>
             </button>
 
-            {/* <button
-              onClick={handleDeleteForm}
-              className="relative inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
+            <button
+              onClick={handleCancel}
+              className="relative w-full inline-flex items-center justify-start py-3 pl-4 pr-12 overflow-hidden font-semibold text-white transition-all duration-150 ease-in-out rounded hover:pl-10 hover:pr-6 bg-red-700 group"
             >
-              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-700 group-hover:h-full" />
+              <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-red-600 group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  strokeWidth="{1.5}"
+                  strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-6"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
@@ -900,7 +974,7 @@ const CrearVariable: React.FC = () => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className="size-6"
+                  className="w-3.5 h-3.5"
                 >
                   <path
                     strokeLinecap="round"
@@ -909,16 +983,16 @@ const CrearVariable: React.FC = () => {
                   />
                 </svg>
               </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
                 Cancelar
               </span>
-            </button> */}
+            </button>
           </div>
         </div>
       </div>
-      <div className="px-4 mb-10">
-        <div className="bg-white p-8">
-          <Breadcrumb pageName="Crear producto" />
+
+      <div className="w-[95%] md:w-[80%] mx-auto bg-white rounded-md mt-4 p-6">
+        <div className="bg-white  mx-auto">
           {/* Columna principal */}
           {showBaseProductInfo === false && variations.length === 0 && (
             <div
@@ -970,7 +1044,7 @@ const CrearVariable: React.FC = () => {
                       <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
                     </svg>
                     <span className="sr-only">Info</span>
-                    <div>
+                    <div className="text-[12px]">
                       Para crear un producto variable, primero debes crear un
                       producto base. Al crear el producto base se activará una
                       nueva sección en el menú que te permitirá crear las
@@ -994,13 +1068,13 @@ const CrearVariable: React.FC = () => {
                     <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
                   </svg>
                   <span className="sr-only">Info</span>
-                  <div>
+                  <div className="text-[12px]">
                     La información que cargues en el Título, Descripción y
                     Fotografía Principal, será la que aparecerá en una búsqueda
                     orgánica (SEO).
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-2">
+                <div className="grid grid-cols-1 pt-2">
                   <div>
                     <label
                       htmlFor="nombreProducto"
@@ -1018,29 +1092,6 @@ const CrearVariable: React.FC = () => {
                         setFormData({ ...formData, name: event.target.value })
                       }
                     />
-                  </div>
-
-                  <div>
-                    <div>
-                      <label className="font-normal text-primary">
-                        Categoría de Producto Base
-                      </label>
-
-                      <Select
-                        options={productTypeOptions}
-                        isMulti
-                        value={formData.productTypes}
-                        onChange={(selectedOptions: any) => {
-                          setFormData({
-                            ...formData,
-                            productTypes: selectedOptions,
-                          });
-                          setSelectedProductTypes(selectedOptions);
-                        }}
-                        className="mt-2"
-                        styles={customStyles}
-                      />
-                    </div>
                   </div>
                 </div>
                 <div className="mt-8">
@@ -1195,8 +1246,30 @@ const CrearVariable: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex  gap-2 mt-8">
-                  <div className="col-span-1">
+                <div className="mt-8">
+                  <div>
+                    <label className="font-normal text-primary">
+                      Categoría de Producto Base
+                    </label>
+
+                    <Select
+                      options={productTypeOptions}
+                      isMulti
+                      value={formData.productTypes}
+                      onChange={(selectedOptions: any) => {
+                        setFormData({
+                          ...formData,
+                          productTypes: selectedOptions,
+                        });
+                        setSelectedProductTypes(selectedOptions);
+                      }}
+                      className="mt-2"
+                      styles={customStyles}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 mt-8 gap-4">
+                  <div className="col-span-4 md:col-span-1">
                     <input
                       type="file"
                       accept="image/*"
@@ -1208,7 +1281,7 @@ const CrearVariable: React.FC = () => {
                     />
                     {mainImage ? (
                       <div>
-                        <label className="font-normal ">Imagen Principal</label>
+                        <label className="font-normal">Imagen Principal</label>
                         <div
                           className="shadow relative mt-2 h-[150px] object-contain overflow-hidden bg-center bg-no-repeat bg-cover"
                           style={{
@@ -1239,10 +1312,10 @@ const CrearVariable: React.FC = () => {
                       </div>
                     ) : (
                       <div>
-                        <label className="font-normal ">Imagen Principal</label>
+                        <label className="font-normal">Imagen Principal</label>
                         <label
                           htmlFor="mainImage"
-                          className="shadow flex mt-2 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed border-gray-600 cursor-pointer w-full z-10"
+                          className="shadow flex mt-2 h-[150px] flex-col bg-white justify-center items-center border border-dashed border-gray-600 cursor-pointer w-full z-10"
                           style={{ borderRadius: "var(--radius)" }}
                         >
                           <div className="flex flex-col justify-center items-center">
@@ -1265,234 +1338,26 @@ const CrearVariable: React.FC = () => {
                               </span>
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 px-2">
-                              PNG, JPG or Webp (800x800px)
+                              PNG, JPG o Webp
                             </p>
                           </div>
                         </label>
                       </div>
                     )}
                   </div>
-                  <div className="w-[50%] ">
-                    <label className="font-normal text-primary">
-                      Imágenes Adicionales
-                    </label>
-                    <div>
-                      {isEditMode ? (
-                        <ImageUploader
-                          productId={productId}
-                          skuId={skuIdBase}
-                          skuImages={skuImages}
-                          fetchImages={fetchImages}
-                        />
-                      ) : (
-                        <GalleryUpload
-                          selectedImages={selectedImages}
-                          handleImageGalleryChange={handleImageGalleryChange}
-                          handleImageRemove={handleImageRemove}
-                        />
-                      )}
-                    </div>
-                  </div>
-                  {/* <div className="hidden">
-                <input
-                  type="file"
-                  accept="image/*"
-                  id="previewImage"
-                  className="hidden"
-                  onChange={(e) =>
-                    handleImageChange(e, setPreviewImage, "previewImage")
-                  }
-                />
-                {previewImage ? (
-                  <div>
-                    <label className="font-normal text-primary">
-                      Imagen Secundaria
-                    </label>
-                    <div
-                      className="shadow relative mt-2 h-[150px] object-contain overflow-hidden"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <img
-                        src={previewImage}
-                        alt="Preview Image"
-                        className="w-full"
+                  <div className="col-span-4 md:col-span-3">
+                    <label className="font-normal">Galería de imágenes</label>
+                    <div className="h-[150px] mt-2">
+                      <ImageUploader
+                        productId={productId}
+                        skuId={skuIdBase}
+                        skuImages={skuImages}
+                        fetchImages={fetchImages}
+                        onImagesChange={handleImageGalleryChange}
                       />
-                      <button
-                        className="absolute top-0 right-0  bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                        onClick={() => handleClearImage(setPreviewImage)}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-6 h-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                          />
-                        </svg>
-                      </button>
                     </div>
                   </div>
-                ) : (
-                  <div>
-                    <label className="font-normal text-primary">
-                      Imagen Secundaria
-                    </label>
-                    <label
-                      htmlFor="previewImage"
-                      className="shadow flex flex-col mt-2 bg-white justify-center items-center pt-5 pb-6 border border-dashed border-primary cursor-pointer w-full z-10"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <div className="flex flex-col justify-center items-center">
-                        <svg
-                          className="w-12 h-12 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">Click to upload</span>
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          SVG, PNG, JPG or GIF (MAX. 800x400px)
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-                )}
-              </div> */}
                 </div>
-                {/* MEDIDAS DELIVERY */}
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-              <div>
-                <label htmlFor="medidas">
-                  <div className=" flex gap-2">
-                    <label className="font-normal text-primary">
-                      Medidas Delivery
-                    </label>
-                    <button onClick={() => setShowForm(!showForm)}>
-                      {showForm ? (
-                        <span className="bg-primary text-secondary p-1 text-xs">
-                          Ocultar
-                        </span>
-                      ) : (
-                        <span className="bg-primary text-secondary p-1 text-xs">
-                          Mostrar
-                        </span>
-                      )}
-                    </button>
-                  </div>
-                </label>
-                {showForm &&
-                  (formData.enabledForDelivery ? (
-                    <div className="mt-2">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        <div className="">
-                          <label
-                            htmlFor="largo"
-                            className="text-xs"
-                          >
-                            Largo (cm.)
-                          </label>
-                          <input
-                            type="number"
-                            name="length"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.length || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-                        <div>
-                          <label
-                            htmlFor="ancho"
-                            className="text-xs"
-                          >
-                            Ancho (cm.)
-                          </label>
-                          <input
-                            type="number"
-                            name="width"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.width || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                        <div>
-                          <label
-                            htmlFor="alto"
-                            className="text-xs"
-                          >
-                            Alto (cm.)
-                          </label>
-                          <input
-                            type="number"
-                            name="height"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.height || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="peso"
-                            className="text-xs"
-                          >
-                            Peso (kg.)
-                          </label>
-                          <input
-                            type="number"
-                            name="weight"
-                            className="block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
-                            value={measures.weight || ""}
-                            onChange={handleInputMeasuresChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      style={{ borderRadius: "var(--radius)" }}
-                      className="shadow mt-4 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
-                      role="alert"
-                    >
-                      <svg
-                        className="flex-shrink-0 inline w-4 h-4 me-3"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                      </svg>
-                      <span className="sr-only">Info</span>
-                      <div>
-                        <span className="font-semibold">
-                          Habilitar despacho.
-                        </span>{" "}
-                        Se debe seleccionar la opcion para poder mostrar las
-                        medidas.
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div> */}
-
                 <button
                   className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
                   style={{ borderRadius: "var(--radius)" }}
@@ -1534,7 +1399,7 @@ const CrearVariable: React.FC = () => {
         <div
           id="createCategoriesModal"
           tabIndex={-1}
-          className={`overflow-y-auto overflow-x-hidden  pt-0 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080]  left-0 z-50 w-full  h-[calc(100%)] ${
+          className={`overflow-y-auto overflow-x-hidden pt-0 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080] left-0 z-50 w-full h-[calc(100%)] ${
             openModalId === "createCategoriesModal" ? "" : "hidden"
           }`}
         >
@@ -1547,7 +1412,7 @@ const CrearVariable: React.FC = () => {
         <div
           id="createAttributeModal"
           tabIndex={-1}
-          className={`overflow-y-auto overflow-x-hidden  pt-0 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080]  left-0 z-50 w-full  h-[calc(100%)] ${
+          className={`overflow-y-auto overflow-x-hidden pt-0 fixed top-0 right-0 backdrop-blur-sm bg-[#00000080] left-0 z-50 w-full h-[calc(100%)] ${
             openModalId === "createAttributeModal" ? "" : "hidden"
           }`}
         >
@@ -1559,58 +1424,87 @@ const CrearVariable: React.FC = () => {
         {/* MODALS */}
       </div>
       {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        >
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={mainImage || ""} // Asegurar que se pasa una cadena no nula
-              crop={crop}
-              zoom={zoom}
-              aspect={4 / 4}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-            />
-            <div className="controls"></div>
-          </div>
-          <div className="flex flex-col  justify-end ">
-            <div className="w-full py-6">
-              <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.01}
-                aria-labelledby="Zoom"
-                onChange={(e) => {
-                  setZoom(parseFloat(e.target.value));
-                }}
-                className="zoom-range w-full custom-range "
-              />
-            </div>
-
-            <div className="flex justify-between w-full gap-2">
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen
+                </h2>
+              </div>
               <button
-                onClick={handleCrop}
-                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                Recortar y Subir
-              </button>
-              <button
-                onClick={() => {
-                  setMainImage(null);
-                  setIsMainImageUploaded(false);
-                  setIsModalOpen(false);
-                }}
-                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
-              >
-                Cancelar
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
               </button>
             </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mainImage || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={4 / 4}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Subir
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMainImage(null);
+                      setIsMainImageUploaded(false);
+                      setIsModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   );
