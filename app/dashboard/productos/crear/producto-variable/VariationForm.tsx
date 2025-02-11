@@ -531,8 +531,15 @@ const VariationForm: React.FC<any> = ({
         await triggerRevalidation();
         // Primero actualizamos las imágenes
         await fetchVariationImages(idVariable, variationId);
-        // Luego actualizamos las variaciones y mostramos el modal
+        // Luego actualizamos las variaciones
         await fetchVariations();
+
+        // Si estamos en modo edición, mantenemos abierto este formulario
+        // Si es una nueva variación, cerramos el formulario
+        if (!isEditMode) {
+          onCloseForm();
+        }
+
         setShowConfirmationModal(true);
         // Limpiamos los cambios pendientes
         setPendingImageChanges({
