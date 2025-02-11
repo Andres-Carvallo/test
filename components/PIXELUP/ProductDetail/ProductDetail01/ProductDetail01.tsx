@@ -817,11 +817,11 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
     // Para productos con variaciones sin selección específica
     if (variations.length > 1) {
       const normalPrices = variations
-        .map(v => v.pricings?.[0]?.unitPrice)
+        .map((v) => v.pricings?.[0]?.unitPrice)
         .filter((p): p is number => p !== undefined && p > 0);
-      
+
       const offerPrices = variations
-        .map(v => v.offers?.[0]?.unitPrice)
+        .map((v) => v.offers?.[0]?.unitPrice)
         .filter((p): p is number => p !== undefined && p > 0);
 
       // Si hay ofertas, mostrar ambos rangos de precios
@@ -836,14 +836,16 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
             <span className="font-bold text-primary text-3xl line-through">
               {minNormalPrice === maxNormalPrice
                 ? `$${minNormalPrice.toLocaleString("es-CL")}`
-                : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
-              }
+                : `$${minNormalPrice.toLocaleString(
+                    "es-CL"
+                  )} - $${maxNormalPrice.toLocaleString("es-CL")}`}
             </span>
             <span className="font-bold text-red-700 text-3xl">
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
-                : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
-              }
+                : `$${minOfferPrice.toLocaleString(
+                    "es-CL"
+                  )} - $${maxOfferPrice.toLocaleString("es-CL")}`}
             </span>
           </div>
         );
@@ -858,8 +860,9 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
           <span className="font-bold text-primary text-3xl">
             {minPrice === maxPrice
               ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
-            }
+              : `$${minPrice.toLocaleString(
+                  "es-CL"
+                )} - $${maxPrice.toLocaleString("es-CL")}`}
           </span>
         );
       }
@@ -968,9 +971,9 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                     />
                   ))}
                 </div>
-                
+
                 <div
-                  className="hidden md:block w-full md:w-[500px] md:h-[500px] bg-gray-100 flex items-center justify-center shadow-md"
+                  className=" md:block w-full md:w-[500px] md:h-[500px] bg-gray-100 flex items-center justify-center shadow-md"
                   style={{ borderRadius: "var(--radius)" }}
                 >
                   <img
@@ -980,9 +983,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                   />
                 </div>
               </div>
-              <div className="md:hidden mt-4">
-                {renderMobileThumbnails()}
-              </div>
+              <div className="md:hidden mt-4">{renderMobileThumbnails()}</div>
             </div>
 
             <div className="md:flex-1 px-4 ml-4 md:ml-24 lg:ml-4 mt-2 md:mt-8">
@@ -1037,36 +1038,43 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
               {hasAttributes() && (
                 <div className="mt-4 border-t border-gray-100">
                   <div className="flex flex-col space-y-4 mt-2">
-                    {Object.entries(currentAttributes).map(([attributeName, attributeValues]) => (
-                      <div key={attributeName}>
-                        <h4 className="text-primary font-semibold">
-                          {capitalizeFirstLetter(attributeName)}:
-                        </h4>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {attributeValues.map((value, index) => {
-                            const isDisabled = disabledAttributes[attributeName]?.[index] || false;
-                            const isSelected = selectedAttributes[attributeName] === value;
+                    {Object.entries(currentAttributes).map(
+                      ([attributeName, attributeValues]) => (
+                        <div key={attributeName}>
+                          <h4 className="text-primary font-semibold">
+                            {capitalizeFirstLetter(attributeName)}:
+                          </h4>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {attributeValues.map((value, index) => {
+                              const isDisabled =
+                                disabledAttributes[attributeName]?.[index] ||
+                                false;
+                              const isSelected =
+                                selectedAttributes[attributeName] === value;
 
-                            return (
-                              <button
-                                key={value}
-                                onClick={() => handleAttributeChange(attributeName, value)}
-                                disabled={isDisabled}
-                                className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                                  isSelected
-                                    ? "border-primary bg-primary text-white"
-                                    : isDisabled
-                                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                                    : "border-gray-200 hover:border-primary"
-                                }`}
-                              >
-                                {value}
-                              </button>
-                            );
-                          })}
+                              return (
+                                <button
+                                  key={value}
+                                  onClick={() =>
+                                    handleAttributeChange(attributeName, value)
+                                  }
+                                  disabled={isDisabled}
+                                  className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                                    isSelected
+                                      ? "border-primary bg-primary text-white"
+                                      : isDisabled
+                                      ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                      : "border-gray-200 hover:border-primary"
+                                  }`}
+                                >
+                                  {value}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </div>
               )}
@@ -1191,11 +1199,16 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                       </div>
                       <div className="relative w-[80px]">
                         <select
-                          onChange={(e) => setQuantity(parseInt(e.target.value))}
+                          onChange={(e) =>
+                            setQuantity(parseInt(e.target.value))
+                          }
                           className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
                         >
                           {Array.from({ length: 10 }, (_, i) => (
-                            <option className="text-center" key={i}>
+                            <option
+                              className="text-center"
+                              key={i}
+                            >
                               {i + 1}
                             </option>
                           ))}
@@ -1219,15 +1232,18 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                     <button
                       onClick={handleAddToCart}
                       className={`flex-1 h-14 px-6 py-2 text-[0.8rem] md:text-md font-semibold rounded-xl bg-primary text-white hover:bg-secondary hover:text-primary ${
-                        hasVariations && (!attributeSelected || !areAllAttributesSelected())
+                        hasVariations &&
+                        (!attributeSelected || !areAllAttributesSelected())
                           ? "bg-gray-400 cursor-not-allowed"
                           : ""
                       }`}
                       disabled={
-                        hasVariations && (!attributeSelected || !areAllAttributesSelected())
+                        hasVariations &&
+                        (!attributeSelected || !areAllAttributesSelected())
                       }
                     >
-                      {hasVariations && (!attributeSelected || !areAllAttributesSelected())
+                      {hasVariations &&
+                      (!attributeSelected || !areAllAttributesSelected())
                         ? "Selecciona todas las Variaciones"
                         : "Agregar al Carrito"}
                     </button>

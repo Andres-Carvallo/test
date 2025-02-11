@@ -510,9 +510,16 @@ const VariationForm: React.FC<any> = ({
         variationResponse.status === 201
       ) {
         await triggerRevalidation();
+        // Primero actualizamos las imágenes
+        await fetchVariationImages(idVariable, variationId);
+        // Luego actualizamos las variaciones y mostramos el modal
+        await fetchVariations();
         setShowConfirmationModal(true);
-        fetchVariations();
-        fetchVariationImages(idVariable, variationId);
+        // Limpiamos los cambios pendientes
+        setPendingImageChanges({
+          pendingImages: [],
+          pendingDeletions: [],
+        });
         toast.success(
           isEditMode ? "Variación actualizada" : "Variación creada"
         );
