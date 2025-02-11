@@ -396,7 +396,7 @@ const VariationForm: React.FC<any> = ({
       };
 
       let variationResponse;
-      let variationId;
+      let variationId: any;
 
       if (isEditMode) {
         variationResponse = await axios.put(
@@ -422,6 +422,25 @@ const VariationForm: React.FC<any> = ({
           }
         );
         variationId = variationResponse.data.sku.id;
+
+        // Procesar las imágenes de la galería para nueva variación
+        if (variation.selectedImages && variation.selectedImages.length > 0) {
+          await Promise.all(
+            variation.selectedImages.map((image: any) =>
+              fetch(
+                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ mainImage: image }),
+                }
+              )
+            )
+          );
+        }
       }
 
       // Manejar precio y stock
