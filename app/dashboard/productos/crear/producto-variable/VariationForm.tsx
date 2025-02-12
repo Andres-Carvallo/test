@@ -40,6 +40,7 @@ const VariationForm: React.FC<any> = ({
   currentMinimumQuantities,
   handleImageRemove,
   baseProductDescription, //descripcion del producto base
+  skuImages, // Imágenes del producto base
 }) => {
   const { attributes, setAttributes, loading, error } = useAPI();
   const editFormRef = useRef<HTMLDivElement>(null);
@@ -592,6 +593,70 @@ const VariationForm: React.FC<any> = ({
     }
   };
 
+  const convertImageToBase64 = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve({
+            name: "image.jpg",
+            type: blob.type,
+            size: blob.size,
+            data: reader.result,
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Error convirtiendo imagen a base64:", error);
+      throw error;
+    }
+  };
+
+  const handleCopyBaseImages = async () => {
+    if (skuImages && skuImages.length > 0) {
+      try {
+        setIsLoading(true);
+        // Convertir la imagen principal
+        const mainImageBase64: any = await convertImageToBase64(
+          skuImages[0].imageUrl
+        );
+        onMainImageChange(mainImageBase64, index);
+
+        // Convertir las imágenes de la galería
+        const galleryImagesPromises = skuImages
+          .slice(1)
+          .map((img: { imageUrl: string }) =>
+            convertImageToBase64(img.imageUrl)
+          );
+        const galleryImagesBase64 = await Promise.all(galleryImagesPromises);
+
+        if (variation.id) {
+          // Modo edición
+          setPendingImageChanges({
+            pendingImages: galleryImagesBase64,
+            pendingDeletions: [],
+          });
+        } else {
+          // Nueva variación
+          handleImageGalleryChange(galleryImagesBase64);
+        }
+
+        toast.success("Imágenes copiadas del producto base");
+      } catch (error) {
+        console.error("Error al copiar las imágenes:", error);
+        toast.error("Error al copiar las imágenes del producto base");
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      toast.error("No hay imágenes disponibles en el producto base");
+    }
+  };
+
   if (isLoading) {
     return <Loader />;
   }
@@ -886,7 +951,16 @@ const VariationForm: React.FC<any> = ({
 
         <div className="grid grid-cols-4 mt-8 gap-4">
           <div className="col-span-4 md:col-span-1">
-            <label className="font-normal">Imagen Principal</label>
+            <div className="flex justify-between items-center">
+              <label className="font-normal">Imagen Principal</label>
+              <button
+                onClick={handleCopyBaseImages}
+                className="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-opacity-90 transition-colors"
+                type="button"
+              >
+                Copiar imágenes base
+              </button>
+            </div>
             <div className="mt-2 flex justify-center items-center">
               <ImageUpload
                 onImageChange={(image: any) => onMainImageChange(image, index)}
