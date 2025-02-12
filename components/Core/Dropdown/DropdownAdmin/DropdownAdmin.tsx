@@ -171,7 +171,7 @@ const DropdownAdmin = () => {
                   fill=""
                 />
               </svg>
-              Account Settings
+              Usuarios
             </Link>
           </li>
         </ul>

@@ -54,10 +54,12 @@ export default function RootLayout({
     );
     const intervalId = setInterval(checkCookie, intervalDuration);
     return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     checkCookie();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   if (loading) {

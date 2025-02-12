@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SidebarLinkGroup from "./SidebarLinkGroup";
-import { sidebarLinks } from "./sidebarLinks";
+import { sidebarLinks } from "../../../app/config/sidebarLinks";
 import Image from "next/image";
 
 interface SidebarProps {
@@ -18,8 +18,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  useEffect(() => {
+    if (sidebarOpen) {
+      setIsExpanded(true);
+    } else {
+      setIsExpanded(false);
+    }
+  }, [sidebarOpen]);
+
   const handleLinkClick = (href: string) => {
-    if (href === pathname) {
+    if (
+      href.includes("/productos/crear/producto-simple") ||
+      href.includes("/productos/crear/producto-variable")
+    ) {
+      window.location.href = href;
+    } else if (href === pathname) {
       window.location.reload();
     }
   };
@@ -104,12 +117,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   !open ? "h-0" : "h-auto"
                 }`}
               >
-                <ul className="mt-2 mb-3 flex flex-col gap-2 pl-10">
+                <ul className="mt-2 mb-3 flex flex-col gap-2 pl-6">
                   {link.submenu?.map((sublink, index) => (
                     <li key={index}>
                       <Link
                         href={sublink.path}
-                        className={`group relative flex items-center gap-3 rounded-lg py-2 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                        className={`group relative flex items-center gap-3 rounded-lg py-2 px-3 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                           pathname === sublink.path && "bg-black/10"
                         }`}
                         onClick={() => handleLinkClick(sublink.path)}
@@ -164,22 +177,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       ref={sidebar}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`absolute left-0 top-0 z-40 flex h-screen ${
-        isExpanded || isHovered ? "w-[200px]" : "w-[80px]"
-      } flex-col overflow-y-hidden bg-primary shadow-lg transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+      className={`absolute ${
+        sidebarOpen ? "top-[80px]" : "top-0"
+      } left-0 z-40 flex h-[calc(100vh-80px)] ${
+        sidebarOpen
+          ? "w-full"
+          : isExpanded || isHovered
+          ? "w-[280px]"
+          : "w-[70px]"
+      } flex-col overflow-hidden bg-primary shadow-lg transition-all duration-300 ease-in-out lg:static lg:top-0 lg:h-screen lg:translate-x-0 ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}
+      } ${isExpanded || isHovered ? "lg:w-[280px]" : "lg:w-[70px]"}`}
     >
       {/* SIDEBAR HEADER */}
-      <div className="relative flex flex-col items-center border-b border-white/10">
-        <div className="flex w-full items-center justify-between px-2 py-4">
+      <div
+        className={`relative flex flex-col items-center border-b border-white/10 ${
+          sidebarOpen ? "hidden" : "block"
+        } lg:block`}
+      >
+        <div className="flex w-full items-center justify-between px-4 py-4">
           <Link
             href="/"
             className="flex items-center"
           >
             <div className="relative h-16 w-[150px]">
               <div
-                className={`absolute left-2 top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
+                className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
                   !isExpanded && !isHovered ? "opacity-100" : "opacity-0"
                 }`}
               >
@@ -233,8 +256,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         </div>
       </div>
 
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mt-10 py-4 px-2">
+      <div className="flex flex-col overflow-y-auto overflow-x-hidden duration-300 ease-linear">
+        <nav className={`${sidebarOpen ? "mt-4" : "mt-10"} py-4 px-1`}>
           <div>
             <ul className="mb-6 flex flex-col gap-2">
               {sidebarLinks.map((link, index) => (

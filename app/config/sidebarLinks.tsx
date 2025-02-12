@@ -110,7 +110,7 @@ export const sidebarLinks: SidebarLink[] = [
       },
       {
         title: "Producto Simple",
-        path: "/dashboard/productos/crear/producto-simple",
+        path: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/productos/crear/producto-simple`,
         icon: (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +130,7 @@ export const sidebarLinks: SidebarLink[] = [
       },
       {
         title: "Producto Variable",
-        path: "/dashboard/productos/crear/producto-variable",
+        path: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/productos/crear/producto-variable`,
         icon: (
           <svg
             xmlns="http://www.w3.org/2000/svg"
