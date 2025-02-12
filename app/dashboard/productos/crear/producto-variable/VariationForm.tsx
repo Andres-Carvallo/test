@@ -617,21 +617,44 @@ const VariationForm: React.FC<any> = ({
   };
 
   const handleCopyBaseImages = async () => {
-    if (skuImages && skuImages.length > 0) {
-      try {
-        setIsLoading(true);
-        // Convertir la imagen principal
-        const mainImageBase64: any = await convertImageToBase64(
-          skuImages[0].imageUrl
-        );
-        onMainImageChange(mainImageBase64, index);
+    try {
+      setIsLoading(true);
 
-        // Convertir las imágenes de la galería
-        const galleryImagesPromises = skuImages
-          .slice(1)
-          .map((img: { imageUrl: string }) =>
-            convertImageToBase64(img.imageUrl)
-          );
+      // Obtener la imagen principal del producto base
+      const searchParams = new URLSearchParams(window.location.search);
+      const productId = searchParams.get("productVariableId");
+      const token = getCookie("AdminTokenAuth");
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (data.product && data.product.mainImageUrl) {
+        const mainImageBase64: any = await convertImageToBase64(
+          data.product.mainImageUrl
+        );
+        setVariations((prevVariations: any) => {
+          const updatedVariations = [...prevVariations];
+          updatedVariations[index] = {
+            ...updatedVariations[index],
+            mainImage: mainImageBase64,
+          };
+          return updatedVariations;
+        });
+      }
+
+      // Convertir las imágenes de la galería si existen
+      if (skuImages && skuImages.length > 0) {
+        const galleryImagesPromises = skuImages.map(
+          (img: { imageUrl: string }) => convertImageToBase64(img.imageUrl)
+        );
         const galleryImagesBase64 = await Promise.all(galleryImagesPromises);
 
         if (variation.id) {
@@ -646,14 +669,16 @@ const VariationForm: React.FC<any> = ({
         }
 
         toast.success("Imágenes copiadas del producto base");
-      } catch (error) {
-        console.error("Error al copiar las imágenes:", error);
-        toast.error("Error al copiar las imágenes del producto base");
-      } finally {
-        setIsLoading(false);
+      } else {
+        toast.error(
+          "No hay imágenes de galería disponibles en el producto base"
+        );
       }
-    } else {
-      toast.error("No hay imágenes disponibles en el producto base");
+    } catch (error) {
+      console.error("Error al copiar las imágenes:", error);
+      toast.error("Error al copiar las imágenes del producto base");
+    } finally {
+      setIsLoading(false);
     }
   };
 
