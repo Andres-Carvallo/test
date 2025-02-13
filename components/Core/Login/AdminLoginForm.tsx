@@ -16,28 +16,36 @@ function AdminLoginForm() {
   const [error, setError] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loginAttempts, setLoginAttempts] = useState(() => {
-    const saved = localStorage.getItem('adminLoginAttempts');
-    return saved ? parseInt(saved) : 0;
+  const [loginAttempts, setLoginAttempts] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('adminLoginAttempts');
+      return saved ? parseInt(saved) : 0;
+    }
+    return 0;
   });
   const [lockoutTime, setLockoutTime] = useState<number | null>(() => {
-    const saved = localStorage.getItem('adminLockoutTime');
-    const time = saved ? parseInt(saved) : null;
-    return time && time > Date.now() ? time : null;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('adminLockoutTime');
+      const time = saved ? parseInt(saved) : null;
+      return time && time > Date.now() ? time : null;
+    }
+    return null;
   });
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   useEffect(() => {
-    if (loginAttempts > 0) {
+    if (typeof window !== 'undefined' && loginAttempts > 0) {
       localStorage.setItem('adminLoginAttempts', loginAttempts.toString());
-    } else {
+    } else if (typeof window !== 'undefined') {
       localStorage.removeItem('adminLoginAttempts');
     }
   }, [loginAttempts]);
   useEffect(() => {
-    if (lockoutTime) {
-      localStorage.setItem('adminLockoutTime', lockoutTime.toString());
-    } else {
-      localStorage.removeItem('adminLockoutTime');
+    if (typeof window !== 'undefined') {
+      if (lockoutTime) {
+        localStorage.setItem('adminLockoutTime', lockoutTime.toString());
+      } else {
+        localStorage.removeItem('adminLockoutTime');
+      }
     }
   }, [lockoutTime]);
   useEffect(() => {

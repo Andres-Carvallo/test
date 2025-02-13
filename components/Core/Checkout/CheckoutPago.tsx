@@ -409,14 +409,12 @@ function CheckoutPago() {
               </div>
             </div>
           </div>
-          <div className="mt-10 bg-gray-50 px-4 pt-4 lg:mt-0">
+          <div className="mt-10 bg-gray-50 px-4 pt-8 lg:mt-0">
+            <p className=" text-xl font-medium">Datos de Facturación</p>
             <div className="">
-              <div className="mt-4 bg-gray-50 px-4 pt-2 lg:mt-0">
+              <div className="mt-10 px-4 pt-2 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
-                  <label
-                    htmlFor="firstname"
-                    className="block mt-4 relative"
-                  >
+                  <label htmlFor="firstname" className="block mt-4">
                     Nombre
                     <input
                       type="text"
@@ -602,8 +600,20 @@ function CheckoutPago() {
                 </div>
               </div>
 
+              {/* Tipo de Envío */}
+              <div className="mt-6 border-t py-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-900">Tipo de Envío</p>
+                  <p className="font-semibold text-gray-900">
+                    {orderDetail.deliveryType?.code === "WITHDRAWAL_FROM_STORE" 
+                      ? "Retiro en Tienda"
+                      : "Delivery"}
+                  </p>
+                </div>
+              </div>
+
               {/* Total */}
-              <div className="mt-6 border-t border-b py-2">
+              <div className="border-t border-b py-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">Subtotal</p>
                   <p className="font-semibold text-gray-900">

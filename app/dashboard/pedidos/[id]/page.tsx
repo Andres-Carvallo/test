@@ -281,11 +281,16 @@ export default function DetalleOrdenes() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="border p-3 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Pedido</h3>
-                <p>N°: {pedido.correlative}</p>
+                <p><strong>N°:</strong> {pedido.correlative}</p>
                 <p>
-                  Fecha: {new Date(pedido.creationDate).toLocaleDateString()}
+                  <strong>Fecha:</strong> {new Date(pedido.creationDate).toLocaleDateString()}
                 </p>
-                <p>Estado: {translateOrderStatus(pedido.statusCode)}</p>
+                <p><strong>Estado:</strong> {translateOrderStatus(pedido.statusCode)}</p>
+                <p><strong>Tipo de Envío:</strong> {
+                  pedido.deliveryType?.description === "WITHDRAWAL_FROM_STORE" 
+                    ? "Retiro en Tienda"
+                    : "Delivery"
+                }</p>
                 {(pedido.statusCode === "CREATED" ||
                   pedido.statusCode === "PAYMENT_PENDING") && (
                   <button
@@ -299,10 +304,14 @@ export default function DetalleOrdenes() {
               <div className="border p-3 rounded-lg">
                 <h3 className="text-lg font-semibold mb-2">Cliente</h3>
                 <p>
-                  Nombre: {pedido.customer.firstname} {pedido.customer.lastname}
+                  <strong>Nombre:</strong> {pedido.customer.firstname} {pedido.customer.lastname}
                 </p>
-                <p className="text-wrap">Email: {pedido.customer.email}</p>
-                <p>Teléfono: {pedido.customer.phoneNumber}</p>
+                <p className="text-wrap">
+                  <strong>Email:</strong> {pedido.customer.email}
+                </p>
+                <p>
+                  <strong>Teléfono:</strong> {pedido.customer.phoneNumber}
+                </p>
               </div>
             </div>
             <div className="mb-4">
