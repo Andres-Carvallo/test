@@ -116,13 +116,17 @@ export default function ProductPageBO() {
   const [selectedProductPrices, setSelectedProductPrices] = useState<any[]>([]);
   const [loadingPrices, setLoadingPrices] = useState(false);
 
-  // Agregar estas funciones antes del useEffect
+  // Agregar estos estados para el memo
+  const [stockCache, setStockCache] = useState<{ [key: string]: VariationStock[] }>({});
+  const [priceCache, setPriceCache] = useState<{ [key: string]: any[] }>({});
+
+  // Reemplazar fetchStockSimple
   const fetchStockSimple = async (productId: string, skuId: string, forceUpdate = false) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const warehouseId = await getWarehouseId();
       
-      const response = await axios.get(
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
@@ -131,9 +135,10 @@ export default function ProductPageBO() {
           },
         }
       );
+      const data = await response.json();
 
-      if (response.data.skuInventories.length > 0) {
-        return response.data.skuInventories[0].quantity;
+      if (data.skuInventories.length > 0) {
+        return data.skuInventories[0].quantity;
       }
       return 0;
     } catch (error) {
@@ -142,10 +147,11 @@ export default function ProductPageBO() {
     }
   };
 
+  // Reemplazar fetchPriceForProduct
   const fetchPriceForProduct = async (productId: string, skuId: string, forceUpdate = false) => {
     try {
       const token = getCookie("AdminTokenAuth");
-      const response = await axios.get(
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
@@ -154,9 +160,10 @@ export default function ProductPageBO() {
           },
         }
       );
+      const data = await response.json();
 
-      if (response.data.skuPricings.length > 0) {
-        return response.data.skuPricings[0].unitPrice;
+      if (data.skuPricings.length > 0) {
+        return data.skuPricings[0].unitPrice;
       }
       return "0";
     } catch (error) {
@@ -419,22 +426,60 @@ export default function ProductPageBO() {
       const token = getCookie("AdminTokenAuth");
 
       // Primero actualizamos el producto
-      await axios.put(
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${product.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
-          ...product,
-          ...updates,
-          hasFeaturedBaseSku: updates.isFeatured ?? product.isFeatured,
-        },
-        {
+          method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            ...product,
+            ...updates,
+            hasFeaturedBaseSku: updates.isFeatured ?? product.isFeatured,
+          })
         }
       );
 
-      // Luego revalidamos usando fetch con el tag
+      if (!response.ok) {
+        throw new Error('Error al actualizar el producto');
+      }
+
+      // Limpiar caché para este producto
+      setStockCache(prev => {
+        const newCache = {...prev};
+        delete newCache[product.id];
+        return newCache;
+      });
+
+      setPriceCache(prev => {
+        const newCache = {...prev};
+        delete newCache[product.id];
+        return newCache;
+      });
+
+      // Actualizar el producto en el estado local
+      const updatedProduct = {
+        ...product,
+        ...updates,
+        stockQuantity: product.stockQuantity, // Mantener el stock actual
+        price: product.price, // Mantener el precio actual
+      };
+
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === product.id ? updatedProduct : p
+        )
+      );
+
+      setFilteredProducts(prevFiltered =>
+        prevFiltered.map(p =>
+          p.id === product.id ? updatedProduct : p
+        )
+      );
+
+      // Revalidar
       await fetch("/api/revalidate?tag=products", {
         method: "POST",
         headers: {
@@ -442,11 +487,9 @@ export default function ProductPageBO() {
         },
       });
 
-      // También usamos el contexto de revalidación
       await triggerRevalidation();
 
       toast.success("Producto actualizado");
-      fetchProductos();
     } catch (error) {
       console.error(
         "Error updating product:",
@@ -469,15 +512,33 @@ export default function ProductPageBO() {
     try {
       const token = getCookie("AdminTokenAuth");
 
-      await axios.delete(
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
+          method: 'DELETE',
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
       );
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar el producto');
+      }
+
+      // Limpiar caché para este producto
+      setStockCache(prev => {
+        const newCache = {...prev};
+        delete newCache[id];
+        return newCache;
+      });
+
+      setPriceCache(prev => {
+        const newCache = {...prev};
+        delete newCache[id];
+        return newCache;
+      });
 
       // Actualizar el estado local eliminando solo el producto específico
       setProducts(prevProducts => 
@@ -511,15 +572,20 @@ export default function ProductPageBO() {
     setSearchTerm(event.target.value);
   };
 
-  // Primero, agregar la función fetchStockVariable que falta
+  // Modificar fetchStockVariable para usar cache
   const fetchStockVariable = async (productId: string) => {
+    // Verificar si existe en cache
+    if (stockCache[productId]) {
+      setSelectedProductStock(stockCache[productId]);
+      return;
+    }
+
     try {
       setLoadingStock(true);
       const token = getCookie("AdminTokenAuth");
       const warehouseId = await getWarehouseId();
       
-      // Primero obtener todas las variaciones
-      const response = await axios.get(
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&statusCode=ACTIVE`,
         {
           headers: {
@@ -528,44 +594,46 @@ export default function ProductPageBO() {
           },
         }
       );
+      const data = await response.json();
+      const variations = data.skus.filter((sku: any) => !sku.isBaseSku);
 
-      const variations = response.data.skus.filter((sku: any) => !sku.isBaseSku);
-
-      // Obtener atributos y stock para cada variación
       const stockData = await Promise.all(
         variations.map(async (variation: any) => {
-          // Obtener atributos
-          const attributesResponse = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          const [attributesResponse, stockResponse] = await Promise.all([
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            ),
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            )
+          ]);
 
-          // Obtener stock
-          const stockResponse = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          const [attributesData, stockData] = await Promise.all([
+            attributesResponse.json(),
+            stockResponse.json()
+          ]);
 
-          // Filtrar solo los atributos activos
-          const attributes = attributesResponse.data.skuAttributes
+          const attributes = attributesData.skuAttributes
             .filter((attr: any) => attr.attribute.statusCode === "ACTIVE")
             .map((attr: any) => ({
               label: attr.attribute.name,
               value: attr.value,
             }));
 
-          const quantity = stockResponse.data.skuInventories.length > 0 
-            ? stockResponse.data.skuInventories[0].quantity 
+          const quantity = stockData.skuInventories.length > 0 
+            ? stockData.skuInventories[0].quantity 
             : 0;
 
           return {
@@ -579,8 +647,14 @@ export default function ProductPageBO() {
         })
       );
 
-      // Filtrar variaciones que tienen al menos un atributo activo
       const validStockData = stockData.filter(data => data.attributes.length > 0);
+      
+      // Guardar en cache
+      setStockCache(prev => ({
+        ...prev,
+        [productId]: validStockData
+      }));
+      
       setSelectedProductStock(validStockData);
     } catch (error) {
       console.error("Error fetching stock:", error);
@@ -614,8 +688,14 @@ export default function ProductPageBO() {
     }
   };
 
-  // Agregar la función fetchPriceVariable
+  // Modificar fetchPriceVariable para usar cache
   const fetchPriceVariable = async (productId: string) => {
+    // Verificar si existe en cache
+    if (priceCache[productId]) {
+      setSelectedProductPrices(priceCache[productId]);
+      return;
+    }
+
     setLoadingPrices(true);
     try {
       const token = getCookie("AdminTokenAuth");
@@ -676,6 +756,13 @@ export default function ProductPageBO() {
       );
 
       const validPrices = pricesWithAttributes.filter(result => result.attributes.length > 0);
+      
+      // Guardar en cache
+      setPriceCache(prev => ({
+        ...prev,
+        [productId]: validPrices
+      }));
+      
       setSelectedProductPrices(validPrices);
     } catch (error) {
       console.error("Error al obtener los precios de las variaciones:", error);
