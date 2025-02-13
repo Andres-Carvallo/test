@@ -90,9 +90,11 @@ const DropdownUser = () => {
           <span className="block text-sm font-medium text-black dark:text-white">
             {userDataInfo?.firstname} {userDataInfo?.lastname}
           </span>
-          <span className="block text-xs text-black-2">
-            {userDataInfo?.email}
-          </span>
+          {!(userDataInfo?.firstname === "Admin" && userDataInfo?.lastname === "PixelUP") && (
+            <span className="block text-xs text-black-2">
+              {userDataInfo?.email}
+            </span>
+          )}
         </span>
 
         <span className="h-8 w-8 rounded-full flex items-center justify-center bg-gray-200">

@@ -18,7 +18,11 @@ const TableUsers = () => {
   const fetchData = async () => {
     try {
       const userData = await obtenerUsuario(token);
-      setUsuarios(userData.users); // Sin filtrar usuarios por rol
+      // Filtrar el usuario Admin PixelUP
+      const usuariosFiltrados = userData.users.filter(
+        (user: UserData) => !(user.firstname === "Admin" && user.lastname === "PixelUP")
+      );
+      setUsuarios(usuariosFiltrados);
     } catch (error) {
       console.error("Error al obtener el usuario:", error);
     }
