@@ -918,8 +918,8 @@ const CrearProductoSimple: React.FC = ({}) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-16 py-2 z-50 bg-white/80">
+    <div className="min-h-screen">
+      <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-0 py-2 z-50 -mt-6">
         <div className="flex w-full justify-between px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-1 md:gap-4 w-full">
             <div className="w-full px-4 py-1 h-full border-dark border rounded text-dark flex items-center gap-2">
@@ -939,7 +939,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               <span className="absolute bottom-0 left-0 w-full h-1 transition-all duration-150 ease-in-out bg-primary group-hover:h-full" />
               <span className="absolute right-0 pr-4 duration-200 ease-out group-hover:translate-x-12">
                 <svg
-                  className="w-3.5 h-3.5"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -955,7 +955,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               </span>
               <span className="absolute left-0 pl-2.5 -translate-x-12 group-hover:translate-x-0 ease-out duration-200">
                 <svg
-                  className="w-3.5 h-3.5"
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -969,7 +969,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   />
                 </svg>
               </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-[13px]">
                 Nuevo
               </span>
             </button>
@@ -986,7 +986,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="w-3.5 h-3.5"
+                  className="w-4 h-4"
                 >
                   <path
                     strokeLinecap="round"
@@ -1007,7 +1007,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className="w-3.5 h-3.5"
+                  className="w-4 h-4"
                 >
                   <path
                     strokeLinecap="round"
@@ -1021,7 +1021,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   />
                 </svg>
               </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-[13px]">
                 Categorías
               </span>
             </button>
@@ -1054,7 +1054,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="white"
-                  className="w-3.5 h-3.5"
+                  className="w-4 h-4"
                 >
                   <path
                     strokeLinecap="round"
@@ -1063,7 +1063,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                   />
                 </svg>
               </span>
-              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-xs">
+              <span className="relative w-full font-medium text-left transition-colors duration-200 ease-in-out group-hover:text-white text-[13px]">
                 Cancelar
               </span>
             </button>
