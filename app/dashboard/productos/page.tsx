@@ -1190,7 +1190,7 @@ export default function ProductPageBO() {
                   <div
                     id="filterDropdown"
                     ref={filterDropdownRef}
-                    className={`fixed top-16 right-[17px] inset-y-0  z-40 w-80 bg-white dark:bg-gray-800 p-4 transition-transform duration-300 ease-in-out transform ${
+                    className={`fixed top-0 right-0 inset-y-0  z-40 w-80 bg-white dark:bg-gray-800 p-4 transition-transform duration-300 ease-in-out transform ${
                       filterDropdownVisible ? 'translate-x-0' : 'translate-x-full'
                     } shadow-lg`}
                   >
