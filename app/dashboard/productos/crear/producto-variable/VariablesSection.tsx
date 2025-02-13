@@ -28,7 +28,13 @@ function VariationsComponente({
   setVariations,
   baseProductDescription,
 }: any) {
-  const [variationImages, setVariationImages] = useState<any[]>([]); // Estado para las imágenes de la variación
+  const [variationImages, setVariationImages] = useState<any[]>([]); // Estado para las imágenes de la variación actual
+  const [allVariationImages, setAllVariationImages] = useState<{
+    [key: string]: any[];
+  }>({});
+  const [imagesLoaded, setImagesLoaded] = useState<{ [key: string]: boolean }>(
+    {}
+  );
   const [attributes, setAttributes] = useState<any[]>([]);
   const [currentAttributes, setCurrentAttributes] = useState<any>({});
   const [currentPrices, setCurrentPrices] = useState({});
@@ -65,38 +71,72 @@ function VariationsComponente({
   const { triggerRevalidation } = useRevalidation();
 
   useEffect(() => {
-    fetchAttributes();
-    fetchVariations();
+    const initializeData = async () => {
+      const attrs = await fetchAttributes();
+      if (attrs) {
+        setAttributes(attrs);
+        await fetchVariations();
+      }
+    };
+    initializeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchVariationImages = async (productId: any, skuId: any) => {
-    try {
-      const token = getCookie("AdminTokenAuth");
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+  const fetchAllVariationImages = async () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const idVariable = searchParams.get("productVariableId");
+    const token = getCookie("AdminTokenAuth");
+
+    const promises = variations.map(async (variation: any) => {
+      if (!variation.id || imagesLoaded[variation.id]) return;
+
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variation.id}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (data && data.skuImages) {
+          return { id: variation.id, images: data.skuImages };
         }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      } catch (error) {
+        console.error("Error fetching variation images:", error);
       }
+    });
 
-      const data = await response.json();
-
-      if (data && data.skuImages) {
-        setVariationImages(data.skuImages); // Actualiza el estado local con las imágenes obtenidas
+    const results = await Promise.all(promises);
+    const imagesMap = results.reduce((acc: any, result) => {
+      if (result) {
+        acc[result.id] = result.images;
       }
-    } catch (error) {
-      console.error("Error fetching variation images:", error);
-    }
+      return acc;
+    }, {});
+
+    setAllVariationImages((prev) => ({ ...prev, ...imagesMap }));
+    setImagesLoaded((prev) => {
+      const newLoaded = { ...prev };
+      variations.forEach((variation) => {
+        if (variation.id) {
+          newLoaded[variation.id] = true;
+        }
+      });
+      return newLoaded;
+    });
   };
+
+  useEffect(() => {
+    if (variations.length > 0) {
+      fetchAllVariationImages();
+    }
+  }, [variations]);
 
   const fetchAttributes = async () => {
     try {
@@ -112,7 +152,6 @@ function VariationsComponente({
       );
       const data = await response.json();
       if (data.code === 0) {
-        setAttributes(data.attributes);
         return data.attributes;
       } else {
         console.error("Error fetching attributes:", data.message);
@@ -128,7 +167,6 @@ function VariationsComponente({
   type StockByVariation = { [key: string]: number | null };
 
   // Definir el objeto para almacenar los atributos y precios por variación fuera de la función
-  const attributesByVariation: AttributesByVariation = {};
   const pricesByVariation: PricesByVariation = {};
   const stockByVariation: StockByVariation = {};
   const minimumQuantitiesByVariation: { [key: string]: number | null } = {};
@@ -154,26 +192,16 @@ function VariationsComponente({
         );
 
         filteredVariations.sort((a: any, b: any) => {
-          // Orden ascendente por 'id'
           return a.id.localeCompare(b.id);
         });
 
-        // Crear promesas para fetchAttributesForVariation, fetchPriceForVariation y fetchStockForVariation
+        // Crear promesas para fetchPriceForVariation, fetchStockForVariation y fetchAttributesForVariation
         const fetchTasks = filteredVariations.map(async (variation: any) => {
-          const [attributes, price, stockData] = await Promise.all([
-            fetchAttributesForVariation(variation.id),
+          const [price, stockData, attributes] = await Promise.all([
             fetchPriceForVariation(idVariable as string, variation.id),
             fetchStockForVariation(idVariable, variation.id),
-            fetchVariationImages(idVariable, variation.id),
+            fetchAttributesForVariation(variation.id),
           ]);
-
-          if (attributes !== null) {
-            attributesByVariation[variation.id] = attributes;
-          } else {
-            console.log(
-              `No se encontraron atributos para la variación con ID: ${variation.id}`
-            );
-          }
 
           if (stockData && stockData !== null) {
             variation.stock = stockData.stock;
@@ -182,26 +210,38 @@ function VariationsComponente({
           variation.hasStockNotifications =
             variation.hasStockNotifications || false;
 
-          pricesByVariation[variation.id] = price;
-
-          stockByVariation[variation.id] =
-            stockData && stockData.stock !== undefined ? stockData.stock : null;
-
-          minimumQuantitiesByVariation[variation.id] =
-            stockData && stockData.minimumQuantity !== undefined
-              ? stockData.minimumQuantity ?? 0
-              : 0;
+          return {
+            variationId: variation.id,
+            price,
+            stock: stockData?.stock,
+            minimumQuantity: stockData?.minimumQuantity ?? 0,
+            attributes,
+          };
         });
 
-        await Promise.all(fetchTasks);
+        const results = await Promise.all(fetchTasks);
 
-        // Establecer los atributos, precios y stock actuales
-        setCurrentAttributes(attributesByVariation);
-        setCurrentPrices(pricesByVariation);
-        setCurrentStocks(stockByVariation);
-        setCurrentMinimumQuantities(minimumQuantitiesByVariation); // <-- Actualizar el estado de minimum quantities
+        // Actualizar los estados con los resultados
+        const newPrices: { [key: string]: number | null } = {};
+        const newStocks: { [key: string]: number | null } = {};
+        const newMinimumQuantities: { [key: string]: number | null } = {};
+        const newAttributes: { [key: string]: any[] } = {};
 
-        // Establecer las variaciones filtradas
+        results.forEach((result) => {
+          if (result.variationId) {
+            newPrices[result.variationId] = result.price;
+            newStocks[result.variationId] = result.stock;
+            newMinimumQuantities[result.variationId] = result.minimumQuantity;
+            if (result.attributes) {
+              newAttributes[result.variationId] = result.attributes;
+            }
+          }
+        });
+
+        setCurrentPrices(newPrices);
+        setCurrentStocks(newStocks);
+        setCurrentMinimumQuantities(newMinimumQuantities);
+        setCurrentAttributes(newAttributes);
         setVariations(filteredVariations);
       } else {
         console.error("Error fetching variations:", responseVariations.message);
@@ -326,23 +366,15 @@ function VariationsComponente({
 
       const responseData = await response.json();
       if (responseData.code === 0) {
-        const attributes = responseData.skuAttributes.map(
-          (skuAttribute: any) => ({
-            value: skuAttribute.value,
-            label: skuAttribute.attribute.name,
-          })
-        );
-        return attributes; // Devuelve los atributos en lugar de guardarlos en el estado
-      } else {
-        console.error(
-          "Error al obtener los atributos de la variación:",
-          responseData.message
-        );
-        return null; // En caso de error, devuelve null
+        return responseData.skuAttributes.map((skuAttribute: any) => ({
+          value: skuAttribute.value,
+          label: skuAttribute.attribute.name,
+        }));
       }
+      return null;
     } catch (error) {
       console.error("Error al obtener los atributos de la variación:", error);
-      return null; // En caso de error, devuelve null
+      return null;
     }
   };
 
@@ -424,8 +456,31 @@ function VariationsComponente({
       console.error("Error deleting variation:", error);
     }
   };
+  const handleVariationSelect = (index: number) => {
+    // Si el índice actual es el mismo que estamos intentando seleccionar, lo cerramos
+    if (currentVariationIndex === index) {
+      setCurrentVariationIndex(null);
+      setVariationImages([]); // Limpiar las imágenes al cerrar
+      return;
+    }
+
+    // Si es un índice diferente, solo manejamos las imágenes
+    const variation = variations[index];
+    if (variation && variation.id) {
+      // Cargar imágenes si no están en caché
+      if (!allVariationImages[variation.id]) {
+        fetchAllVariationImages();
+      }
+      setVariationImages(allVariationImages[variation.id] || []);
+    }
+
+    // Establecer el índice de variación actual
+    setCurrentVariationIndex(index);
+  };
+
   const handleCloseForm = () => {
     setCurrentVariationIndex(null);
+    setVariationImages([]); // Limpiar las imágenes al cerrar el formulario
   };
 
   if (!isEditMode) {
@@ -445,91 +500,53 @@ function VariationsComponente({
       </div>
 
       {variations.map((variation: any, index: any) => (
-        <div
-          key={index}
-          className="p-4 border border-dotted border-dark bg-white rounded-xl shadow"
-        >
-          <div className="flex justify-between">
-            <div className="flex gap-2">
-              <h4 className="bg-primary text-xs uppercase text-white px-2 py-1 rounded">
-                N° {index + 1}
-              </h4>
-              <div className="current-attributes flex gap-2">
-                {currentAttributes[variation.id]?.map(
-                  (attribute: any, index: any) => (
-                    <h4
-                      key={index}
-                      className="bg-primary text-xs text-white px-2 py-1 rounded"
-                    >
-                      {attribute.label}:
-                      <span className="font-bold">
-                        {""} {attribute.value}
+        <div key={index}>
+          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm mb-4">
+            <div className="flex items-center space-x-4">
+              <span className="text-lg font-medium">Variación {index + 1}</span>
+              {variation.id && currentAttributes[variation.id] && (
+                <div className="flex items-center gap-2">
+                  {currentAttributes[variation.id].map(
+                    (attr: any, attrIndex: number) => (
+                      <span
+                        key={attrIndex}
+                        className="px-2 py-1 bg-primary/10 text-primary rounded text-sm"
+                      >
+                        {attr.label}: {attr.value}
                       </span>
-                    </h4>
-                  )
-                )}
-              </div>
+                    )
+                  )}
+                </div>
+              )}
             </div>
-            <div className="flex gap-4 justify-end">
+            <div className="flex items-center space-x-2">
               <button
-                onClick={() => setCurrentVariationIndex(index)}
-
-                // Desplazarse hacia el formulario de edición
-                /*   if (editFormRef.current) {
-    editFormRef.current.scrollIntoView({ behavior: "smooth" });
-  } */
+                onClick={() => handleVariationSelect(index)}
+                className="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90"
               >
-                {currentVariationIndex === index ? null : (
-                  <div>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                      />
-                    </svg>
-                  </div>
-                )}
+                {currentVariationIndex === index ? "Cerrar" : "Editar"}
               </button>
-
-              <button onClick={() => showDeleteModal(variation)}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-6"
+              {variation.id && (
+                <button
+                  onClick={() => showDeleteModal(variation)}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
-                </svg>
-              </button>
+                  Eliminar
+                </button>
+              )}
             </div>
           </div>
-
           <div>
             {currentVariationIndex === index && (
               <VariationForm
                 variation={variation}
                 fetchVariations={fetchVariations}
-                fetchAttributes={fetchAttributes}
                 currentPrices={currentPrices}
                 currentStocks={currentStocks}
                 currentMinimumQuantities={currentMinimumQuantities}
                 currentAttributes={currentAttributes}
                 setVariations={setVariations}
-                fetchVariationImages={fetchVariationImages}
+                fetchVariationImages={fetchAllVariationImages}
                 variationImages={variationImages}
                 index={index}
                 setIsEditMode={setIsEditMode}

@@ -124,7 +124,8 @@ const VariationForm: React.FC<any> = ({
   useEffect(() => {
     const loadAttributes = async () => {
       try {
-        await fetchAttributes();
+        // Ya no necesitamos llamar a fetchAttributes aquí
+        // await fetchAttributes();
 
         if (currentAttributes[variation.id]) {
           const preloadedAttributes = currentAttributes[variation.id].map(
@@ -135,7 +136,7 @@ const VariationForm: React.FC<any> = ({
               return {
                 id: matchedAttribute ? matchedAttribute.id : undefined,
                 value: attr.value,
-                label: attr.label, // Para uso futuro o visualización si es necesario
+                label: attr.label,
               };
             }
           );
@@ -145,12 +146,12 @@ const VariationForm: React.FC<any> = ({
           );
         }
       } catch (error) {
-        console.error("Error fetching attributes:", error);
+        console.error("Error loading attributes:", error);
       }
     };
     loadAttributes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [variation.id, currentAttributes, attributes]);
 
   const handleAddAttributePair = () => {
     if (attributes.length === selectedAttributes.length) {
@@ -682,6 +683,14 @@ const VariationForm: React.FC<any> = ({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (variation.id) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const idVariable = searchParams.get("productVariableId");
+      fetchVariationImages(idVariable, variation.id);
+    }
+  }, [variation.id]); // Solo se ejecuta cuando cambia el ID de la variación
 
   return (
     <>
