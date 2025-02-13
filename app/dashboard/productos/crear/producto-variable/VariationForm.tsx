@@ -508,19 +508,57 @@ const VariationForm: React.FC<any> = ({
         for (const attribute of attributePairs) {
           if (attribute.id && attribute.value) {
             try {
-              await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                { attributeId: attribute.id, value: attribute.value },
-                {
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
+              if (isEditMode) {
+                // Intentar actualizar el atributo primero
+                try {
+                  await axios.put(
+                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes/${attribute.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                    { value: attribute.value },
+                    {
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
+                } catch (error: any) {
+                  // Si el atributo no existe (404), entonces lo creamos
+                  if (error.response?.status === 404) {
+                    await axios.post(
+                      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                      { attributeId: attribute.id, value: attribute.value },
+                      {
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                      }
+                    );
+                  } else {
+                    throw error;
+                  }
                 }
-              );
+              } else {
+                // Si es una nueva variación, crear el atributo
+                await axios.post(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                  { attributeId: attribute.id, value: attribute.value },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+              }
             } catch (error: any) {
               if (error.response?.status !== 409) {
-                console.error("Error al crear atributo:", error);
+                console.error("Error al manejar atributo:", error);
+                toast.error(
+                  `Error al ${
+                    isEditMode ? "actualizar" : "crear"
+                  } el atributo: ${attribute.value}`
+                );
               }
             }
           }

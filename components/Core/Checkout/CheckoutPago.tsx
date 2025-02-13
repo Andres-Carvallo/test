@@ -414,7 +414,10 @@ function CheckoutPago() {
             <div className="">
               <div className="mt-10 px-4 pt-2 lg:mt-0">
                 <div className="grid grid-cols-2 gap-4">
-                  <label htmlFor="firstname" className="block mt-4">
+                  <label
+                    htmlFor="firstname"
+                    className="block mt-4"
+                  >
                     Nombre
                     <input
                       type="text"
@@ -603,9 +606,11 @@ function CheckoutPago() {
               {/* Tipo de Envío */}
               <div className="mt-6 border-t py-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-900">Tipo de Envío</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    Tipo de Entrega
+                  </p>
                   <p className="font-semibold text-gray-900">
-                    {orderDetail.deliveryType?.code === "WITHDRAWAL_FROM_STORE" 
+                    {orderDetail.deliveryType?.code === "WITHDRAWAL_FROM_STORE"
                       ? "Retiro en Tienda"
                       : "Delivery"}
                   </p>
