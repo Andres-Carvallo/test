@@ -246,7 +246,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <div
         className={`relative flex-shrink-0 flex flex-col items-center border-b border-white/10 ${
           sidebarOpen ? "hidden" : "block"
-        } lg:block ${isExpanded || isHovered ? 'py-8' : 'py-4'}`}
+        } lg:block ${isExpanded || isHovered ? 'pb-12 pt-12' : 'py-4'}`}
       >
         <div className="flex w-full items-center justify-between px-3">
           <Link
@@ -255,20 +255,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               isExpanded || isHovered ? 'w-full justify-center' : ''
             }`}
           >
-            <div className={`relative ${isExpanded || isHovered ? 'h-16' : 'h-10'} ${
-              isExpanded || isHovered ? 'w-[240px]' : 'w-[120px]'
+            <div className={`relative ${isExpanded || isHovered ? 'h-20' : 'h-10'} ${
+              isExpanded || isHovered ? 'w-[280px]' : 'w-[120px]'
             }`}>
               <div
                 className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
                   !isExpanded && !isHovered ? "opacity-100" : "opacity-0"
                 }`}
               >
-                <Image
-                  src="/logo-w.png"
-                  alt="Logo Principal"
-                  width={32}
-                  height={32}
-                  className="object-contain"
+                <img
+                  src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                  alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
+                  className="w-8 h-8 object-contain"
                 />
               </div>
               <div
@@ -278,13 +276,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   isExpanded || isHovered ? "opacity-100" : "opacity-0"
                 }`}
               >
-                <Image
-                  src="/logo-w.png"
-                  alt="Logo Principal"
-                  width={240}
-                  height={64}
-                  className={`object-contain ${
-                    isExpanded || isHovered ? 'scale-125' : 'scale-100'
+                <img
+                  src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                  alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
+                  className={`w-60 object-contain ${
+                    isExpanded || isHovered ? 'scale-110' : 'scale-100'
                   } transition-transform duration-300`}
                 />
               </div>
@@ -321,7 +317,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden sidebar-scroll">
         {/* Navigation Menu */}
         <div className="flex flex-1">
-          <nav className="w-full py-4">
+          <nav className="w-full pb-4 pt-8">
             <div>
               <ul className="flex flex-col gap-1.5">
                 {sidebarLinks.map((link, index) => (
@@ -362,15 +358,33 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           </span>
           
           {(isExpanded || isHovered) && (
-            <div className="flex flex-col transition-all duration-300 ease-in-out">
-              <span className="text-xs font-medium text-white">
-                {userDataInfo?.firstname} {userDataInfo?.lastname}
-              </span>
-              {!(userDataInfo?.firstname === "Admin" && userDataInfo?.lastname === "PixelUP") && (
-                <span className="text-[11px] text-white/70">
-                  {userDataInfo?.email}
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col transition-all duration-300 ease-in-out">
+                <span className="text-xs font-medium text-white">
+                  {userDataInfo?.firstname} {userDataInfo?.lastname}
                 </span>
-              )}
+                {!(userDataInfo?.firstname === "Admin" && userDataInfo?.lastname === "PixelUP") && (
+                  <span className="text-[11px] text-white/70">
+                    {userDataInfo?.email}
+                  </span>
+                )}
+              </div>
+              <svg
+                className={`w-4 h-4 text-white transition-transform duration-300 ${
+                  userDropdownOpen ? 'rotate-180' : ''
+                }`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
             </div>
           )}
         </button>

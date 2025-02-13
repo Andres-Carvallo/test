@@ -172,9 +172,9 @@ export default function ProductPageBO() {
     }
   };
 
-  // Efecto para cargar los productos iniciales
+  // Modificar el useEffect inicial para separar la carga
   useEffect(() => {
-    const loadProductsWithStock = async () => {
+    const loadInitialProducts = async () => {
       try {
         setLoading(true);
         const token = getCookie("AdminTokenAuth");
@@ -201,49 +201,73 @@ export default function ProductPageBO() {
             break;
           }
 
-          // Procesar productos en lotes para evitar sobrecarga
-          const batchSize = 5;
-          for (let i = 0; i < response.data.products.length; i += batchSize) {
-            const batch = response.data.products.slice(i, i + batchSize);
-            const productsWithData = await Promise.all(
-              batch.map(async (product: Product) => {
-                if (!product.hasVariations) {
-                  // Obtener tanto el stock como el hasUnlimitedStock
-                  const [stock, price, skuData] = await Promise.all([
-                    fetchStockSimple(product.id, product.skuId, true),
-                    fetchPriceForProduct(product.id, product.skuId, true),
-                    fetchSkuData(product.id, product.skuId)
-                  ]);
-                  
-                  return { 
-                    ...product, 
-                    stockQuantity: stock,
-                    price: price,
-                    hasUnlimitedStock: skuData?.hasUnlimitedStock || false
-                  };
-                }
-                return product;
-              })
-            );
-            allData.push(...productsWithData);
-          }
+          // Agregar productos sin stock/precio inicialmente
+          const productsWithoutData = response.data.products.map((product: Product) => ({
+            ...product,
+            stockQuantity: null,
+            price: null,
+            hasUnlimitedStock: false
+          }));
           
+          allData.push(...productsWithoutData);
           pageNumber++;
         }
 
         setProducts(allData);
         setFilteredProducts(allData);
         initializeCategories(allData);
+        setLoading(false);
+
+        // Cargar stock y precios después
+        loadStockAndPrices(allData);
+
       } catch (error) {
         console.error("Ocurrió un error:", error);
         toast.error("Error al cargar los productos");
-      } finally {
         setLoading(false);
       }
     };
 
-    loadProductsWithStock();
-  }, []); // Se ejecutará solo al montar el componente
+    loadInitialProducts();
+  }, []); 
+
+  // Agregar esta nueva función para cargar stock y precios
+  const loadStockAndPrices = async (products: Product[]) => {
+    const batchSize = 5;
+    for (let i = 0; i < products.length; i += batchSize) {
+      const batch = products.slice(i, i + batchSize);
+      
+      await Promise.all(
+        batch.map(async (product) => {
+          if (!product.hasVariations) {
+            try {
+              const [stock, price, skuData] = await Promise.all([
+                fetchStockSimple(product.id, product.skuId, true),
+                fetchPriceForProduct(product.id, product.skuId, true),
+                fetchSkuData(product.id, product.skuId)
+              ]);
+
+              // Actualizar el producto individual con los nuevos datos
+              setProducts(prevProducts => 
+                prevProducts.map(p => 
+                  p.id === product.id 
+                    ? { 
+                        ...p, 
+                        stockQuantity: stock,
+                        price: price,
+                        hasUnlimitedStock: skuData?.hasUnlimitedStock || false
+                      }
+                    : p
+                )
+              );
+            } catch (error) {
+              console.error(`Error loading data for product ${product.id}:`, error);
+            }
+          }
+        })
+      );
+    }
+  };
 
   // Efecto para filtrar productos según la búsqueda y las categorías seleccionadas
   useEffect(() => {
@@ -852,6 +876,8 @@ export default function ProductPageBO() {
             >
               Ver precios
             </button>
+          ) : row.original.price === null ? (
+            <div className="animate-pulse h-4 w-16 bg-gray-200 rounded"></div>
           ) : (
             <span className="text-sm">
               ${typeof row.original.price === 'number' ? 
@@ -878,12 +904,13 @@ export default function ProductPageBO() {
             >
               Ver stock
             </button>
+          ) : row.original.stockQuantity === null ? (
+            <div className="animate-pulse h-4 w-16 bg-gray-200 rounded"></div>
           ) : (
             <span className="text-sm">
               {row.original.hasUnlimitedStock ? 
                 "Ilimitado" : 
-                row.original.stockQuantity || "0"
-              }
+                row.original.stockQuantity || "0"}
             </span>
           )}
         </div>
