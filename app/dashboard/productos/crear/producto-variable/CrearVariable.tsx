@@ -308,7 +308,6 @@ const CrearVariable: React.FC = () => {
             data: productData.mainImageUrl,
           },
           measures: productData.measures || {
-            // Verifica si measures está definido
             length: null,
             width: null,
             height: null,
@@ -327,6 +326,11 @@ const CrearVariable: React.FC = () => {
         setInitialMainImage(productData.mainImageUrl);
         setInitialPreviewImage(productData.previewImageUrl);
         setIsFeatured(productData.isFeatured);
+
+        // Cargar imágenes de la galería inmediatamente
+        if (productData.skuId) {
+          await fetchImages(productId, productData.skuId);
+        }
       } catch (error) {
         console.error("Error al obtener los datos del producto:", error);
         setIsEditMode(false);

@@ -41,6 +41,12 @@ function VariationsComponente({
   const [currentStocks, setCurrentStocks] = useState({});
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [variationToDelete, setVariationToDelete] = useState<any>(null);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [isDeletingVariation, setIsDeletingVariation] = useState(false);
+  const [deletingVariationId, setDeletingVariationId] = useState<string | null>(
+    null
+  );
+
   const showDeleteModal = (variation: any) => {
     setVariationToDelete(variation);
     setIsDeleteModalVisible(true);
@@ -52,11 +58,11 @@ function VariationsComponente({
   };
   const confirmDeleteVariation = async () => {
     if (variationToDelete) {
+      hideDeleteModal(); // Cerramos el modal inmediatamente
       await handleDeleteVariation(
         variationToDelete.id,
         variations.indexOf(variationToDelete)
       );
-      hideDeleteModal();
     }
   };
 
@@ -76,6 +82,8 @@ function VariationsComponente({
       if (attrs) {
         setAttributes(attrs);
         await fetchVariations();
+        // Cargar imágenes de todas las variaciones inmediatamente
+        await fetchAllVariationImages();
       }
     };
     initializeData();
@@ -83,60 +91,61 @@ function VariationsComponente({
   }, []);
 
   const fetchAllVariationImages = async () => {
+    setIsLoadingImages(true);
     const searchParams = new URLSearchParams(window.location.search);
     const idVariable = searchParams.get("productVariableId");
     const token = getCookie("AdminTokenAuth");
 
-    const promises = variations.map(async (variation: any) => {
-      if (!variation.id || imagesLoaded[variation.id]) return;
+    try {
+      const promises = variations.map(async (variation: Variation) => {
+        if (!variation.id || imagesLoaded[variation.id]) return;
 
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variation.id}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variation.id}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) return;
+
+          const data = await response.json();
+          if (data && data.skuImages) {
+            return { id: variation.id, images: data.skuImages };
           }
-        );
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-        if (data && data.skuImages) {
-          return { id: variation.id, images: data.skuImages };
-        }
-      } catch (error) {
-        console.error("Error fetching variation images:", error);
-      }
-    });
-
-    const results = await Promise.all(promises);
-    const imagesMap = results.reduce((acc: any, result) => {
-      if (result) {
-        acc[result.id] = result.images;
-      }
-      return acc;
-    }, {});
-
-    setAllVariationImages((prev) => ({ ...prev, ...imagesMap }));
-    setImagesLoaded((prev) => {
-      const newLoaded = { ...prev };
-      variations.forEach((variation) => {
-        if (variation.id) {
-          newLoaded[variation.id] = true;
+        } catch (error) {
+          console.error("Error fetching variation images:", error);
         }
       });
-      return newLoaded;
-    });
-  };
 
-  useEffect(() => {
-    if (variations.length > 0) {
-      fetchAllVariationImages();
+      const results = await Promise.all(promises);
+      const imagesMap = results.reduce((acc: any, result) => {
+        if (result) {
+          acc[result.id] = result.images;
+        }
+        return acc;
+      }, {});
+
+      setAllVariationImages((prev) => ({ ...prev, ...imagesMap }));
+      setImagesLoaded((prev) => {
+        const newLoaded = { ...prev };
+        variations.forEach((variation: Variation) => {
+          if (variation.id) {
+            newLoaded[variation.id] = true;
+          }
+        });
+        return newLoaded;
+      });
+    } catch (error) {
+      console.error("Error loading images:", error);
+    } finally {
+      setIsLoadingImages(false);
     }
-  }, [variations]);
+  };
 
   const fetchAttributes = async () => {
     try {
@@ -191,7 +200,17 @@ function VariationsComponente({
           (variation: any) => !variation.isBaseSku
         );
 
+        // Ordenar por fecha de creación y luego por ID para mantener un orden consistente
         filteredVariations.sort((a: any, b: any) => {
+          // Primero intentamos ordenar por fecha de creación
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+
+          if (dateA !== dateB) {
+            return dateA - dateB;
+          }
+
+          // Si las fechas son iguales, ordenamos por ID
           return a.id.localeCompare(b.id);
         });
 
@@ -430,6 +449,9 @@ function VariationsComponente({
       return;
     }
 
+    setIsDeletingVariation(true);
+    setDeletingVariationId(skuId);
+
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const idVariable = searchParams.get("productVariableId");
@@ -447,35 +469,79 @@ function VariationsComponente({
 
       if (response.status === 200) {
         await triggerRevalidation();
+        await fetchVariations();
         toast.success("Variación eliminada con éxito");
-        fetchVariations();
+        setIsDeletingVariation(false);
+        setDeletingVariationId(null);
       } else {
         console.error("Error deleting variation:", response.statusText);
+        toast.error("Error al eliminar la variación");
+        setIsDeletingVariation(false);
+        setDeletingVariationId(null);
       }
     } catch (error) {
       console.error("Error deleting variation:", error);
+      toast.error("Error al eliminar la variación");
+      setIsDeletingVariation(false);
+      setDeletingVariationId(null);
     }
   };
-  const handleVariationSelect = (index: number) => {
+  const handleVariationSelect = async (index: number) => {
     // Si el índice actual es el mismo que estamos intentando seleccionar, lo cerramos
     if (currentVariationIndex === index) {
       setCurrentVariationIndex(null);
-      setVariationImages([]); // Limpiar las imágenes al cerrar
+      setVariationImages([]); // Solo limpiamos las imágenes del estado local
       return;
     }
 
-    // Si es un índice diferente, solo manejamos las imágenes
+    // Establecer el índice de variación actual primero
+    setCurrentVariationIndex(index);
+
+    // Si es un índice diferente, verificamos si necesitamos cargar las imágenes
     const variation = variations[index];
     if (variation && variation.id) {
-      // Cargar imágenes si no están en caché
-      if (!allVariationImages[variation.id]) {
-        fetchAllVariationImages();
-      }
-      setVariationImages(allVariationImages[variation.id] || []);
-    }
+      setIsLoadingImages(true);
+      try {
+        // Si no tenemos las imágenes en caché, las cargamos
+        if (
+          !allVariationImages[variation.id] ||
+          allVariationImages[variation.id].length === 0
+        ) {
+          const searchParams = new URLSearchParams(window.location.search);
+          const idVariable = searchParams.get("productVariableId");
+          const token = getCookie("AdminTokenAuth");
 
-    // Establecer el índice de variación actual
-    setCurrentVariationIndex(index);
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variation.id}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.skuImages) {
+              setAllVariationImages((prev) => ({
+                ...prev,
+                [variation.id]: data.skuImages,
+              }));
+              setVariationImages(data.skuImages);
+            }
+          }
+        } else {
+          // Si ya tenemos las imágenes en caché, las usamos
+          setVariationImages(allVariationImages[variation.id]);
+        }
+      } catch (error) {
+        console.error("Error loading variation images:", error);
+        toast.error("Error al cargar las imágenes de la variación");
+      } finally {
+        setIsLoadingImages(false);
+      }
+    }
   };
 
   const handleCloseForm = () => {
@@ -501,9 +567,21 @@ function VariationsComponente({
 
       {variations.map((variation: any, index: any) => (
         <div key={index}>
-          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm mb-4">
+          <div className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-lg shadow-sm mb-2 relative">
+            {isDeletingVariation && deletingVariationId === variation.id && (
+              <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-lg">
+                <div className="flex flex-col items-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <span className="mt-2 text-sm text-gray-500">
+                    Eliminando variación...
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="flex items-center space-x-4">
-              <span className="text-lg font-medium">Variación {index + 1}</span>
+              <span className="text-lg font-medium border p-2 rounded bg-white">
+                {index + 1}
+              </span>
               {variation.id && currentAttributes[variation.id] && (
                 <div className="flex items-center gap-2">
                   {currentAttributes[variation.id].map(
@@ -538,38 +616,50 @@ function VariationsComponente({
           </div>
           <div>
             {currentVariationIndex === index && (
-              <VariationForm
-                variation={variation}
-                fetchVariations={fetchVariations}
-                currentPrices={currentPrices}
-                currentStocks={currentStocks}
-                currentMinimumQuantities={currentMinimumQuantities}
-                currentAttributes={currentAttributes}
-                setVariations={setVariations}
-                fetchVariationImages={fetchAllVariationImages}
-                variationImages={variationImages}
-                index={index}
-                setIsEditMode={setIsEditMode}
-                attributes={attributes}
-                onDescriptionChange={(e: any) =>
-                  handleDescriptionChange(e, index)
-                }
-                onMainImageChange={(image: any) =>
-                  handleMainImageChange(image, index)
-                }
-                onPreviewImageChange={(image: any) =>
-                  handlePreviewImageChange(image, index)
-                }
-                onCloseForm={handleCloseForm}
-                productId={productId}
-                skuId={skuId}
-                skuImages={skuImages}
-                fetchImages={fetchImages}
-                selectedImages={selectedImages}
-                handleImageGalleryChange={handleImageGalleryChange}
-                handleImageRemove={handleImageRemove}
-                baseProductDescription={baseProductDescription}
-              />
+              <div className="relative">
+                {isLoadingImages && (
+                  <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                    <div className="flex flex-col items-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                      <span className="mt-2 text-sm text-gray-500">
+                        Cargando imágenes...
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <VariationForm
+                  variation={variation}
+                  fetchVariations={fetchVariations}
+                  currentPrices={currentPrices}
+                  currentStocks={currentStocks}
+                  currentMinimumQuantities={currentMinimumQuantities}
+                  currentAttributes={currentAttributes}
+                  setVariations={setVariations}
+                  fetchVariationImages={fetchAllVariationImages}
+                  variationImages={variationImages}
+                  index={index}
+                  setIsEditMode={setIsEditMode}
+                  attributes={attributes}
+                  onDescriptionChange={(e: any) =>
+                    handleDescriptionChange(e, index)
+                  }
+                  onMainImageChange={(image: any) =>
+                    handleMainImageChange(image, index)
+                  }
+                  onPreviewImageChange={(image: any) =>
+                    handlePreviewImageChange(image, index)
+                  }
+                  onCloseForm={handleCloseForm}
+                  productId={productId}
+                  skuId={skuId}
+                  skuImages={skuImages}
+                  fetchImages={fetchImages}
+                  selectedImages={selectedImages}
+                  handleImageGalleryChange={handleImageGalleryChange}
+                  handleImageRemove={handleImageRemove}
+                  baseProductDescription={baseProductDescription}
+                />
+              </div>
             )}
           </div>
         </div>
