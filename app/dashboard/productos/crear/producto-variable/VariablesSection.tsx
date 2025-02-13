@@ -200,14 +200,8 @@ function VariationsComponente({
           (variation: any) => !variation.isBaseSku
         );
 
-        // Separar variaciones existentes y nuevas
-        const existingVariations = filteredVariations.filter(
-          (v: any) => !v.isNew
-        );
-        const newVariations = variations.filter((v: any) => v.isNew);
-
-        // Ordenar las variaciones existentes por fecha de creación
-        existingVariations.sort((a: any, b: any) => {
+        // Ordenar las variaciones por fecha de creación
+        filteredVariations.sort((a: any, b: any) => {
           if (a.createdAt && b.createdAt) {
             return (
               new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -216,8 +210,9 @@ function VariationsComponente({
           return 0;
         });
 
-        // Combinar las variaciones manteniendo el orden
-        const combinedVariations = [...existingVariations, ...newVariations];
+        // Solo mantener las variaciones nuevas que aún no se han guardado
+        const newVariations = variations.filter((v: any) => v.isNew && !v.id);
+        const combinedVariations = [...filteredVariations, ...newVariations];
 
         // Crear promesas para fetchPriceForVariation, fetchStockForVariation y fetchAttributesForVariation
         const fetchTasks = combinedVariations.map(async (variation: any) => {
@@ -433,10 +428,10 @@ function VariationsComponente({
 
     // Actualizar las variaciones y el índice de manera síncrona
     setVariations((prevVariations: Variation[]) => {
-      const newVariations = [...prevVariations, newVariation];
-      return newVariations;
+      const newIndex = prevVariations.length;
+      setCurrentVariationIndex(newIndex);
+      return [...prevVariations, newVariation];
     });
-    setCurrentVariationIndex(variations.length);
   };
 
   const handleDescriptionChange = (
@@ -593,107 +588,110 @@ function VariationsComponente({
         </button>
       </div>
 
-      {variations
-        .filter((v: any) => v.id || v.isNew)
-        .map((variation: any, index: any) => (
-          <div key={variation.id || variation.tempId || index}>
-            <div className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-lg shadow-sm mb-2 relative">
-              {isDeletingVariation && deletingVariationId === variation.id && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-lg">
-                  <div className="flex flex-col items-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <span className="mt-2 text-sm text-gray-500">
-                      Eliminando variación...
-                    </span>
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center space-x-4">
-                <span className="text-lg font-medium border p-2 rounded bg-white">
-                  {index + 1}
-                </span>
-                {variation.id && currentAttributes[variation.id] && (
-                  <div className="flex items-center gap-2">
-                    {currentAttributes[variation.id].map(
-                      (attr: any, attrIndex: number) => (
-                        <span
-                          key={attrIndex}
-                          className="px-2 py-1 bg-primary/10 text-primary rounded text-sm"
-                        >
-                          {attr.label}: {attr.value}
-                        </span>
-                      )
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleVariationSelect(index)}
-                  className="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90"
-                >
-                  {currentVariationIndex === index ? "Cerrar" : "Editar"}
-                </button>
-                {(variation.id || variation.isNew) && (
-                  <button
-                    onClick={() => showDeleteModal(variation)}
-                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-                  >
-                    Eliminar
-                  </button>
-                )}
-              </div>
-            </div>
-            <div>
-              {currentVariationIndex === index && (
-                <div className="relative">
-                  {isLoadingImages && (
-                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+      <div className="space-y-4">
+        {variations
+          .filter((v: any) => v.id || (v.isNew && v.tempId))
+          .map((variation: any, index: any) => (
+            <div key={variation.id || variation.tempId || index}>
+              <div className="flex items-center justify-between p-2 bg-gray-50 border border-gray-200 rounded-lg shadow-sm mb-2 relative">
+                {isDeletingVariation &&
+                  deletingVariationId === variation.id && (
+                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-lg">
                       <div className="flex flex-col items-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         <span className="mt-2 text-sm text-gray-500">
-                          Cargando imágenes...
+                          Eliminando variación...
                         </span>
                       </div>
                     </div>
                   )}
-                  <VariationForm
-                    variation={variation}
-                    fetchVariations={fetchVariations}
-                    currentPrices={currentPrices}
-                    currentStocks={currentStocks}
-                    currentMinimumQuantities={currentMinimumQuantities}
-                    currentAttributes={currentAttributes}
-                    setVariations={setVariations}
-                    fetchVariationImages={fetchAllVariationImages}
-                    variationImages={variationImages}
-                    index={index}
-                    setIsEditMode={setIsEditMode}
-                    attributes={attributes}
-                    onDescriptionChange={(e: any) =>
-                      handleDescriptionChange(e, index)
-                    }
-                    onMainImageChange={(image: any) =>
-                      handleMainImageChange(image, index)
-                    }
-                    onPreviewImageChange={(image: any) =>
-                      handlePreviewImageChange(image, index)
-                    }
-                    onCloseForm={handleCloseForm}
-                    productId={productId}
-                    skuId={skuId}
-                    skuImages={skuImages}
-                    fetchImages={fetchImages}
-                    selectedImages={selectedImages}
-                    handleImageGalleryChange={handleImageGalleryChange}
-                    handleImageRemove={handleImageRemove}
-                    baseProductDescription={baseProductDescription}
-                  />
+                <div className="flex items-center space-x-4">
+                  <span className="text-lg font-medium border p-2 rounded bg-white">
+                    {index + 1}
+                  </span>
+                  {variation.id && currentAttributes[variation.id] && (
+                    <div className="flex items-center gap-2">
+                      {currentAttributes[variation.id].map(
+                        (attr: any, attrIndex: number) => (
+                          <span
+                            key={attrIndex}
+                            className="px-2 py-1 bg-primary/10 text-primary rounded text-sm"
+                          >
+                            {attr.label}: {attr.value}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleVariationSelect(index)}
+                    className="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90"
+                  >
+                    {currentVariationIndex === index ? "Cerrar" : "Editar"}
+                  </button>
+                  {(variation.id || variation.isNew) && (
+                    <button
+                      onClick={() => showDeleteModal(variation)}
+                      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                {currentVariationIndex === index && (
+                  <div className="relative">
+                    {isLoadingImages && (
+                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                        <div className="flex flex-col items-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                          <span className="mt-2 text-sm text-gray-500">
+                            Cargando imágenes...
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <VariationForm
+                      variation={variation}
+                      fetchVariations={fetchVariations}
+                      currentPrices={currentPrices}
+                      currentStocks={currentStocks}
+                      currentMinimumQuantities={currentMinimumQuantities}
+                      currentAttributes={currentAttributes}
+                      setVariations={setVariations}
+                      fetchVariationImages={fetchAllVariationImages}
+                      variationImages={variationImages}
+                      index={index}
+                      setIsEditMode={setIsEditMode}
+                      attributes={attributes}
+                      onDescriptionChange={(e: any) =>
+                        handleDescriptionChange(e, index)
+                      }
+                      onMainImageChange={(image: any) =>
+                        handleMainImageChange(image, index)
+                      }
+                      onPreviewImageChange={(image: any) =>
+                        handlePreviewImageChange(image, index)
+                      }
+                      onCloseForm={handleCloseForm}
+                      productId={productId}
+                      skuId={skuId}
+                      skuImages={skuImages}
+                      fetchImages={fetchImages}
+                      selectedImages={selectedImages}
+                      handleImageGalleryChange={handleImageGalleryChange}
+                      handleImageRemove={handleImageRemove}
+                      baseProductDescription={baseProductDescription}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+      </div>
       {isDeleteModalVisible && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

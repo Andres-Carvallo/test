@@ -575,9 +575,11 @@ const VariationForm: React.FC<any> = ({
         // Luego actualizamos las variaciones
         await fetchVariations();
 
-        // Si estamos en modo edición, mantenemos abierto este formulario
-        // Si es una nueva variación, cerramos el formulario
+        // Limpiar el estado de la variación actual si es nueva
         if (!isEditMode) {
+          setVariations((prevVariations: any[]) =>
+            prevVariations.filter((v) => !v.isNew || v.id)
+          );
           onCloseForm();
         }
 
