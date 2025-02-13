@@ -3,6 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 body {
   @apply font-Montserrat;
 }
@@ -187,4 +189,27 @@ ol {
 
 #descriptionTeindaPixelup .ql-editor {
   min-height: 60px !important;
+}
+
+/* Agregar esta clase específica para el sidebar */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
