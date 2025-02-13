@@ -730,6 +730,7 @@ const VariationForm: React.FC<any> = ({
       const idVariable = searchParams.get("productVariableId");
       fetchVariationImages(idVariable, variation.id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variation.id]); // Solo se ejecuta cuando cambia el ID de la variación
 
   return (
