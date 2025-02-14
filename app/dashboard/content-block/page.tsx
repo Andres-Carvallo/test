@@ -1,5 +1,5 @@
 "use client";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import ContentBienvenida from "@/components/conMantenedor/ContentBienvenida";
 import React, { useState, useEffect } from "react";
 import axios from "axios";

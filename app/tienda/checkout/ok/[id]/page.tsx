@@ -59,6 +59,9 @@ interface Order {
     authorizationCode: string;
     cardDigits: string;
   };
+  deliveryType?: {
+    code: string;
+  };
 }
 
 const OrderReceipt: React.FC = () => {
@@ -256,16 +259,36 @@ const OrderReceipt: React.FC = () => {
           </div>
           <div className="mb-4">
             <div className="border p-4 rounded-md ">
-              <h2 className="text-lg font-semibold mb-4">Dirección</h2>
-              <p>
-                <strong>Dirección de Envío:</strong>{" "}
-                {order.shippingInfo.addressLine1},{" "}
-                {order.shippingInfo.addressLine2}
-              </p>
-              <p>
-                <strong>Comuna:</strong> {order.shippingInfo.commune.name},{" "}
-                {order.shippingInfo.commune.region.name}
-              </p>
+              <h2 className="text-lg font-semibold mb-4">
+                {order.deliveryType?.code === "WITHDRAWAL_FROM_STORE" 
+                  ? "Retiro en Tienda" 
+                  : "Dirección de Envío"}
+              </h2>
+              {order.deliveryType?.code === "WITHDRAWAL_FROM_STORE" ? (
+                <>
+                  <h3 className="text-lg font-medium text-gray-500 mb-2 ">Dirección de Facturación:</h3>
+                  <p>
+                    <strong>Dirección:</strong> {order.customer.addressLine1}
+                    {order.customer.addressLine2 && `, ${order.customer.addressLine2}`}
+                  </p>
+                  <p>
+                    <strong>Comuna:</strong> {order.customer.commune.name},{" "}
+                    {order.customer.commune.region.name}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    <strong>Dirección:</strong>{" "}
+                    {order.shippingInfo.addressLine1}
+                    {order.shippingInfo.addressLine2 && `, ${order.shippingInfo.addressLine2}`}
+                  </p>
+                  <p>
+                    <strong>Comuna:</strong> {order.shippingInfo.commune.name},{" "}
+                    {order.shippingInfo.commune.region.name}
+                  </p>
+                </>
+              )}
             </div>
           </div>
 

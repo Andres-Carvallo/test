@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import CrearVariable from "./CrearVariable_starken";
+import CrearVariable from "./CrearVariable";
+import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 
 export const metadata: Metadata = {
   title: "Crear Producto Varibale",
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
 };
 const CrearProductoVariablePage = () => {
   return (
-    <div>
+    <RevalidationProvider>
       <CrearVariable />
-    </div>
+    </RevalidationProvider>
   );
 };
 

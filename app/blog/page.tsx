@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import Image from "next/image";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface Post {
   id: string;
@@ -14,32 +18,67 @@ interface Post {
   detailContent: string;
   detailImage: { url: string };
   slug: string;
+  articleCategories: Category[];
 }
+
+const ITEMS_PER_PAGE = 6;
 
 const PostsList: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/articles?pageSize=10&pageNumber=1&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-        setPosts(response.data.articles);
+        const [postsResponse, categoriesResponse] = await Promise.all([
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/articles?pageSize=10&pageNumber=1&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+          ),
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/article-categories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&pageSize=10&pageNumber=1`
+          ),
+        ]);
+
+        setPosts(postsResponse.data.articles);
+        setCategories(categoriesResponse.data.articleCategories || []);
       } catch (error) {
-        console.error("Error fetching posts", error);
-        setError("Failed to fetch posts. Please try again later.");
+        console.error("Error fetching data", error);
+        setError("Error al cargar los datos. Por favor, intente más tarde.");
       } finally {
         setLoading(false);
       }
     };
-    fetchPosts();
+
+    fetchData();
   }, []);
 
+  const filteredPosts = selectedCategory
+    ? posts.filter((post) =>
+        post.articleCategories.some((cat) => cat.id === selectedCategory)
+      )
+    : posts;
+
+  const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
+  const paginatedPosts = filteredPosts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   if (loading) {
-    return <div className="text-center mt-8">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (error) {
@@ -47,44 +86,129 @@ const PostsList: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Blog Posts</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="group relative overflow-hidden rounded-sm bg-white shadow-md hover:shadow-lg transition-shadow duration-300 dark:bg-dark"
-          >
-            <Link
-              href={`/blog/post/${post.id}`}
-              className="relative block aspect-w-16 aspect-h-9"
-            >
-              <img
-                src={post.previewImage.url}
-                alt={post.title}
-                className="transition-transform duration-300 group-hover:scale-105"
-              />
-            </Link>
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">
-                <Link
-                  href={`/blog/post/${post.id}`}
-                  className="text-gray-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"
-                >
-                  {post.title}
-                </Link>
-              </h2>
-              <p
-                dangerouslySetInnerHTML={{ __html: post.previewContent }}
-                className="text-gray-700 dark:text-gray-300 mb-4"
-              />
+    <div className="w-full">
+      <div className="relative h-[300px] w-full mb-12">
+        <img
+          src="https://picsum.photos/1920/300"
+          alt="Blog banner"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <h1 className="text-5xl font-bold text-white">Nuestro Blog</h1>
+        </div>
+      </div>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Published on {new Date(post.creationDate).toLocaleDateString()}
-              </p>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="mb-12">
+          <div className="flex justify-center">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full max-w-md px-4 py-3 border text-lg rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Todas las categorías</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
-        ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {paginatedPosts.map((post) => (
+            <div
+              key={post.id}
+              className="group bg-white dark:bg-gray-800 rounded overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+            >
+              <Link href={`/blog/post/${post.id}`} className="block">
+                <div className="relative h-56 overflow-hidden">
+                  <img
+                    src={post.previewImage.url}
+                    alt={post.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+                    <div className="flex gap-2 flex-wrap">
+                      {post.articleCategories.map((cat) => (
+                        <span
+                          key={cat.id}
+                          className="text-sm text-white px-3 py-1 rounded bg-primary"
+                        >
+                          {cat.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+              <div className="p-8">
+                <h2 className="text-2xl font-bold mb-4">
+                  <Link
+                    href={`/blog/post/${post.id}`}
+                    className="text-gray-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"
+                  >
+                    {post.title}
+                  </Link>
+                </h2>
+                <div
+                  dangerouslySetInnerHTML={{ __html: post.previewContent }}
+                  className="text-gray-700 dark:text-gray-300 mb-6 prose prose-img:rounded prose-img:mx-auto line-clamp-3"
+                />
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(post.creationDate).toLocaleDateString("es-ES", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                  <Link
+                    href={`/blog/post/${post.id}`}
+                    className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium"
+                  >
+                    Leer más →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              ←
+            </button>
+
+            {[...Array(totalPages)].map((_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`px-4 py-2 rounded ${
+                  currentPage === index + 1
+                    ? "bg-primary text-white"
+                    : "bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                } transition-colors`}
+              >
+                {index + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

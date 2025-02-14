@@ -9,6 +9,7 @@ const FreeShippingOption: React.FC<any> = ({}) => {
     value: string | null;
   } | null>(null);
   const [newValue, setNewValue] = useState<string>("");
+  const [enableMinAmount, setEnableMinAmount] = useState<boolean>(true);
 
   const token = getCookie("AdminTokenAuth");
 
@@ -30,11 +31,13 @@ const FreeShippingOption: React.FC<any> = ({}) => {
         );
 
         if (option) {
+          const isEnabled = option.value !== null;
+          setEnableMinAmount(isEnabled);
           setFreeShippingOption({
             id: option.id,
-            value: option.value || "", // Si el valor es null, lo establece como una cadena vacía
+            value: option.value || "",
           });
-          setNewValue(option.value || "");
+          setNewValue(isEnabled ? option.value || "" : "");
         }
       } catch (error) {
         console.error("Error fetching free shipping option:", error);
@@ -55,14 +58,52 @@ const FreeShippingOption: React.FC<any> = ({}) => {
     setNewValue(numericValue);
   };
 
+  const handleToggleChange = async (checked: boolean) => {
+    setEnableMinAmount(checked);
+
+    if (!checked) {
+      // Si se desactiva el switch, actualizar automáticamente
+      if (!freeShippingOption) return;
+
+      try {
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/options/${freeShippingOption.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            value: null,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        toast.success(
+          "Envío gratis sin monto mínimo configurado exitosamente."
+        );
+        setFreeShippingOption((prev) => ({
+          id: prev ? prev.id : "",
+          value: null,
+        }));
+      } catch (error) {
+        console.error("Error updating free shipping option:", error);
+        toast.error("Error al actualizar la configuración de envío gratis.");
+        // Revertir el switch si hay error
+        setEnableMinAmount(true);
+      }
+    }
+  };
+
   const handleUpdate = async () => {
     if (!freeShippingOption) return;
+
+    const valueToSend = enableMinAmount ? newValue : null;
 
     try {
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/options/${freeShippingOption.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
-          value: newValue,
+          value: valueToSend,
         },
         {
           headers: {
@@ -71,41 +112,73 @@ const FreeShippingOption: React.FC<any> = ({}) => {
           },
         }
       );
-      toast.success("Valor de envío gratis actualizado exitosamente.");
+      toast.success("Configuración de envío gratis actualizada exitosamente.");
       setFreeShippingOption((prev) => ({
         id: prev ? prev.id : "",
-        value: newValue,
+        value: valueToSend,
       }));
     } catch (error) {
       console.error("Error updating free shipping option:", error);
-      toast.error("Error al actualizar la opción de envío gratis.");
+      toast.error("Error al actualizar la configuración de envío gratis.");
     }
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Editar Monto de Envío Gratis</h2>
+    <div className="p-8 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        Configuración de Envío Gratis
+      </h2>
       {freeShippingOption ? (
-        <div>
-          <label className="block mb-2 text-sm font-medium text-gray-700">
-            Monto mínimo para envío gratis:
-          </label>
-          <input
-            type="text" // Cambiado a 'text' para manejar las validaciones manualmente
-            value={newValue}
-            onChange={handleValueChange}
-            className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-            placeholder="Ingresa el monto mínimo para envío gratis"
-          />
-          <button
-            onClick={handleUpdate}
-            className="mt-4 bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded"
-          >
-            Actualizar
-          </button>
+        <div className="space-y-6">
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between min-h-[2rem]">
+                <label className="text-lg font-medium text-gray-700">
+                  Establecer monto mínimo para envío gratis
+                </label>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={enableMinAmount}
+                    onChange={(e) => handleToggleChange(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+
+              {enableMinAmount && (
+                <div className="mt-6">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
+                    Monto mínimo para envío gratis:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={newValue}
+                      onChange={handleValueChange}
+                      className="block w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                      placeholder="Ingresa el monto mínimo"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {enableMinAmount && (
+            <button
+              onClick={handleUpdate}
+              className="w-full bg-primary hover:bg-secondary transition-colors duration-200 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg"
+            >
+              Actualizar monto mínimo
+            </button>
+          )}
         </div>
       ) : (
-        <p>Cargando información...</p>
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
       )}
     </div>
   );

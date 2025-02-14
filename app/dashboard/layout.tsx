@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Loader from "@/components/common/Loader";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/HeaderDashboard";
+import Sidebar from "@/components/Core/Sidebar";
+import Header from "@/components/Core/HeaderDashboard";
 import { getCookie, deleteCookie } from "cookies-next";
 import { useRouter, usePathname } from "next/navigation";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
@@ -36,36 +36,35 @@ export default function RootLayout({
         const userData = await obtenerUsuarioPorID(userId, token);
 
         if (userData.user) {
-          setLoading(false); // El usuario es válido, dejamos de mostrar el Loader
+          setLoading(false);
         } else {
           throw new Error("User data not found");
         }
       } catch (error) {
-        console.error("Error al obtener el usuario o token inválido: ", error);
         handleLogout();
       }
     }
   };
 
   useEffect(() => {
-    checkCookie(); // Verificar cookie al cargar el componente
-
+    checkCookie();
     const intervalDuration = parseInt(
       process.env.NEXT_PUBLIC_INTERVAL_DURATION || "6000000",
       10
     );
-
     const intervalId = setInterval(checkCookie, intervalDuration);
-
-    // Limpiar el intervalo al desmontar el componente
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    checkCookie(); // Verificar cookie en cada cambio de ruta
+    checkCookie();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <div className="dark:bg-boxdark-2 dark:text-bodydark bg-[#e9f0ee]">
@@ -74,14 +73,14 @@ export default function RootLayout({
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
-
-        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden z-20">
-          <Header
+{/*           <Header
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
-          />
-          <div className="mx-auto w-full -z-1  h-auto ">{children}</div>
-        </div>
+          /> */}
+          <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          <main className="mx-auto w-full p-4 md:p-6 2xl:p-10">{children}</main>
+          </div>
+
       </div>
     </div>
   );

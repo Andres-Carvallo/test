@@ -5,9 +5,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const Paralllax01: React.FC = () => {
+const Parallax01: React.FC = () => {
   const ParallaxData = {
-    BannerId: "24eed87b-2b78-4922-836a-9d860f878350",
+    BannerId: process.env.NEXT_PUBLIC_BANNERPRINCIPAL02_ID,
   };
 
   const [bannerData, setBannerData] = useState<any | null>(null);
@@ -43,7 +43,7 @@ const Paralllax01: React.FC = () => {
     <div>
       {bannerData && (
         <div
-          className="relative mx-auto my-8 h-[450px] w-screen overflow-hidden bg-cover bg-fixed bg-center bg-no-repeat shadow-lg"
+          className="relative mx-auto h-[450px] overflow-hidden bg-cover bg-fixed bg-center bg-no-repeat shadow-lg"
           style={{ backgroundImage: `url(${bannerData[0].mainImage.url})` }}
         >
           <div className="absolute inset-0 bg-black opacity-60"></div>{" "}
@@ -56,9 +56,11 @@ const Paralllax01: React.FC = () => {
               {/*           <div className="mt-4 text-lg sm:text-xl font-bold text-primary-foreground">
             {subtitulo}
           </div> */}
-              <p className="mt-8 text-lg sm:text-xl leading-7 text-secondary max-w-3xl font-kalam px-10">
-                {bannerData[0].landingText}
-              </p>
+              <div
+                className="mt-8 text-lg sm:text-xl leading-7 text-secondary max-w-3xl font-kalam px-10"
+                dangerouslySetInnerHTML={{ __html: bannerData[0].landingText }}
+              />
+
             </div>
           </div>
         </div>
@@ -67,4 +69,4 @@ const Paralllax01: React.FC = () => {
   );
 };
 
-export default Paralllax01;
+export default Parallax01;

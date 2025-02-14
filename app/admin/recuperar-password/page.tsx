@@ -84,6 +84,7 @@ function Page() {
         setSecurityCode("");
         setNewPassword("");
         setConfirmNewPassword("");
+        window.location.href = "/admin/login";
       } else {
         setError("Failed to reset password. Please try again.");
       }

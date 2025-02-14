@@ -30,31 +30,12 @@ export async function GET() {
     });
 
     console.log("Response from Google Analytics API:", response);
-
-    const headers = {
-      "Cache-Control":
-        "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
-      Pragma: "no-cache",
-      Expires: "0",
-    };
-
-    return NextResponse.json(response, { headers });
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error(
       "Error while fetching data from Google Analytics API:",
       error.message
     );
-
-    const headers = {
-      "Cache-Control":
-        "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
-      Pragma: "no-cache",
-      Expires: "0",
-    };
-
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500, headers }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

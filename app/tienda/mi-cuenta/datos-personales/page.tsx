@@ -59,7 +59,7 @@ const DatosPersonales: React.FC<any> = () => {
         fetchCommunes(userDataInfo.commune.region.id);
       }
     } catch (error) {
-      console.error("Error al obtener el usuario: " + error);
+      console.error("Error " + error);
     }
   };
 

@@ -9,7 +9,7 @@ import { Customer, ItemAvailability } from "@/types/types";
 import { jwtDecode } from "jwt-decode";
 import Loader from "@/components/common/Loader";
 
-const CartList = React.lazy(() => import("@/components/CartCanva/CartList"));
+const CartList = React.lazy(() => import("@/components/Core/CartCanva/CartList"));
 
 const Checkout: React.FC = () => {
   const [regionsDelivery, setRegionsDelivery] = useState<
@@ -1004,9 +1004,9 @@ const Checkout: React.FC = () => {
                           <span className="mt-2 font-semibold">
                             Retiro en Tienda
                           </span>
-{/*                           <p className="text-slate-500 text-sm leading-6">
+                          <p className="text-slate-500 text-sm leading-6">
                             Retiro: 0-1 Día
-                          </p> */}
+                          </p>
                         </div>
                       </label>
                     </div>
@@ -1047,9 +1047,9 @@ const Checkout: React.FC = () => {
                         </svg>
                         <div className="ml-5">
                           <span className="mt-2 font-semibold">Delivery</span>
-{/*                           <p className="text-slate-500 text-sm leading-6">
+                          <p className="text-slate-500 text-sm leading-6">
                             Delivery: 2-4 Days
-                          </p> */}
+                          </p>
                         </div>
                       </label>
                     </div>

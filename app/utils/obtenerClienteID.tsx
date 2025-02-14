@@ -14,7 +14,7 @@ export const obtenerClienteID = async (id: any, token: any) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error al obtener el usuario: " + error);
+    console.error("Error: " + error);
     throw error;
   }
 };

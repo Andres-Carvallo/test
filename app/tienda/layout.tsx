@@ -1,24 +1,32 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
-import type { Metadata } from "next";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
-import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
-import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
-import Footer02 from "@/components/PIXELUP/Footer/Footer02/Footer02";
-import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
+import { RevalidationProvider } from "@/app/Context/RevalidationContext";
+import Navbar from "@/components/PIXELUP/Navbar/Navbar02/cdgnavbar";
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <>
-      <MarqueeTOP />
-      <Navbar04 />
-      <div>{children}</div>
-      <Footer02 />
-    </>
+    <RevalidationProvider>
+      <div>
+        <Navbar />
+        {children}
+        <a
+          href={`https://wa.me/56978334123`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed right-6 bottom-[30px] z-50 bg-green-500 rounded-full p-3 hover:bg-green-600 transition-colors animate-pulse-whatsapp"
+          style={{ zIndex: 999 }}
+        >
+          <img
+            src="/whatsapp.svg"
+            alt="WhatsApp"
+            className="w-8 h-8 hover:scale-110 transition-transform duration-200"
+          />
+        </a>
+      </div>
+    </RevalidationProvider>
   );
 }

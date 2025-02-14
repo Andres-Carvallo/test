@@ -1,6 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import {
-  Inter,
   Roboto_Mono,
   Kalam,
   Oswald,
@@ -10,11 +10,17 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { APIContextProvider } from "@/app/Context/ProductTypeContext";
-import toast, { Toaster } from "react-hot-toast";
-import { Providers } from "./providers";
-import { Analytics } from "@vercel/analytics/react";
+import { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { FloatingWhatsApp } from "react-floating-whatsapp";
+import { RevalidationProvider } from "@/app/Context/RevalidationContext";
+import Head from "next/head";
+import { NavbarProvider } from "./Context/NavbarContext";
+import { AuthProvider } from "./Context/AuthContext";
+import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
+import GoogleAnalytics from "@/components/Core/Google/Analytics";
+import { useRouter, usePathname } from "next/navigation";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -55,6 +61,9 @@ export default function RootLayout({
 }>) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [siteStatus, setSiteStatus] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const ActiveSiteCheck = async () => {
@@ -63,7 +72,15 @@ export default function RootLayout({
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/sites/${id}`
         );
-        console.log(response.data);
+        setSiteStatus(response.data.site.statusCode);
+
+        if (
+          response.data.site.statusCode === "SUBSCRIPTION_PENDING" &&
+          !pathname.startsWith("/admin") &&
+          !pathname.startsWith("/dashboard")
+        ) {
+          router.push("/subscription-pending");
+        }
       } catch (error) {
         setError(error as Error);
       } finally {
@@ -71,26 +88,14 @@ export default function RootLayout({
       }
     };
     ActiveSiteCheck();
-  }, []);
+  }, [router, pathname]);
 
   return (
-    <html lang="es">
-      <header>
-        <script
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
-          `,
-          }}
-        />
-
+    <html
+      lang="es"
+      className="light"
+    >
+      <Head>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
@@ -99,6 +104,10 @@ export default function RootLayout({
         <meta
           httpEquiv="Content-Language"
           content="es"
+        />
+        <meta
+          name="googlebot"
+          content="index, follow"
         />
         <meta
           name="author"
@@ -121,19 +130,25 @@ export default function RootLayout({
           property="og:type"
           content="website"
         />
-      </header>
-      <APIContextProvider SiteId={SiteId}>
-        <Analytics />
-
-        <body
-          className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} `}
-        >
-          <Providers>
-            <Toaster />
-            <div className="md:min-h-screen ">{children}</div>
-          </Providers>
-        </body>
-      </APIContextProvider>
+      </Head>
+      <body
+        className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} `}
+      >
+        <GoogleAnalytics
+          GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""}
+        />
+        <AuthProvider>
+          <RevalidationProvider>
+            {/*  <MarqueeTOP /> */}
+            <NavbarProvider>
+              <APIContextProvider SiteId={SiteId}>
+                <Toaster />
+                <div className="md:min-h-screen ">{children}</div>
+              </APIContextProvider>
+            </NavbarProvider>
+          </RevalidationProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

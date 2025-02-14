@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getCookie, deleteCookie } from "cookies-next";
-import { useRouter, usePathname } from "next/navigation";
+import { getCookie, deleteCookie, setCookie } from "cookies-next";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import { jwtDecode } from "jwt-decode";
 
@@ -13,6 +13,7 @@ export default function RootLayout({
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const handleLogout = async () => {
     deleteCookie("AdminTokenAuth");
@@ -23,6 +24,10 @@ export default function RootLayout({
     const token = getCookie("AdminTokenAuth")?.toString();
 
     if (!token) {
+      const fullUrl =
+        pathname +
+        (searchParams.toString() ? `?${searchParams.toString()}` : "");
+      setCookie("redirectAfterLogin", fullUrl);
       router.push("/admin/login");
     } else {
       try {
@@ -31,7 +36,7 @@ export default function RootLayout({
         const userData = await obtenerUsuarioPorID(userId, token);
 
         if (userData.user) {
-          setLoading(false); // El usuario es válido, dejamos de mostrar el Loader
+          setLoading(false);
         } else {
           throw new Error("User data not found");
         }

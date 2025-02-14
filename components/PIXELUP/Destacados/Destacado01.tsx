@@ -16,7 +16,7 @@ interface Product {
   // Otros campos que puedan estar en el producto
 }
 
-const Destacados01: React.FC<any> = ({ text }) => {
+const Destacados01: React.FC<any> = ({ text, ProductCardComponent = ProductCard01 }) => {
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState<Error | null>(null);
@@ -122,11 +122,11 @@ const Destacados01: React.FC<any> = ({ text }) => {
     },
     tablet: {
       breakpoint: { max: 1024, min: 464 },
-      items: 2,
+      items: 3,
     },
     mobile: {
       breakpoint: { max: 464, min: 0 },
-      items: 1,
+      items: 2,
     },
   };
 
@@ -183,9 +183,9 @@ const Destacados01: React.FC<any> = ({ text }) => {
 
   const showArrows = products.length > 4;
   return (
-    <div className="container mx-auto m-8 mt-16 max-w-7xl relative">
+    <div className="container mx-auto m-8  max-w-6xl relative">
       <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
-      {text}
+        {text}
       </h1>
       <Carousel
         swipeable={true}
@@ -202,15 +202,15 @@ const Destacados01: React.FC<any> = ({ text }) => {
         transitionDuration={500}
         containerClass="carousel-container relative"
         removeArrowOnDeviceType={["tablet", "mobile"]}
-        dotListClass="custom-dot-list-style mt-16"
-        itemClass="px-2 py-12"
+        dotListClass="custom-dot-list-style mt-12 "
+        itemClass="px-2 mb-12"
         customButtonGroup={
           showArrows ? <CustomButtonGroupAsArrows /> : undefined
         }
         renderButtonGroupOutside={true}
       >
         {products.map((product: any) => (
-          <ProductCard02
+          <ProductCardComponent
             key={product.id}
             product={product}
             addToCartHandler={addToCartHandler}

@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import axios from "axios";
-import CreateCategory from "@/components/Products/Category/CreateCategory";
-import EditCategory from "@/components/Products/Category/EditCategory";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import CreateCategory from "@/components/Core/Products/Category/CreateCategory";
+import EditCategory from "@/components/Core/Products/Category/EditCategory";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 
 const CategoriasPage: React.FC = () => {
   const { productType, setProductType } = useAPI();
@@ -44,13 +44,13 @@ const CategoriasPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <div className="py-10 mx-10">
+    <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
       <title>Categorías</title>
       <Breadcrumb pageName="Categorías" />
-      <div className="">
-        <div className="flex  min-w-96  my-4 p-4 rounded-xl gap-6">
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row mb-6 gap-4">
           <button
-            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md ${
+            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md transition-all duration-300 ${
               activeTab === "create" ? "bg-primary text-white" : ""
             }`}
             onClick={() => handleTabChange("create")}
@@ -58,7 +58,7 @@ const CategoriasPage: React.FC = () => {
             Crear Categoría
           </button>
           <button
-            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md ${
+            className={`flex-1 p-4 rounded-xl bg-gray-200 text-primary shadow-md transition-all duration-300 ${
               activeTab === "edit" ? "bg-primary text-white" : ""
             }`}
             onClick={() => handleTabChange("edit")}
@@ -66,7 +66,6 @@ const CategoriasPage: React.FC = () => {
             Editar Categoría
           </button>
         </div>
-        <div className=" bg-white rounded-xl min-w-96">
           {activeTab === "create" && (
             <div>
               <CreateCategory
@@ -82,7 +81,6 @@ const CategoriasPage: React.FC = () => {
               switchToCreateTab={null}
             />
           )}
-        </div>
       </div>
     </div>
   );

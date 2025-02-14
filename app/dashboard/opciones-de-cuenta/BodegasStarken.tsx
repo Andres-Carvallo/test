@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
 interface Commune {
   id: string;
   name: string;
   regionId: string;
 }
-
 interface Region {
   id: string;
   name: string;
 }
-
 interface Bodega {
   id: string;
   name: string;
@@ -20,11 +17,9 @@ interface Bodega {
   alternativeCommuneId?: string;
   statusCode: string;
 }
-
 interface BodegasStarkenProps {
   token: string;
 }
-
 const BodegasStarken = ({ token }: BodegasStarkenProps) => {
   const [bodegas, setBodegas] = useState<Bodega[]>([]);
   const [selectedBodegaId, setSelectedBodegaId] = useState<string | null>(null);
@@ -34,11 +29,9 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [selectedCommune, setSelectedCommune] = useState<string>("");
-
   const [alternativeRegion, setAlternativeRegion] = useState<string>("");
   const [alternativeCommunes, setAlternativeCommunes] = useState<Commune[]>([]);
   const [alternativeCommuneId, setAlternativeCommuneId] = useState<string>("");
-
   useEffect(() => {
     const fetchBodegas = async () => {
       try {
@@ -57,7 +50,6 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
         setLoading(false);
       }
     };
-
     const fetchRegions = async () => {
       try {
         const response = await axios.get(
@@ -68,11 +60,9 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
         console.error("Error fetching regions", error);
       }
     };
-
     fetchBodegas();
     fetchRegions();
   }, [token]);
-
   const fetchCommunes = async (regionId: string, forAlternative = false) => {
     try {
       const response = await axios.get(
@@ -87,7 +77,6 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
       console.error("Error fetching communes", error);
     }
   };
-
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
@@ -96,11 +85,9 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
       fetchCommunes(regionId); // Fetch de las comunas para la región seleccionada
     }
   };
-
   const handleCommuneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCommune(e.target.value);
   };
-
   const handleAlternativeRegionChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -111,13 +98,11 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
       fetchCommunes(regionId, true); // Fetch de comunas para la región alternativa
     }
   };
-
   const handleAlternativeCommuneChange = (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     setAlternativeCommuneId(e.target.value);
   };
-
   const fetchBodegaDetail = async (id: string) => {
     setSelectedBodegaId(id);
     try {
@@ -136,10 +121,8 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
       console.error("Error fetching bodega details", error);
     }
   };
-
   const handleSaveClick = async () => {
     if (!selectedBodega) return;
-
     try {
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses/${selectedBodega.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -162,164 +145,169 @@ const BodegasStarken = ({ token }: BodegasStarkenProps) => {
       alert("Error al actualizar la bodega");
     }
   };
-
   if (loading) {
     return <div>Cargando bodegas...</div>;
   }
-
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Bodegas Starken</h1>
-      <ul>
-        {bodegas.map((bodega) => (
-          <li
-            key={bodega.id}
-            className={`mb-4 border-b pb-2 cursor-pointer ${
-              selectedBodegaId === bodega.id ? "bg-blue-100" : ""
-            }`}
-            onClick={() => fetchBodegaDetail(bodega.id)}
-          >
-            <h2 className="text-lg font-semibold">{bodega.name}</h2>
-            <p>{bodega.description}</p>
-          </li>
-        ))}
-      </ul>
-
-      {selectedBodega && (
-        <div className="mt-8 p-4 border-t">
-          <h2 className="text-xl font-bold mb-4">Editar Bodega</h2>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-md font-medium text-gray-700">
-                Nombre
-              </label>
-              <input
-                type="text"
-                value={selectedBodega.name}
-                onChange={(e) =>
-                  setSelectedBodega({ ...selectedBodega, name: e.target.value })
-                }
-                className="block w-full rounded bg-gray-100 border-dark py-2 px-3 mt-2"
-              />
-            </div>
-
-            <div>
-              <label className="block text-md font-medium text-gray-700">
-                Descripción
-              </label>
-              <input
-                type="text"
-                value={selectedBodega.description}
-                onChange={(e) =>
-                  setSelectedBodega({
-                    ...selectedBodega,
-                    description: e.target.value,
-                  })
-                }
-                className="block w-full rounded bg-gray-100 border-dark py-2 px-3 mt-2"
-              />
-            </div>
-
-            {/* Modificación de la comuna actual */}
-            <div>
-              <label className="block text-md font-medium text-gray-700">
-                Región para Comuna Actual
-              </label>
-              <select
-                value={selectedRegion}
-                onChange={handleRegionChange}
-                className="block w-full rounded bg-gray-100 border-dark py-2 px-3 mt-2"
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Bodegas Starken
+      </h1>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Lista de Bodegas */}
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">Lista de Bodegas</h2>
+          <div className="space-y-3">
+            {bodegas.map((bodega) => (
+              <div
+                key={bodega.id}
+                className={`p-4 rounded-lg transition-all duration-200 cursor-pointer
+                  ${selectedBodegaId === bodega.id 
+                    ? 'bg-blue-50 border-2 border-blue-500' 
+                    : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                  }`}
+                onClick={() => fetchBodegaDetail(bodega.id)}
               >
-                <option value="">Seleccionar Región</option>
-                {regions.map((region) => (
-                  <option
-                    key={region.id}
-                    value={region.id}
-                  >
-                    {region.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-md font-medium text-gray-700">
-                Comuna Actual
-              </label>
-              <select
-                value={selectedCommune}
-                onChange={handleCommuneChange}
-                className="block w-full rounded bg-gray-100 border-dark py-2 px-3 mt-2"
-                disabled={!selectedRegion} // Solo habilitar si hay una región seleccionada
-              >
-                <option value="">Seleccionar Comuna</option>
-                {communes.map((commune) => (
-                  <option
-                    key={commune.id}
-                    value={commune.id}
-                  >
-                    {commune.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Modificación de la comuna alternativa */}
-            <div>
-              <label className="block text-md font-medium text-gray-700">
-                Región para Comuna Alternativa
-              </label>
-              <select
-                value={alternativeRegion}
-                onChange={handleAlternativeRegionChange}
-                className="block w-full rounded bg-gray-100 border-dark py-2 px-3 mt-2"
-              >
-                <option value="">Seleccionar Región</option>
-                {regions.map((region) => (
-                  <option
-                    key={region.id}
-                    value={region.id}
-                  >
-                    {region.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-md font-medium text-gray-700">
-                Comuna Alternativa
-              </label>
-              <select
-                value={alternativeCommuneId}
-                onChange={handleAlternativeCommuneChange}
-                className="block w-full rounded bg-gray-100 border-dark py-2 px-3 mt-2"
-                disabled={!alternativeRegion} // Solo habilitar si hay una región seleccionada
-              >
-                <option value="">Seleccionar Comuna</option>
-                {alternativeCommunes.map((commune) => (
-                  <option
-                    key={commune.id}
-                    value={commune.id}
-                  >
-                    {commune.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              onClick={handleSaveClick}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Guardar Cambios
-            </button>
+                <h3 className="text-lg font-medium text-gray-800">{bodega.name}</h3>
+                <p className="text-gray-600 text-sm mt-1">{bodega.description}</p>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+
+        {/* Formulario de Edición */}
+        {selectedBodega && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold mb-6 text-gray-800 border-b pb-4">
+              Editar Bodega
+            </h2>
+            
+            <div className="space-y-6">
+              {/* Campos de texto */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Nombre
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedBodega.name}
+                    onChange={(e) =>
+                      setSelectedBodega({ ...selectedBodega, name: e.target.value })
+                    }
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Descripción
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedBodega.description}
+                    onChange={(e) =>
+                      setSelectedBodega({
+                        ...selectedBodega,
+                        description: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Selección de Comuna Actual */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-gray-800">Comuna Actual</h3>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Región
+                  </label>
+                  <select
+                    value={selectedRegion}
+                    onChange={handleRegionChange}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  >
+                    <option value="">Seleccionar Región</option>
+                    {regions.map((region) => (
+                      <option key={region.id} value={region.id}>
+                        {region.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Comuna
+                  </label>
+                  <select
+                    value={selectedCommune}
+                    onChange={handleCommuneChange}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                    disabled={!selectedRegion}
+                  >
+                    <option value="">Seleccionar Comuna</option>
+                    {communes.map((commune) => (
+                      <option key={commune.id} value={commune.id}>
+                        {commune.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Selección de Comuna Alternativa */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-gray-800">Comuna Alternativa</h3>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Región
+                  </label>
+                  <select
+                    value={alternativeRegion}
+                    onChange={handleAlternativeRegionChange}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  >
+                    <option value="">Seleccionar Región</option>
+                    {regions.map((region) => (
+                      <option key={region.id} value={region.id}>
+                        {region.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600 mb-1">
+                    Comuna
+                  </label>
+                  <select
+                    value={alternativeCommuneId}
+                    onChange={handleAlternativeCommuneChange}
+                    className="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                    disabled={!alternativeRegion}
+                  >
+                    <option value="">Seleccionar Comuna</option>
+                    {alternativeCommunes.map((commune) => (
+                      <option key={commune.id} value={commune.id}>
+                        {commune.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <button
+                onClick={handleSaveClick}
+                className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
-
 export default BodegasStarken;

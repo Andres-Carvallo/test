@@ -17,10 +17,11 @@ interface BannerData {
   images: BannerImage[];
 }
 
-const BannerPrincipal01: React.FC = () => {
+const BannerPrincipal03: React.FC = () => {
   const [bannerData, setBannerData] = useState<BannerData | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [textAlign, setTextAlign] = useState<'center' | 'left' | 'right'>('center');
 
   const fetchBannerHome = async () => {
     try {
@@ -65,6 +66,10 @@ const BannerPrincipal01: React.FC = () => {
     );
   };
 
+  const handleAlignmentChange = (alignment: 'center' | 'left' | 'right') => {
+    setTextAlign(alignment);
+  };
+
   if (loading) {
     return <div role="status" className="w-full animate-pulse  rtl:space-x-reverse md:flex md:items-center">
         <div className="flex items-center justify-center w-full h-96 bg-gray-300 rounded dark:bg-gray-700">
@@ -88,8 +93,44 @@ const BannerPrincipal01: React.FC = () => {
   return (
     <section
       id="banner"
-      className="w-full"
+      className="w-full max-h-[450px]"
     >
+{/*       <div className="mb-4 flex justify-center gap-4">
+        <label className="flex items-center">
+          <input
+            type="radio"
+            name="alignment"
+            value="left"
+            checked={textAlign === 'left'}
+            onChange={() => handleAlignmentChange('left')}
+            className="mr-2"
+          />
+          Izquierda
+        </label>
+        <label className="flex items-center">
+          <input
+            type="radio"
+            name="alignment"
+            value="center"
+            checked={textAlign === 'center'}
+            onChange={() => handleAlignmentChange('center')}
+            className="mr-2"
+          />
+          Centro
+        </label>
+        <label className="flex items-center">
+          <input
+            type="radio"
+            name="alignment"
+            value="right"
+            checked={textAlign === 'right'}
+            onChange={() => handleAlignmentChange('right')}
+            className="mr-2"
+          />
+          Derecha
+        </label>
+      </div> */}
+
       <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
       {/*         <div className="absolute inset-0 w-full h-full overflow-hidden">
 
@@ -109,11 +150,11 @@ const BannerPrincipal01: React.FC = () => {
           ))}
           
         </div>
-        <div className="min-h-[400px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-          <h2 className="text-4xl font-bold mb-2 uppercase">
+        <div className="min-h-[400px] relative z-10 h-full max-w-6xl mx-auto flex flex-col justify-center items-center p-6 text-white">
+          <h2 className={`text-4xl font-bold mb-2 uppercase text-${textAlign} w-full`}>
             {currentImage.title}
           </h2>
-          <p className="text-md text-center text-gray-200">
+          <p className={`text-md text-${textAlign} text-gray-200 w-full`}>
             {currentImage.landingText}
           </p>
 {/*           <a
@@ -155,4 +196,4 @@ const BannerPrincipal01: React.FC = () => {
   );
 };
 
-export default BannerPrincipal01;
+export default BannerPrincipal03;

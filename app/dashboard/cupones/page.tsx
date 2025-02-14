@@ -3,7 +3,7 @@ import React, { useState, useEffect, FormEvent, useRef } from "react";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import { obtenerCuponesBO } from "@/app/utils/obtenerCuponesBO";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import { toast } from "react-hot-toast";
 import { title } from "process";
 
@@ -341,7 +341,7 @@ function CuponForm() {
   return (
     <>
       <title>Cupones</title>
-      <section className=" mx-10 py-10">
+      <section className=" mx-4 py-10">
         <Breadcrumb pageName="Cupones" />
         <div
           className=" p-4 bg-white my-6 overflow-x-auto shadow-md"

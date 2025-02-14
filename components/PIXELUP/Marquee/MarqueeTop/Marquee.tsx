@@ -11,7 +11,7 @@ function MarqueeTOP() {
   const fetchMarqueeHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_MARQUEE_TOP_CONTENTBLOCK}`;
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
@@ -39,7 +39,7 @@ function MarqueeTOP() {
           </h3>{" "}
         </div> */}
         <p className="text-xs sm:text-base flex-1 text-center">
-          {/* <Marquee> */}{bannerData?.contentText}{/* </Marquee> */}
+         <Marquee>{bannerData?.contentText}</Marquee>
         </p>
       </div>
     </section>

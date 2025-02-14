@@ -1,59 +1,70 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router"; // Importa useRouter
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import ThemeToggler from "@/components/PIXELUP/Theme/ThemeToggler";
-import Buscador from "@/components/PIXELUP/Buscador/Buscador02";
-import CartCanvas from "@/components/CartCanva/CartCanvas";
+import ThemeToggler from "@/components/Core/Theme/ThemeToggler";
+import Buscador from "@/components/Core/Buscador/Buscador";
+import CartCanvas from "@/components/Core/CartCanva/CartCanvas";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Link from "next/link";
-import DropdownAdmin from "@/components/Dropdown/DropdownAdmin/DropdownAdmin";
-import DropdownUser from "@/components/Dropdown/DropdownUser/DropdownUser";
-import DropdownUserMobile from "@/components/Dropdown/DropdownUser/DropdownUserMobile";
-import DropdownAdminMobile from "@/components/Dropdown/DropdownAdmin/DropdownAdminMobile";
+import DropdownAdmin from "@/components/Core/Dropdown/DropdownAdmin/DropdownAdmin";
+import DropdownUser from "@/components/Core/Dropdown/DropdownUser/DropdownUser";
+import DropdownUserMobile from "@/components/Core/Dropdown/DropdownUser/DropdownUserMobile";
+import DropdownAdminMobile from "@/components/Core/Dropdown/DropdownAdmin/DropdownAdminMobile";
+import { slugify } from "@/app/utils/slugify";
+import { useRevalidation } from "@/app/Context/RevalidationContext";
+import { useNavbar } from "@/app/Context/NavbarContext";
+import { useAuth } from "@/app/Context/AuthContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [productTypes, setProductTypes] = useState([]);
-  const AdminToken = getCookie("AdminTokenAuth");
-  const ClientToken = getCookie("ClientTokenAuth");
-  const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [isVisible1, setIsVisible1] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const Logo = process.env.NEXT_PUBLIC_LOGO_COLOR;
-  const [collections, setCollections] = useState<any[]>([]);
+  const LogoMobile = process.env.NEXT_PUBLIC_LOGO_COLORMOBILE;
+  const [productosIniciales, setProductosIniciales] = useState([]);
+  const { setShouldRevalidate } = useRevalidation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [pathname, setPathname] = useState(""); // Estado para almacenar el pathname
+  const [pathname, setPathname] = useState("");
+  const { isAdmin, isClient } = useAuth();
+  const router = useRouter();
+  const { productTypes, collections } = useNavbar();
 
   useEffect(() => {
     // Este efecto solo se ejecutará en el cliente
     if (typeof window !== "undefined") {
-      setPathname(window.location.pathname); // Obtén el pathname del cliente
+      setPathname(window.location.pathname);
     }
   }, []);
 
-  const fetchCollections = async () => {
-    try {
-      const siteid = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`
-      );
-      setCollections(response.data.collections);
-    } catch (error) {
-      console.error("Error fetching collections:", error);
-      setError(error as Error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filtramos las colecciones excluidas
+  const excludedIds = `${process.env.NEXT_PUBLIC_BANNER_NAVBAR}`;
+  const filteredCollections = collections
+    .filter((collection) => !excludedIds.includes(collection.id))
+    .sort((a, b) => a.title.localeCompare(b.title));
 
+  // Cargar productos iniciales
   useEffect(() => {
-    fetchCollections();
-    fetchProductTypes();
+    const loadInitialData = async () => {
+      try {
+        const productsData = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          { next: { revalidate: 3600 } }
+        ).then((res) => res.json());
+
+        if (productsData.code === 0) {
+          setProductosIniciales(productsData.products);
+        }
+      } catch (error) {
+        console.error("Error loading initial data:", error);
+      }
+    };
+
+    loadInitialData();
   }, []);
 
   const toggleMenu = () => {
@@ -82,259 +93,24 @@ export default function Navbar() {
     setIsVisible1(!isVisible1);
   };
 
-  const fetchProductTypes = async () => {
-    try {
-      const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/product-types?siteId=${SiteId}&pageNumber=1&pageSize=50`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch product types");
-      }
-      const data = await response.json();
-      setProductTypes(data.productTypes);
-    } catch (error) {
-      console.error("Error fetching product types:", error);
-    }
-  };
-
-  const excludedIds = `${process.env.NEXT_PUBLIC_BANNER_NAVBAR}`;
-  const filteredCollections = collections
-    .filter((collection) => !excludedIds.includes(collection.id))
-    .sort((a, b) => a.title.localeCompare(b.title));
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       setPathname(window.location.pathname);
     }
   }, []);
 
+  // Modificar la función de navegación de categorías
+  const handleCategoryClick = (productType: any) => {
+    const categorySlug = slugify(productType.name);
+    setShouldRevalidate(true);
+    router.push(`/tienda?categoria=${categorySlug}`);
+  };
+
   return (
     <nav className="bg-white shadow-lg relative">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:hidden grid grid-cols-3 items-center h-32">
-          {/* Columna izquierda - Botón de menú en mobile y menú en desktop */}
-          <div className="flex items-center justify-start gap-2">
-            <div>
-              <Buscador />
-            </div>
-            <div className="hidden lg:flex">
-              <CartCanvas />
-            </div>
-            <div className="hidden lg:flex pl-2">
-              {AdminToken ? (
-                <DropdownAdmin />
-              ) : ClientToken ? (
-                <DropdownUser />
-              ) : (
-                !AdminToken && (
-                  <section className="flex">
-                    <div>
-                      <Link href="/tienda/login">
-                        <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
-                          Login
-                        </div>
-                      </Link>
-                    </div>
-                    <div className="hidden">
-                      <Link
-                        className="p-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white"
-                        href="/tienda/register"
-                      >
-                        Registrarse
-                      </Link>
-                    </div>
-                  </section>
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Columna central - Logo */}
-          <div className="flex justify-center">
-            <Link href="/">
-              <img className="h-24 w-24" src={Logo} alt="FBM Joyas" />
-            </Link>
-          </div>
-
-          {/* Columna derecha - Buscar y Login */}
-          <div className="flex items-center justify-end">
-            {/* Botón de menú en mobile */}
-            <div className="-mr-2 flex lg:hidden">
-              <button
-                onClick={toggleMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:text-gray-600 dark:focus:text-gray-300"
-                aria-label="Main menu"
-                aria-expanded="false"
-              >
-                <svg
-                  className="h-8 w-8"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16m-7 6h7"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Menú en desktop */}
-            <div className="hidden lg:block">
-              <ul className="flex flex-col md:flex-row md:space-x-4">
-                <li className={pathname === "/" ? "text-primary" : ""}>
-                  <Link href="/" className="text-base font-medium">
-                    Inicio
-                  </Link>
-                </li>
-                {/*             <li className={pathname === "/tienda" ? "text-primary" : ""}>
-              <Link
-                href="/tienda"
-                className="hover:text-primary text-base font-medium"
-              >
-                Tienda
-              </Link>
-            </li> */}
-                {collections.length > 0 && (
-                  <li className="group relative">
-                    <p className="hover:text-primary cursor-pointer text-base font-medium flex items-center">
-                      Tienda
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16px"
-                        height="16px"
-                        className="ml-1"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 16a1 1 0 0 1-.71-.29l-6-6a1 1 0 0 1 1.42-1.42l5.29 5.3 5.29-5.29a1 1 0 0 1 1.41 1.41l-6 6a1 1 0 0 1-.7.29z"
-                          data-name="16"
-                          data-original="#000000"
-                        />
-                      </svg>
-                    </p>
-                    <ul className="hidden absolute left-0 w-48 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg group-hover:block">
-                      {productTypes.map((productType: any) => (
-                        <li
-                          key={productType.id}
-                          className="flex gap-2 pb-2 border-b pl-2 py-2"
-                        >
-                          <span className="self-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-3"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                              />
-                            </svg>
-                          </span>
-                          <Link
-                            href={`/tienda?categoria=${productType.id}`}
-                            className="hover:text-primary text-base text-[15px] block"
-                          >
-                            {productType.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                )}
-                {collections.length > 0 && (
-                  <li className="group relative">
-                    <p className="hover:text-primary cursor-pointer text-base font-medium flex items-center">
-                      Colecciones
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16px"
-                        height="16px"
-                        className="ml-1"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 16a1 1 0 0 1-.71-.29l-6-6a1 1 0 0 1 1.42-1.42l5.29 5.3 5.29-5.29a1 1 0 0 1 1.41 1.41l-6 6a1 1 0 0 1-.7.29z"
-                          data-name="16"
-                          data-original="#000000"
-                        />
-                      </svg>
-                    </p>
-                    <ul className="hidden absolute left-0 w-48 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg group-hover:block">
-                      {collections.map((collection) => (
-                        <li
-                          key={collection.id}
-                          className="flex gap-2 pb-2 border-b pl-2 py-2"
-                        >
-                          <span className="self-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-3"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                              />
-                            </svg>
-                          </span>
-                          <Link
-                            href={`/tienda/colecciones/${collection.id}`}
-                            className="hover:text-primary text-base text-[15px] block"
-                          >
-                            {collection.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                )}
-                <li className={pathname === "/fbm" ? "text-primary" : ""}>
-                  <Link
-                    href="/fbm"
-                    className="hover:text-primary text-base font-medium"
-                  >
-                    FBM
-                  </Link>
-                </li>
-                <li className={pathname === "/about" ? "text-primary" : ""}>
-                  <button
-                    className="hover:text-primary text-base font-medium"
-                    onClick={() => setShowModal(true)}
-                  >
-                    Tallas
-                  </button>
-                </li>
-                <li className={pathname === "/contacto" ? "text-primary" : ""}>
-                  <Link
-                    href="/contacto"
-                    className="hover:text-primary text-base font-medium"
-                  >
-                    Contacto
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-        </div>
-
-
-        <div className="hidden lg:grid grid-cols-3 items-center h-32">
-          {/* Columna izquierda - Botón de menú en mobile y menú en desktop */}
+          {/* Columna izquierda - Buscar y Login */}
           <div className="flex items-center justify-start">
             {/* Botón de menú en mobile */}
             <div className="-mr-2 flex lg:hidden">
@@ -345,6 +121,71 @@ export default function Navbar() {
                 aria-expanded="false"
               >
                 <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="#4D4D4D"
+                  className="size-8"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {/* Columna central - Logo */}
+          <div className="flex justify-center">
+            <Link href="/">
+              <img
+                className="h-24 w-24"
+                src={LogoMobile}
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
+              />
+            </Link>
+          </div>
+
+          {/* Columna derecha - Botón de menú en mobile y menú en desktop */}
+          <div className="flex items-center justify-end gap-2">
+            <div>
+              <Buscador productosIniciales={productosIniciales} />
+            </div>
+            <div className=" lg:flex">
+              <CartCanvas />
+            </div>
+            <div className="hidden lg:flex pl-2">
+              {isAdmin ? (
+                <DropdownAdmin />
+              ) : isClient ? (
+                <DropdownUser />
+              ) : (
+                <div className="flex">
+                  <Link href="/tienda/login">
+                    <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
+                      Login
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden lg:grid grid-cols-12 items-center h-32">
+          {/* Columna izquierda - Botón de menú en mobile y menú en desktop */}
+          <div className="flex items-center justify-start col-span-5">
+            {/* Botón de menú en mobile */}
+            <div className="-mr-2 flex lg:hidden">
+              <button
+                onClick={toggleMenu}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:text-gray-600 dark:focus:text-gray-300"
+                aria-label="Main menu"
+                aria-expanded="false"
+              >
+                <svg
                   className="h-8 w-8"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -362,11 +203,16 @@ export default function Navbar() {
             </div>
 
             {/* Menú en desktop */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block mt-20">
               <ul className="flex flex-col md:flex-row md:space-x-4">
-                <li className={pathname === "/" ? "text-primary" : ""}>
-                  <Link href="/" className="text-base font-medium">
-                    Inicio
+                <li
+                  className={pathname === "/" ? "text-primary" : "text-primary"}
+                >
+                  <Link
+                    href="/"
+                    className="text-base font-semibold"
+                  >
+                    HOME 1
                   </Link>
                 </li>
                 {/*             <li className={pathname === "/tienda" ? "text-primary" : ""}>
@@ -379,8 +225,9 @@ export default function Navbar() {
             </li> */}
                 {collections.length > 0 && (
                   <li className="group relative">
-                    <p className="hover:text-primary cursor-pointer text-base font-medium flex items-center">
-                      Tienda
+                    <div className="text-primary cursor-pointer text-base font-semibold flex items-center">
+                      <Link href="/tienda">TIENDA</Link>
+
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16px"
@@ -394,8 +241,8 @@ export default function Navbar() {
                           data-original="#000000"
                         />
                       </svg>
-                    </p>
-                    <ul className="hidden absolute left-0 w-48 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg group-hover:block">
+                    </div>
+                    <ul className="hidden absolute left-0 w-48 z-50 bg-white  border-gray-200 rounded-md shadow-lg group-hover:block">
                       {productTypes.map((productType: any) => (
                         <li
                           key={productType.id}
@@ -417,12 +264,12 @@ export default function Navbar() {
                               />
                             </svg>
                           </span>
-                          <Link
-                            href={`/tienda?categoria=${productType.id}`}
-                            className="hover:text-primary text-base text-[15px] block"
+                          <button
+                            onClick={() => handleCategoryClick(productType)}
+                            className="font-semibold uppercase text-primary text-base text-[15px] block"
                           >
                             {productType.name}
-                          </Link>
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -430,8 +277,8 @@ export default function Navbar() {
                 )}
                 {collections.length > 0 && (
                   <li className="group relative">
-                    <p className="hover:text-primary cursor-pointer text-base font-medium flex items-center">
-                      Colecciones
+                    <p className="font-semibold text-primary cursor-pointer text-base flex items-center">
+                      COLECCIONES
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="16px"
@@ -446,7 +293,7 @@ export default function Navbar() {
                         />
                       </svg>
                     </p>
-                    <ul className="hidden absolute left-0 w-48 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg group-hover:block">
+                    <ul className="hidden absolute left-0 w-48 z-50 bg-white  border-gray-200 rounded-md shadow-lg group-hover:block">
                       {collections.map((collection) => (
                         <li
                           key={collection.id}
@@ -469,8 +316,10 @@ export default function Navbar() {
                             </svg>
                           </span>
                           <Link
-                            href={`/tienda/colecciones/${collection.id}`}
-                            className="hover:text-primary text-base text-[15px] block"
+                            href={`/tienda/colecciones/${slugify(
+                              collection.title
+                            )}`}
+                            className="font-semibold uppercase text-primary text-base text-[15px] block"
                           >
                             {collection.title}
                           </Link>
@@ -479,28 +328,68 @@ export default function Navbar() {
                     </ul>
                   </li>
                 )}
-                <li className={pathname === "/fbm" ? "text-primary" : ""}>
+                <li
+                  className={
+                    pathname === "/home2" ? "text-primary" : "text-primary"
+                  }
+                >
                   <Link
-                    href="/fbm"
-                    className="hover:text-primary text-base font-medium"
+                    href="/home2"
+                    className="font-semibold text-primary text-base"
                   >
-                    FBM
+                    HOME 2
                   </Link>
                 </li>
-                <li className={pathname === "/about" ? "text-primary" : ""}>
-                  <button
-                    className="hover:text-primary text-base font-medium"
-                    onClick={() => setShowModal(true)}
-                  >
-                    Tallas
-                  </button>
-                </li>
-                <li className={pathname === "/contacto" ? "text-primary" : ""}>
+                <li
+                  className={
+                    pathname === "/tienda" ? "text-primary" : "text-primary"
+                  }
+                >
                   <Link
-                    href="/contacto"
-                    className="hover:text-primary text-base font-medium"
+                    href="/tienda"
+                    className="font-semibold text-primary text-base"
                   >
-                    Contacto
+                    TIENDA
+                  </Link>
+                </li>
+                <li
+                  className={
+                    pathname === "/blog" ? "text-primary" : "text-primary"
+                  }
+                >
+                  <Link
+                    href="/blog"
+                    className="font-semibold text-primary text-base"
+                  >
+                    BLOG
+                  </Link>
+                </li>
+                <li
+                  className={
+                    pathname ===
+                    "https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
+                      ? "text-primary"
+                      : ""
+                  }
+                >
+                  <Link
+                    href="https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
+                    target="_blank"
+                    className="font-semibold text-primary text-base"
+                  >
+                    CONTACTO
+                  </Link>
+                </li>
+                <li
+                  className={
+                    pathname === "/componentes-pixelup" ? "text-primary" : "text-primary"
+                  }
+                >
+                  <Link
+                    href="/componentes-pixelup"
+                    className="font-semibold text-primary text-base"
+                  >
+                    COMPONENTES
                   </Link>
                 </li>
               </ul>
@@ -508,46 +397,38 @@ export default function Navbar() {
           </div>
 
           {/* Columna central - Logo */}
-          <div className="flex justify-center">
+          <div className="flex justify-center col-span-2">
             <Link href="/">
-              <img className="h-24 w-24" src={Logo} alt="FBM Joyas" />
+              <img
+                className="h-24 w-24"
+                src={Logo}
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
+              />
             </Link>
           </div>
 
           {/* Columna derecha - Buscar y Login */}
 
-          <div className="flex items-center justify-end gap-2">
+          <div className="mt-20 flex items-center justify-end gap-2 col-span-5">
             <div>
-              <Buscador />
+              <Buscador productosIniciales={productosIniciales} />
             </div>
             <div className="hidden lg:flex">
               <CartCanvas />
             </div>
             <div className="hidden lg:flex pl-2">
-              {AdminToken ? (
+              {isAdmin ? (
                 <DropdownAdmin />
-              ) : ClientToken ? (
+              ) : isClient ? (
                 <DropdownUser />
               ) : (
-                !AdminToken && (
-                  <section className="flex">
-                    <div>
-                      <Link href="/tienda/login">
-                        <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
-                          Login
-                        </div>
-                      </Link>
+                <div className="flex">
+                  <Link href="/tienda/login">
+                    <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
+                      Login
                     </div>
-                    <div className="hidden">
-                      <Link
-                        className="p-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white"
-                        href="/tienda/register"
-                      >
-                        Registrarse
-                      </Link>
-                    </div>
-                  </section>
-                )
+                  </Link>
+                </div>
               )}
             </div>
           </div>
@@ -556,8 +437,8 @@ export default function Navbar() {
 
       {/* Menu desplegable en mobile */}
       <div
-        className={`fixed inset-0 z-50 bg-white dark:bg-gray-800 ${
-          isOpen ? "block" : "hidden"
+        className={`fixed inset-0 z-50 bg-white overflow-auto dark:bg-gray-800 transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex justify-end p-4">
@@ -581,21 +462,32 @@ export default function Navbar() {
             </svg>
           </button>
         </div>
-        <div className="pt-2 pb-3 space-y-1 px-6 text-3xl">
+        <div className="pt-2 pb-3 space-y-1 px-6 text-3xl ">
           <div className="flex-shrink-0 flex justify-center items-center mb-8">
-            <Link href="/" onClick={() => setIsOpen(false)}>
-              <img className="w-40" src={Logo} alt="FBM Joyas" />
+            <Link
+              href="/"
+              onClick={() => setIsOpen(false)}
+            >
+              <img
+                className="w-40"
+                src={LogoMobile}
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
+              />
             </Link>
           </div>
 
           <ul className="flex flex-col text-center pb-8">
-            <li className={` ${pathname === "/" ? "text-primary" : ""}`}>
+            <li
+              className={` ${
+                pathname === "/" ? "text-primary" : "text-primary"
+              }`}
+            >
               <Link
                 href="/"
                 className="hover:text-primary text-base font-medium"
                 onClick={() => setIsOpen(false)}
               >
-                INICIO
+                HOME 1
               </Link>
             </li>
             {/*             <li className={pathname === "/tienda" ? "text-primary" : ""}>
@@ -606,13 +498,20 @@ export default function Navbar() {
                   TIENDA
                 </Link>
               </li> */}
-            <li className={`${pathname === "/" ? "text-primary" : ""}`}>
+            <li
+              className={`${
+                pathname === "/" ? "text-primary" : "text-primary"
+              }`}
+            >
               <button
                 className="relative items-center justify-center hover:text-primary text-base font-medium"
                 onClick={toggleVisibility}
               >
                 TIENDA
-                <div className="absolute" style={{ top: "3px", left: "65px" }}>
+                <div
+                  className="absolute"
+                  style={{ top: "3px", left: "65px" }}
+                >
                   {isVisible ? (
                     <div>
                       <svg
@@ -659,11 +558,16 @@ export default function Navbar() {
                       <li
                         key={productType.id}
                         className={`${
-                          pathname === `/tienda?categoria=${productType.id}` ? "text-primary" : ""
+                          pathname ===
+                          `/tienda?categoria=${slugify(productType.name)}`
+                            ? "text-primary"
+                            : "text-primary"
                         }`}
                       >
                         <Link
-                          href={`/tienda?categoria=${productType.id}`}
+                          href={`/tienda?categoria=${slugify(
+                            productType.name
+                          )}`}
                           className="hover:text-primary text-base font-medium uppercase"
                           onClick={() => setIsOpen(false)}
                         >
@@ -673,16 +577,35 @@ export default function Navbar() {
                     ))}
                   </ul>
                 )}
+                <li
+                  className={`mt-2 ${
+                    pathname === `/tienda` ? "text-primary" : "text-primary"
+                  }`}
+                >
+                  <Link
+                    href="/tienda"
+                    className="text-primary text-base font-medium uppercase"
+                  >
+                    Ver Todos
+                  </Link>
+                </li>
               </div>
             )}
 
-            <li className={`${pathname === "/" ? "text-primary" : ""}`}>
+            <li
+              className={`${
+                pathname === "/" ? "text-primary" : "text-primary"
+              }`}
+            >
               <button
                 className="relative items-center justify-center hover:text-primary text-base font-medium"
                 onClick={toggleVisibility1}
               >
                 COLECCIONES
-                <div className="absolute" style={{ top: "3px", left: "121px" }}>
+                <div
+                  className="absolute"
+                  style={{ top: "3px", left: "121px" }}
+                >
                   {isVisible1 ? (
                     <div>
                       <svg
@@ -733,8 +656,10 @@ export default function Navbar() {
                         }`}
                       >
                         <Link
-                          href={`/tienda/colecciones/${collection.id}`}
-                          className="hover:text-primary text-base font-medium uppercase"
+                          href={`/tienda/colecciones/${slugify(
+                            collection.title
+                          )}`}
+                          className="text-primary text-base font-medium uppercase"
                           onClick={() => setIsOpen(false)}
                         >
                           {collection.title}
@@ -746,25 +671,39 @@ export default function Navbar() {
               </div>
             )}
 
-            <li className={pathname === "/fbm" ? "text-primary" : ""}>
+            <li
+              className={pathname === "/componentes-pixelup" ? "text-primary" : "text-primary"}
+            >
               <Link
-                href="/fbm"
+                href="/componentes-pixelup"
                 className="hover:text-primary text-base font-medium uppercase"
               >
-                FBM
+                HOME 2
               </Link>
             </li>
-            <li className={pathname === "/nosotros" ? "text-primary" : ""}>
-              <button
-                className="hover:text-primary text-base font-medium"
-                onClick={() => setShowModal(true)}
-              >
-                TALLAS
-              </button>
-            </li>
-            <li className={pathname === "/contacto" ? "text-primary" : ""}>
+            <li
+                  className={
+                    pathname === "/componentes-pixelup" ? "text-primary" : "text-primary"
+                  }
+                >
+                  <Link
+                    href="/componentes-pixelup"
+                    className="font-semibold text-primary text-base"
+                  >
+                    COMPONENTES
+                  </Link>
+                </li>
+            <li
+              className={
+                pathname ===
+                "https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
+                  ? "text-primary"
+                  : "text-primary"
+              }
+            >
               <Link
-                href="/contacto"
+                href="https://api.whatsapp.com/send?phone=+56962365458&text=Hola!%20Te%20has%20contactado%20con%20Pixelup."
+                target="_blank"
                 className="hover:text-primary text-base font-medium uppercase"
               >
                 CONTACTO
@@ -774,30 +713,18 @@ export default function Navbar() {
 
           <div className="w-full py-4 flex  items-center">
             <div className="w-full flex justify-center items-center mb-4">
-              {AdminToken ? (
+              {isAdmin ? (
                 <DropdownAdminMobile toggleMenu={toggleMenu} />
-              ) : ClientToken ? (
+              ) : isClient ? (
                 <DropdownUserMobile toggleMenu={toggleMenu} />
               ) : (
-                !AdminToken && (
-                  <section className="flex">
-                    <div>
-                      <Link href="/tienda/login">
-                        <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
-                          Login
-                        </div>
-                      </Link>
+                <div className="flex">
+                  <Link href="/tienda/login">
+                    <div className="py-1 px-2 bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white">
+                      Login
                     </div>
-                    <div>
-                      <Link
-                        className="p-2 hidden bg-primary uppercase text-xs hover:bg-secondary hover:text-primary rounded-md m-1 text-white"
-                        href="/tienda/register"
-                      >
-                        Registrarse
-                      </Link>
-                    </div>
-                  </section>
-                )
+                  </Link>
+                </div>
               )}
             </div>
           </div>

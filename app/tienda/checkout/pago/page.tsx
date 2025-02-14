@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import CheckoutPago from "@/components/Checkout/CheckoutPago";
+import CheckoutPago from "@/components/Core/Checkout/CheckoutPago";
 import { Suspense } from "react";
 import Loader from "@/components/common/Loader";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 const Pago = () => {
   return (
-    <div className="container pb-16 pt-8">
+    <div className="pb-16 pt-8">
       <CheckoutPago />
     </div>
   );

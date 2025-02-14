@@ -1,11 +1,12 @@
 import React from "react";
-import AdminLoginForm from "@/components/Login/AdminLoginForm";
+import AdminLoginForm from "@/components/Core/Login/AdminLoginForm";
 
-export default function Login() {
+export default function AdminLoginPage() {
   return (
-    <>
-      <title>Login - Admin</title>
+    <div>
       <AdminLoginForm />
-    </>
+    </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

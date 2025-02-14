@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY, // Disponible tanto en el servidor como en el cliente
+    MAINTENANCE_MODE: process.env.MAINTENANCE_MODE,
+    NEXT_PUBLIC_SITE_KEY_PUBLIC: process.env.NEXT_PUBLIC_SITE_KEY_PUBLIC,
+    RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY,
     RECAPTCHA_PUBLIC_SITE_KEY: process.env.RECAPTCHA_PUBLIC_SITE_KEY,
   },
   reactStrictMode: true,
@@ -20,6 +22,9 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  images: {
+    domains: ["mcwni7uydbmr5rxa.public.blob.vercel-storage.com"],
   },
 };
 

@@ -4,13 +4,19 @@ import React, { useState, useEffect, useCallback } from "react";
 import { getCookie } from "cookies-next";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
-import { getCroppedImg } from "@/lib/cropImage"; // Asegúrate de tener esta función implementada
+import { getCroppedImg } from "@/lib/cropImage";
+import toast from "react-hot-toast";
 
 type ImageUploaderVariableProps = {
   productId: string;
   skuId: string;
-  variationImages: any[]; // Assuming variationImages is an array
+  variationImages: any[];
   fetchVariationImages: (productId: string, skuId: string) => void;
+  onImagesChange?: (changes: {
+    pendingImages: any[];
+    pendingDeletions: string[];
+    currentImages: any[];
+  }) => void;
 };
 
 const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
@@ -18,30 +24,99 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
   skuId,
   variationImages,
   fetchVariationImages,
+  onImagesChange,
 }) => {
   const token = getCookie("AdminTokenAuth");
-
-  useEffect(() => {
-    fetchVariationImages(productId, skuId); // Cargar imágenes de variación
-  }, [productId, skuId, token]);
-
+  const [pendingImages, setPendingImages] = useState<any[]>([]);
+  const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
   const [imageSrc, setImageSrc] = useState<any>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [currentImages, setCurrentImages] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleImageUpload = (event: any) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageSrc(reader.result as string);
-        setOriginalFile(file);
-        setIsCropModalOpen(true);
-      };
-      reader.readAsDataURL(file);
+  // Limpiar estados cuando cambia la variación
+  useEffect(() => {
+    setPendingImages([]);
+    setPendingDeletions([]);
+    setCurrentImages([]);
+    setIsLoading(true);
+  }, [skuId]);
+
+  useEffect(() => {
+    const loadImages = async () => {
+      if (productId && skuId) {
+        setIsLoading(true);
+        await fetchVariationImages(productId, skuId);
+        setIsLoading(false);
+      }
+    };
+    loadImages();
+  }, [productId, skuId]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setCurrentImages(
+        variationImages.filter((img) => !pendingDeletions.includes(img.id))
+      );
+    }
+  }, [variationImages, pendingDeletions, isLoading]);
+
+  const notifyChanges = useCallback(() => {
+    if (onImagesChange) {
+      onImagesChange({
+        pendingImages,
+        pendingDeletions,
+        currentImages: variationImages.filter(
+          (img) => !pendingDeletions.includes(img.id)
+        ),
+      });
+    }
+  }, [pendingImages, pendingDeletions, variationImages, onImagesChange]);
+
+  useEffect(() => {
+    notifyChanges();
+  }, [pendingImages, pendingDeletions, notifyChanges]);
+
+  const processNextImage = () => {
+    if (currentFileIndex < selectedFiles.length - 1) {
+      setCurrentFileIndex((prev) => prev + 1);
+      const nextFile = selectedFiles[currentFileIndex + 1];
+      handleSingleFileUpload(nextFile);
+    } else {
+      setSelectedFiles([]);
+      setCurrentFileIndex(0);
+      setIsCropModalOpen(false);
+    }
+  };
+
+  const handleSingleFileUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImageSrc(reader.result as string);
+      setOriginalFile(file);
+      setIsCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length > 0) {
+      const totalImages =
+        files.length + currentImages.length + pendingImages.length;
+      if (totalImages > 4) {
+        toast.error("No puedes subir más de 4 imágenes en total");
+        return;
+      }
+      setSelectedFiles(files);
+      setCurrentFileIndex(0);
+      handleSingleFileUpload(files[0]);
     }
   };
 
@@ -85,164 +160,41 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
           data: base64data,
         };
 
-        fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ mainImage: newImage }),
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.code === 0) {
-              console.log("Uploaded variation image:", data);
-              fetchVariationImages(productId, skuId);
-              setIsCropModalOpen(false);
-            } else {
-              console.error(
-                "Error al subir la imagen de variación:",
-                data.message
-              );
-            }
-          })
-          .catch((error) => {
-            console.error("Error al subir la imagen de variación:", error);
-          });
+        setPendingImages((prev) => [...prev, newImage]);
+        processNextImage();
       };
 
       reader.readAsDataURL(compressedFile);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al recortar o comprimir la imagen:", error);
+      processNextImage();
     }
   };
 
-  const handleClearImage = (imageId: any) => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          console.log("Deleted image with id:", imageId);
-          fetchVariationImages(productId, skuId);
-        } else {
-          console.error("Error al borrar la imagen:", data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error al borrar la imagen:", error);
-      });
+  const handleRemoveImage = (imageId: string) => {
+    setPendingDeletions((prev) => [...prev, imageId]);
   };
 
-  const handleUpdateImage = (event: any, imageId: any) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const updatedImage = {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          data: reader.result, // Base64 encoded data
-        };
+  const handleRemovePendingImage = (index: number) => {
+    setPendingImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
-        fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ mainImage: updatedImage }),
-          }
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.code === 0) {
-              console.log("Updated image:", data);
-              fetchVariationImages(productId, skuId);
-            } else {
-              console.error("Error al actualizar la imagen:", data.message);
-            }
-          })
-          .catch((error) => {
-            console.error("Error al actualizar la imagen:", error);
-          });
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleUndoDelete = (imageId: string) => {
+    setPendingDeletions((prev) => prev.filter((id) => id !== imageId));
   };
 
   return (
-    <div className="flex space-x-4 overflow-x-auto p-4">
-      <div className="flex flex-wrap gap-2">
-        {variationImages.map((image, index) => (
-          <div
-            key={image.id}
-            className="min-w-[80px] h-[80px] relative"
-          >
-            <img
-              src={image.imageUrl}
-              alt={`Image ${index + 1}`}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <button
-              className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-              onClick={() => handleClearImage(image.id)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
-            </button>
-            <label
-              htmlFor={`imageUpdate${index}`}
-              className="absolute bottom-0 hidden left-0 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded cursor-pointer"
-            >
-              Update
-              <input
-                id={`imageUpdate${index}`}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) => handleUpdateImage(event, image.id)}
-              />
-            </label>
-          </div>
-        ))}
-      </div>
-
-      {/* Permitir subir una nueva imagen de variación si no se alcanza el límite */}
-      {variationImages.length < 4 && (
+    <div className="flex flex-col md:flex-row gap-4 h-[150px]">
+      {/* Botón de carga */}
+      {!isLoading && currentImages.length + pendingImages.length < 4 && (
         <label
           htmlFor="variationImageUpload"
-          className="min-w-[100px]  flex justify-center items-center border border-dashed border-primary cursor-pointer"
           style={{ borderRadius: "var(--radius)" }}
+          className="shadow flex flex-col bg-white justify-center items-center border border-dashed border-gray-800 cursor-pointer w-[150px] h-full relative shrink-0"
         >
-          <div className="flex flex-col justify-center items-center p-3">
+          <div className="flex flex-col justify-center items-center p-2 text-center">
             <svg
-              className="w-12 h-12 text-gray-400"
+              className="w-8 h-8 text-gray-400 mb-2"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -254,26 +206,145 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"
               />
             </svg>
-            <p className="mb-2 text-sm text-gray-500 text-center">
-              <span className="font-semibold">Subir Imagen</span>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              PNG, JPG o Webp
             </p>
-            <p className="text-xs text-gray-500 text-center">
-            PNG, JPG o Webp (800x800px)
-            </p>
+            {selectedFiles.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                {currentFileIndex + 1}/{selectedFiles.length}
+              </span>
+            )}
           </div>
           <input
             id="variationImageUpload"
             type="file"
             accept="image/*"
+            multiple
             className="hidden"
             onChange={handleImageUpload}
           />
         </label>
       )}
 
+      {/* Contenedor de miniaturas */}
+      <div className="flex-1">
+        {isLoading ? (
+          <div className="flex items-center justify-center w-full h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div
+            className="grid gap-4 h-full w-full"
+            style={{
+              gridTemplateColumns: `repeat(${Math.min(
+                currentImages.length + pendingImages.length,
+                4
+              )}, 1fr)`,
+            }}
+          >
+            {/* Mostrar imágenes existentes */}
+            {variationImages.map((image) => {
+              const isPendingDeletion = pendingDeletions.includes(image.id);
+              return !isPendingDeletion ? (
+                <div
+                  key={image.id}
+                  className="relative h-full w-full"
+                >
+                  <div
+                    className="w-full h-full bg-center bg-no-repeat bg-cover shadow rounded-md"
+                    style={{ backgroundImage: `url(${image.imageUrl})` }}
+                  />
+                  <button
+                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-1.5"
+                    onClick={() => handleRemoveImage(image.id)}
+                    title="Eliminar imagen"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              ) : null;
+            })}
+
+            {/* Mostrar imágenes pendientes */}
+            {pendingImages.map((image, index) => (
+              <div
+                key={`pending-${index}`}
+                className="relative h-full w-full"
+              >
+                <div
+                  className="w-full h-full bg-center bg-no-repeat bg-cover shadow rounded-md"
+                  style={{ backgroundImage: `url(${image.data})` }}
+                />
+                <button
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-1.5"
+                  onClick={() => handleRemovePendingImage(index)}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal de recorte */}
       {isCropModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-[#00000080]">
-          <div className="bg-white  rounded-lg shadow-lg relative w-full max-w-xl mx-auto p-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg relative w-[95%] md:w-[80%] max-w-3xl p-6">
+            <div className="sticky top-0 bg-white border-b flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Recortar Imagen {currentFileIndex + 1} de {selectedFiles.length}
+              </h2>
+              <button
+                onClick={() => {
+                  setSelectedFiles([]);
+                  setCurrentFileIndex(0);
+                  setIsCropModalOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
             <div className="relative h-96 w-full">
               <Cropper
                 image={imageSrc}
@@ -285,27 +356,36 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
                 onCropComplete={handleCropComplete}
               />
             </div>
-            <div className="flex flex-col justify-end mt-4">
-              <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.1}
-                aria-labelledby="Zoom"
-                onChange={(e) => setZoom(parseFloat(e.target.value))}
-                className="zoom-range w-full custom-range mb-4"
-              />
-              <div className="flex justify-between">
+            <div className="mt-6 space-y-4">
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Zoom
+                </label>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  aria-labelledby="Zoom"
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
                 <button
                   onClick={handleSaveCroppedImage}
-                  className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                  className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
                 >
-                  Recortar y Subir
+                  Recortar y Continuar
                 </button>
                 <button
-                  onClick={() => setIsCropModalOpen(false)}
-                  className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => {
+                    setSelectedFiles([]);
+                    setCurrentFileIndex(0);
+                    setIsCropModalOpen(false);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>

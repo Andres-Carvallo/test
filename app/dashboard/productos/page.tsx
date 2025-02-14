@@ -7,6 +7,14 @@ import { getCookie } from "cookies-next";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader-t";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  ColumnDef,
+  ColumnOrderState,
+  Row,
+} from '@tanstack/react-table';
 
 // Interfaces para Tipos de Producto y Respuesta de la API
 interface Product {
@@ -16,7 +24,7 @@ interface Product {
   previewImageUrl: string;
   mainImageUrl: string;
   productTypes: { id: string; name: string }[];
-  price: string;
+  price: number;
   statusCode: string;
   hasVariations: boolean;
   enabledForDelivery: boolean;
@@ -24,6 +32,37 @@ interface Product {
   description: string;
   isFeatured: boolean;
   hasFeaturedBaseSku: boolean;
+  stockQuantity?: number;
+  hasUnlimitedStock: boolean;
+}
+
+import { useRevalidation } from "@/app/Context/RevalidationContext";
+
+// Agregar estas interfaces
+interface SkuInventory {
+  quantity: number;
+  minimumQuantity: number;
+}
+
+interface VariationStock {
+  skuId: string;
+  name: string;
+  quantity: number;
+  attributes: {
+    label: string;
+    value: string;
+  }[];
+  variationNumber: number;
+  hasUnlimitedStock: boolean;
+}
+
+// Definir el tipo de columna
+interface TableColumn {
+  id: string;
+  header: string | React.ReactNode;
+  accessorKey: string;
+  cell?: (info: any) => React.ReactNode;
+  enableDragging?: boolean;
 }
 
 export default function ProductPageBO() {
@@ -45,33 +84,241 @@ export default function ProductPageBO() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
+  const { triggerRevalidation } = useRevalidation();
 
-  // Efecto para cargar los productos iniciales
-  useEffect(() => {
-    fetchProductos();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Agregar estos estados
+  const [stockModalVisible, setStockModalVisible] = useState(false);
+  const [selectedProductStock, setSelectedProductStock] = useState<VariationStock[]>([]);
+  const [loadingStock, setLoadingStock] = useState(false);
 
-  // Efecto para actualizar los productos filtrados cuando cambian las categorías o el término de búsqueda
+  // Agregar estos estados
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([
+    'image',
+    'name',
+    'price',
+    'stock',
+    'type',
+    'published',
+    'featured',
+    'actions'
+  ]);
+
+  // Agregar estos estados
+  const [filters, setFilters] = useState({
+    published: 'all', // 'all', 'active', 'inactive'
+    type: 'all', // 'all', 'simple', 'variable'
+    featured: 'all', // 'all', 'featured', 'notFeatured'
+    categories: new Set<string>()
+  });
+
+  // Agregar estos estados
+  const [priceModalVisible, setPriceModalVisible] = useState(false);
+  const [selectedProductPrices, setSelectedProductPrices] = useState<any[]>([]);
+  const [loadingPrices, setLoadingPrices] = useState(false);
+
+  // Agregar estos estados para el memo
+  const [stockCache, setStockCache] = useState<{ [key: string]: VariationStock[] }>({});
+  const [priceCache, setPriceCache] = useState<{ [key: string]: any[] }>({});
+
+  // Reemplazar fetchStockSimple
+  const fetchStockSimple = async (productId: string, skuId: string, forceUpdate = false) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const warehouseId = await getWarehouseId();
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+
+      if (data.skuInventories.length > 0) {
+        return data.skuInventories[0].quantity;
+      }
+      return 0;
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      return 0;
+    }
+  };
+
+  // Reemplazar fetchPriceForProduct
+  const fetchPriceForProduct = async (productId: string, skuId: string, forceUpdate = false) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+
+      if (data.skuPricings.length > 0) {
+        return data.skuPricings[0].unitPrice;
+      }
+      return "0";
+    } catch (error) {
+      console.error("Error fetching price:", error);
+      return "0";
+    }
+  };
+
+  // Modificar el useEffect inicial para separar la carga
   useEffect(() => {
-    const filtered = products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (selectedCategories.size === 0 ||
-          Array.from(selectedCategories).every((category) =>
-            product.productTypes.some((type) => type.name === category)
-          ))
-    );
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    const loadInitialProducts = async () => {
+      try {
+        setLoading(true);
+        const token = getCookie("AdminTokenAuth");
+        const allData: Product[] = [];
+        let pageNumber = 1;
+        let hasMoreData = true;
+        
+        // Limpiar el caché de sessionStorage al cargar
+        sessionStorage.clear();
+        
+        while (hasMoreData) {
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=${pageNumber}&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          
+          if (response.data.products.length === 0) {
+            hasMoreData = false;
+            break;
+          }
+
+          // Agregar productos sin stock/precio inicialmente
+          const productsWithoutData = response.data.products.map((product: Product) => ({
+            ...product,
+            stockQuantity: null,
+            price: null,
+            hasUnlimitedStock: false
+          }));
+          
+          allData.push(...productsWithoutData);
+          pageNumber++;
+        }
+
+        setProducts(allData);
+        setFilteredProducts(allData);
+        initializeCategories(allData);
+        setLoading(false);
+
+        // Cargar stock y precios después
+        loadStockAndPrices(allData);
+
+      } catch (error) {
+        console.error("Ocurrió un error:", error);
+        toast.error("Error al cargar los productos");
+        setLoading(false);
+      }
+    };
+
+    loadInitialProducts();
+  }, []); 
+
+  // Agregar esta nueva función para cargar stock y precios
+  const loadStockAndPrices = async (products: Product[]) => {
+    const batchSize = 5;
+    for (let i = 0; i < products.length; i += batchSize) {
+      const batch = products.slice(i, i + batchSize);
+      
+      await Promise.all(
+        batch.map(async (product) => {
+          if (!product.hasVariations) {
+            try {
+              const [stock, price, skuData] = await Promise.all([
+                fetchStockSimple(product.id, product.skuId, true),
+                fetchPriceForProduct(product.id, product.skuId, true),
+                fetchSkuData(product.id, product.skuId)
+              ]);
+
+              // Actualizar el producto individual con los nuevos datos
+              setProducts(prevProducts => 
+                prevProducts.map(p => 
+                  p.id === product.id 
+                    ? { 
+                        ...p, 
+                        stockQuantity: stock,
+                        price: price,
+                        hasUnlimitedStock: skuData?.hasUnlimitedStock || false
+                      }
+                    : p
+                )
+              );
+            } catch (error) {
+              console.error(`Error loading data for product ${product.id}:`, error);
+            }
+          }
+        })
+      );
+    }
+  };
+
+  // Efecto para filtrar productos según la búsqueda y las categorías seleccionadas
+  useEffect(() => {
+    const filtered = products.filter((product) => {
+      // Filtro por búsqueda
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Filtro por estado de publicación
+      const matchesPublished = filters.published === 'all' 
+        ? true 
+        : filters.published === 'active' 
+          ? product.statusCode === 'ACTIVE'
+          : product.statusCode !== 'ACTIVE';
+
+      // Filtro por tipo de producto
+      const matchesType = filters.type === 'all'
+        ? true
+        : filters.type === 'simple'
+          ? !product.hasVariations
+          : product.hasVariations;
+
+      // Filtro por destacados
+      const matchesFeatured = filters.featured === 'all'
+        ? true
+        : filters.featured === 'featured'
+          ? product.isFeatured
+          : !product.isFeatured;
+
+      // Filtro por categorías
+      const matchesCategories = filters.categories.size === 0 ||
+        Array.from(filters.categories).every((category) =>
+          product.productTypes.some((type) => type.name === category)
+        );
+
+      return matchesSearch && matchesPublished && matchesType && matchesFeatured && matchesCategories;
+    }).map(product => ({
+      ...product,
+      stockQuantity: product.stockQuantity // Preservar el stockQuantity
+    }));
+
     setFilteredProducts(filtered);
+    setTotalPages(Math.ceil(filtered.length / pageSize));
+    setCurrentPage(1);
+  }, [products, searchTerm, filters, pageSize]);
 
-    const pages = Math.ceil(filtered.length / pageSize);
-    setTotalPages(pages);
-
+  // Efecto para manejar la paginación de los productos filtrados
+  useEffect(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    setPaginatedProducts(filtered.slice(startIndex, endIndex));
-  }, [products, searchTerm, selectedCategories, currentPage, pageSize]);
+    setPaginatedProducts(filteredProducts.slice(startIndex, endIndex)); // Actualiza los productos paginados
+  }, [filteredProducts, currentPage, pageSize]);
 
   // Manejo de Cambio de Página
   const handlePageChange = (pageNumber: number) => {
@@ -114,7 +361,8 @@ export default function ProductPageBO() {
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (
       filterDropdownRef.current &&
-      !filterDropdownRef.current.contains(event.target as Node)
+      !filterDropdownRef.current.contains(event.target as Node) &&
+      !(event.target as Element).closest('#filterDropdownButton')
     ) {
       setFilterDropdownVisible(false);
     }
@@ -200,22 +448,72 @@ export default function ProductPageBO() {
   const updateProduct = async (product: Product, updates: Partial<Product>) => {
     try {
       const token = getCookie("AdminTokenAuth");
-      await axios.put(
+
+      // Primero actualizamos el producto
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${product.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
-          ...product,
-          ...updates,
-          hasFeaturedBaseSku: updates.isFeatured ?? product.isFeatured,
-        },
-        {
+          method: 'PUT',
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            ...product,
+            ...updates,
+            hasFeaturedBaseSku: updates.isFeatured ?? product.isFeatured,
+          })
         }
       );
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar el producto');
+      }
+
+      // Limpiar caché para este producto
+      setStockCache(prev => {
+        const newCache = {...prev};
+        delete newCache[product.id];
+        return newCache;
+      });
+
+      setPriceCache(prev => {
+        const newCache = {...prev};
+        delete newCache[product.id];
+        return newCache;
+      });
+
+      // Actualizar el producto en el estado local
+      const updatedProduct = {
+        ...product,
+        ...updates,
+        stockQuantity: product.stockQuantity, // Mantener el stock actual
+        price: product.price, // Mantener el precio actual
+      };
+
+      setProducts(prevProducts =>
+        prevProducts.map(p =>
+          p.id === product.id ? updatedProduct : p
+        )
+      );
+
+      setFilteredProducts(prevFiltered =>
+        prevFiltered.map(p =>
+          p.id === product.id ? updatedProduct : p
+        )
+      );
+
+      // Revalidar
+      await fetch("/api/revalidate?tag=products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      await triggerRevalidation();
+
       toast.success("Producto actualizado");
-      fetchProductos();
     } catch (error) {
       console.error(
         "Error updating product:",
@@ -237,17 +535,54 @@ export default function ProductPageBO() {
   const deleteProduct = async (id: string) => {
     try {
       const token = getCookie("AdminTokenAuth");
-      await axios.delete(
+
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
+          method: 'DELETE',
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
       );
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar el producto');
+      }
+
+      // Limpiar caché para este producto
+      setStockCache(prev => {
+        const newCache = {...prev};
+        delete newCache[id];
+        return newCache;
+      });
+
+      setPriceCache(prev => {
+        const newCache = {...prev};
+        delete newCache[id];
+        return newCache;
+      });
+
+      // Actualizar el estado local eliminando solo el producto específico
+      setProducts(prevProducts => 
+        prevProducts.filter(product => product.id !== id)
+      );
+      setFilteredProducts(prevFiltered => 
+        prevFiltered.filter(product => product.id !== id)
+      );
+
+      // Revalidar
+      await fetch("/api/revalidate?tag=products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      await triggerRevalidation();
+
       toast.success("Producto eliminado");
-      fetchProductos();
     } catch (error) {
       console.error(
         "Error deleting product:",
@@ -261,12 +596,510 @@ export default function ProductPageBO() {
     setSearchTerm(event.target.value);
   };
 
+  // Modificar fetchStockVariable para usar cache
+  const fetchStockVariable = async (productId: string) => {
+    // Verificar si existe en cache
+    if (stockCache[productId]) {
+      setSelectedProductStock(stockCache[productId]);
+      return;
+    }
+
+    try {
+      setLoadingStock(true);
+      const token = getCookie("AdminTokenAuth");
+      const warehouseId = await getWarehouseId();
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&statusCode=ACTIVE`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      const variations = data.skus.filter((sku: any) => !sku.isBaseSku);
+
+      const stockData = await Promise.all(
+        variations.map(async (variation: any) => {
+          const [attributesResponse, stockResponse] = await Promise.all([
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            ),
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            )
+          ]);
+
+          const [attributesData, stockData] = await Promise.all([
+            attributesResponse.json(),
+            stockResponse.json()
+          ]);
+
+          const attributes = attributesData.skuAttributes
+            .filter((attr: any) => attr.attribute.statusCode === "ACTIVE")
+            .map((attr: any) => ({
+              label: attr.attribute.name,
+              value: attr.value,
+            }));
+
+          const quantity = stockData.skuInventories.length > 0 
+            ? stockData.skuInventories[0].quantity 
+            : 0;
+
+          return {
+            skuId: variation.id,
+            name: variation.name,
+            attributes,
+            quantity,
+            hasUnlimitedStock: variation.hasUnlimitedStock,
+            variationNumber: variations.indexOf(variation) + 1,
+          };
+        })
+      );
+
+      const validStockData = stockData.filter(data => data.attributes.length > 0);
+      
+      // Guardar en cache
+      setStockCache(prev => ({
+        ...prev,
+        [productId]: validStockData
+      }));
+      
+      setSelectedProductStock(validStockData);
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      toast.error("Error al cargar el stock de las variaciones");
+    } finally {
+      setLoadingStock(false);
+    }
+  };
+
+  const getWarehouseId = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/warehouses?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data?.warehouses?.length > 0) {
+        return response.data.warehouses[0].id;
+      }
+      console.error("No se encontraron almacenes.");
+      return null;
+    } catch (error) {
+      console.error("Error obteniendo almacén:", error);
+      return null;
+    }
+  };
+
+  // Modificar fetchPriceVariable para usar cache
+  const fetchPriceVariable = async (productId: string) => {
+    // Verificar si existe en cache
+    if (priceCache[productId]) {
+      setSelectedProductPrices(priceCache[productId]);
+      return;
+    }
+
+    setLoadingPrices(true);
+    try {
+      const token = getCookie("AdminTokenAuth");
+      
+      const variationsResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&statusCode=ACTIVE`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const variationsData = await variationsResponse.json();
+      
+      const filteredVariations = variationsData.skus
+        .filter((sku: any) => !sku.isBaseSku)
+        .sort((a: any, b: any) => a.id.localeCompare(b.id));
+
+      const pricesWithAttributes = await Promise.all(
+        filteredVariations.map(async (sku: any, index: number) => {
+          const [priceResponse, attributesResponse] = await Promise.all([
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${sku.id}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
+            fetch(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${sku.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            )
+          ]);
+
+          const [priceData, attributesData] = await Promise.all([
+            priceResponse.json(),
+            attributesResponse.json()
+          ]);
+
+          const attributes = attributesData.skuAttributes.map((attr: any) => ({
+            label: attr.attribute.name,
+            value: attr.value
+          }));
+
+          return {
+            skuId: sku.id,
+            name: sku.name,
+            price: priceData.skuPricings[0]?.unitPrice || 0,
+            attributes: attributes,
+            variationNumber: index + 1
+          };
+        })
+      );
+
+      const validPrices = pricesWithAttributes.filter(result => result.attributes.length > 0);
+      
+      // Guardar en cache
+      setPriceCache(prev => ({
+        ...prev,
+        [productId]: validPrices
+      }));
+      
+      setSelectedProductPrices(validPrices);
+    } catch (error) {
+      console.error("Error al obtener los precios de las variaciones:", error);
+      toast.error("Error al obtener los precios de las variaciones");
+    } finally {
+      setLoadingPrices(false);
+    }
+  };
+
+  // Agregar estas funciones para manejar el drag and drop
+  const handleDragStart = (e: React.DragEvent<HTMLTableCellElement>, columnId: string) => {
+    if (columnId === 'image' || columnId === 'name' || columnId === 'actions') return;
+    e.dataTransfer.setData('text/plain', columnId);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLTableCellElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLTableCellElement>, targetColumnId: string) => {
+    e.preventDefault();
+    
+    // No permitir soltar en columnas fijas
+    if (targetColumnId === 'image' || targetColumnId === 'name' || targetColumnId === 'actions') return;
+    
+    const draggedColumnId = e.dataTransfer.getData('text/plain');
+    
+    // No hacer nada si se intenta soltar una columna fija
+    if (draggedColumnId === 'image' || draggedColumnId === 'name' || draggedColumnId === 'actions') return;
+    
+    if (draggedColumnId && draggedColumnId !== targetColumnId) {
+      const newColumnOrder = [...columnOrder];
+      const draggedIndex = newColumnOrder.indexOf(draggedColumnId);
+      const targetIndex = newColumnOrder.indexOf(targetColumnId);
+      
+      newColumnOrder.splice(draggedIndex, 1);
+      newColumnOrder.splice(targetIndex, 0, draggedColumnId);
+      
+      setColumnOrder(newColumnOrder);
+    }
+  };
+
+  // Definir las columnas
+  const columns = [
+    {
+      id: 'image',
+      header: '',
+      accessorKey: 'mainImageUrl',
+      enableDragging: false,
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="w-10 min-w-[40px] flex items-center justify-center">
+          <img
+            src={row.original.mainImageUrl}
+            alt="Product"
+            className="rounded-full h-8 w-8 object-cover"
+          />
+        </div>
+      ),
+    },
+    {
+      id: 'name',
+      header: 'Nombre',
+      accessorKey: 'name',
+      enableDragging: false,
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="w-full min-w-[150px] max-w-[300px] truncate" title={row.original.name}>
+          {row.original.name.length > 20
+            ? `${row.original.name.substring(0, 20)}...` 
+            : row.original.name
+          }
+        </div>
+      ),
+    },
+    {
+      id: 'price',
+      header: 'Precio',
+      accessorKey: 'price',
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="min-w-[100px]">
+          {row.original.hasVariations ? (
+            <button
+              onClick={() => {
+                fetchPriceVariable(row.original.id);
+                setPriceModalVisible(true);
+              }}
+              className="hover:bg-black hover:text-white text-primary bg-transparent border border-primary px-2 py-1 rounded-md transition-colors"
+            >
+              Ver precios
+            </button>
+          ) : row.original.price === null ? (
+            <div className="animate-pulse h-4 w-16 bg-gray-200 rounded"></div>
+          ) : (
+            <span className="text-sm">
+              ${typeof row.original.price === 'number' ? 
+                row.original.price.toLocaleString('es-CL') : 
+                "0"}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'stock',
+      header: 'Stock',
+      accessorKey: 'stockQuantity',
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="min-w-[100px]">
+          {row.original.hasVariations ? (
+            <button
+              onClick={() => {
+                fetchStockVariable(row.original.id);
+                setStockModalVisible(true);
+              }}
+              className="hover:bg-black hover:text-white text-primary bg-transparent border border-primary px-2 py-1 rounded-md transition-colors"
+            >
+              Ver stock
+            </button>
+          ) : row.original.stockQuantity === null ? (
+            <div className="animate-pulse h-4 w-16 bg-gray-200 rounded"></div>
+          ) : (
+            <span className="text-sm">
+              {row.original.hasUnlimitedStock ? 
+                "Ilimitado" : 
+                row.original.stockQuantity || "0"}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'type',
+      header: 'Tipo',
+      accessorKey: 'hasVariations',
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="relative group w-14 flex justify-center">
+          {row.original.hasVariations ? (
+            <>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                strokeWidth="1.5" 
+                stroke="currentColor" 
+                className="size-6"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" 
+                />
+              </svg>
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                Producto Variable
+              </span>
+            </>
+          ) : (
+            <>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+</svg>
+
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
+                Producto Simple
+              </span>
+            </>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'published',
+      header: 'Publicado',
+      accessorKey: 'statusCode',
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="min-w-[100px] flex justify-start">
+          <label className="inline-flex relative items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={row.original.statusCode === "ACTIVE"}
+              onChange={() => toggleStatus(row.original)}
+            />
+            <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+          </label>
+        </div>
+      ),
+    },
+    {
+      id: 'featured',
+      header: 'Destacado',
+      accessorKey: 'isFeatured',
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="min-w-[100px] flex justify-start">
+          <button onClick={() => toggleFeatured(row.original)}>
+            {row.original.isFeatured ? (
+              <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
+              </svg>
+            )}
+          </button>
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Editar / Borrar',
+      accessorKey: 'actions',
+      enableDragging: false,
+      cell: ({ row }: { row: Row<Product> }) => (
+        <div className="min-w-[100px] flex items-center space-x-2">
+          <Link
+            href={
+              row.original.hasVariations
+                ? `/dashboard/productos/crear/producto-variable?productVariableId=${row.original.id}`
+                : `/dashboard/productos/crear/producto-simple?productId=${row.original.id}`
+            }
+            className="p-2 rounded bg-primary text-white hover:bg-primary/80 transition-colors"
+            title="Editar"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth={1.5} 
+              stroke="currentColor" 
+              className="w-5 h-5"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" 
+              />
+            </svg>
+          </Link>
+          <button
+            onClick={() => showDeleteModal(row.original)}
+            className="p-2 rounded bg-red-600 text-white hover:bg-red-800 transition-colors"
+            title="Eliminar"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth={1.5} 
+              stroke="currentColor" 
+              className="w-5 h-5"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" 
+              />
+            </svg>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  // Configurar la tabla
+  const table = useReactTable({
+    data: paginatedProducts,
+    columns: columns as ColumnDef<Product, any>[],
+    state: {
+      columnOrder,
+    },
+    onColumnOrderChange: (updater) => {
+      const newOrder = typeof updater === 'function' ? updater(columnOrder) : updater;
+      // Asegurarse de que las columnas fijas permanezcan en su lugar
+      const fixedStart = newOrder.filter(id => id === 'image' || id === 'name');
+      const middle = newOrder.filter(id => !['image', 'name', 'actions'].includes(id));
+      const fixedEnd = newOrder.filter(id => id === 'actions');
+      setColumnOrder([...fixedStart, ...middle, ...fixedEnd]);
+    },
+    getCoreRowModel: getCoreRowModel(),
+    enableColumnResizing: false,
+    columnResizeMode: 'onChange',
+  });
+
+  // Agregar esta nueva función para obtener los datos del SKU
+  const fetchSkuData = async (productId: string, skuId: string) => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await response.json();
+      if (data.code === 0) {
+        return data.sku;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error al obtener datos del SKU:", error);
+      return null;
+    }
+  };
+
   return (
     <section className="w-full py-10 mx-auto h-[85vh]">
       <title>Lista de Productos</title>
       <div className="dark:bg-gray-900 p-3 sm:p-5 relative">
         <div className="mx-auto w-full px-2">
-          <div className="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+          <div className="bg-white  dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
             <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
               <div className="w-full md:w-1/2">
                 <form className="flex items-center">
@@ -274,7 +1107,7 @@ export default function ProductPageBO() {
                     htmlFor="simple-search"
                     className="sr-only"
                   >
-                    Search
+                    Buscador...
                   </label>
                   <div className="relative w-full">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -296,7 +1129,7 @@ export default function ProductPageBO() {
                       type="text"
                       id="simple-search"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      placeholder="Search"
+                      placeholder="Buscador..."
                       required
                       value={searchTerm}
                       onChange={handleSearch}
@@ -358,25 +1191,17 @@ export default function ProductPageBO() {
                   <button
                     id="filterDropdownButton"
                     onClick={toggleFilterDropdown}
-                    className="w-full md:w-auto flex items-center justify-center py-2 px-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                    className="w-full md:w-auto flex items-center gap-2 justify-center py-2 px-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                     type="button"
                   >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+</svg>
+
+                
+                    Filtro
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                      className="h-4 w-4 mr-2 text-gray-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Filter
-                    <svg
-                      className="-mr-1 ml-1.5 w-5 h-5"
+                      className="w-5 h-5"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                       xmlns="http://www.w3.org/2000/svg"
@@ -392,39 +1217,146 @@ export default function ProductPageBO() {
                   <div
                     id="filterDropdown"
                     ref={filterDropdownRef}
-                    className={`z-10 ${
-                      filterDropdownVisible ? "block" : "hidden"
-                    } w-48 p-3 absolute top-16 right-0 bg-white rounded-lg shadow dark:bg-gray-700`}
+                    className={`fixed top-0 right-0 inset-y-0  z-40 w-80 bg-white dark:bg-gray-800 p-4 transition-transform duration-300 ease-in-out transform ${
+                      filterDropdownVisible ? 'translate-x-0' : 'translate-x-full'
+                    } shadow-lg`}
                   >
-                    <h6 className="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                      Choose category
-                    </h6>
-                    <ul
-                      className="space-y-2 text-sm"
-                      aria-labelledby="filterDropdownButton"
-                    >
-                      {categories.map((category, index) => (
-                        <li
-                          key={index}
-                          className="flex items-center"
+                    {/* Agregar header del sidebar */}
+                    <div className="flex items-center justify-between mb-6">
+                      <h5 className="text-lg font-semibold text-gray-900 dark:text-white">Filtros</h5>
+                      <button
+                        onClick={() => setFilterDropdownVisible(false)}
+                        className="p-1 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700"
+                      >
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={1.5} 
+                          stroke="currentColor" 
+                          className="w-6 h-6"
                         >
-                          <input
-                            id={category}
-                            type="checkbox"
-                            checked={selectedCategories.has(category)}
-                            onChange={() => handleCategoryChange(category)}
-                            className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M6 18L18 6M6 6l12 12" 
                           />
-                          <label
-                            htmlFor={category}
-                            className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Contenido existente del filtro */}
+                    <div className="space-y-4">
+                      {/* Estado de Publicación */}
+                      <div>
+                        <h6 className="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                          Estado
+                        </h6>
+                        <select
+                          value={filters.published}
+                          onChange={(e) => setFilters(prev => ({ ...prev, published: e.target.value }))}
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2"
+                        >
+                          <option value="all">Todos</option>
+                          <option value="active">Publicados</option>
+                          <option value="inactive">No Publicados</option>
+                        </select>
+                      </div>
+
+                      {/* Tipo de Producto */}
+                      <div>
+                        <h6 className="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                          Tipo de Producto
+                        </h6>
+                        <select
+                          value={filters.type}
+                          onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2"
+                        >
+                          <option value="all">Todos</option>
+                          <option value="simple">Simple</option>
+                          <option value="variable">Variable</option>
+                        </select>
+                      </div>
+
+                      {/* Productos Destacados */}
+                      <div>
+                        <h6 className="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                          Destacados
+                        </h6>
+                        <select
+                          value={filters.featured}
+                          onChange={(e) => setFilters(prev => ({ ...prev, featured: e.target.value }))}
+                          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2"
+                        >
+                          <option value="all">Todos</option>
+                          <option value="featured">Destacados</option>
+                          <option value="notFeatured">No Destacados</option>
+                        </select>
+                      </div>
+
+                      {/* Categorías */}
+                      <div>
+                        <h6 className="mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                          Categorías
+                        </h6>
+                        <div className="max-h-48 overflow-y-auto space-y-2">
+                          {categories.map((category, index) => (
+                            <label key={index} className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={filters.categories.has(category)}
+                                onChange={() => {
+                                  const newCategories = new Set(filters.categories);
+                                  if (newCategories.has(category)) {
+                                    newCategories.delete(category);
+                                  } else {
+                                    newCategories.add(category);
+                                  }
+                                  setFilters(prev => ({ ...prev, categories: newCategories }));
+                                }}
+                                className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
+                              />
+                              <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">
+                                {category}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Botones de acción al final del sidebar */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white dark:bg-gray-800">
+                        <div className="flex justify-between gap-2">
+                          <button
+                            onClick={() => setFilters({
+                              published: 'all',
+                              type: 'all',
+                              featured: 'all',
+                              categories: new Set()
+                            })}
+                            className="w-1/2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border rounded"
                           >
-                            {category}
-                          </label>
-                        </li>
-                      ))}
-                    </ul>
+                            Limpiar
+                          </button>
+                          <button
+                            onClick={() => setFilterDropdownVisible(false)}
+                            className="w-1/2 px-3 py-2 text-sm bg-primary text-white rounded hover:bg-primary/80"
+                          >
+                            Aplicar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Agregar overlay */}
+                  {filterDropdownVisible && (
+                    <div
+                      className="fixed inset-0 bg-black bg-opacity-50 z-30"
+                      onClick={() => setFilterDropdownVisible(false)}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -432,46 +1364,47 @@ export default function ProductPageBO() {
               <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
-                    <th
-                      scope="col"
-                      className="px-2 py-3 min-w-20"
-                    ></th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3"
-                    >
-                      Nombre
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3"
-                    >
-                      Categorías
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3"
-                    >
-                      Tipo
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3"
-                    >
-                      Publicado
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3"
-                    >
-                      Destacado
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-2 py-3"
-                    >
-                      Acciones
-                    </th>
+                    {table.getHeaderGroups()[0].headers.map(header => (
+                      <th
+                        key={header.id}
+                        className={`px-2 py-3 whitespace-nowrap ${
+                          header.id === 'image' ? 'w-10 min-w-[40px]' :
+                          header.id === 'name' ? 'min-w-[150px] max-w-[300px]' :
+                          'min-w-[100px]'
+                        } ${
+                          header.id === 'image' || header.id === 'name' || header.id === 'actions'
+                            ? 'cursor-not-allowed'
+                            : 'cursor-move'
+                        }`}
+                        draggable={!(header.id === 'image' || header.id === 'name' || header.id === 'actions')}
+                        onDragStart={(e) => handleDragStart(e, header.id)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, header.id)}
+                      >
+                        <div className="flex items-center gap-2">
+                          {!(header.id === 'image' || header.id === 'name' || header.id === 'actions') && (
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              strokeWidth="1.5" 
+                              stroke="currentColor" 
+                              className="size-4 text-gray-400"
+                            >
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                d="M3.75 9h16.5m-16.5 6.75h16.5" 
+                              />
+                            </svg>
+                          )}
+                          <span>{typeof header.column.columnDef.header === 'string' 
+                            ? header.column.columnDef.header 
+                            : flexRender(header.column.columnDef.header, header.getContext())
+                          }</span>
+                        </div>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -479,7 +1412,7 @@ export default function ProductPageBO() {
                     <tr>
                       <td
                         colSpan={6}
-                        className="w-full h-32"
+                        className="w-full h-32 "
                       >
                         <div className="flex items-center justify-center h-full mt-20 py-20">
                           <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
@@ -487,95 +1420,13 @@ export default function ProductPageBO() {
                       </td>
                     </tr>
                   ) : (
-                    paginatedProducts.map((product) => (
-                      <tr
-                        key={product.id}
-                        className="border-b dark:border-gray-700"
-                      >
-                        <td className="px-2 py-3 flex items-center justify-center align-middle">
-                          <img
-                            src={product.mainImageUrl}
-                            alt="Product"
-                            className="rounded-full h-9 w-9 object-cover"
-                          />
-                        </td>
-                        <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                          {product.name}
-                        </td>
-                        <td className="px-2 py-3 w-[200px]">
-                          <div className="flex justify-left flex-wrap gap-2 max-w-sm w-fit text-sm">
-                            {product.productTypes.map((category) => (
-                              <button
-                                key={category.id}
-                                className="px-2 py-1 rounded bg-gray-200/50 text-gray-700 hover:bg-gray-300"
-                              >
-                                {category.name}
-                              </button>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-2 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                          {product.hasVariations ? (
-                            <span>V</span>
-                          ) : (
-                            <span className="">S</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3">
-                          <label className="inline-flex relative items-center mr-5 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="sr-only peer"
-                              checked={product.statusCode === "ACTIVE"}
-                              onChange={() => toggleStatus(product)}
-                            />
-                            <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                          </label>
-                        </td>
-                        <td className="px-2 py-3">
-                          <button
-                            onClick={() => toggleFeatured(product)}
-                            className="focus:outline-none"
-                          >
-                            {product.isFeatured ? (
-                              <svg
-                                className="w-6 h-6 text-yellow-400"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
-                              </svg>
-                            ) : (
-                              <svg
-                                className="w-6 h-6 text-gray-400"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
-                              </svg>
-                            )}
-                          </button>
-                        </td>
-                        <td className="px-2 py-3 flex items-center space-x-2">
-                          <Link
-                            href={
-                              product.hasVariations
-                                ? `/dashboard/productos/crear/producto-variable?productVariableId=${product.id}`
-                                : `/dashboard/productos/crear/producto-simple?productId=${product.id}`
-                            }
-                            className="px-2 py-1 rounded bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                          >
-                            Editar
-                          </Link>
-                          <button
-                            onClick={() => showDeleteModal(product)}
-                            className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-800"
-                          >
-                            Eliminar
-                          </button>
-                        </td>
+                    table.getRowModel().rows.map(row => (
+                      <tr key={row.id} className="border-b dark:border-gray-700">
+                        {row.getVisibleCells().map(cell => (
+                          <td key={cell.id} className="px-2 py-3">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
                       </tr>
                     ))
                   )}
@@ -727,6 +1578,138 @@ export default function ProductPageBO() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {stockModalVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Stock por Variación</h3>
+              <button
+                onClick={() => setStockModalVisible(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {loadingStock ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="mt-4">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Variación
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Atributos
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Stock
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {selectedProductStock.map((stock) => (
+                      <tr key={stock.skuId}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-primary text-xs uppercase text-white px-2 py-1 rounded">
+                              N° {stock.variationNumber}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <div className="flex flex-wrap gap-2">
+                            {stock.attributes.map((attr, index) => (
+                              <span key={index} className="bg-primary text-white px-2 py-1 rounded text-xs">
+                                {attr.label}: {attr.value}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {stock.hasUnlimitedStock ? "Ilimitado" : stock.quantity}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {priceModalVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Precios por Variación</h3>
+              <button
+                onClick={() => setPriceModalVisible(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {loadingPrices ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="mt-4">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Variación
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Atributos
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Precio
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {selectedProductPrices.map((price) => (
+                      <tr key={price.skuId}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-primary text-xs uppercase text-white px-2 py-1 rounded">
+                              N° {price.variationNumber}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <div className="flex flex-wrap gap-2">
+                            {price.attributes.map((attr: any, index: number) => (
+                              <span key={index} className="bg-primary text-white px-2 py-1 rounded text-xs">
+                                {attr.label}: {attr.value}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          ${price.price?.toLocaleString('es-CL') || "0"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -5,7 +5,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
-import Modal from "@/components/Modals/ModalSeo";
+import Modal from "@/components/Core/Modals/ModalSeo";
 import { getCroppedImg } from "@/lib/cropImage";
 import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader-t";
@@ -32,8 +32,8 @@ const Mailing: React.FC = () => {
     try {
       setIsLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const headerId = `${process.env.NEXT_PUBLIC_HEADER_ID_BANNER}`;
-      const footerId = `${process.env.NEXT_PUBLIC_FOOTER_ID_BANNER}`;
+      const headerId = `${process.env.NEXT_PUBLIC_HEADER_BANNER_ID}`;
+      const footerId = `${process.env.NEXT_PUBLIC_FOOTER_BANNER_ID}`;
 
       const headerResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${headerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -102,9 +102,9 @@ const Mailing: React.FC = () => {
       const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 1200,
+        maxWidthOrHeight: 1900,
         useWebWorker: true,
-        initialQuality: 0.8,
+        initialQuality: 1,
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -155,7 +155,7 @@ const Mailing: React.FC = () => {
     try {
       setIsHeaderLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerImageId = `${process.env.NEXT_PUBLIC_HEADER_IDIMG_BANNER}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HEADER_BANNER_IMGID}`;
 
       const updatedData = {
         title: "Lorem Ipsum",
@@ -205,7 +205,7 @@ const Mailing: React.FC = () => {
     try {
       setIsFooterLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerImageId = `${process.env.NEXT_PUBLIC_FOOTER_IDIMG_BANNER}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_FOOTER_BANNER_IMGID}`;
 
       const updatedData = {
         title: "Lorem Ipsum",
@@ -244,7 +244,10 @@ const Mailing: React.FC = () => {
   };
 
   return (
-    <section id="mailing" className="w-full p-10">
+    <section
+      id="mailing"
+      className="w-full p-10"
+    >
       <title>Mailing</title>
 
       <div className="flex flex-col gap-8">
@@ -276,7 +279,7 @@ const Mailing: React.FC = () => {
                 handleSubmitHeader(
                   e,
                   headerImage,
-                  process.env.NEXT_PUBLIC_HEADER_ID_BANNER || "",
+                  process.env.NEXT_PUBLIC_HEADER_BANNER_ID || "",
                   headerImageFile
                 )
               }
@@ -361,7 +364,7 @@ const Mailing: React.FC = () => {
                 handleSubmitFooter(
                   e,
                   footerImage,
-                  process.env.NEXT_PUBLIC_FOOTER_ID_BANNER || "",
+                  process.env.NEXT_PUBLIC_FOOTER_BANNER_ID || "",
                   footerImageFile
                 )
               }
@@ -386,7 +389,7 @@ const Mailing: React.FC = () => {
                   className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10 flex-1"
                 >
                   <div className="flex flex-col justify-center items-center">
-                    <svg
+                  <svg
                       className="w-12 h-12 text-gray-400"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -396,7 +399,7 @@ const Mailing: React.FC = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 6v6m0 0v6m-6-6h6m-6 0H6"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                       />
                     </svg>
                     <p className="mb-2 text-sm text-gray-500">Subir Imagen</p>
@@ -421,7 +424,10 @@ const Mailing: React.FC = () => {
       </div>
 
       {isModalOpen && (
-        <Modal showModal={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
           <div className="relative h-96 w-full">
             <Cropper
               image={imageToCrop || ""}

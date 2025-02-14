@@ -1,18 +1,12 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Link from "next/link";
 import { obtenerTiposProductos } from "@/app/utils/obtenerTiposProductos";
-import Cropper from "react-easy-crop";
-import imageCompression from "browser-image-compression";
-import Modal from "@/components/Modals/ModalSeo";
-import { getCroppedImg } from "@/lib/cropImage";
-import toast from "react-hot-toast";
-import Loader from "@/components/common/Loader-t";
 
-const BannersCategoriasBO = () => {
+const CategoriaBO05 = () => {
   const [slidersData, setSlidersData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [categories, setCategories] = useState<any[]>([]);
@@ -20,12 +14,6 @@ const BannersCategoriasBO = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null
   );
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [isImageLoading, setIsImageLoading] = useState(false);
 
   const [updatedSliderCategory, setUpdatedSliderCategory] = useState({
     title: "",
@@ -45,10 +33,9 @@ const BannersCategoriasBO = () => {
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true);
-      const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
       const BannersCategory = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${siteId}`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
 
       const bannerImages = BannersCategory.data.banner.images;
@@ -83,10 +70,9 @@ const BannersCategoriasBO = () => {
   const deleteSlider = async (id: any) => {
     const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
     try {
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const token = getCookie("AdminTokenAuth");
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${id}?siteId=${siteId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -102,7 +88,7 @@ const BannersCategoriasBO = () => {
 
   const SliderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
+    const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
 
     // Verificar si hay menos de 4 sliders antes de agregar uno nuevo
     if (slidersData.length >= 4) {
@@ -130,9 +116,9 @@ const BannersCategoriasBO = () => {
 
     try {
       const token = getCookie("AdminTokenAuth");
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${siteId}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
         { ...updatedSliderCategory },
         {
           headers: {
@@ -154,66 +140,26 @@ const BannersCategoriasBO = () => {
     imageKey: string
   ) => {
     const file = e.target.files?.[0];
+    console.log(file, "Image file");
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        setImageToCrop(result); // Establecer la imagen para recortar
-        setIsModalOpen(true); // Abrir el modal
+        setImage(result);
+
+        const imageInfo = {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          data: result,
+        };
+        setUpdatedSliderCategory((prevFormData: any) => ({
+          ...prevFormData,
+          [imageKey]: imageInfo,
+        }));
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleCrop = async () => {
-    if (!imageToCrop) return;
-
-    try {
-      const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1200,
-        useWebWorker: true,
-        initialQuality: 0.8,
-      };
-      const compressedFile = await imageCompression(
-        croppedImage as File,
-        options
-      );
-      const base64 = await convertToBase64(compressedFile);
-
-      setMainImageSlider(base64);
-      console.log("Compressed file:", compressedFile);
-
-      setUpdatedSliderCategory((prevFormData: any) => ({
-        ...prevFormData,
-        mainImage: {
-          name: compressedFile.name|| generateImageName(),
-          type: compressedFile.type,
-          size: compressedFile.size,
-          data: base64,
-          
-        },
-        
-      }));
-
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("Error al recortar/comprimir la imagen:", error);
-    }
-  };
-  
-  const generateImageName = () => {
-    return `slider_image_${Date.now()}.jpg`; // Nombre dinámico con la fecha actual
-  };
-  
-  const convertToBase64 = (file: Blob) => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
   };
 
   const handleChangeSlider = (
@@ -251,9 +197,8 @@ const BannersCategoriasBO = () => {
   const handleClearImage = (
     setImage: React.Dispatch<React.SetStateAction<string | null>>
   ) => {
-    setImage(null);
+    setImage(null); // Limpiar la imagen seleccionada
   };
-
   useEffect(() => {
     fetchBannerCategoryHome();
     fetchProductTypes();
@@ -266,233 +211,55 @@ const BannersCategoriasBO = () => {
     );
   }, []);
 
-  const defaultImage =
-    "https://i0.wp.com/ayuda.marketplace.paris.cl/wp-content/uploads/2024/02/placeholder.png?fit=1200%2C800&ssl=1";
-  const getDefaultBanner = (index: number) => {
-    return slidersData && slidersData[index]
-      ? slidersData[index]
-      : { mainImage: { url: defaultImage }, title: "Titulo por defecto" };
-  };
-
-  const deleteCategory = async (id: any) => {
-    const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
-    try {
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const token = getCookie("AdminTokenAuth");
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${id}?siteId=${siteId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      fetchBannerCategoryHome();
-    } catch (error) {
-      console.error("Error deleting Category:", error);
-    }
-  };
-  const handleCropComplete = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
-      setCroppedAreaPixels(croppedAreaPixels);
-    },
-    []
-  );
-  // Función para obtener la imagen predeterminada o la asignada
-  const getBannerData = (index: number) => {
-    return slidersData[index]
-      ? slidersData[index]
-      : { mainImage: { url: defaultImage }, title: "Imagen predeterminada" };
-  };
-
   return (
-    <section id="banner" className="w-full">
-      <div>
-        {slidersData && (
-          <div className="flex items-center justify-center px-4 lg:px-0">
-            <div className="max-w-7xl mx-auto rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* COLGANTES */}
-                <div className="relative flex flex-col items-center w-full">
-                  <div rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[200px] h-[150px] md:w-[250px] md:h-[450px] lg:w-[400px] lg:h-[400px] bg-cover bg-center mx-auto"
-                      style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(0).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
-                        backgroundPosition: "center bottom",
-                      }}
-                    >
-                      <div
-                        className="w-full h-full flex items-end justify-start p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(0).title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                  {slidersData[0] && (slidersData[0].title || slidersData[0].mainImage.url) && (
-                    <button
-                      className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                      }}
-                      onClick={() => deleteSlider(slidersData[0].id)}
-                    >
-                      X
-                    </button>
-                  )}
-                </div>
-                {/* ANILLOS */}
-                <div className="relative flex flex-col items-center w-full">
-                  <div rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[200px]  h-[250px] md:w-[250px] md:h-[330px] lg:w-[400px] lg:h-[280px] bg-cover bg-center mx-auto"
-                      style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(1).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
-                      }}
-                    >
-                      <div
-                        className="w-full h-full flex items-end justify-end p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(1).title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                  {slidersData[1] && (slidersData[1].title || slidersData[1].mainImage.url) && (
-                    <button
-                      className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                      }}
-                      onClick={() => deleteSlider(slidersData[1].id)}
-                    >
-                      X
-                    </button>
-                  )}
-                </div>
-                {/* PULSERAS */}
-                <div className="relative flex flex-col items-center w-full">
-                  <div rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[200px] h-[150px] md:w-[250px] md:h-[210px] lg:w-[400px] lg:h-[160px] bg-cover bg-center mx-auto"
-                      style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(2).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
-                      }}
-                    >
-                      <div
-                        className="w-full h-full flex items-start justify-start p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(2).title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                  {slidersData[2] && (slidersData[2].title || slidersData[2].mainImage.url) && (
-
-                    <button
-                      className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                      }}
-                      onClick={() => deleteSlider(slidersData[2].id)}
-                    >
-                      X
-                    </button>
-                  )}
-                </div>
-                {/* AROS */}
-                <div className="relative flex flex-col items-center w-full mt-0 md:mt-[-120px]">
-                  <div rel="noopener noreferrer" className="w-full">
-                    <div
-                      className="w-[200px] h-[250px] md:w-[250px] md:h-[330px] lg:w-[400px] lg:h-[280px] bg-cover bg-center mx-auto"
-                      style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(3).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
-                      }}
-                    >
-                      <div
-                        className="w-full h-full flex items-end justify-end p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(3).title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                  {slidersData[3] && (slidersData[3].title || slidersData[3].mainImage.url) && (
-
-                    <button
-                      className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                      }}
-                      onClick={() => deleteSlider(slidersData[3].id)}
-                    >
-                      X
-                    </button>
-                  )}
-                </div>
+    <section
+      id="banner"
+      className="w-full"
+    >
+      <div className="flex flex-wrap gap-6 items-center align-middle justify-center">
+        {slidersData.map((banner) => (
+          <div
+            className="flex-1 max-w-[200px] min-w-[200px]"
+            key={banner.id}
+          >
+            <span>{banner.orderNumber}</span>
+            <Link
+              href={banner.buttonLink}
+              className="group relative flex h-96 items-end overflow-hidden rounded-lg bg-gray-100 p-4 shadow-lg"
+            >
+              <img
+                alt="Banner Image"
+                src={banner.mainImage.url}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div className="relative w-full text-center bg-white rounded-xl p-2 font-bold ">
+                <h3 className="text-xl text-dark">{banner.title}</h3>
+                <p className="mt-1 text-sm text-black hidden">
+                  {banner.landingText}
+                </p>
               </div>
-            </div>
+            </Link>
+            <button
+              onClick={() => deleteSlider(banner.id)}
+              className="mt-2 text-red-500 hover:text-red-700"
+            >
+              Eliminar
+            </button>
           </div>
-        )}
+        ))}
       </div>
       <div className="mt-8">
         <h2 className="text-md uppercase font-semibold text-center mb-4">
-          Agregar Nueva Categoría
+          Agregar Nuevo Slider
         </h2>
-        <div
-          className="flex items-center p-4 mb-4 text-sm text-yellow-800 border border-yellow-300 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 dark:border-yellow-800"
-          role="alert"
+        <form
+          onSubmit={SliderSubmit}
+          className=" mx-auto"
         >
-          <svg
-            className="flex-shrink-0 inline w-4 h-4 me-3"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-          </svg>
-          <span className="sr-only">Info</span>
-          <div>
-            <span className="font-medium">Atención!</span> Componente de 4
-            categorías.
-          </div>
-        </div>
-        <form onSubmit={SliderSubmit} className="mx-auto">
           <div>
             <label htmlFor="categorySelect">
               <h3 className="font-normal text-primary">
-                Seleccionar Categoría <span className="text-primary">*</span>
+                Seleccionar Categoria <span className="text-primary">*</span>
               </h3>
             </label>
             <select
@@ -503,8 +270,12 @@ const BannersCategoriasBO = () => {
               style={{ borderRadius: "var(--radius)" }}
             >
               <option value="">Seleccione una categoría</option>
+
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
+                <option
+                  key={category.id}
+                  value={category.id}
+                >
                   {category.name}
                 </option>
               ))}
@@ -513,7 +284,7 @@ const BannersCategoriasBO = () => {
           <div className="my-4">
             <label htmlFor="orderNumber">
               <h3 className="font-normal text-primary">
-                Seleccionar Categoría <span className="text-primary">*</span>
+                Seleccionar Categoria <span className="text-primary">*</span>
               </h3>
             </label>
             <select
@@ -681,7 +452,7 @@ const BannersCategoriasBO = () => {
                       <span className="font-semibold">Subir Imagen</span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG o Webp (800x800px)
+                    PNG, JPG o Webp (800x800px)
                     </p>
                   </div>
                 </label>
@@ -692,7 +463,7 @@ const BannersCategoriasBO = () => {
           <div className="mt-6 flex justify-center">
             <button
               type="submit"
-              className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6"
+              className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
               style={{ borderRadius: "var(--radius)" }}
             >
               Agregar Slider
@@ -700,37 +471,8 @@ const BannersCategoriasBO = () => {
           </div>
         </form>
       </div>
-      {isModalOpen && (
-        <Modal showModal={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={imageToCrop || ""}
-              crop={crop}
-              zoom={zoom}
-              aspect={4 / 4} // Aspecto 4:3 como ejemplo
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-            />
-          </div>
-          <div className="flex justify-end mt-4 space-x-4">
-            <button
-              onClick={handleCrop}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Recortar y Subir
-            </button>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Cancelar
-            </button>
-          </div>
-        </Modal>
-      )}
     </section>
   );
 };
 
-export default BannersCategoriasBO;
+export default CategoriaBO05;

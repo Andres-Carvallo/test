@@ -1,9 +1,12 @@
-import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
+import React from "react";
 
-
-const BannerTienda: React.FC = () => {
+const BannerTienda = () => {
   return (
-    <BannerTienda01/>
+    <div className="w-full bg-gray-100 py-8">
+      <div className="container mx-auto">
+        <h1 className="text-3xl font-bold text-center">Tienda</h1>
+      </div>
+    </div>
   );
 };
 

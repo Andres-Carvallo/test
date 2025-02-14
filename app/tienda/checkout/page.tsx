@@ -9,7 +9,7 @@ import { Customer, ItemAvailability } from "@/types/types";
 import { jwtDecode } from "jwt-decode";
 import Loader from "@/components/common/Loader";
 
-const CartList = React.lazy(() => import("@/components/CartCanva/CartList"));
+const CartList = React.lazy(() => import("@/components/Core/CartCanva/CartList"));
 
 const Checkout: React.FC = () => {
   const [regionsDelivery, setRegionsDelivery] = useState<
@@ -319,10 +319,7 @@ const Checkout: React.FC = () => {
       return;
     }
 
-    if (
-      deliveryType !== "WITHDRAWAL_FROM_STORE" &&
-      deliveryType !== "HOME_DELIVERY_WITH_COURIER"
-    ) {
+    if (deliveryType !== "WITHDRAWAL_FROM_STORE") {
       const communeIdToCheck = useDifferentShippingAddress
         ? selectedCommune
         : customer.customer?.communeId;
@@ -361,10 +358,6 @@ const Checkout: React.FC = () => {
             },
           }
         : {}),
-      // Agregar courierId solo si es Starken
-      ...(deliveryType === "HOME_DELIVERY_WITH_COURIER" && {
-        courierId: "9febff16-42b9-41fb-9d5f-c50d0ca009f8",
-      }),
     };
 
     try {
@@ -486,15 +479,13 @@ const Checkout: React.FC = () => {
 
   // Memoized values based on the selected delivery type
   const displayedRegions = useMemo(() => {
-    return deliveryType === "WITHDRAWAL_FROM_STORE" ||
-      deliveryType === "HOME_DELIVERY_WITH_COURIER"
+    return deliveryType === "WITHDRAWAL_FROM_STORE"
       ? regionsPickup
       : regionsDelivery;
   }, [deliveryType, regionsPickup, regionsDelivery]);
 
   const displayedCommunes = useMemo(() => {
-    return deliveryType === "WITHDRAWAL_FROM_STORE" ||
-      deliveryType === "HOME_DELIVERY_WITH_COURIER"
+    return deliveryType === "WITHDRAWAL_FROM_STORE"
       ? communesPickup
       : communesDelivery;
   }, [deliveryType, communesPickup, communesDelivery]);
@@ -539,10 +530,7 @@ const Checkout: React.FC = () => {
     const invalidItems = cartItems.filter((item: any) => {
       if (newValue === "HOME_DELIVERY_WITHOUT_COURIER")
         return !itemAvailability[item.id]?.enabledForDelivery;
-      if (
-        newValue === "WITHDRAWAL_FROM_STORE" ||
-        newValue === "HOME_DELIVERY_WITH_COURIER"
-      )
+      if (newValue === "WITHDRAWAL_FROM_STORE")
         return !itemAvailability[item.id]?.enabledForWithdrawal;
       return false;
     });
@@ -563,12 +551,19 @@ const Checkout: React.FC = () => {
     if (selectedDeliveryType) {
       setDeliveryTypeID(selectedDeliveryType.id);
     } else {
-      console.error("No se encontró el deliveryType seleccionado");
+      console.error(
+        "No se encontró el deliveryType seleccionado en los tipos de entrega disponibles"
+      );
     }
 
-    // Cargar regiones y comunas
+    // Si las regiones y comunas ya están cargadas, no hacer fetch
     if (regionsDelivery.length === 0 || regionsPickup.length === 0) {
-      await fetchRegionsAndCommunes(newValue !== "WITHDRAWAL_FROM_STORE");
+      // Si el usuario no está logueado y selecciona retiro, mostrar todas las comunas
+      if (!isLoggedIn && newValue === "WITHDRAWAL_FROM_STORE") {
+        await fetchRegionsAndCommunes(false); // false para no aplicar el filtro
+      } else {
+        await fetchRegionsAndCommunes(true); // true para aplicar el filtro de shipping zones
+      }
     }
   };
 
@@ -581,10 +576,7 @@ const Checkout: React.FC = () => {
         <title>Checkout</title>
         <div className="pb-12">
           <div className="flex flex-col items-center border-b bg-white py-4 sm:flex-row sm:px-10 lg:px-20 xl:px-32">
-            <a
-              href="#"
-              className="text-2xl font-bold text-gray-800"
-            >
+            <a href="#" className="text-2xl font-bold text-gray-800">
               Checkout
             </a>
             <div className="mt-4 py-2 text-xs sm:mt-0 sm:ml-auto sm:text-base">
@@ -688,10 +680,7 @@ const Checkout: React.FC = () => {
               <div className="">
                 <div className="mt-10 px-4 pt-2 lg:mt-0">
                   <div className="grid grid-cols-2 gap-4">
-                    <label
-                      htmlFor="firstname"
-                      className="block mt-4"
-                    >
+                    <label htmlFor="firstname" className="block mt-4">
                       Nombre <span className="text-red-500">*</span>
                       <input
                         type="text"
@@ -713,10 +702,7 @@ const Checkout: React.FC = () => {
                         disabled={!!isLoggedIn}
                       />
                     </label>
-                    <label
-                      htmlFor="lastname"
-                      className="block mt-4"
-                    >
+                    <label htmlFor="lastname" className="block mt-4">
                       Apellido <span className="text-red-500">*</span>
                       <input
                         type="text"
@@ -740,10 +726,7 @@ const Checkout: React.FC = () => {
                     </label>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <label
-                      htmlFor="phoneNumber"
-                      className="block mt-4"
-                    >
+                    <label htmlFor="phoneNumber" className="block mt-4">
                       Teléfono <span className="text-red-500">*</span>
                       <input
                         type="text"
@@ -765,10 +748,7 @@ const Checkout: React.FC = () => {
                         disabled={!!isLoggedIn}
                       />
                     </label>
-                    <label
-                      htmlFor="email"
-                      className="block mt-4"
-                    >
+                    <label htmlFor="email" className="block mt-4">
                       Email
                       <input
                         type="text"
@@ -793,10 +773,7 @@ const Checkout: React.FC = () => {
                   </div>
                   {isLoggedIn && (
                     <div className=" gap-4">
-                      <label
-                        htmlFor="addressLine1"
-                        className="block mt-4"
-                      >
+                      <label htmlFor="addressLine1" className="block mt-4">
                         Dirección <span className="text-red-500">*</span>
                         <input
                           type="text"
@@ -825,10 +802,7 @@ const Checkout: React.FC = () => {
                 {isLoggedIn && (
                   <>
                     <div className="grid gap-4 mx-4">
-                      <label
-                        htmlFor="RegionName"
-                        className="block mt-4"
-                      >
+                      <label htmlFor="RegionName" className="block mt-4">
                         Región
                         <input
                           type="text"
@@ -839,10 +813,7 @@ const Checkout: React.FC = () => {
                           disabled
                         />
                       </label>
-                      <label
-                        htmlFor="CommuneName"
-                        className="block "
-                      >
+                      <label htmlFor="CommuneName" className="block ">
                         Comuna
                         <input
                           type="text"
@@ -873,11 +844,9 @@ const Checkout: React.FC = () => {
                 )}
                 {(!isLoggedIn || useDifferentShippingAddress) && (
                   <div className="mt-5 grid gap-4">
+
                     <div className="grid grid-cols-2 gap-4 px-4">
-                      <label
-                        htmlFor="addressLine1"
-                        className="block"
-                      >
+                      <label htmlFor="addressLine1" className="block">
                         Dirección <span className="text-red-500">*</span>
                         <input
                           type="text"
@@ -897,10 +866,7 @@ const Checkout: React.FC = () => {
                         />
                       </label>
 
-                      <label
-                        htmlFor="addressLine2"
-                        className="block"
-                      >
+                      <label htmlFor="addressLine2" className="block">
                         Indicaciones extra
                         <input
                           type="text"
@@ -920,10 +886,7 @@ const Checkout: React.FC = () => {
                       </label>
                     </div>
                     <div className="grid grid-cols-2 gap-4 px-4">
-                      <label
-                        htmlFor="region"
-                        className="block"
-                      >
+                      <label htmlFor="region" className="block">
                         Región
                         <select
                           id="region"
@@ -937,10 +900,7 @@ const Checkout: React.FC = () => {
                             <>
                               <option>Selecciona Región</option>
                               {displayedRegions.map((region) => (
-                                <option
-                                  key={region.id}
-                                  value={region.id}
-                                >
+                                <option key={region.id} value={region.id}>
                                   {region.name}
                                 </option>
                               ))}
@@ -948,10 +908,7 @@ const Checkout: React.FC = () => {
                           )}
                         </select>
                       </label>
-                      <label
-                        htmlFor="commune"
-                        className="block"
-                      >
+                      <label htmlFor="commune" className="block">
                         Comuna
                         {loadingCommunes ? (
                           <Loader />
@@ -968,10 +925,7 @@ const Checkout: React.FC = () => {
                                 (commune) => commune.regionId === selectedRegion
                               )
                               .map((commune) => (
-                                <option
-                                  key={commune.id}
-                                  value={commune.id}
-                                >
+                                <option key={commune.id} value={commune.id}>
                                   {commune.name}
                                 </option>
                               ))}
@@ -1006,7 +960,6 @@ const Checkout: React.FC = () => {
                 </div>
 
                 <form className="mt-5 grid gap-2 px-4">
-                  {/* Botón para retiro en tienda */}
                   <div className="relative">
                     <input
                       className="peer hidden"
@@ -1024,14 +977,13 @@ const Checkout: React.FC = () => {
                       className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
                       htmlFor="radio_retiroTienda"
                     >
-                      {/* Icono y texto para retiro en tienda */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-12 h-12"
                         fill="none"
                         viewBox="0 0 24 24"
-                        stroke="currentColor"
                         strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-12 h-12"
                       >
                         <path
                           strokeLinecap="round"
@@ -1049,8 +1001,6 @@ const Checkout: React.FC = () => {
                       </div>
                     </label>
                   </div>
-
-                  {/* Botón para delivery */}
                   <div className="relative">
                     <input
                       className="peer hidden"
@@ -1070,14 +1020,13 @@ const Checkout: React.FC = () => {
                       className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
                       htmlFor="radio_delivery"
                     >
-                      {/* Icono y texto para delivery */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-12 h-12"
                         fill="none"
                         viewBox="0 0 24 24"
-                        stroke="currentColor"
                         strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-12 h-12"
                       >
                         <path
                           strokeLinecap="round"
@@ -1089,48 +1038,6 @@ const Checkout: React.FC = () => {
                         <span className="mt-3 font-semibold">Delivery</span>
 {/*                         <p className="text-slate-500 text-sm leading-6">
                           Delivery: 2-4 Days
-                        </p> */}
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Botón para Starken */}
-                  <div className="relative">
-                    <input
-                      className="peer hidden"
-                      id="radio_starken"
-                      type="radio"
-                      name="radio"
-                      value="HOME_DELIVERY_WITH_COURIER"
-                      checked={deliveryType === "HOME_DELIVERY_WITH_COURIER"}
-                      onChange={() =>
-                        handleChangeDeliveryType("HOME_DELIVERY_WITH_COURIER")
-                      }
-                    />
-                    <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
-                    <label
-                      className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                      htmlFor="radio_starken"
-                    >
-                      {/* Icono y texto para Starken */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-12 h-12"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-                        />
-                      </svg>
-                      <div className="ml-5 flex flex-col justify-center h-full">
-                        <span className="mt-3 font-semibold">Starken</span>
-{/*                         <p className="text-slate-500 text-sm leading-6">
-                          Starken: 1-3 día
                         </p> */}
                       </div>
                     </label>

@@ -15,7 +15,6 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import Historical from "./Historical";
 
 // Registra los componentes de gráficos
 ChartJS.register(
@@ -114,179 +113,112 @@ const StatsPage: React.FC = () => {
     <>
       <title>Dashboard - Visitas Web</title>
       <div className="max-w-7xl mx-auto p-6 pt-10 pb-20">
-        <h1 className="text-3xl font-bold text-center">Visitas Web</h1>
-        <h3 className="text-xl font-bold mb-6 text-center">
-          Estadísticas últimos 30 días
-        </h3>
-        <div className="hidden">
-          {" "}
-          <div className="flex items-center justify-center">
-            <p className="mb-6 text-center max-w-xl">
-              Esta sección muestra estadísticas de los{" "}
-              <strong>últimos 5 a 10 minutos</strong> aprox. de las visitas a tu
-              sitio web.
-            </p>
-          </div>
-          {/* Mostrar número único de usuarios activos */}
-          <div className="mb-6 bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold my-4 text-center">
-              <small>Usuarios Activos:</small> {uniqueActiveUsers.size}
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
-            {/* Gráfico de Torta de Usuarios Activos por Ciudad */}
-            <div className=" p-4 ">
-              <h2 className="text-xl font-semibold mb-4">
-                Usuarios Activos por Ciudad
-              </h2>
+        <h1 className="text-3xl font-bold mb-6 text-center">Visitas Web</h1>
+        <div className="flex items-center justify-center">
+          <p className="mb-6 text-center max-w-xl">
+            Esta sección muestra estadísticas de los{" "}
+            <strong>últimos 5 a 10 minutos</strong> aprox. de las visitas a tu
+            sitio web.
+          </p>
+        </div>
 
-              <Pie
-                className="bg-white p-4 rounded-lg shadow-md max-h-[400px]"
-                data={{
-                  labels: cityLabels,
-                  datasets: [
-                    {
-                      label: "Usuarios Activos",
-                      data: cityActiveUsers,
-                      backgroundColor: [
-                        "rgba(75, 192, 192, 0.2)",
-                        "rgba(153, 102, 255, 0.2)",
-                        "rgba(255, 206, 86, 0.2)",
-                      ],
-                      borderColor: [
-                        "rgba(75, 192, 192, 1)",
-                        "rgba(153, 102, 255, 1)",
-                        "rgba(255, 206, 86, 1)",
-                      ],
-                      borderWidth: 1,
-                    },
-                  ],
-                }}
-                options={{
-                  maintainAspectRatio: false,
-                  plugins: {
-                    tooltip: {
-                      callbacks: {
-                        label: function (context) {
-                          let total = context.dataset.data.reduce(
-                            (a: number, b: number) => a + b,
-                            0
-                          );
-                          let percentage =
-                            ((context.raw as number) / total) * 100 || 0;
-                          return `${context.label}: ${percentage.toFixed(2)}%`;
-                        },
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
+        {/* Mostrar número único de usuarios activos */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-md">
+          <h2 className="text-2xl font-semibold my-4 text-center">
+            <small>Usuarios Activos:</small> {uniqueActiveUsers.size}
+          </h2>
+        </div>
 
-            {/* Gráfico de Torta de Usuarios Activos por Dispositivo */}
-            <div className="p-4">
-              <h2 className="text-xl font-semibold mb-4">
-                Usuarios Activos por Dispositivo
-              </h2>
-
-              <Pie
-                className="bg-white p-4 rounded-lg shadow-md max-h-[400px]"
-                data={{
-                  labels: deviceLabels,
-                  datasets: [
-                    {
-                      label: "Usuarios Activos",
-                      data: deviceActiveUsers,
-                      backgroundColor: [
-                        "rgba(54, 162, 235, 0.2)",
-                        "rgba(255, 159, 64, 0.2)",
-                      ],
-                      borderColor: [
-                        "rgba(54, 162, 235, 1)",
-                        "rgba(255, 159, 64, 1)",
-                      ],
-                      borderWidth: 1,
-                    },
-                  ],
-                }}
-                options={{
-                  maintainAspectRatio: false,
-                  plugins: {
-                    tooltip: {
-                      callbacks: {
-                        label: function (context) {
-                          let total = context.dataset.data.reduce(
-                            (a: number, b: number) => a + b,
-                            0
-                          );
-                          let percentage =
-                            ((context.raw as number) / total) * 100 || 0;
-                          return `${context.label}: ${percentage.toFixed(2)}%`;
-                        },
-                      },
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-          {/* Formato de tarjetas para mobile */}
-          <div className="md:hidden mb-6 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+          {/* Gráfico de Torta de Usuarios Activos por Ciudad */}
+          <div className=" p-4 ">
             <h2 className="text-xl font-semibold mb-4">
-              Vistas por Título de Página
+              Usuarios Activos por Ciudad
             </h2>
-            {pageLabels.map((pageTitle, index) => (
-              <div
-                key={index}
-                className="mb-4 p-4 bg-white rounded-lg shadow-md"
-              >
-                <h2 className="text-lg font-semibold mb-2">
-                  {truncateText(pageTitle, 20)}
-                </h2>
-                <p>Vistas: {pageData[index]}</p>
-              </div>
-            ))}
-          </div>
-          {/* Gráfico de Barras en desktop */}
-          <div
-            className="hidden md:block mb-24 p-4"
-            style={{ height: "350px" }}
-          >
-            <h2 className="text-xl font-semibold mb-4">
-              Vistas por Título de Página
-            </h2>
-            <p className="mb-4">
-              Este gráfico de barras presenta las páginas más vistas en el sitio
-              web.{" "}
-              <strong>
-                Sirve para identificar qué contenido es más relevante y popular
-                entre los usuarios.
-              </strong>
-            </p>
-            <Bar
-              className="bg-white p-4 rounded-lg shadow-md "
+
+            <Pie
+              className="bg-white p-4 rounded-lg shadow-md max-h-[400px]"
               data={{
-                labels: pageLabels.map((title) => truncateText(title, 20)),
+                labels: cityLabels,
                 datasets: [
                   {
-                    label: "Vistas",
-                    data: pageData,
-                    backgroundColor: "rgba(75, 192, 192, 0.2)",
-                    borderColor: "rgba(75, 192, 192, 1)",
+                    label: "Usuarios Activos",
+                    data: cityActiveUsers,
+                    backgroundColor: [
+                      "rgba(75, 192, 192, 0.2)",
+                      "rgba(153, 102, 255, 0.2)",
+                      "rgba(255, 206, 86, 0.2)",
+                    ],
+                    borderColor: [
+                      "rgba(75, 192, 192, 1)",
+                      "rgba(153, 102, 255, 1)",
+                      "rgba(255, 206, 86, 1)",
+                    ],
                     borderWidth: 1,
                   },
                 ],
               }}
               options={{
-                indexAxis: "y",
                 maintainAspectRatio: false,
-                scales: {
-                  x: { beginAtZero: true },
-                  y: {
-                    ticks: {
-                      autoSkip: false,
-                      maxRotation: 0,
-                      minRotation: 0,
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        let total = context.dataset.data.reduce(
+                          (a: number, b: number) => a + b,
+                          0
+                        );
+                        let percentage =
+                          ((context.raw as number) / total) * 100 || 0;
+                        return `${context.label}: ${percentage.toFixed(2)}%`;
+                      },
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+
+          {/* Gráfico de Torta de Usuarios Activos por Dispositivo */}
+          <div className="p-4">
+            <h2 className="text-xl font-semibold mb-4">
+              Usuarios Activos por Dispositivo
+            </h2>
+
+            <Pie
+              className="bg-white p-4 rounded-lg shadow-md max-h-[400px]"
+              data={{
+                labels: deviceLabels,
+                datasets: [
+                  {
+                    label: "Usuarios Activos",
+                    data: deviceActiveUsers,
+                    backgroundColor: [
+                      "rgba(54, 162, 235, 0.2)",
+                      "rgba(255, 159, 64, 0.2)",
+                    ],
+                    borderColor: [
+                      "rgba(54, 162, 235, 1)",
+                      "rgba(255, 159, 64, 1)",
+                    ],
+                    borderWidth: 1,
+                  },
+                ],
+              }}
+              options={{
+                maintainAspectRatio: false,
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        let total = context.dataset.data.reduce(
+                          (a: number, b: number) => a + b,
+                          0
+                        );
+                        let percentage =
+                          ((context.raw as number) / total) * 100 || 0;
+                        return `${context.label}: ${percentage.toFixed(2)}%`;
+                      },
                     },
                   },
                 },
@@ -294,9 +226,74 @@ const StatsPage: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Formato de tarjetas para mobile */}
+        <div className="md:hidden mb-6 p-4">
+          <h2 className="text-xl font-semibold mb-4">
+            Vistas por Título de Página
+          </h2>
+          {pageLabels.map((pageTitle, index) => (
+            <div
+              key={index}
+              className="mb-4 p-4 bg-white rounded-lg shadow-md"
+            >
+              <h2 className="text-lg font-semibold mb-2">
+                {truncateText(pageTitle, 20)}
+              </h2>
+              <p>Vistas: {pageData[index]}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Gráfico de Barras en desktop */}
+        <div
+          className="hidden md:block mb-24 p-4"
+          style={{ height: "350px" }}
+        >
+          <h2 className="text-xl font-semibold mb-4">
+            Vistas por Título de Página
+          </h2>
+          <p className="mb-4">
+            Este gráfico de barras presenta las páginas más vistas en el sitio
+            web.{" "}
+            <strong>
+              Sirve para identificar qué contenido es más relevante y popular
+              entre los usuarios.
+            </strong>
+          </p>
+          <Bar
+            className="bg-white p-4 rounded-lg shadow-md "
+            data={{
+              labels: pageLabels.map((title) => truncateText(title, 20)),
+              datasets: [
+                {
+                  label: "Vistas",
+                  data: pageData,
+                  backgroundColor: "rgba(75, 192, 192, 0.2)",
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            }}
+            options={{
+              indexAxis: "y",
+              maintainAspectRatio: false,
+              scales: {
+                x: { beginAtZero: true },
+                y: {
+                  ticks: {
+                    autoSkip: false,
+                    maxRotation: 0,
+                    minRotation: 0,
+                  },
+                },
+              },
+            }}
+          />
+        </div>
         <div className="flex items-center justify-center py-8 ">
-          <p className=" text-center ">
-            <Historical />
+          <p className="mb-6 text-center max-w-xl">
+            Estadísticas Históricas <strong>Próximamente....</strong>
           </p>
         </div>
       </div>

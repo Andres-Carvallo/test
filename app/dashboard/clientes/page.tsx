@@ -1,4 +1,4 @@
-import TableClientes from "@/components/Tables/TableClientes";
+import TableClientes from "@/components/Core/Tables/TableClientes";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

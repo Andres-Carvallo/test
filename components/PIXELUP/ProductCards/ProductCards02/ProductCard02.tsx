@@ -1,5 +1,20 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { slugify } from "@/app/utils/slugify";
+
+interface PricingRange {
+  minimumAmount: string | number;
+  maximumAmount: string | number;
+}
+
+interface PriceRange {
+  min: number;
+  max: number;
+}
+
+interface Offer {
+  amount: string | number;
+}
 
 type ProductCardProps = {
   key: any;
@@ -16,74 +31,102 @@ const ProductCard02: React.FC<ProductCardProps> = ({
   stock,
 }) => {
   const renderPrice = () => {
-    let priceRange = {
-      min: Infinity,
-      max: -Infinity,
-    };
+    // Para productos con variaciones
+    if (product.hasVariations) {
+      // Obtener todos los precios normales y de oferta
+      const normalPrices = product.pricingRanges.map((range: PricingRange) => ({
+        min: Number(range.minimumAmount) || 0,
+        max: Number(range.maximumAmount) || 0
+      })).filter((price: PriceRange) => price.min > 0 && price.max > 0);
 
-    // Si el producto no tiene variaciones y tiene ofertas, mostrar solo el precio de la oferta
-    if (!product.hasVariations && product.offers && product.offers.length > 0) {
-      const offerPrice = product.offers[0].amount;
-      return <span>${offerPrice.toLocaleString("es-CL")}</span>;
-    }
+      const offerPrices = product.offers?.map((offer: Offer) => Number(offer.amount) || 0)
+        .filter((price: number) => price > 0) || [];
 
-    // Verificar si tiene variaciones y rangos de precios
-    if (product.hasVariations && product.pricingRanges) {
-      priceRange.min = Math.min(
-        priceRange.min,
-        product.pricingRanges[0].minimumAmount
-      );
-      priceRange.max = Math.max(
-        priceRange.max,
-        product.pricingRanges[0].maximumAmount
-      );
-    } else if (product.pricings) {
-      priceRange.min = Math.min(priceRange.min, product.pricings[0].amount);
-      priceRange.max = Math.max(priceRange.max, product.pricings[0].amount);
-    }
+      // Si hay ofertas, mostrar ambos rangos de precios
+      if (isOnSale && offerPrices.length > 0) {
+        const minNormalPrice = Math.min(...normalPrices.map((p: PriceRange) => p.min));
+        const maxNormalPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
+        const minOfferPrice = Math.min(...offerPrices);
+        const maxOfferPrice = Math.max(...offerPrices);
 
-    // Si existe una oferta, se debe tomar como prioridad el precio de oferta
-    if (product.offers && product.offers.length > 0) {
-      product.offers.forEach((offer: any) => {
-        priceRange.min = Math.min(priceRange.min, offer.amount);
-        priceRange.max = Math.max(priceRange.max, offer.amount);
-      });
-    }
+        return (
+          <div className="flex flex-col">
+            <span className="line-through text-gray-500 text-sm">
+              {minNormalPrice === maxNormalPrice
+                ? `$${minNormalPrice.toLocaleString("es-CL")}`
+                : `$${Math.min(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")} - $${Math.max(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")}`
+              }
+            </span>
+            <span className="text-red-600 font-semibold text-base">
+              {minOfferPrice === maxOfferPrice
+                ? `$${minOfferPrice.toLocaleString("es-CL")}`
+                : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
+              }
+            </span>
+          </div>
+        );
+      }
 
-    // Asegurarse de que el precio mínimo siempre sea menor al máximo
-    const finalMin = Math.min(priceRange.min, priceRange.max);
-    const finalMax = Math.max(priceRange.min, priceRange.max);
+      // Si no hay ofertas, mostrar rango de precios normal
+      if (normalPrices.length > 0) {
+        const minPrice = Math.min(...normalPrices.map((p: PriceRange) => p.min));
+        const maxPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
 
-    // Mostrar el rango o un solo precio si son iguales
-    if (finalMin === finalMax) {
-      return <span>${finalMin.toLocaleString("es-CL")}</span>;
+        return (
+          <span className="text-gray-600">
+            {minPrice === maxPrice
+              ? `$${minPrice.toLocaleString("es-CL")}`
+              : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
+            }
+          </span>
+        );
+      }
     } else {
-      return (
-        <span>
-          ${finalMin.toLocaleString("es-CL")} - $
-          {finalMax.toLocaleString("es-CL")}
-        </span>
-      );
+      // Para productos sin variaciones
+      const normalPrice = Number(product.pricings?.[0]?.amount) || 0;
+      const offerPrice = isOnSale && product.offers?.[0]?.amount 
+        ? Number(product.offers[0].amount) 
+        : null;
+
+      if (offerPrice) {
+        return (
+          <div className="flex flex-col">
+            <span className="line-through text-gray-500 text-sm">
+              ${normalPrice.toLocaleString("es-CL")}
+            </span>
+            <span className="text-red-600 font-semibold text-lg">
+              ${offerPrice.toLocaleString("es-CL")}
+            </span>
+          </div>
+        );
+      }
+
+      if (normalPrice > 0) {
+        return <span className="text-gray-600">${normalPrice.toLocaleString("es-CL")}</span>;
+      }
     }
+
+    return null;
   };
+  
 
   const handleButtonClick = () => {
     if (product.hasVariations) {
-      window.location.href = `/tienda/productos/${product.id}`;
+      window.location.href = `/tienda/productos/${slugify(product.name)}`;
     } else {
       addToCartHandler(product.skuId, 1);
     }
   };
 
   return (
-    <div className="w-full   bg-white shadow-md duration-500 lg:hover:scale-105 md:hover:shadow-xl rounded-xl relative">
+    <div className="w-full my-4 bg-white shadow-md duration-500 lg:hover:scale-105 md:hover:shadow-xl rounded-xl relative">
       {isOnSale && (
         <span className="absolute top-2 right-2 bg-red-700 text-white text-[14px] rounded py-1 px-2">
           En Oferta
         </span>
       )}
       <div className="group block overflow-hidden rounded-xl">
-        <Link href={`/tienda/productos/${product.id}`}>
+        <Link href={`/tienda/productosv1/${slugify(product.name)}`}>
           <img
             src={product.mainImageUrl}
             alt={product.name}
@@ -104,17 +147,17 @@ const ProductCard02: React.FC<ProductCardProps> = ({
                 </span>
               ))}
 
-          <Link href={`/tienda/productos/${product.id}`}>
+          <Link href={`/tienda/productos/${slugify(product.name)}`}>
             <p className="text-[18px] font-bold text-black truncate block capitalize">
               {product.name}
             </p>
           </Link>
-          <div className="flex items-center text-black">
-            <span className="text-gray-600 text-[19px]">{renderPrice()}</span>
+          <div className="flex items-center text-black min-h-[50px]">
+            <span className="text-gray-600 text-[20px]">{renderPrice()}</span>
             <div className="ml-auto flex">
               {product.hasVariations || stock === 0 ? (
                 <Link
-                  href={`/tienda/productos/${product.id}`}
+                  href={`/tienda/productos/${slugify(product.name)}`}
                   className="text-primary hover:text-secondary hover:bg-primary rounded-full p-2"
                 >
                   <svg

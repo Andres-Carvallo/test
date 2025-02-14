@@ -1,32 +1,21 @@
+/* eslint-disable @next/next/no-img-element */
 // app/page.js
-import { useEffect, useState } from "react";
 import axios from "axios";
-import ProductList01 from "@/components/Products/ProductList01";
-import Testimonial01 from "@/components/Testimonials/Testimonial01";
-import Stats01 from "@/components/Stats/Stats01";
-import HomeForm from "@/components/ContactForm/Home";
-import Collection01 from "@/components/Collections/Collection01";
-import Header from "@/components/Header/Header";
-import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
-import BannerPrincipal from "@/components/conMantenedor/BannerPrincipal";
-import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
-import Navbar01 from "@/components/PIXELUP/Navbar/Navbar01/Navbar01";
-import BannerSinFoto from "@/components/PIXELUP/BannerSinFoto/BannerSinFoto";
-import Categoria05 from "@/components/PIXELUP/Categorias/Categoria05/Categoria05";
+import { Suspense } from "react";
+
+import Categoria02 from "@/components/PIXELUP/Categorias/Categoria02/Categoria02";
 import Frase01 from "@/components/PIXELUP/Frases/Frase01/Frase01";
-import Carrusel from "@/components/PIXELUP/Carrusel/Carrusel";
 import Frase02 from "@/components/PIXELUP/Frases/Frase02/Frase02";
-import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
-import Footer02 from "@/components/PIXELUP/Footer/Footer02/Footer02";
-import Footer03 from "@/components/PIXELUP/Footer/Footer03/Footer03";
-import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
-import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
-import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
 import BannerPrincipal02 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import Destacados01 from "@/components/PIXELUP/Destacados/Destacado01";
-import Colecciones from "@/components/conMantenedor/colecciones";
-import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/cdgColecciones01";
-import BannerPrincipal03 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal03/BannerPrincipal03";
+import BannerPrincipal02Mobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02Mobile";
+import {
+  DynamicNavbar,
+  DynamicFooter,
+} from "@/app/components/LayoutComponents";
+import DiscountModal from "@/components/PIXELUP/Modal/DiscountModal";
+import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
+import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -93,79 +82,66 @@ export const metadata = async () => {
 };
 
 export default async function Page() {
-  const seoData = await metadata();
-  return (
-    <>
-      <head>
-        <title>{seoData.title}</title>
-        <meta
-          name="description"
-          content={seoData.description}
-        />
+  try {
+    const seoData = await metadata();
 
-        <link
-          rel="canonical"
-          href={canonicalUrl}
-        />
-
-        {/* Open Graph tags */}
-        <meta
-          name="keywords"
-          content={seoData.keywords}
-        />
-        <meta
-          property="og:title"
-          content={seoData.title}
-        />
-        <meta
-          property="og:description"
-          content={seoData.description}
-        />
-        <meta
-          property="og:image"
-          content={seoData.ogImage}
-        />
-        <meta
-          property="og:url"
-          content={siteUrl}
-        />
-      </head>
-
-      <MarqueeTOP />
-      <Navbar04 />
-      <BannerPrincipal03 />
-      <Hero01 />
-      <Destacados01 
-        text="Destacados"/>
-
-      <Colecciones01
-        id="e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-        coleccion="Promociones"
-        text="Descubre nuestros packs exclusivos en conjunto con La Casa Borracha, para una experiencia completa. Además de promociones especiales."
-      />
-      <Colecciones01
-        id="6f1fc389-c295-418e-b43d-c12f1351bfc8"
-        coleccion="Nuestras Tablas"
-        text="Encuentra nuestra selección de tablas en sus diferentes tamaños. (S: 4-5 personas, M: 7-8 personas, L: 10-11 perosnas)"
-      />
-      <Colecciones01
-        id="eb1f78e0-f6e4-4a5a-89e1-eca0b1b97ff1"
-        coleccion="CHEF BOX"
-        text="Encuentras las tablas que más te gustan en nuestro formato CHEF BOX! Recomendados para 2 personas!"
-      />
-      <Colecciones01
-        id="ac61d5e9-93c0-44c5-96ae-a69ac64dab5d"
-        coleccion="Dips, Salsas y Extras"
-        text="Completa tu experiencia con alguno de nuestros exquisitos dips, salsas o añade a tu tabla productos como nuestra exquisita Provoleta oliva merkén"
-      />
-
-      {/*      <BannerSinFoto />
-      <Categoria05 />
-      <Frase01 />
-      <Carrusel />
-      <Hero02 />
-      <Frase02 /> */}
-      <Footer02 />
-    </>
-  );
+    return (
+      <>
+        <DynamicNavbar />
+        <Suspense
+          fallback={<div className="min-h-screen animate-pulse bg-gray-100" />}
+        >
+          <BannerResponsive />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <SinFoto01 />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <Categoria02 />
+        </Suspense>
+        <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
+          <Frase01 />
+        </Suspense>
+        <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+          <Destacados01 text="Destacados" />
+        </Suspense>
+        <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+          <Hero02 />
+        </Suspense>
+        <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
+          <Frase02 />
+        </Suspense>
+        <DynamicFooter />
+        {/* <DiscountModal /> */}
+        <a
+          href={`https://wa.me/56978334123`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed right-6 bottom-[30px] z-50 bg-green-500 rounded-full p-3 hover:bg-green-600 transition-colors animate-pulse-whatsapp"
+          style={{ zIndex: 999 }}
+        >
+          <img
+            src="/whatsapp.svg"
+            alt="WhatsApp"
+            className="w-8 h-8 hover:scale-110 transition-transform duration-200"
+            loading="lazy"
+          />
+        </a>
+      </>
+    );
+  } catch (error) {
+    console.error("Error en Page:", error);
+    return <div>Ha ocurrido un error al cargar la página</div>;
+  }
 }
+
+const BannerResponsive = () => (
+  <>
+    <div className="block lg:hidden">
+      <BannerPrincipal02Mobile />
+    </div>
+    <div className="hidden lg:block">
+      <BannerPrincipal02 />
+    </div>
+  </>
+);
