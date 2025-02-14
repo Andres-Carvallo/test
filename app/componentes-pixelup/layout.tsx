@@ -1,22 +1,21 @@
 "use client";
 import { RevalidationProvider } from "@/app/Context/RevalidationContext";
-import Navbar from "@/components/PIXELUP/Navbar/Navbar02/cdgnavbar";
-import { getActiveNavbar, getActiveFooter } from "../config/GlobalConfig";
+import {
+  DynamicNavbar,
+  DynamicFooter,
+} from "@/app/components/LayoutComponents";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const ActiveNavbar = getActiveNavbar();
-  const ActiveFooter = getActiveFooter();
   return (
-    
     <RevalidationProvider>
       <div>
-        <ActiveNavbar />
+        <DynamicNavbar />
         {children}
-        <ActiveFooter />
+        <DynamicFooter />
       </div>
     </RevalidationProvider>
   );
