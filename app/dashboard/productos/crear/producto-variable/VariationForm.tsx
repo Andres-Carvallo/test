@@ -23,6 +23,7 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const VariationForm: React.FC<any> = ({
   index,
   variation,
+  variations,
   setVariations,
   fetchVariations,
   currentPrices,
@@ -93,6 +94,10 @@ const VariationForm: React.FC<any> = ({
     pendingDeletions: [] as string[],
     pendingImages: [] as any[],
   });
+
+  const [attributesToDelete, setAttributesToDelete] = useState<
+    Array<{ id: string }>
+  >([]);
 
   const handleDescriptionChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -182,9 +187,22 @@ const VariationForm: React.FC<any> = ({
     index: number,
     selectedOption: SingleValue<{ value: string; label: any }>
   ) => {
+    const oldAttribute = attributePairs[index];
+
+    // Si estamos en modo edición y hay un atributo anterior que no es nuevo, lo agregamos a la lista de eliminación
+    if (isEditMode && oldAttribute.id && variation.id && !oldAttribute.isNew) {
+      setAttributesToDelete((prev) => [...prev, { id: oldAttribute.id }]);
+    }
+
+    // Actualizamos el estado local
     const updatedPairs = attributePairs.map((pair, pairIndex) =>
       pairIndex === index
-        ? { ...pair, id: selectedOption ? selectedOption.value : "" }
+        ? {
+            ...pair,
+            id: selectedOption ? selectedOption.value : "",
+            isNew: true,
+            value: "", // Reseteamos el valor al cambiar el atributo
+          }
         : pair
     );
 
@@ -201,7 +219,7 @@ const VariationForm: React.FC<any> = ({
     setSelectedAttributes(updatedSelectedAttributes);
   };
 
-  const handleRemoveAttribute = async (index: number) => {
+  const handleRemoveAttribute = (index: number) => {
     // Verifica si es el último atributo
     if (attributePairs.length === 1) {
       toast.error(
@@ -212,39 +230,16 @@ const VariationForm: React.FC<any> = ({
 
     const removedAttribute = attributePairs[index];
 
-    if (removedAttribute.isNew) {
-      // Simplemente eliminar del estado local si es nuevo
-      setAttributePairs(attributePairs.filter((_, i) => i !== index));
-      setSelectedAttributes(
-        selectedAttributes.filter((id) => id !== removedAttribute.id)
-      );
-      return;
+    // Si el atributo tiene ID y no es nuevo, lo agregamos a la lista de atributos por eliminar
+    if (removedAttribute.id && variation.id && !removedAttribute.isNew) {
+      setAttributesToDelete((prev) => [...prev, { id: removedAttribute.id }]);
     }
 
-    if (removedAttribute.id && variation.id) {
-      try {
-        const token = getCookie("AdminTokenAuth");
-        await axios.delete(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/attributes/${removedAttribute.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        toast.success("Atributo eliminado correctamente.");
-        fetchVariations();
-        // Actualizar el estado local después de eliminar en el servidor
-        setAttributePairs(attributePairs.filter((_, i) => i !== index));
-        setSelectedAttributes(
-          selectedAttributes.filter((id) => id !== removedAttribute.id)
-        );
-      } catch (error) {
-        console.error("Error eliminando el atributo:", error);
-        toast.error("Hubo un error al eliminar el atributo.");
-      }
-    }
+    // Actualizar el estado local
+    setAttributePairs(attributePairs.filter((_, i) => i !== index));
+    setSelectedAttributes(
+      selectedAttributes.filter((id) => id !== removedAttribute.id)
+    );
   };
 
   const handleStockQuantityChange = (
@@ -340,11 +335,61 @@ const VariationForm: React.FC<any> = ({
     }
   };
 
+  const checkDuplicateAttributes = () => {
+    // Si no hay atributos o no hay otras variaciones, no hay duplicados
+    if (!attributePairs.length || !variations.length) return false;
+
+    // Convertir los atributos actuales a un formato comparable
+    const currentAttributeSet = attributePairs
+      .map((pair) => `${pair.id}:${pair.value}`)
+      .sort()
+      .join("|");
+
+    // Revisar cada variación existente (excepto la actual si estamos en modo edición)
+    const duplicateVariation = variations.find((otherVariation: any) => {
+      // Saltar la variación actual en modo edición
+      if (isEditMode && otherVariation.id === variation.id) return false;
+      // Saltar variaciones nuevas sin guardar
+      if (otherVariation.isNew) return false;
+
+      const otherAttributes = currentAttributes[otherVariation.id];
+      if (!otherAttributes) return false;
+
+      // Convertir los atributos de la otra variación al mismo formato
+      const otherAttributeSet = otherAttributes
+        .map((attr: any) => {
+          const matchedAttribute = attributes.find(
+            (a: any) => a.name === attr.label
+          );
+          return `${matchedAttribute?.id}:${attr.value}`;
+        })
+        .sort()
+        .join("|");
+
+      return currentAttributeSet === otherAttributeSet;
+    });
+
+    return duplicateVariation;
+  };
+
   const handleSubmit = async (event: any) => {
     event.preventDefault();
     if (!variation.hasUnlimitedStock && stockQuantity === null) {
       toast.error(
         "El stock es nulo. No puedes publicar o actualizar esta variación."
+      );
+      return;
+    }
+
+    // Verificar duplicados antes de continuar
+    const duplicateVariation = checkDuplicateAttributes();
+    if (duplicateVariation) {
+      const duplicateAttrs = currentAttributes[duplicateVariation.id]
+        .map((attr: any) => `${attr.label}: ${attr.value}`)
+        .join(", ");
+
+      toast.error(
+        `Ya existe una variación con los mismos atributos (${duplicateAttrs}). No se pueden tener variaciones duplicadas.`
       );
       return;
     }
@@ -503,43 +548,44 @@ const VariationForm: React.FC<any> = ({
         );
       }
 
-      // Manejar atributos
+      // Primero eliminamos los atributos marcados para eliminación
+      if (isEditMode && attributesToDelete.length > 0) {
+        for (const attribute of attributesToDelete) {
+          try {
+            await axios.delete(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variation.id}/attributes/${attribute.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+          } catch (error) {
+            console.error("Error eliminando atributo:", error);
+          }
+        }
+      }
+
+      // Luego procesamos los atributos actuales
       if (variationId && attributePairs.length > 0) {
         for (const attribute of attributePairs) {
           if (attribute.id && attribute.value) {
             try {
-              if (isEditMode) {
-                // Intentar actualizar el atributo primero
-                try {
-                  await axios.put(
-                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes/${attribute.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                    { value: attribute.value },
-                    {
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
-                    }
-                  );
-                } catch (error: any) {
-                  // Si el atributo no existe (404), entonces lo creamos
-                  if (error.response?.status === 404) {
-                    await axios.post(
-                      `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                      { attributeId: attribute.id, value: attribute.value },
-                      {
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${token}`,
-                        },
-                      }
-                    );
-                  } else {
-                    throw error;
+              if (isEditMode && !attribute.isNew) {
+                // Si es un atributo existente que no ha sido modificado, solo actualizamos su valor
+                await axios.put(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes/${attribute.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                  { value: attribute.value },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
                   }
-                }
+                );
               } else {
-                // Si es una nueva variación, crear el atributo
+                // Si es un atributo nuevo o modificado, lo creamos
                 await axios.post(
                   `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variationId}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
                   { attributeId: attribute.id, value: attribute.value },
@@ -565,6 +611,9 @@ const VariationForm: React.FC<any> = ({
         }
       }
 
+      // Limpiamos la lista de atributos a eliminar después de procesar todo
+      setAttributesToDelete([]);
+
       if (
         variationResponse.status === 200 ||
         variationResponse.status === 201
@@ -580,8 +629,10 @@ const VariationForm: React.FC<any> = ({
           setVariations((prevVariations: any[]) =>
             prevVariations.filter((v) => !v.isNew || v.id)
           );
-          onCloseForm();
         }
+
+        // Cerrar el formulario
+        onCloseForm();
 
         setShowConfirmationModal(true);
         // Limpiamos los cambios pendientes
@@ -603,10 +654,14 @@ const VariationForm: React.FC<any> = ({
 
   const handleContinueEditing = () => {
     setShowConfirmationModal(false);
+    // Mantener las variaciones cerradas
+    onCloseForm();
   };
 
   const handleViewProduct = () => {
     setShowConfirmationModal(false);
+    // Mantener las variaciones cerradas
+    onCloseForm();
     const searchParams = new URLSearchParams(window.location.search);
     const productVariableId = searchParams.get("productVariableId");
 
@@ -826,8 +881,27 @@ const VariationForm: React.FC<any> = ({
                         }
                       : null
                   }
-                  // Deshabilitar si la variación ya está publicada (isEditMode)
-                  isDisabled={isEditMode && !!pair.id}
+                  styles={{
+                    option: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: state.isFocused ? "#f3f4f6" : "white",
+                      color: state.isFocused ? "black" : "inherit",
+                      cursor: "pointer",
+                      ":active": {
+                        backgroundColor: "#e5e7eb",
+                      },
+                      ":hover": {
+                        backgroundColor: "#f3f4f6",
+                      },
+                    }),
+                    control: (provided) => ({
+                      ...provided,
+                      borderColor: "#e5e7eb",
+                      ":hover": {
+                        borderColor: "#d1d5db",
+                      },
+                    }),
+                  }}
                 />
 
                 <input

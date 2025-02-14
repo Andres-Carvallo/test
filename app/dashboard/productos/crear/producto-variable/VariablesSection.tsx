@@ -28,7 +28,7 @@ function VariationsComponente({
   setVariations,
   baseProductDescription,
 }: any) {
-  const [variationImages, setVariationImages] = useState<any[]>([]); // Estado para las imágenes de la variación actual
+  const [variationImages, setVariationImages] = useState<any[]>([]);
   const [allVariationImages, setAllVariationImages] = useState<{
     [key: string]: any[];
   }>({});
@@ -46,6 +46,14 @@ function VariationsComponente({
   const [deletingVariationId, setDeletingVariationId] = useState<string | null>(
     null
   );
+  const [currentVariationIndex, setCurrentVariationIndex] = useState<
+    number | null
+  >(null);
+
+  // Función para cerrar todas las variaciones
+  const closeAllVariations = () => {
+    setCurrentVariationIndex(null);
+  };
 
   const showDeleteModal = (variation: any) => {
     setVariationToDelete(variation);
@@ -69,10 +77,6 @@ function VariationsComponente({
   const [currentMinimumQuantities, setCurrentMinimumQuantities] = useState<{
     [key: string]: number | null;
   }>({});
-
-  const [currentVariationIndex, setCurrentVariationIndex] = useState<
-    number | null
-  >(null);
 
   const { triggerRevalidation } = useRevalidation();
 
@@ -566,11 +570,6 @@ function VariationsComponente({
     }
   };
 
-  const handleCloseForm = () => {
-    setCurrentVariationIndex(null);
-    setVariationImages([]); // Limpiar las imágenes al cerrar el formulario
-  };
-
   if (!isEditMode) {
     return null;
   }
@@ -703,6 +702,7 @@ function VariationsComponente({
                     )}
                     <VariationForm
                       variation={variation}
+                      variations={variations}
                       fetchVariations={fetchVariations}
                       currentPrices={currentPrices}
                       currentStocks={currentStocks}
@@ -723,7 +723,7 @@ function VariationsComponente({
                       onPreviewImageChange={(image: any) =>
                         handlePreviewImageChange(image, index)
                       }
-                      onCloseForm={handleCloseForm}
+                      onCloseForm={closeAllVariations}
                       productId={productId}
                       skuId={skuId}
                       skuImages={skuImages}
