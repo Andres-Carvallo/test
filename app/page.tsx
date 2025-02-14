@@ -1,25 +1,19 @@
 /* eslint-disable @next/next/no-img-element */
 // app/page.js
 import axios from "axios";
+import { Suspense } from "react";
 
-import HomeForm from "@/components/Core/ContactForm/Home";
-import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
-import BannerPrincipal from "@/components/conMantenedor/BannerPrincipal";
-import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
 import Categoria02 from "@/components/PIXELUP/Categorias/Categoria02/Categoria02";
 import Frase01 from "@/components/PIXELUP/Frases/Frase01/Frase01";
-import Carrusel from "@/components/PIXELUP/Carrusel/Carrusel";
 import Frase02 from "@/components/PIXELUP/Frases/Frase02/Frase02";
-import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import BannerPrincipal02 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import Destacados01 from "@/components/PIXELUP/Destacados/Destacado01";
-import Colecciones from "@/components/conMantenedor/colecciones";
-import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/cdgColecciones01";
-import BannerPrincipal03 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal03/BannerPrincipal03";
-import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import BannerPrincipal02Mobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02Mobile";
-import { globalConfig, getActiveFooter, getActiveNavbar } from "./config/GlobalConfig";
-import DiscountModal from '@/components/PIXELUP/Modal/DiscountModal'
+import {
+  DynamicNavbar,
+  DynamicFooter,
+} from "@/app/components/LayoutComponents";
+import DiscountModal from "@/components/PIXELUP/Modal/DiscountModal";
 import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 
@@ -90,21 +84,35 @@ export const metadata = async () => {
 export default async function Page() {
   try {
     const seoData = await metadata();
-    const ActiveFooter = getActiveFooter();
-    const ActiveNavbar = getActiveNavbar();
 
     return (
       <>
-        <ActiveNavbar />
-        <BannerResponsive />
-        <SinFoto01 />
-        <Categoria02 />
-        <Frase01 />
-        <Destacados01 text="Destacados" />
-        <Hero02 />
-        <Frase02 />
-        <ActiveFooter/>
-        <DiscountModal />
+        <DynamicNavbar />
+        <Suspense
+          fallback={<div className="min-h-screen animate-pulse bg-gray-100" />}
+        >
+          <BannerResponsive />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <SinFoto01 />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <Categoria02 />
+        </Suspense>
+        <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
+          <Frase01 />
+        </Suspense>
+        <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+          <Destacados01 text="Destacados" />
+        </Suspense>
+        <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+          <Hero02 />
+        </Suspense>
+        <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
+          <Frase02 />
+        </Suspense>
+        <DynamicFooter />
+        {/* <DiscountModal /> */}
         <a
           href={`https://wa.me/56978334123`}
           target="_blank"
@@ -116,6 +124,7 @@ export default async function Page() {
             src="/whatsapp.svg"
             alt="WhatsApp"
             className="w-8 h-8 hover:scale-110 transition-transform duration-200"
+            loading="lazy"
           />
         </a>
       </>
