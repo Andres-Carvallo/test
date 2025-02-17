@@ -35,12 +35,15 @@ interface ButtonTextData {
 // Agregar la interfaz DisplayConfig
 interface DisplayConfig {
   text: string;
+  showText: boolean;
   showPrice: boolean;
   showValue: boolean;
-  showScheduleButton: boolean;
-  showDetailsButton: boolean;
-  scheduleButtonText: string;
-  detailsButtonText: string;
+  showButton1: boolean;
+  showButton2: boolean;
+  button1Text: string;
+  button2Text: string;
+  button1Link: string;
+  button2Link: string;
 }
 
 // Modificar la interfaz BannerData
@@ -82,6 +85,7 @@ const BannerPrincipal01BO: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [buttonTextData, setButtonTextData] = useState<ButtonTextData>({
     price: "",
@@ -94,12 +98,15 @@ const BannerPrincipal01BO: React.FC = () => {
   // Agregar estado para la configuración de visualización
   const [displayConfig, setDisplayConfig] = useState<DisplayConfig>({
     text: "",
+    showText: false,
     showPrice: false,
     showValue: false,
-    showScheduleButton: false,
-    showDetailsButton: false,
-    scheduleButtonText: "Agenda tu hora",
-    detailsButtonText: "Ver detalles",
+    showButton1: false,
+    showButton2: false,
+    button1Text: "Botón 1",
+    button2Text: "Botón 2",
+    button1Link: "#",
+    button2Link: "#",
   });
 
   // Agregar constantes para valores por defecto
@@ -309,10 +316,15 @@ const BannerPrincipal01BO: React.FC = () => {
             : formData.title,
         landingText: JSON.stringify({
           text: displayConfig.text || "",
+          showText: displayConfig.showText,
           showPrice: displayConfig.showPrice,
           showValue: displayConfig.showValue,
-          showScheduleButton: displayConfig.showScheduleButton,
-          showDetailsButton: displayConfig.showDetailsButton,
+          showButton1: displayConfig.showButton1,
+          showButton2: displayConfig.showButton2,
+          button1Text: displayConfig.button1Text,
+          button2Text: displayConfig.button2Text,
+          button1Link: displayConfig.button1Link,
+          button2Link: displayConfig.button2Link,
         }),
         buttonText: JSON.stringify({
           price: buttonTextData.price || "",
@@ -403,9 +415,14 @@ const BannerPrincipal01BO: React.FC = () => {
         }
       );
 
+      toast.success("Banner eliminado exitosamente");
+      setIsDeleteModalOpen(false);
       fetchBannerHome();
     } catch (error) {
       console.error("Error al borrar la imagen del banner:", error);
+      toast.error(
+        "Error al eliminar el banner. Por favor, intente nuevamente."
+      );
     } finally {
       setLoading(false);
     }
@@ -493,8 +510,8 @@ const BannerPrincipal01BO: React.FC = () => {
         text: "",
         showPrice: false,
         showValue: false,
-        showScheduleButton: false,
-        showDetailsButton: false,
+        showButton1: false,
+        showButton2: false,
       });
 
       const initialButtonText = JSON.stringify({
@@ -523,12 +540,15 @@ const BannerPrincipal01BO: React.FC = () => {
       // Establecer la configuración inicial de visualización
       setDisplayConfig({
         text: "",
+        showText: false,
         showPrice: false,
         showValue: false,
-        showScheduleButton: false,
-        showDetailsButton: false,
-        scheduleButtonText: "Agenda tu hora",
-        detailsButtonText: "Ver detalles",
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "#",
+        button2Link: "#",
       });
 
       // Establecer la configuración inicial del botón
@@ -577,11 +597,9 @@ const BannerPrincipal01BO: React.FC = () => {
   // Modificar la función parseDisplayConfig
   const parseDisplayConfig = (landingText: string): DisplayConfig => {
     try {
-      // Si es un string JSON, intentar parsearlo
       if (typeof landingText === "string") {
         let parsed = JSON.parse(landingText);
 
-        // Si el texto también es un JSON anidado, parsearlo también
         if (typeof parsed.text === "string" && parsed.text.startsWith("{")) {
           const nestedParsed = JSON.parse(parsed.text);
           parsed = {
@@ -592,32 +610,41 @@ const BannerPrincipal01BO: React.FC = () => {
 
         return {
           text: parsed.text || "",
-          showPrice: parsed.showPrice ?? true,
-          showValue: parsed.showValue ?? true,
-          showScheduleButton: parsed.showScheduleButton ?? true,
-          showDetailsButton: parsed.showDetailsButton ?? true,
-          scheduleButtonText: parsed.scheduleButtonText || "Agenda tu hora",
-          detailsButtonText: parsed.detailsButtonText || "Ver detalles",
+          showText: parsed.showText ?? false,
+          showPrice: parsed.showPrice ?? false,
+          showValue: parsed.showValue ?? false,
+          showButton1: parsed.showButton1 ?? false,
+          showButton2: parsed.showButton2 ?? false,
+          button1Text: parsed.button1Text || "Botón 1",
+          button2Text: parsed.button2Text || "Botón 2",
+          button1Link: parsed.button1Link || "#",
+          button2Link: parsed.button2Link || "#",
         };
       }
       return {
         text: landingText,
-        showPrice: true,
-        showValue: true,
-        showScheduleButton: true,
-        showDetailsButton: true,
-        scheduleButtonText: "Agenda tu hora",
-        detailsButtonText: "Ver detalles",
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "#",
+        button2Link: "#",
       };
     } catch {
       return {
         text: landingText,
-        showPrice: true,
-        showValue: true,
-        showScheduleButton: true,
-        showDetailsButton: true,
-        scheduleButtonText: "Agenda tu hora",
-        detailsButtonText: "Ver detalles",
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "#",
+        button2Link: "#",
       };
     }
   };
@@ -634,10 +661,15 @@ const BannerPrincipal01BO: React.FC = () => {
       if (isAddingImage) {
         const newLandingText = JSON.stringify({
           text: newDisplayConfig.text,
+          showText: newDisplayConfig.showText,
           showPrice: newDisplayConfig.showPrice,
           showValue: newDisplayConfig.showValue,
-          showScheduleButton: newDisplayConfig.showScheduleButton,
-          showDetailsButton: newDisplayConfig.showDetailsButton,
+          showButton1: newDisplayConfig.showButton1,
+          showButton2: newDisplayConfig.showButton2,
+          button1Text: newDisplayConfig.button1Text,
+          button2Text: newDisplayConfig.button2Text,
+          button1Link: newDisplayConfig.button1Link,
+          button2Link: newDisplayConfig.button2Link,
         });
 
         setFormData((prev) => ({
@@ -645,24 +677,30 @@ const BannerPrincipal01BO: React.FC = () => {
           landingText: newLandingText,
         }));
 
-        return; // No hacemos la llamada al API si estamos creando
+        console.log("Configuración actualizada en modo creación:", {
+          newDisplayConfig,
+          newLandingText,
+        });
+
+        return;
       }
 
       // Si estamos editando, continuamos con la actualización en el servidor
       const token = getCookie("AdminTokenAuth");
       const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
 
-      // Obtener la configuración actual del banner específico
-      const currentBannerImage = bannerData[currentIndex];
-      const currentConfig = parseDisplayConfig(currentBannerImage.landingText);
-
-      // Crear el nuevo objeto landingText manteniendo el texto actual
+      // Crear el nuevo objeto landingText con todos los campos necesarios
       const newLandingText = JSON.stringify({
-        text: currentConfig.text,
+        text: newDisplayConfig.text,
+        showText: newDisplayConfig.showText,
         showPrice: newDisplayConfig.showPrice,
         showValue: newDisplayConfig.showValue,
-        showScheduleButton: newDisplayConfig.showScheduleButton,
-        showDetailsButton: newDisplayConfig.showDetailsButton,
+        showButton1: newDisplayConfig.showButton1,
+        showButton2: newDisplayConfig.showButton2,
+        button1Text: newDisplayConfig.button1Text,
+        button2Text: newDisplayConfig.button2Text,
+        button1Link: newDisplayConfig.button1Link,
+        button2Link: newDisplayConfig.button2Link,
       });
 
       // Preparar datos para enviar
@@ -675,8 +713,10 @@ const BannerPrincipal01BO: React.FC = () => {
         orderNumber: formData.orderNumber,
       };
 
+      console.log("Datos a enviar al servidor:", dataToSend);
+
       // Enviar actualización al servidor
-      await axios.put(
+      const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         dataToSend,
         {
@@ -686,6 +726,8 @@ const BannerPrincipal01BO: React.FC = () => {
           },
         }
       );
+
+      console.log("Respuesta del servidor:", response.data);
 
       // Actualizar el estado local de formData
       setFormData((prev) => ({
@@ -701,8 +743,15 @@ const BannerPrincipal01BO: React.FC = () => {
             : image
         )
       );
+
+      console.log("Configuración actualizada:", {
+        newDisplayConfig,
+        newLandingText,
+        dataToSend,
+      });
     } catch (error) {
       console.error("Error al actualizar la configuración:", error);
+      toast.error("Error al actualizar la configuración");
     }
   };
 
@@ -805,8 +854,8 @@ const BannerPrincipal01BO: React.FC = () => {
                       displayConfig.text ||
                       (buttonTextData.show &&
                         (displayConfig.showPrice || displayConfig.showValue)) ||
-                      displayConfig.showScheduleButton ||
-                      displayConfig.showDetailsButton) && (
+                      displayConfig.showButton1 ||
+                      displayConfig.showButton2) && (
                       <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
                     )}
                   </div>
@@ -825,43 +874,43 @@ const BannerPrincipal01BO: React.FC = () => {
                         </h2>
                       )}
 
-                      {displayConfig.text && (
+                      {displayConfig.showText && displayConfig.text && (
                         <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
                           {displayConfig.text}
                         </p>
                       )}
 
                       {/* Mostrar precio y valor según la configuración */}
-                      {buttonTextData.show &&
-                        (displayConfig.showPrice ||
-                          displayConfig.showValue) && (
-                          <div className="flex items-center gap-4 mb-8">
-                            {displayConfig.showPrice &&
-                              buttonTextData.price && (
-                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                                  {buttonTextData.price}
-                                </span>
-                              )}
-                            {displayConfig.showValue &&
-                              buttonTextData.value && (
-                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                                  {buttonTextData.value}
-                                </span>
-                              )}
-                          </div>
+                      <div className="flex items-center gap-4 mb-8">
+                        {displayConfig.showPrice && buttonTextData.price && (
+                          <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                            {buttonTextData.price}
+                          </span>
                         )}
+                        {displayConfig.showValue && buttonTextData.value && (
+                          <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                            {buttonTextData.value}
+                          </span>
+                        )}
+                      </div>
 
                       {/* Mostrar botones según la configuración */}
                       <div className="flex flex-wrap gap-4">
-                        {displayConfig.showScheduleButton && (
-                          <div className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all cursor-pointer drop-shadow-md">
-                            {displayConfig.scheduleButtonText}
-                          </div>
+                        {displayConfig.showButton1 && (
+                          <a
+                            href={displayConfig.button1Link}
+                            className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all cursor-pointer drop-shadow-md"
+                          >
+                            {displayConfig.button1Text}
+                          </a>
                         )}
-                        {displayConfig.showDetailsButton && (
-                          <div className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md">
-                            {displayConfig.detailsButtonText}
-                          </div>
+                        {displayConfig.showButton2 && (
+                          <a
+                            href={displayConfig.button2Link}
+                            className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
+                          >
+                            {displayConfig.button2Text}
+                          </a>
                         )}
                       </div>
                     </div>
@@ -1036,9 +1085,18 @@ const BannerPrincipal01BO: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-sm text-gray-700 mb-2 block">
-                  Descripción
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Descripción</label>
+                  <div className="flex items-center">
+                    <span className="text-xs text-gray-500 mr-1">Mostrar</span>
+                    <Switch
+                      checked={displayConfig.showText}
+                      onChange={(checked) =>
+                        updateDisplayConfig({ showText: checked })
+                      }
+                    />
+                  </div>
+                </div>
                 <textarea
                   name="landingText"
                   value={displayConfig.text}
@@ -1059,6 +1117,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   rows={3}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ingresa la descripción"
+                  disabled={!displayConfig.showText}
                 />
               </div>
             </div>
@@ -1066,30 +1125,9 @@ const BannerPrincipal01BO: React.FC = () => {
 
           {/* Columna 2: Controles de Precios */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-md font-medium text-gray-900">
-                Precios y Valores
-              </h3>
-              <div className="flex items-center">
-                <span className="text-xs text-gray-500 mr-1">Mostrar</span>
-                <Switch
-                  checked={buttonTextData.show}
-                  onChange={(checked) => {
-                    setButtonTextData((prev) => {
-                      const newData = {
-                        ...prev,
-                        show: checked,
-                      };
-                      setFormData((prevForm) => ({
-                        ...prevForm,
-                        buttonText: JSON.stringify(newData),
-                      }));
-                      return newData;
-                    });
-                  }}
-                />
-              </div>
-            </div>
+            <h3 className="text-md font-medium text-gray-900 mb-4">
+              Precios y Valores
+            </h3>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -1108,7 +1146,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   onChange={handleButtonTextChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ej: $29.990"
-                  disabled={!displayConfig.showPrice || !buttonTextData.show}
+                  disabled={!displayConfig.showPrice}
                 />
               </div>
               <div>
@@ -1128,7 +1166,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   onChange={handleButtonTextChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ej: 60 min"
-                  disabled={!displayConfig.showValue || !buttonTextData.show}
+                  disabled={!displayConfig.showValue}
                 />
               </div>
             </div>
@@ -1140,51 +1178,77 @@ const BannerPrincipal01BO: React.FC = () => {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-700">Agendar</label>
+                  <label className="text-sm text-gray-700">Botón 1</label>
                   <Switch
-                    checked={displayConfig.showScheduleButton}
+                    checked={displayConfig.showButton1}
                     onChange={(checked) =>
-                      updateDisplayConfig({ showScheduleButton: checked })
+                      updateDisplayConfig({ showButton1: checked })
                     }
                   />
                 </div>
                 <input
                   type="text"
-                  value={displayConfig.scheduleButtonText}
+                  value={displayConfig.button1Text}
                   onChange={(e) => {
                     setDisplayConfig((prev) => ({
                       ...prev,
-                      scheduleButtonText: e.target.value,
+                      button1Text: e.target.value,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
+                  placeholder="Texto del botón"
+                  disabled={!displayConfig.showButton1}
+                />
+                <input
+                  type="text"
+                  value={displayConfig.button1Link}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button1Link: e.target.value,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
-                  placeholder="Texto del botón"
-                  disabled={!displayConfig.showScheduleButton}
+                  placeholder="Link del botón"
+                  disabled={!displayConfig.showButton1}
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-700">Detalles</label>
+                  <label className="text-sm text-gray-700">Botón 2</label>
                   <Switch
-                    checked={displayConfig.showDetailsButton}
+                    checked={displayConfig.showButton2}
                     onChange={(checked) =>
-                      updateDisplayConfig({ showDetailsButton: checked })
+                      updateDisplayConfig({ showButton2: checked })
                     }
                   />
                 </div>
                 <input
                   type="text"
-                  value={displayConfig.detailsButtonText}
+                  value={displayConfig.button2Text}
                   onChange={(e) => {
                     setDisplayConfig((prev) => ({
                       ...prev,
-                      detailsButtonText: e.target.value,
+                      button2Text: e.target.value,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
+                  placeholder="Texto del botón"
+                  disabled={!displayConfig.showButton2}
+                />
+                <input
+                  type="text"
+                  value={displayConfig.button2Link}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button2Link: e.target.value,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
-                  placeholder="Texto del botón"
-                  disabled={!displayConfig.showDetailsButton}
+                  placeholder="Link del botón"
+                  disabled={!displayConfig.showButton2}
                 />
               </div>
             </div>
@@ -1208,10 +1272,10 @@ const BannerPrincipal01BO: React.FC = () => {
           {bannerData.length > 1 && (
             <button
               type="button"
-              onClick={handleDeleteImage}
+              onClick={() => setIsDeleteModalOpen(true)}
               className="flex-1 py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-medium text-sm"
             >
-              Borrar Imagen
+              Borrar Banner
             </button>
           )}
 
@@ -1303,6 +1367,84 @@ const BannerPrincipal01BO: React.FC = () => {
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
                 >
                   Recortar y Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal de Confirmación de Borrado */}
+      {isDeleteModalOpen && (
+        <Modal
+          showModal={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+        >
+          <div className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                ¿Estás seguro de que deseas eliminar este banner?
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Esta acción no se puede deshacer. El banner será eliminado
+                permanentemente.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteImage}
+                  disabled={loading}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                >
+                  {loading ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Eliminando...
+                    </>
+                  ) : (
+                    "Sí, eliminar banner"
+                  )}
                 </button>
               </div>
             </div>

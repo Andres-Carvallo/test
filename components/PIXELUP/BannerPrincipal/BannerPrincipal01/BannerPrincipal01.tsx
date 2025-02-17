@@ -22,10 +22,15 @@ interface ButtonTextData {
 
 interface DisplayConfig {
   text: string;
+  showText: boolean;
   showPrice: boolean;
   showValue: boolean;
-  showScheduleButton: boolean;
-  showDetailsButton: boolean;
+  showButton1: boolean;
+  showButton2: boolean;
+  button1Text: string;
+  button2Text: string;
+  button1Link: string;
+  button2Link: string;
 }
 
 interface BannerData {
@@ -52,7 +57,7 @@ const BannerPrincipal01: React.FC = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      console.log(response.data.banner, "banner");
+      console.log("Datos del banner recibidos:", response.data.banner);
       setBannerData(response.data.banner);
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
@@ -122,26 +127,41 @@ const BannerPrincipal01: React.FC = () => {
 
         return {
           text: parsed.text || "",
-          showPrice: parsed.showPrice ?? true,
-          showValue: parsed.showValue ?? true,
-          showScheduleButton: parsed.showScheduleButton ?? true,
-          showDetailsButton: parsed.showDetailsButton ?? true,
+          showText: parsed.showText ?? false,
+          showPrice: parsed.showPrice ?? false,
+          showValue: parsed.showValue ?? false,
+          showButton1: parsed.showButton1 ?? false,
+          showButton2: parsed.showButton2 ?? false,
+          button1Text: parsed.button1Text || "Botón 1",
+          button2Text: parsed.button2Text || "Botón 2",
+          button1Link: parsed.button1Link || "#",
+          button2Link: parsed.button2Link || "#",
         };
       }
       return {
         text: landingText,
-        showPrice: true,
-        showValue: true,
-        showScheduleButton: true,
-        showDetailsButton: true,
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "#",
+        button2Link: "#",
       };
     } catch {
       return {
         text: landingText,
-        showPrice: true,
-        showValue: true,
-        showScheduleButton: true,
-        showDetailsButton: true,
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "#",
+        button2Link: "#",
       };
     }
   };
@@ -190,16 +210,16 @@ const BannerPrincipal01: React.FC = () => {
     const config = parseDisplayConfig(image.landingText);
     const buttonData = parseButtonTextData(image.buttonText);
 
-    // Verificar si hay algún elemento visible y no es un valor por defecto
-    return !!(
-      (
-        (image.buttonLink && image.buttonLink !== DEFAULT_BUTTON_LINK) || // Epígrafe
-        (image.title && image.title !== DEFAULT_TITLE) || // Título
-        config.text || // Texto descriptivo
-        (buttonData.show && (config.showPrice || config.showValue)) || // Precios/valores
-        config.showScheduleButton || // Botón de agenda
-        config.showDetailsButton
-      ) // Botón de detalles
+    // Solo mostrar overlay si hay elementos de texto o botones activos
+    return Boolean(
+      image.buttonLink !== DEFAULT_BUTTON_LINK || // Epígrafe activo
+        image.title !== DEFAULT_TITLE || // Título activo
+        (config.showText && config.text && config.text.trim() !== "") || // Texto descriptivo activo y con contenido
+        (buttonData.show &&
+          ((config.showPrice && buttonData.price) ||
+            (config.showValue && buttonData.value))) || // Precios/valores activos y con contenido
+        (config.showButton1 && config.button1Text) || // Botón 1 activo y con texto
+        (config.showButton2 && config.button2Text) // Botón 2 activo y con texto
     );
   };
 
@@ -238,12 +258,10 @@ const BannerPrincipal01: React.FC = () => {
 
   return (
     <section className="relative h-[80vh] md:h-[80vh] overflow-hidden">
-      <div className="absolute inset-0">
+      {/* Contenedor de imágenes */}
+      <div className="absolute inset-0 z-0">
         {bannerData.images.map((image, index) => (
-          <Link
-            href={
-              image.buttonLink !== DEFAULT_BUTTON_LINK ? image.buttonLink : ""
-            }
+          <div
             key={index}
             className="absolute inset-0"
           >
@@ -254,19 +272,94 @@ const BannerPrincipal01: React.FC = () => {
                 index === currentIndex ? "opacity-100" : "opacity-0"
               }`}
             />
-            {shouldShowOverlay(image) && (
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+            {shouldShowOverlay(image) && index === currentIndex && (
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"
+                style={{ pointerEvents: "none" }}
+              />
             )}
-          </Link>
+          </div>
         ))}
       </div>
 
-      {/* Agregar los botones de navegación */}
+      {/* Contenido del banner */}
+      <div className="relative h-full z-10">
+        <div className="h-full max-w-7xl mx-auto px-4">
+          <div className="flex flex-col justify-center h-full max-w-2xl items-start text-left">
+            {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
+              <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+                {currentImage.buttonLink}
+              </span>
+            )}
+
+            {currentImage.title !== DEFAULT_TITLE && (
+              <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+                {currentImage.title}
+              </h2>
+            )}
+
+            {/* Texto descriptivo */}
+            {parseDisplayConfig(currentImage.landingText).showText &&
+              parseDisplayConfig(currentImage.landingText).text && (
+                <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                  {parseDisplayConfig(currentImage.landingText).text}
+                </p>
+              )}
+
+            {/* Precios y valores */}
+            {parseButtonTextData(currentImage.buttonText).show &&
+              (parseDisplayConfig(currentImage.landingText).showPrice ||
+                parseDisplayConfig(currentImage.landingText).showValue) && (
+                <div className="flex items-center gap-4 mb-8">
+                  {parseDisplayConfig(currentImage.landingText).showPrice && (
+                    <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                      {parseButtonTextData(currentImage.buttonText).price}
+                    </span>
+                  )}
+                  {parseDisplayConfig(currentImage.landingText).showValue && (
+                    <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                      {parseButtonTextData(currentImage.buttonText).value}
+                    </span>
+                  )}
+                </div>
+              )}
+
+            {/* Botones */}
+            <div className="flex flex-wrap gap-4 relative z-20">
+              {(() => {
+                const config = parseDisplayConfig(currentImage.landingText);
+                return (
+                  <>
+                    {config.showButton1 && config.button1Text && (
+                      <Link
+                        href={config.button1Link}
+                        className="relative inline-block bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all cursor-pointer drop-shadow-md z-20"
+                      >
+                        {config.button1Text}
+                      </Link>
+                    )}
+                    {config.showButton2 && config.button2Text && (
+                      <Link
+                        href={config.button2Link}
+                        className="relative inline-block bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
+                      >
+                        {config.button2Text}
+                      </Link>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Botones de navegación */}
       {bannerData.images.length > 1 && (
-        <div className="absolute  md:flex inset-x-4 top-1/2 -translate-y-1/2 flex justify-between items-center z-10">
+        <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between items-center z-30 pointer-events-none">
           <button
             onClick={handlePrev}
-            className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="pointer-events-auto ml-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
           >
             <svg
               className="w-5 h-5 md:w-6 md:h-6"
@@ -284,7 +377,7 @@ const BannerPrincipal01: React.FC = () => {
           </button>
           <button
             onClick={handleNext}
-            className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="pointer-events-auto mr-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
           >
             <svg
               className="w-5 h-5 md:w-6 md:h-6"
@@ -300,88 +393,6 @@ const BannerPrincipal01: React.FC = () => {
               />
             </svg>
           </button>
-        </div>
-      )}
-
-      {/* Contenido del banner */}
-      {shouldShowOverlay(currentImage) && (
-        <div className="relative h-full max-w-7xl mx-auto px-4">
-          <div
-            className={`flex flex-col justify-center h-full max-w-2xl pl-[3rem] ${
-              textAlign === "center"
-                ? "mx-auto items-center text-center"
-                : textAlign === "right"
-                ? "ml-auto items-end text-right"
-                : "items-start text-left"
-            }`}
-          >
-            {currentImage.buttonLink &&
-              currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-                <span className="text-[#81C4BA] text-[12px] md:text-base uppercase tracking-widest mb-4">
-                  {currentImage.buttonLink}
-                </span>
-              )}
-
-            {currentImage.title && currentImage.title !== DEFAULT_TITLE && (
-              <h2 className="text-3xl md:text-7xl text-white font-light mb-6 leading-tight">
-                {currentImage.title}
-              </h2>
-            )}
-
-            {parseDisplayConfig(currentImage.landingText).text && (
-              <p className="text-white/90 text-[14px] md:text-xl mb-8 leading-relaxed">
-                {parseDisplayConfig(currentImage.landingText).text}
-              </p>
-            )}
-
-            {/* Mostrar precio y valor según la configuración */}
-            {parseButtonTextData(currentImage.buttonText).show &&
-              (parseDisplayConfig(currentImage.landingText).showPrice ||
-                parseDisplayConfig(currentImage.landingText).showValue) && (
-                <div className="flex items-center gap-4 mb-8">
-                  {parseDisplayConfig(currentImage.landingText).showPrice && (
-                    <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
-                      {parseButtonTextData(currentImage.buttonText).price}
-                    </span>
-                  )}
-                  {parseDisplayConfig(currentImage.landingText).showValue && (
-                    <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
-                      {parseButtonTextData(currentImage.buttonText).value}
-                    </span>
-                  )}
-                </div>
-              )}
-
-            {/* Mostrar botones según la configuración */}
-            {(parseDisplayConfig(currentImage.landingText).showScheduleButton ||
-              parseDisplayConfig(currentImage.landingText)
-                .showDetailsButton) && (
-              <div className="flex flex-wrap gap-4">
-                {parseDisplayConfig(currentImage.landingText)
-                  .showScheduleButton && (
-                  <Link
-                    href={
-                      "https://www.conectasitios.cl/pagina_sucursal/peluqueriacanina&petshop/MzA="
-                    }
-                    className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all"
-                  >
-                    Agenda tu hora
-                  </Link>
-                )}
-                {parseDisplayConfig(currentImage.landingText)
-                  .showDetailsButton && (
-                  <Link
-                    href="/servicios"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-white/10 text-white border-2 border-white px-8 py-4 rounded hover:bg-white/20 transition-all backdrop-blur-sm"
-                  >
-                    Ver detalles
-                  </Link>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       )}
     </section>
