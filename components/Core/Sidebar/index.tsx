@@ -109,11 +109,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     return () => document.removeEventListener("keydown", keyHandler);
   });
 
+  const isAdminPixelUP = userDataInfo?.email === "hola.pixelup@gmail.com";
+
   const renderLink = (link: (typeof sidebarLinks)[0], index: number) => {
     if (link.isVisible === false) return null;
 
+    if ((link.title === "Opciones de Cuenta" || link.title === "Creación IDs") && !isAdminPixelUP) {
+      return null;
+    }
+
     if (link.submenu) {
-      const visibleSubmenu = link.submenu.filter(sublink => sublink.isVisible !== false);
+      const visibleSubmenu = link.submenu
+        .filter(sublink => sublink.isVisible !== false)
+        .filter(sublink => {
+          if ((sublink.title === "Opciones de Cuenta" || sublink.title === "Creación IDs") && !isAdminPixelUP) {
+            return false;
+          }
+          return true;
+        });
       
       if (visibleSubmenu.length === 0) return null;
 
@@ -371,6 +384,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </svg>
             </button>
           </div>
+
+
         </div>
 
         {/* Main Content Area - Scrollable */}
@@ -382,6 +397,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 <ul className="flex flex-col">
                   {sidebarLinks
                     .filter(link => link.isVisible !== false)
+                    .filter(link => {
+                      if ((link.title === "Opciones de Cuenta" || link.title === "Creación IDs") && !isAdminPixelUP) {
+                        return false;
+                      }
+                      return true;
+                    })
                     .map((link, index) => (
                       <React.Fragment key={index}>
                         {renderLink(link, index)}
@@ -395,6 +416,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
         {/* User Profile Section - Fixed at bottom */}
         <div className="flex-shrink-0 border-t border-white/10">
+                  {/* Botón Ir a tienda */}
+{/*                   <Link
+            href="/tienda"
+            className={`mt-4 flex items-center gap-2 rounded-lg py-2 px-4 font-medium text-white hover:bg-black/10 transition-all duration-300 ${
+              !isExpanded && !isHovered ? 'w-[40px] justify-center' : 'w-[200px]'
+            }`}
+          >
+            <span
+              className={`whitespace-nowrap transition-all duration-300 ease-in-out ${
+                !isExpanded && !isHovered ? "opacity-0 -translate-x-10" : "opacity-100 translate-x-0"
+              }`}
+            >
+              Ir a la tienda
+            </span>
+          </Link> */}
           <button
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
             className={`flex items-center gap-3 ${
@@ -452,7 +488,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           </button>
 
           {(isExpanded || isHovered) && (
+            
             <div className={`${userDropdownOpen ? 'block' : 'hidden'} py-3 px-4 bg-black/10`}>
+              
               <ul className="flex flex-col gap-2.5">
                 <li>
                   <Link
