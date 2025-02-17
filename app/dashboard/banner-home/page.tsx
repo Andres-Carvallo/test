@@ -4,6 +4,7 @@ import Hero01BO from "@/components/PIXELUP/Hero/Hero01/Hero01BO";
 import Hero02BO from "@/components/PIXELUP/Hero/Hero02/Hero02BO";
 import FrasesBO from "@/components/PIXELUP/Frases/BackOffice/FrasesBO";
 import BannerPrincipal02BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02BO";
+import BannerPrincipal01BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01BO";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/BackOffice/MarqueeBO";
 import BannerPrincipal02BOMobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02BOMobile";
 import Categoria02BO from "@/components/PIXELUP/Categorias/Categoria02/CategoriaBO02";
@@ -39,8 +40,9 @@ export default function BannerHome() {
           <div>Banner</div>
           <div>/ Home</div>
         </div>
-        <BannerPrincipal02BO />
+        <BannerPrincipal01BO />
       </div>
+
       <div
         className="rounded-sm border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black mt-4"
         style={{ borderRadius: "var(--radius)" }}
@@ -169,9 +171,8 @@ export default function BannerHome() {
           <div>Barra Superior</div>
           <div>/ Home</div>
         </div>
-        <LogosCarruselBO/>
+        <LogosCarruselBO />
       </div>
-
 
       <div
         className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
@@ -184,7 +185,7 @@ export default function BannerHome() {
         <BannerPrincipal02BOMobile />
       </div>
 
-{/*       <div
+      {/*       <div
         className="border w-full border-stroke bg-white py-6 px-8 shadow-default dark:border-black dark:bg-black"
         style={{ borderRadius: "var(--radius)" }}
       >

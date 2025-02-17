@@ -16,6 +16,7 @@ import {
 import DiscountModal from "@/components/PIXELUP/Modal/DiscountModal";
 import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
+import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -91,7 +92,9 @@ export default async function Page() {
         <Suspense
           fallback={<div className="min-h-screen animate-pulse bg-gray-100" />}
         >
-          <BannerResponsive />
+          {" "}
+          <BannerPrincipal01 />
+          {/* <BannerResponsive /> */}
         </Suspense>
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
