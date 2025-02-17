@@ -653,188 +653,191 @@ const CrearProductoSimple: React.FC = ({}) => {
       const currentProductId = isEditMode ? productId : product.id;
       const currentSkuId = isEditMode ? skuId : product.skuId;
 
-      if (currentProductId && currentSkuId) {
-        // 2. Procesar todas las actualizaciones en paralelo
-        await Promise.all([
-          // Actualizar SKU data
-          handleSkuData(
-            currentProductId,
-            currentSkuId,
-            "hola",
-            skuData.hasUnlimitedStock,
-            skuData.hasStockNotifications,
-            skuData.isFeatured
-          ),
+      // Si no estamos en modo edición, redirigir a la misma página con el nuevo ID
+      if (!isEditMode && currentProductId) {
+        router.push(`${window.location.pathname}?productId=${currentProductId}`);
+      }
 
-          // Actualizar stock
-          handleStockSku(
-            currentProductId,
-            currentSkuId,
-            stockQuantity,
-            alertStock
-          ),
+      // 2. Procesar todas las actualizaciones en paralelo
+      await Promise.all([
+        // Actualizar SKU data
+        handleSkuData(
+          currentProductId,
+          currentSkuId,
+          "hola",
+          skuData.hasUnlimitedStock,
+          skuData.hasStockNotifications,
+          skuData.isFeatured
+        ),
 
-          // Actualizar precio
-          precioNormal !== null
-            ? HandlePriceSku(currentProductId, currentSkuId, precioNormal)
-            : Promise.resolve(),
+        // Actualizar stock
+        handleStockSku(
+          currentProductId,
+          currentSkuId,
+          stockQuantity,
+          alertStock
+        ),
 
-          // Procesar imágenes pendientes
-          (async () => {
-            if (pendingImageChanges.pendingDeletions.length > 0) {
-              await Promise.all(
-                pendingImageChanges.pendingDeletions.map((imageId) =>
-                  fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                    {
-                      method: "DELETE",
-                      headers: { Authorization: `Bearer ${token}` },
-                    }
-                  )
+        // Actualizar precio
+        precioNormal !== null
+          ? HandlePriceSku(currentProductId, currentSkuId, precioNormal)
+          : Promise.resolve(),
+
+        // Procesar imágenes pendientes
+        (async () => {
+          if (pendingImageChanges.pendingDeletions.length > 0) {
+            await Promise.all(
+              pendingImageChanges.pendingDeletions.map((imageId) =>
+                fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                  {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                  }
                 )
-              );
-            }
+              )
+            );
+          }
 
-            if (pendingImageChanges.pendingImages.length > 0) {
-              await Promise.all(
-                pendingImageChanges.pendingImages.map((newImage) =>
-                  fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                    {
-                      method: "POST",
-                      headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({ mainImage: newImage }),
-                    }
-                  )
+          if (pendingImageChanges.pendingImages.length > 0) {
+            await Promise.all(
+              pendingImageChanges.pendingImages.map((newImage) =>
+                fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ mainImage: newImage }),
+                  }
                 )
-              );
-            }
-          })(),
-        ]);
+              )
+            );
+          }
+        })(),
+      ]);
 
-        // Limpiar los cambios pendientes
-        setPendingImageChanges({
-          pendingImages: [],
-          pendingDeletions: [],
-          currentImages: [],
-        });
+      // Limpiar los cambios pendientes
+      setPendingImageChanges({
+        pendingImages: [],
+        pendingDeletions: [],
+        currentImages: [],
+      });
 
-        // Actualizar la UI
-        await triggerRevalidation();
-        setProductId(currentProductId);
-        setNewProductId(currentProductId);
-        toast.custom(
-          (t) => (
-            <div 
-              className={`${
-                t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 mb-4 mr-4 hover:[animation-play-state:paused]`}
-            >
-              <div className="flex-1 w-0 p-4">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg 
-                      className="h-6 w-6 text-green-400" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3 flex-1">
-                    <p className="text-sm font-medium text-gray-900">
-                      {isEditMode ? "¡Producto Actualizado!" : "¡Producto Creado Exitosamente!"}
-                    </p>
-                    <p className="mt-1 text-sm text-gray-500">
-                      ¿Qué deseas hacer ahora?
-                    </p>
-                    <div className="mt-4 flex space-x-3">
-                      <Link
-                        href="/dashboard/productos"
-                        className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                      >
-                        <svg 
-                          className="mr-2 h-4 w-4" 
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          stroke="currentColor"
-                        >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M4 6h16M4 10h16M4 14h16M4 18h16" 
-                          />
-                        </svg>
-                        Ver lista
-                      </Link>
-                      <button
-                        onClick={() => {
-                          if (newProductId && formData.name) {
-                            const productSlug = slugify(formData.name);
-                            window.open(`/tienda/productos/${productSlug}`, "_blank");
-                          }
-                          toast.dismiss(t.id);
-                        }}
-                        className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary bg-primary/10 hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-                      >
-                        <svg 
-                          className="mr-2 h-4 w-4" 
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          stroke="currentColor"
-                        >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
-                          />
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            strokeWidth={2} 
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" 
-                          />
-                        </svg>
-                        Ver producto
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex border-l border-gray-200">
-                <button
-                  onClick={() => toast.dismiss(t.id)}
-                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition-colors m-2"
-                >
+      // Actualizar la UI
+      await triggerRevalidation();
+      setProductId(currentProductId);
+      setNewProductId(currentProductId);
+      toast.custom(
+        (t) => (
+          <div 
+            className={`${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 mb-4 mr-4 hover:[animation-play-state:paused]`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
                   <svg 
-                    className="h-5 w-5 text-gray-400 hover:text-gray-500" 
+                    className="h-6 w-6 text-green-400" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                    />
                   </svg>
-                </button>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {isEditMode ? "¡Producto Actualizado!" : "¡Producto Creado Exitosamente!"}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    ¿Qué deseas hacer ahora?
+                  </p>
+                  <div className="mt-4 flex space-x-3">
+                    <Link
+                      href="/dashboard/productos"
+                      className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                    >
+                      <svg 
+                        className="mr-2 h-4 w-4" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M4 6h16M4 10h16M4 14h16M4 18h16" 
+                        />
+                      </svg>
+                      Ver lista
+                    </Link>
+                    <button
+                      onClick={() => {
+                        if (newProductId && formData.name) {
+                          const productSlug = slugify(formData.name);
+                          window.open(`/tienda/productos/${productSlug}`, "_blank");
+                        }
+                        toast.dismiss(t.id);
+                      }}
+                      className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary bg-primary/10 hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                    >
+                      <svg 
+                        className="mr-2 h-4 w-4" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+                        />
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" 
+                        />
+                      </svg>
+                      Ver producto
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          ),
-          { 
-            duration: 5000,
-            position: 'bottom-right'
-          }
-        );
-      }
+            <div className="flex border-l border-gray-200">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition-colors m-2"
+              >
+                <svg 
+                  className="h-5 w-5 text-gray-400 hover:text-gray-500" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ),
+        { 
+          duration: 5000,
+          position: 'bottom-right'
+        }
+      );
     } catch (error) {
       console.error("Error al procesar el producto:", error);
       toast.error(

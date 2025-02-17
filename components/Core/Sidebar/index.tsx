@@ -417,20 +417,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         {/* User Profile Section - Fixed at bottom */}
         <div className="flex-shrink-0 border-t border-white/10">
                   {/* Botón Ir a tienda */}
-{/*                   <Link
+                  <Link
             href="/tienda"
-            className={`mt-4 flex items-center gap-2 rounded-lg py-2 px-4 font-medium text-white hover:bg-black/10 transition-all duration-300 ${
-              !isExpanded && !isHovered ? 'w-[40px] justify-center' : 'w-[200px]'
+            className={`text-center justify-center mt-4 mx-auto flex items-center text-sm gap-2 rounded-lg py-1.5 px-2 font-medium text-white hover:bg-black/10 transition-all duration-300 ${
+              !isExpanded && !isHovered ? 'w-[40px] justify-center' : 'w-[150px] border border-white '
             }`}
           >
             <span
-              className={`whitespace-nowrap transition-all duration-300 ease-in-out ${
+              className={` whitespace-nowrap transition-all duration-300 ease-in-out ${
                 !isExpanded && !isHovered ? "opacity-0 -translate-x-10" : "opacity-100 translate-x-0"
               }`}
             >
               Ir a la tienda
             </span>
-          </Link> */}
+          </Link>
           <button
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
             className={`flex items-center gap-3 ${
@@ -438,7 +438,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             } w-full hover:bg-black/10`}
           >
             <span className={`rounded-full flex items-center justify-center bg-gray-200 ${
-              !isExpanded && !isHovered ? 'h-5 w-5' : 'h-8 w-8'
+              !isExpanded && !isHovered ? 'h-5 w-5' : 'h-7 w-8'
             }`}>
               {userDataInfo?.avatarUrl ? (
                 <img
