@@ -105,8 +105,8 @@ const BannerPrincipal01BO: React.FC = () => {
     showButton2: false,
     button1Text: "Botón 1",
     button2Text: "Botón 2",
-    button1Link: "#",
-    button2Link: "#",
+    button1Link: "",
+    button2Link: "",
   });
 
   // Agregar constantes para valores por defecto
@@ -547,8 +547,8 @@ const BannerPrincipal01BO: React.FC = () => {
         showButton2: false,
         button1Text: "Botón 1",
         button2Text: "Botón 2",
-        button1Link: "#",
-        button2Link: "#",
+        button1Link: "",
+        button2Link: "",
       });
 
       // Establecer la configuración inicial del botón
@@ -617,8 +617,8 @@ const BannerPrincipal01BO: React.FC = () => {
           showButton2: parsed.showButton2 ?? false,
           button1Text: parsed.button1Text || "Botón 1",
           button2Text: parsed.button2Text || "Botón 2",
-          button1Link: parsed.button1Link || "#",
-          button2Link: parsed.button2Link || "#",
+          button1Link: parsed.button1Link || "",
+          button2Link: parsed.button2Link || "",
         };
       }
       return {
@@ -630,8 +630,8 @@ const BannerPrincipal01BO: React.FC = () => {
         showButton2: false,
         button1Text: "Botón 1",
         button2Text: "Botón 2",
-        button1Link: "#",
-        button2Link: "#",
+        button1Link: "",
+        button2Link: "",
       };
     } catch {
       return {
@@ -643,8 +643,8 @@ const BannerPrincipal01BO: React.FC = () => {
         showButton2: false,
         button1Text: "Botón 1",
         button2Text: "Botón 2",
-        button1Link: "#",
-        button2Link: "#",
+        button1Link: "",
+        button2Link: "",
       };
     }
   };
@@ -769,6 +769,47 @@ const BannerPrincipal01BO: React.FC = () => {
       ...prev,
       buttonLink: checked ? "" : DEFAULT_BUTTON_LINK,
     }));
+  };
+
+  // Función de utilidad para formatear URLs
+  const formatURL = (url: string): string => {
+    // Si está vacío o es solo espacios en blanco, devolver string vacío
+    if (!url || url.trim() === "") return "";
+
+    let formattedURL = url.trim().toLowerCase();
+
+    // Si es una ruta interna que comienza con /, la devolvemos tal cual
+    if (formattedURL.startsWith("/")) return formattedURL;
+
+    // Si no tiene protocolo (http/https)
+    if (
+      !formattedURL.startsWith("http://") &&
+      !formattedURL.startsWith("https://")
+    ) {
+      // Si comienza con www., agregamos https://
+      if (formattedURL.startsWith("www.")) {
+        formattedURL = "https://" + formattedURL;
+      }
+      // Si no comienza con www., agregamos https://www.
+      else {
+        // Excluimos dominios comunes que no necesitan www
+        const noWWWDomains = [
+          "localhost",
+          "mail.",
+          "api.",
+          "app.",
+          "dev.",
+          "stage.",
+        ];
+        const shouldAddWWW = !noWWWDomains.some((domain) =>
+          formattedURL.startsWith(domain)
+        );
+
+        formattedURL = "https://" + (shouldAddWWW ? "www." : "") + formattedURL;
+      }
+    }
+
+    return formattedURL;
   };
 
   if (loading) {
@@ -899,7 +940,7 @@ const BannerPrincipal01BO: React.FC = () => {
                         {displayConfig.showButton1 && (
                           <a
                             href={displayConfig.button1Link}
-                            className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all cursor-pointer drop-shadow-md"
+                            className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
                           >
                             {displayConfig.button1Text}
                           </a>
@@ -1208,6 +1249,13 @@ const BannerPrincipal01BO: React.FC = () => {
                       button1Link: e.target.value,
                     }));
                   }}
+                  onBlur={(e) => {
+                    const formattedLink = formatURL(e.target.value);
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button1Link: formattedLink,
+                    }));
+                  }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Link del botón"
                   disabled={!displayConfig.showButton1}
@@ -1244,6 +1292,13 @@ const BannerPrincipal01BO: React.FC = () => {
                     setDisplayConfig((prev) => ({
                       ...prev,
                       button2Link: e.target.value,
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    const formattedLink = formatURL(e.target.value);
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button2Link: formattedLink,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"

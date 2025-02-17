@@ -333,7 +333,8 @@ const BannerPrincipal01: React.FC = () => {
                     {config.showButton1 && config.button1Text && (
                       <Link
                         href={config.button1Link}
-                        className="relative inline-block bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all cursor-pointer drop-shadow-md z-20"
+                        target="_blank"
+                        className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
                       >
                         {config.button1Text}
                       </Link>
@@ -341,6 +342,7 @@ const BannerPrincipal01: React.FC = () => {
                     {config.showButton2 && config.button2Text && (
                       <Link
                         href={config.button2Link}
+                        target="_blank"
                         className="relative inline-block bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
                       >
                         {config.button2Text}
