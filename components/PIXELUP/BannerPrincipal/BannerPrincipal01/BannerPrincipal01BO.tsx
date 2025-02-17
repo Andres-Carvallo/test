@@ -12,6 +12,8 @@ import Modal from "@/components/Core/Modals/ModalSeo"; // Asegúrate de importar
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
+import { Switch } from "@/components/Core/Switch";
+import { toast } from "react-hot-toast";
 
 interface BannerImage {
   id: string;
@@ -37,6 +39,8 @@ interface DisplayConfig {
   showValue: boolean;
   showScheduleButton: boolean;
   showDetailsButton: boolean;
+  scheduleButtonText: string;
+  detailsButtonText: string;
 }
 
 // Modificar la interfaz BannerData
@@ -55,11 +59,11 @@ const BannerPrincipal01BO: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [formData, setFormData] = useState<BannerImage>({
     id: "",
-    title: "",
+    title: "Banner",
     landingText: "",
-    buttonLink: "",
-    buttonText: "",
-    mainImageLink: "",
+    buttonLink: "#",
+    buttonText: "Button Text",
+    mainImageLink: "#",
     orderNumber: 1,
     mainImage: {
       url: "",
@@ -82,7 +86,7 @@ const BannerPrincipal01BO: React.FC = () => {
   const [buttonTextData, setButtonTextData] = useState<ButtonTextData>({
     price: "",
     value: "",
-    show: true,
+    show: false,
   });
 
   const [showControlPanel, setShowControlPanel] = useState(true);
@@ -90,17 +94,34 @@ const BannerPrincipal01BO: React.FC = () => {
   // Agregar estado para la configuración de visualización
   const [displayConfig, setDisplayConfig] = useState<DisplayConfig>({
     text: "",
-    showPrice: true,
-    showValue: true,
-    showScheduleButton: true,
-    showDetailsButton: true,
+    showPrice: false,
+    showValue: false,
+    showScheduleButton: false,
+    showDetailsButton: false,
+    scheduleButtonText: "Agenda tu hora",
+    detailsButtonText: "Ver detalles",
   });
+
+  // Agregar constantes para valores por defecto
+  const DEFAULT_TITLE = "Banner";
+  const DEFAULT_BUTTON_LINK = "#";
+
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
+  const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
   const parseButtonTextData = (buttonText: string): ButtonTextData => {
     try {
-      return JSON.parse(buttonText);
+      const parsed = JSON.parse(buttonText);
+      // Asegurar que show solo sea true si hay valores y está explícitamente activado
+      return {
+        price: parsed.price || "",
+        value: parsed.value || "",
+        show:
+          Boolean(parsed.show) &&
+          (Boolean(parsed.price) || Boolean(parsed.value)),
+      };
     } catch {
-      return { price: buttonText, value: "", show: true };
+      return { price: "", value: "", show: false };
     }
   };
 
@@ -121,27 +142,28 @@ const BannerPrincipal01BO: React.FC = () => {
         }
       );
 
-      setBannerData(response.data.bannerImages);
-      if (response.data.bannerImages.length > 0) {
-        const initialImage = response.data.bannerImages[0];
+      // Asegurar que cada imagen tenga los valores por defecto si están vacíos
+      const imagesWithDefaults = response.data.bannerImages.map(
+        (image: BannerImage) => ({
+          ...image,
+          title: image.title || DEFAULT_TITLE,
+          buttonLink: image.buttonLink || DEFAULT_BUTTON_LINK,
+          mainImageLink: image.mainImageLink || "#",
+        })
+      );
 
-        // Parsear buttonText
+      setBannerData(imagesWithDefaults);
+      if (imagesWithDefaults.length > 0) {
+        const initialImage = imagesWithDefaults[0];
         const parsedButtonText = parseButtonTextData(initialImage.buttonText);
         setButtonTextData(parsedButtonText);
-
-        // Parsear landingText
         const parsedLandingText = parseDisplayConfig(initialImage.landingText);
         setDisplayConfig(parsedLandingText);
-
         setFormData({
-          id: initialImage.id,
-          title: initialImage.title,
-          landingText: initialImage.landingText,
-          buttonLink: initialImage.buttonLink,
-          buttonText: initialImage.buttonText,
-          mainImageLink: initialImage.mainImageLink || "",
-          orderNumber: initialImage.orderNumber,
-          mainImage: initialImage.mainImage,
+          ...initialImage,
+          title: initialImage.title || DEFAULT_TITLE,
+          buttonLink: initialImage.buttonLink || DEFAULT_BUTTON_LINK,
+          mainImageLink: initialImage.mainImageLink || "#",
         });
         setMainImage(initialImage.mainImage.url || initialImage.mainImage.data);
       }
@@ -160,7 +182,10 @@ const BannerPrincipal01BO: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -171,8 +196,7 @@ const BannerPrincipal01BO: React.FC = () => {
       reader.onload = () => {
         const result = reader.result as string;
         setMainImage(result);
-        setIsMainImageUploaded(true); // Indicar que una nueva imagen ha sido cargada
-        setIsModalOpen(true); // Open modal for cropping
+        setIsModalOpen(true); // Abre el modal para recortar
       };
       reader.readAsDataURL(file);
     }
@@ -200,6 +224,7 @@ const BannerPrincipal01BO: React.FC = () => {
         useWebWorker: true,
         initialQuality: 0.95,
       };
+
       const compressedFile = await imageCompression(
         croppedImage as File,
         options
@@ -207,7 +232,7 @@ const BannerPrincipal01BO: React.FC = () => {
       const base64 = await convertToBase64(compressedFile);
 
       const imageInfo = {
-        name: fileName, // Usa el nombre del archivo almacenado
+        name: fileName || "banner-image.jpg",
         type: compressedFile.type,
         size: compressedFile.size,
         data: base64,
@@ -217,6 +242,7 @@ const BannerPrincipal01BO: React.FC = () => {
         ...prevFormData,
         mainImage: imageInfo,
       }));
+
       setMainImage(base64);
       setIsModalOpen(false);
       setIsMainImageUploaded(true);
@@ -235,76 +261,127 @@ const BannerPrincipal01BO: React.FC = () => {
   };
 
   const handleClearImage = () => {
-    setMainImage(formData.mainImage.url || formData.mainImage.data);
-    setIsMainImageUploaded(false); // Reiniciar el estado
+    setMainImage(null);
+    setIsMainImageUploaded(false);
+    setFormData((prev) => ({
+      ...prev,
+      mainImage: {
+        url: "",
+        name: "",
+        type: "",
+        size: null,
+        data: "",
+      },
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("handleSubmit llamado");
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
+      if (!token) {
+        toast.error("No se encontró el token de autenticación");
+        return;
+      }
+
       const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
+      if (!bannerId) {
+        toast.error("No se encontró el ID del banner");
+        return;
+      }
 
-      // Asegurarse de que mainImageLink tenga un valor por defecto si está vacío
-      const mainImageLink = formData.mainImageLink || "#";
-
-      // Crear el nuevo objeto landingText
-      const newLandingText = JSON.stringify({
-        text: displayConfig.text,
-        showPrice: displayConfig.showPrice,
-        showValue: displayConfig.showValue,
-        showScheduleButton: displayConfig.showScheduleButton,
-        showDetailsButton: displayConfig.showDetailsButton,
+      console.log("Enviando datos:", {
+        isAddingImage,
+        token: !!token,
+        bannerId,
       });
 
-      // Crear el nuevo objeto buttonText
-      const newButtonText = JSON.stringify({
-        price: buttonTextData.price,
-        value: buttonTextData.value,
-        show: buttonTextData.show,
-      });
-
+      // Simplificar la lógica: usar valores por defecto si los campos están desactivados
       const dataToSend = {
-        title: formData.title,
-        landingText: newLandingText,
-        buttonText: newButtonText,
-        buttonLink: formData.buttonLink,
-        mainImageLink: mainImageLink, // Usar el valor con el fallback
+        title:
+          formData.title === DEFAULT_TITLE || !formData.title
+            ? DEFAULT_TITLE
+            : formData.title,
+        landingText: JSON.stringify({
+          text: displayConfig.text || "",
+          showPrice: displayConfig.showPrice,
+          showValue: displayConfig.showValue,
+          showScheduleButton: displayConfig.showScheduleButton,
+          showDetailsButton: displayConfig.showDetailsButton,
+        }),
+        buttonText: JSON.stringify({
+          price: buttonTextData.price || "",
+          value: buttonTextData.value || "",
+          show: buttonTextData.show,
+        }),
+        buttonLink:
+          formData.buttonLink === DEFAULT_BUTTON_LINK || !formData.buttonLink
+            ? DEFAULT_BUTTON_LINK
+            : formData.buttonLink,
+        mainImageLink: formData.mainImageLink || "#",
         orderNumber: formData.orderNumber,
         ...(isMainImageUploaded && { mainImage: formData.mainImage }),
       };
 
-      if (isAddingImage) {
-        // Crear nueva imagen
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          dataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+      console.log("Datos a enviar:", dataToSend);
+
+      const url = isAddingImage
+        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+
+      console.log("URL de la petición:", url);
+
+      const response = await axios({
+        method: isAddingImage ? "POST" : "PUT",
+        url,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        data: dataToSend,
+      });
+
+      console.log("Respuesta:", response.status, response.data);
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success(
+          isAddingImage
+            ? "Banner creado exitosamente"
+            : "Banner actualizado exitosamente"
         );
-        setIsAddingImage(false);
+        fetchBannerHome();
+        if (isAddingImage) {
+          setIsAddingImage(false);
+        }
       } else {
-        // Actualizar imagen existente
-        await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          dataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+        throw new Error(`Error en la respuesta: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error al procesar el banner:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Detalles del error:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        toast.error(
+          error.response?.data?.message ||
+            (isAddingImage
+              ? "Error al crear el banner. Por favor, intente nuevamente."
+              : "Error al actualizar el banner. Por favor, intente nuevamente.")
+        );
+      } else {
+        toast.error(
+          isAddingImage
+            ? "Error al crear el banner. Por favor, intente nuevamente."
+            : "Error al actualizar el banner. Por favor, intente nuevamente."
         );
       }
-
-      fetchBannerHome();
-    } catch (error) {
-      console.error("Error al actualizar el banner:", error);
     } finally {
       setLoading(false);
     }
@@ -340,14 +417,19 @@ const BannerPrincipal01BO: React.FC = () => {
     const nextIndex = (currentIndex + 1) % bannerData.length;
     const nextImage = bannerData[nextIndex];
 
-    // Cargar la configuración del siguiente banner
     const nextConfig = parseDisplayConfig(nextImage.landingText);
     setDisplayConfig(nextConfig);
+
+    // Parsear y validar el buttonText
+    const parsedButtonText = parseButtonTextData(nextImage.buttonText);
+    setButtonTextData(parsedButtonText);
 
     setCurrentIndex(nextIndex);
     setFormData({
       ...nextImage,
-      mainImageLink: nextImage.mainImageLink || "",
+      title: nextImage.title || DEFAULT_TITLE,
+      buttonLink: nextImage.buttonLink || DEFAULT_BUTTON_LINK,
+      mainImageLink: nextImage.mainImageLink || "#",
     });
     setMainImage(nextImage.mainImage.url || nextImage.mainImage.data);
     setIsMainImageUploaded(false);
@@ -361,14 +443,19 @@ const BannerPrincipal01BO: React.FC = () => {
       (currentIndex - 1 + bannerData.length) % bannerData.length;
     const prevImage = bannerData[prevIndex];
 
-    // Cargar la configuración del banner anterior
     const prevConfig = parseDisplayConfig(prevImage.landingText);
     setDisplayConfig(prevConfig);
+
+    // Parsear y validar el buttonText
+    const parsedButtonText = parseButtonTextData(prevImage.buttonText);
+    setButtonTextData(parsedButtonText);
 
     setCurrentIndex(prevIndex);
     setFormData({
       ...prevImage,
-      mainImageLink: prevImage.mainImageLink || "",
+      title: prevImage.title || DEFAULT_TITLE,
+      buttonLink: prevImage.buttonLink || DEFAULT_BUTTON_LINK,
+      mainImageLink: prevImage.mainImageLink || "#",
     });
     setMainImage(prevImage.mainImage.url || prevImage.mainImage.data);
     setIsMainImageUploaded(false);
@@ -379,11 +466,11 @@ const BannerPrincipal01BO: React.FC = () => {
       // Si ya estamos en el estado de agregar, esto cancela la operación
       setFormData({
         id: bannerData[currentIndex]?.id || "",
-        title: bannerData[currentIndex]?.title || "",
+        title: bannerData[currentIndex]?.title || DEFAULT_TITLE,
         landingText: bannerData[currentIndex]?.landingText || "",
-        buttonLink: bannerData[currentIndex]?.buttonLink || "",
+        buttonLink: bannerData[currentIndex]?.buttonLink || DEFAULT_BUTTON_LINK,
         buttonText: bannerData[currentIndex]?.buttonText || "",
-        mainImageLink: bannerData[currentIndex]?.mainImageLink || "",
+        mainImageLink: bannerData[currentIndex]?.mainImageLink || "#",
         orderNumber: bannerData[currentIndex]?.orderNumber || 1,
         mainImage: bannerData[currentIndex]?.mainImage || {
           url: "",
@@ -404,25 +491,25 @@ const BannerPrincipal01BO: React.FC = () => {
       // Inicializar con valores por defecto para el nuevo banner
       const initialLandingText = JSON.stringify({
         text: "",
-        showPrice: true,
-        showValue: true,
-        showScheduleButton: true,
-        showDetailsButton: true,
+        showPrice: false,
+        showValue: false,
+        showScheduleButton: false,
+        showDetailsButton: false,
       });
 
       const initialButtonText = JSON.stringify({
         price: "",
         value: "",
-        show: true,
+        show: false,
       });
 
       setFormData({
         id: "",
-        title: "",
+        title: DEFAULT_TITLE,
         landingText: initialLandingText,
-        buttonLink: "",
+        buttonLink: DEFAULT_BUTTON_LINK,
         buttonText: initialButtonText,
-        mainImageLink: "#", // Establecer un valor por defecto
+        mainImageLink: "#",
         orderNumber: 1,
         mainImage: {
           url: "",
@@ -436,17 +523,19 @@ const BannerPrincipal01BO: React.FC = () => {
       // Establecer la configuración inicial de visualización
       setDisplayConfig({
         text: "",
-        showPrice: true,
-        showValue: true,
-        showScheduleButton: true,
-        showDetailsButton: true,
+        showPrice: false,
+        showValue: false,
+        showScheduleButton: false,
+        showDetailsButton: false,
+        scheduleButtonText: "Agenda tu hora",
+        detailsButtonText: "Ver detalles",
       });
 
       // Establecer la configuración inicial del botón
       setButtonTextData({
         price: "",
         value: "",
-        show: true,
+        show: false,
       });
 
       setMainImage(null);
@@ -459,7 +548,13 @@ const BannerPrincipal01BO: React.FC = () => {
   const handleButtonTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setButtonTextData((prev) => {
-      const newData = { ...prev, [name]: value };
+      const otherFieldValue = name === "price" ? prev.value : prev.price;
+      const hasValues = Boolean(value) || Boolean(otherFieldValue);
+      const newData = {
+        ...prev,
+        [name]: value,
+        show: hasValues ? prev.show : false, // Si no hay valores, forzar show a false
+      };
       // Actualizar formData.buttonText con el nuevo JSON
       setFormData((prevForm) => ({
         ...prevForm,
@@ -501,6 +596,8 @@ const BannerPrincipal01BO: React.FC = () => {
           showValue: parsed.showValue ?? true,
           showScheduleButton: parsed.showScheduleButton ?? true,
           showDetailsButton: parsed.showDetailsButton ?? true,
+          scheduleButtonText: parsed.scheduleButtonText || "Agenda tu hora",
+          detailsButtonText: parsed.detailsButtonText || "Ver detalles",
         };
       }
       return {
@@ -509,6 +606,8 @@ const BannerPrincipal01BO: React.FC = () => {
         showValue: true,
         showScheduleButton: true,
         showDetailsButton: true,
+        scheduleButtonText: "Agenda tu hora",
+        detailsButtonText: "Ver detalles",
       };
     } catch {
       return {
@@ -517,6 +616,8 @@ const BannerPrincipal01BO: React.FC = () => {
         showValue: true,
         showScheduleButton: true,
         showDetailsButton: true,
+        scheduleButtonText: "Agenda tu hora",
+        detailsButtonText: "Ver detalles",
       };
     }
   };
@@ -605,6 +706,22 @@ const BannerPrincipal01BO: React.FC = () => {
     }
   };
 
+  // Modificar el manejo del checkbox para el título
+  const handleTitleToggle = (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: checked ? "" : DEFAULT_TITLE,
+    }));
+  };
+
+  // Modificar el manejo del checkbox para el buttonLink
+  const handleButtonLinkToggle = (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      buttonLink: checked ? "" : DEFAULT_BUTTON_LINK,
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -632,118 +749,167 @@ const BannerPrincipal01BO: React.FC = () => {
   }
 
   return (
-    <div className="relative">
-      {/* Resto del contenido del BO */}
-      <section
-        id="banner"
-        className="w-full"
-      >
-        {skeletonLoading ? (
-          <SkeletonLoader />
-        ) : (
-          <div className="relative h-[60vh] md:h-[80vh] overflow-hidden">
-            <div className="absolute inset-0">
-              <img
-                src={mainImage || formData.mainImage.url}
-                alt="Banner Image"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-            </div>
-
-            <div className="relative h-full max-w-7xl mx-auto px-4">
-              <div className="flex flex-col justify-center h-full max-w-2xl items-start text-left">
-                <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4">
-                  {formData.buttonLink}
-                </span>
-                <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight">
-                  {formData.title}
-                </h2>
-                <p className="text-white/90 text-lg md:text-xl mb-8 leading-relaxed">
-                  {displayConfig.text}
-                </p>
-
-                {/* Mostrar precio y valor según la configuración */}
-                {buttonTextData.show &&
-                  (displayConfig.showPrice || displayConfig.showValue) && (
-                    <div className="flex items-center gap-4 mb-8">
-                      {displayConfig.showPrice && (
-                        <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
-                          {buttonTextData.price}
-                        </span>
-                      )}
-                      {displayConfig.showValue && (
-                        <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
-                          {buttonTextData.value}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                {/* Mostrar botones según la configuración */}
-                <div className="flex flex-wrap gap-4">
-                  {displayConfig.showScheduleButton && (
-                    <div className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all">
-                      Agenda tu hora
-                    </div>
-                  )}
-                  {displayConfig.showDetailsButton && (
-                    <div className="bg-white/10 text-white border-2 border-white px-8 py-4 rounded hover:bg-white/20 transition-all backdrop-blur-sm">
-                      Ver detalles
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-center mt-4">
-              {bannerData.map((_, index) => (
-                <span
-                  key={index}
-                  className={`h-1.5 rounded transition-colors ${
-                    index === currentIndex
-                      ? "w-16 bg-white"
-                      : "w-8 bg-white/30 hover:bg-white/50"
-                  }`}
+    <div className="space-y-6">
+      {/* Panel de Vista Previa */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h3 className="text-lg font-medium text-gray-900">Vista Previa</h3>
+          <button
+            onClick={() => setIsPreviewVisible(!isPreviewVisible)}
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {isPreviewVisible ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                  clipRule="evenodd"
                 />
-              ))}
-            </div>
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
+        {isPreviewVisible && (
+          <div>
+            <div className="h-[40vh] transition-all duration-300 ease-in-out">
+              {skeletonLoading ? (
+                <SkeletonLoader />
+              ) : (
+                <div className="relative h-full overflow-hidden">
+                  <div className="absolute inset-0">
+                    <img
+                      src={mainImage || formData.mainImage.url}
+                      alt="Banner Image"
+                      className="w-full h-full object-cover"
+                    />
+                    {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
+                      formData.title !== DEFAULT_TITLE ||
+                      displayConfig.text ||
+                      (buttonTextData.show &&
+                        (displayConfig.showPrice || displayConfig.showValue)) ||
+                      displayConfig.showScheduleButton ||
+                      displayConfig.showDetailsButton) && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
+                    )}
+                  </div>
 
-            {bannerData.length > 1 && (
-              <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between items-center z-10">
+                  <div className="relative h-full max-w-7xl mx-auto px-4">
+                    <div className="flex flex-col justify-center h-full max-w-2xl items-start text-left">
+                      {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
+                        <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+                          {formData.buttonLink}
+                        </span>
+                      )}
+
+                      {formData.title !== DEFAULT_TITLE && (
+                        <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+                          {formData.title}
+                        </h2>
+                      )}
+
+                      {displayConfig.text && (
+                        <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                          {displayConfig.text}
+                        </p>
+                      )}
+
+                      {/* Mostrar precio y valor según la configuración */}
+                      {buttonTextData.show &&
+                        (displayConfig.showPrice ||
+                          displayConfig.showValue) && (
+                          <div className="flex items-center gap-4 mb-8">
+                            {displayConfig.showPrice &&
+                              buttonTextData.price && (
+                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                                  {buttonTextData.price}
+                                </span>
+                              )}
+                            {displayConfig.showValue &&
+                              buttonTextData.value && (
+                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                                  {buttonTextData.value}
+                                </span>
+                              )}
+                          </div>
+                        )}
+
+                      {/* Mostrar botones según la configuración */}
+                      <div className="flex flex-wrap gap-4">
+                        {displayConfig.showScheduleButton && (
+                          <div className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all cursor-pointer drop-shadow-md">
+                            {displayConfig.scheduleButtonText}
+                          </div>
+                        )}
+                        {displayConfig.showDetailsButton && (
+                          <div className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md">
+                            {displayConfig.detailsButtonText}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Controles de Navegación */}
+            {bannerData.length > 1 && !isAddingImage && (
+              <div className="flex items-center justify-between p-4 border-t border-gray-100">
                 <button
                   onClick={handlePrevImage}
-                  className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                  disabled={loading}
                 >
                   <svg
-                    className="w-5 h-5 md:w-6 md:h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 19l-7-7 7-7"
+                      fillRule="evenodd"
+                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      clipRule="evenodd"
                     />
                   </svg>
+                  Banner Anterior
                 </button>
+                <span className="text-sm text-gray-500">
+                  {currentIndex + 1} de {bannerData.length}
+                </span>
                 <button
                   onClick={handleNextImage}
-                  className="w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                  disabled={loading}
                 >
+                  Banner Siguiente
                   <svg
-                    className="w-5 h-5 md:w-6 md:h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
                     <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
+                      fillRule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
                     />
                   </svg>
                 </button>
@@ -751,11 +917,286 @@ const BannerPrincipal01BO: React.FC = () => {
             )}
           </div>
         )}
-        <div className="flex justify-between mt-6">
+      </div>
+
+      {/* Panel de Control */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 space-y-4"
+      >
+        {/* Controles de Imagen */}
+        <div>
+          <h3 className="text-md font-medium text-gray-900 mb-2">Imagen</h3>
+          <input
+            type="file"
+            accept="image/*"
+            id="mainImage"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+          />
+          {isMainImageUploaded ? (
+            <div className="relative">
+              <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+                <div className="relative rounded-lg overflow-hidden h-32">
+                  <img
+                    src={mainImage || formData.mainImage.url}
+                    alt="Banner Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mt-2 w-full inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Cambiar imagen
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer bg-gray-50 text-center"
+            >
+              <svg
+                className="mx-auto h-8 w-8 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              <span className="mt-1 text-sm text-gray-500 block">
+                PNG, JPG, GIF hasta 10MB
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Grid de 3 columnas para los controles */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Columna 1: Controles de Contenido */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-md font-medium text-gray-900 mb-4">
+              Contenido
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Epígrafe</label>
+                  <div className="flex items-center">
+                    <span className="text-xs text-gray-500 mr-1">Mostrar</span>
+                    <Switch
+                      checked={formData.buttonLink !== DEFAULT_BUTTON_LINK}
+                      onChange={handleButtonLinkToggle}
+                    />
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  name="buttonLink"
+                  value={
+                    formData.buttonLink === DEFAULT_BUTTON_LINK
+                      ? ""
+                      : formData.buttonLink
+                  }
+                  onChange={handleChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ingresa el epígrafe"
+                  disabled={formData.buttonLink === DEFAULT_BUTTON_LINK}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Título</label>
+                  <div className="flex items-center">
+                    <span className="text-xs text-gray-500 mr-1">Mostrar</span>
+                    <Switch
+                      checked={formData.title !== DEFAULT_TITLE}
+                      onChange={handleTitleToggle}
+                    />
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title === DEFAULT_TITLE ? "" : formData.title}
+                  onChange={handleChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ingresa el título"
+                  disabled={formData.title === DEFAULT_TITLE}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-700 mb-2 block">
+                  Descripción
+                </label>
+                <textarea
+                  name="landingText"
+                  value={displayConfig.text}
+                  onChange={(e) => {
+                    const newText = e.target.value;
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      text: newText,
+                    }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      landingText: JSON.stringify({
+                        ...displayConfig,
+                        text: newText,
+                      }),
+                    }));
+                  }}
+                  rows={3}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ingresa la descripción"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Columna 2: Controles de Precios */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-md font-medium text-gray-900">
+                Precios y Valores
+              </h3>
+              <div className="flex items-center">
+                <span className="text-xs text-gray-500 mr-1">Mostrar</span>
+                <Switch
+                  checked={buttonTextData.show}
+                  onChange={(checked) => {
+                    setButtonTextData((prev) => {
+                      const newData = {
+                        ...prev,
+                        show: checked,
+                      };
+                      setFormData((prevForm) => ({
+                        ...prevForm,
+                        buttonText: JSON.stringify(newData),
+                      }));
+                      return newData;
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Precio</label>
+                  <Switch
+                    checked={displayConfig.showPrice}
+                    onChange={(checked) =>
+                      updateDisplayConfig({ showPrice: checked })
+                    }
+                  />
+                </div>
+                <input
+                  type="text"
+                  name="price"
+                  value={buttonTextData.price}
+                  onChange={handleButtonTextChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ej: $29.990"
+                  disabled={!displayConfig.showPrice || !buttonTextData.show}
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Valor</label>
+                  <Switch
+                    checked={displayConfig.showValue}
+                    onChange={(checked) =>
+                      updateDisplayConfig({ showValue: checked })
+                    }
+                  />
+                </div>
+                <input
+                  type="text"
+                  name="value"
+                  value={buttonTextData.value}
+                  onChange={handleButtonTextChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ej: 60 min"
+                  disabled={!displayConfig.showValue || !buttonTextData.show}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Columna 3: Controles de Botones */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-md font-medium text-gray-900 mb-4">Botones</h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Agendar</label>
+                  <Switch
+                    checked={displayConfig.showScheduleButton}
+                    onChange={(checked) =>
+                      updateDisplayConfig({ showScheduleButton: checked })
+                    }
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={displayConfig.scheduleButtonText}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      scheduleButtonText: e.target.value,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Texto del botón"
+                  disabled={!displayConfig.showScheduleButton}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Detalles</label>
+                  <Switch
+                    checked={displayConfig.showDetailsButton}
+                    onChange={(checked) =>
+                      updateDisplayConfig({ showDetailsButton: checked })
+                    }
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={displayConfig.detailsButtonText}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      detailsButtonText: e.target.value,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Texto del botón"
+                  disabled={!displayConfig.showDetailsButton}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de Acción */}
+        <div className="flex gap-2 pt-4 border-t border-gray-100">
           <button
             type="button"
             onClick={handleAddImageClick}
-            className={`shadow w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap ${
+            className={`flex-1 py-2 px-4 rounded text-white font-medium text-sm ${
               isAddingImage
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-green-600 hover:bg-green-700"
@@ -768,313 +1209,61 @@ const BannerPrincipal01BO: React.FC = () => {
             <button
               type="button"
               onClick={handleDeleteImage}
-              className="shadow bg-red-600 hover:bg-red-700 w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap ml-4"
+              className="flex-1 py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-medium text-sm"
             >
               Borrar Imagen
             </button>
           )}
-        </div>
-        {/* Panel de control de visibilidad */}
-        <div className="bg-white p-4 rounded-lg shadow mb-4">
-          <h3 className="text-lg font-medium mb-4">
-            Controles de visualización
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Mostrar precio</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={displayConfig.showPrice}
-                  onChange={(e) =>
-                    updateDisplayConfig({ showPrice: e.target.checked })
-                  }
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Mostrar valor</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={displayConfig.showValue}
-                  onChange={(e) =>
-                    updateDisplayConfig({ showValue: e.target.checked })
-                  }
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">
-                Mostrar botón &quot;Agenda tu hora&quot;
-              </span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={displayConfig.showScheduleButton}
-                  onChange={(e) =>
-                    updateDisplayConfig({
-                      showScheduleButton: e.target.checked,
-                    })
-                  }
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">
-                Mostrar botón &quot;Ver detalles&quot;
-              </span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={displayConfig.showDetailsButton}
-                  onChange={(e) =>
-                    updateDisplayConfig({ showDetailsButton: e.target.checked })
-                  }
-                />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-        <form
-          onSubmit={handleSubmit}
-          className="px-4 mx-auto mt-8"
-        >
-          <h3 className="font-normal text-primary">
-            Epígrafe <span className="text-primary">*</span>
-          </h3>
-          <input
-            type="text"
-            name="buttonLink"
-            value={formData.buttonLink}
-            onChange={handleChange}
-            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-            placeholder="Epígrafe"
-          />
-          <h3 className="font-normal text-primary">
-            Título <span className="text-primary">*</span>
-          </h3>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-            placeholder="Title"
-          />
-          <h3 className="font-normal text-primary">
-            Texto <span className="text-primary">*</span>
-          </h3>
-          <input
-            type="text"
-            name="landingText"
-            value={displayConfig.text}
-            onChange={(e) => {
-              const newText = e.target.value;
-              setDisplayConfig((prev) => ({
-                ...prev,
-                text: newText,
-              }));
-
-              // Actualizar formData con el nuevo JSON
-              setFormData((prev) => ({
-                ...prev,
-                landingText: JSON.stringify({
-                  text: newText,
-                  showPrice: displayConfig.showPrice,
-                  showValue: displayConfig.showValue,
-                  showScheduleButton: displayConfig.showScheduleButton,
-                  showDetailsButton: displayConfig.showDetailsButton,
-                }),
-              }));
-            }}
-            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-            placeholder="Landing Text"
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-normal text-primary">
-                Texto precio <span className="text-primary">*</span>
-              </h3>
-              <input
-                type="text"
-                name="price"
-                value={buttonTextData.price}
-                onChange={handleButtonTextChange}
-                className="shadow block w-full px-4 py-3 mb-4 mt-2 border border-gray-300 rounded-md"
-                placeholder="Desde $"
-              />
-            </div>
-            <div>
-              <h3 className="font-normal text-primary">
-                Texto Valor <span className="text-primary">*</span>
-              </h3>
-              <input
-                type="text"
-                name="value"
-                value={buttonTextData.value}
-                onChange={handleButtonTextChange}
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-                placeholder="x tiempo aprox."
-              />
-            </div>
-          </div>
-          {/*           <h3 className="font-normal text-primary">
-            Link Botón (Ver detalles) <span className="text-primary">*</span>
-          </h3>
-          <div className="relative">
-            <input
-              type="text"
-              name="mainImageLink"
-              value={formData.mainImageLink.replace(/^https?:\/\/(www\.)?/, '')}
-              onChange={(e) => {
-                let value = e.target.value.trim();
-                
-                // Eliminar cualquier http:// o https:// existente
-                value = value.replace(/^https?:\/\/(www\.)?/, '');
-                
-                // Agregar https://www. si el valor no está vacío
-                if (value) {
-                  value = `https://www.${value}`;
-                }
-                
-                setFormData(prev => ({
-                  ...prev,
-                  mainImageLink: value
-                }));
-              }}
-              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Ej: google.cl o www.google.cl"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Se agregará automáticamente https://www.
-            </p>
-          </div> */}
-          <div>
-            <input
-              type="file"
-              accept="image/*"
-              id="mainImage"
-              className="hidden"
-              ref={fileInputRef} // Asigna la referencia al input
-              onChange={handleImageChange}
-            />
-            {isMainImageUploaded ? (
-              <div className="flex flex-col items-center mt-3 relative">
-                <h4 className="font-normal text-primary text-center text-slate-600 w-full">
-                  Tu fotografía{" "}
-                  <span className="text-dark"> {formData.mainImage.name}</span>{" "}
-                  ya ha sido cargada.
-                  <br /> Actualiza para ver los cambios.
-                </h4>
-
-                <button
-                  className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full   text-xs mt-4"
-                  onClick={handleClearImage}
-                >
-                  <span className="self-center">Seleccionar otra Imagen</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ) : (
-              <div>
-                <h3 className="font-normal text-primary">
-                  Foto <span className="text-primary">*</span>
-                </h3>
-                <label
-                  htmlFor="mainImage"
-                  className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
-                >
-                  <div className="flex flex-col justify-center items-center">
-                    <svg
-                      className="w-12 h-12 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold">Subir Imagen</span>
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG o Webp (1800x400px)
-                    </p>
-                  </div>
-                </label>
-              </div>
-            )}
-          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6"
-            style={{ borderRadius: "var(--radius)" }}
+            className="flex-1 py-2 px-4 rounded bg-primary hover:bg-secondary text-white font-medium text-sm flex items-center justify-center"
           >
-            <svg
-              aria-hidden="true"
-              role="status"
-              className={`inline w-4 h-4 me-3 text-white animate-spin ${
-                loading ? "block" : "hidden"
-              }`}
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill"
-              />
-            </svg>
+            {loading && (
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            )}
             {loading
-              ? "Loading..."
+              ? "Guardando..."
               : isAddingImage
               ? "Crear Banner"
               : "Actualizar"}
           </button>
-        </form>
-        {isModalOpen && (
-          <Modal
-            showModal={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-          >
-            <div className="relative h-96 w-full">
+        </div>
+      </form>
+
+      {/* Modal de Recorte */}
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <div className="p-4">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Recortar imagen
+            </h2>
+            <div className="relative h-[400px] w-full bg-gray-100 rounded-lg overflow-hidden">
               <Cropper
-                image={mainImage || ""} // Asegurar que se pasa una cadena no nula
+                image={mainImage || ""}
                 crop={crop}
                 zoom={zoom}
                 aspect={16 / 9}
@@ -1082,10 +1271,11 @@ const BannerPrincipal01BO: React.FC = () => {
                 onZoomChange={setZoom}
                 onCropComplete={handleCropComplete}
               />
-              <div className="controls"></div>
             </div>
-            <div className="flex flex-col  justify-end ">
-              <div className="w-full py-6">
+
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-500">Zoom:</span>
                 <input
                   type="range"
                   value={zoom}
@@ -1093,35 +1283,32 @@ const BannerPrincipal01BO: React.FC = () => {
                   max={3}
                   step={0.1}
                   aria-labelledby="Zoom"
-                  onChange={(e) => {
-                    setZoom(parseFloat(e.target.value));
-                  }}
-                  className="zoom-range w-full custom-range "
+                  onChange={(e) => setZoom(parseFloat(e.target.value))}
+                  className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
+                <span className="text-sm text-gray-500">
+                  {zoom.toFixed(1)}x
+                </span>
               </div>
 
-              <div className="flex justify-between w-full gap-2">
+              <div className="flex justify-end space-x-2">
                 <button
-                  onClick={handleCrop}
-                  className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  Recortar y Subir
-                </button>
-                <button
-                  onClick={() => {
-                    setMainImage(null);
-                    setIsMainImageUploaded(false);
-                    setIsModalOpen(false);
-                  }}
-                  className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                 >
                   Cancelar
                 </button>
+                <button
+                  onClick={handleCrop}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+                >
+                  Recortar y Guardar
+                </button>
               </div>
             </div>
-          </Modal>
-        )}
-      </section>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

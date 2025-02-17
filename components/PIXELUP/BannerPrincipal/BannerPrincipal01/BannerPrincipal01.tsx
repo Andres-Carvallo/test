@@ -40,6 +40,10 @@ const BannerPrincipal01: React.FC = () => {
     "left"
   );
 
+  // Agregar constantes para valores por defecto
+  const DEFAULT_TITLE = "Banner";
+  const DEFAULT_BUTTON_LINK = "#";
+
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
@@ -182,6 +186,23 @@ const BannerPrincipal01: React.FC = () => {
     }
   };
 
+  const shouldShowOverlay = (image: BannerImage): boolean => {
+    const config = parseDisplayConfig(image.landingText);
+    const buttonData = parseButtonTextData(image.buttonText);
+
+    // Verificar si hay algún elemento visible y no es un valor por defecto
+    return !!(
+      (
+        (image.buttonLink && image.buttonLink !== DEFAULT_BUTTON_LINK) || // Epígrafe
+        (image.title && image.title !== DEFAULT_TITLE) || // Título
+        config.text || // Texto descriptivo
+        (buttonData.show && (config.showPrice || config.showValue)) || // Precios/valores
+        config.showScheduleButton || // Botón de agenda
+        config.showDetailsButton
+      ) // Botón de detalles
+    );
+  };
+
   if (loading) {
     return (
       <div
@@ -220,20 +241,24 @@ const BannerPrincipal01: React.FC = () => {
       <div className="absolute inset-0">
         {bannerData.images.map((image, index) => (
           <Link
-            href={image.buttonLink || ""}
+            href={
+              image.buttonLink !== DEFAULT_BUTTON_LINK ? image.buttonLink : ""
+            }
             key={index}
             className="absolute inset-0"
           >
             <img
               src={image.mainImage.url}
-              alt={image.title}
+              alt={image.title !== DEFAULT_TITLE ? image.title : ""}
               className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
                 index === currentIndex ? "opacity-100" : "opacity-0"
               }`}
             />
+            {shouldShowOverlay(image) && (
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+            )}
           </Link>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
       </div>
 
       {/* Agregar los botones de navegación */}
@@ -279,71 +304,86 @@ const BannerPrincipal01: React.FC = () => {
       )}
 
       {/* Contenido del banner */}
-      <div className="relative h-full max-w-7xl mx-auto px-4">
-        <div
-          className={`flex flex-col justify-center h-full max-w-2xl pl-[3rem] ${
-            textAlign === "center"
-              ? "mx-auto items-center text-center"
-              : textAlign === "right"
-              ? "ml-auto items-end text-right"
-              : "items-start text-left"
-          }`}
-        >
-          <span className="text-[#81C4BA] text-[12px] md:text-base uppercase tracking-widest mb-4">
-            {currentImage.buttonLink}
-          </span>
-          <h2 className="text-3xl md:text-7xl text-white font-light mb-6 leading-tight">
-            {currentImage.title}
-          </h2>
-          <p className="text-white/90 text-[14px] md:text-xl mb-8 leading-relaxed">
-            {parseDisplayConfig(currentImage.landingText).text}
-          </p>
+      {shouldShowOverlay(currentImage) && (
+        <div className="relative h-full max-w-7xl mx-auto px-4">
+          <div
+            className={`flex flex-col justify-center h-full max-w-2xl pl-[3rem] ${
+              textAlign === "center"
+                ? "mx-auto items-center text-center"
+                : textAlign === "right"
+                ? "ml-auto items-end text-right"
+                : "items-start text-left"
+            }`}
+          >
+            {currentImage.buttonLink &&
+              currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
+                <span className="text-[#81C4BA] text-[12px] md:text-base uppercase tracking-widest mb-4">
+                  {currentImage.buttonLink}
+                </span>
+              )}
 
-          {/* Mostrar precio y valor según la configuración */}
-          {parseButtonTextData(currentImage.buttonText).show &&
-            (parseDisplayConfig(currentImage.landingText).showPrice ||
-              parseDisplayConfig(currentImage.landingText).showValue) && (
-              <div className="flex items-center gap-4 mb-8">
-                {parseDisplayConfig(currentImage.landingText).showPrice && (
-                  <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
-                    {parseButtonTextData(currentImage.buttonText).price}
-                  </span>
+            {currentImage.title && currentImage.title !== DEFAULT_TITLE && (
+              <h2 className="text-3xl md:text-7xl text-white font-light mb-6 leading-tight">
+                {currentImage.title}
+              </h2>
+            )}
+
+            {parseDisplayConfig(currentImage.landingText).text && (
+              <p className="text-white/90 text-[14px] md:text-xl mb-8 leading-relaxed">
+                {parseDisplayConfig(currentImage.landingText).text}
+              </p>
+            )}
+
+            {/* Mostrar precio y valor según la configuración */}
+            {parseButtonTextData(currentImage.buttonText).show &&
+              (parseDisplayConfig(currentImage.landingText).showPrice ||
+                parseDisplayConfig(currentImage.landingText).showValue) && (
+                <div className="flex items-center gap-4 mb-8">
+                  {parseDisplayConfig(currentImage.landingText).showPrice && (
+                    <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
+                      {parseButtonTextData(currentImage.buttonText).price}
+                    </span>
+                  )}
+                  {parseDisplayConfig(currentImage.landingText).showValue && (
+                    <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
+                      {parseButtonTextData(currentImage.buttonText).value}
+                    </span>
+                  )}
+                </div>
+              )}
+
+            {/* Mostrar botones según la configuración */}
+            {(parseDisplayConfig(currentImage.landingText).showScheduleButton ||
+              parseDisplayConfig(currentImage.landingText)
+                .showDetailsButton) && (
+              <div className="flex flex-wrap gap-4">
+                {parseDisplayConfig(currentImage.landingText)
+                  .showScheduleButton && (
+                  <Link
+                    href={
+                      "https://www.conectasitios.cl/pagina_sucursal/peluqueriacanina&petshop/MzA="
+                    }
+                    className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all"
+                  >
+                    Agenda tu hora
+                  </Link>
                 )}
-                {parseDisplayConfig(currentImage.landingText).showValue && (
-                  <span className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded text-sm">
-                    {parseButtonTextData(currentImage.buttonText).value}
-                  </span>
+                {parseDisplayConfig(currentImage.landingText)
+                  .showDetailsButton && (
+                  <Link
+                    href="/servicios"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-white/10 text-white border-2 border-white px-8 py-4 rounded hover:bg-white/20 transition-all backdrop-blur-sm"
+                  >
+                    Ver detalles
+                  </Link>
                 )}
               </div>
             )}
-
-          {/* Mostrar botones según la configuración */}
-          <div className="flex flex-wrap gap-4">
-            {parseDisplayConfig(currentImage.landingText)
-              .showScheduleButton && (
-              <Link
-                href={
-                  "https://www.conectasitios.cl/pagina_sucursal/peluqueriacanina&petshop/MzA="
-                }
-                className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all"
-              >
-                Agenda tu hora
-              </Link>
-            )}
-            {parseDisplayConfig(currentImage.landingText).showDetailsButton && (
-              <Link
-                href="/servicios"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white/10 text-white border-2 border-white px-8 py-4 rounded hover:bg-white/20 transition-all backdrop-blur-sm"
-              >
-                {/*   {currentImage.mainImageLink} */}
-                Ver detalles
-              </Link>
-            )}
           </div>
         </div>
-      </div>
+      )}
     </section>
   );
 };
