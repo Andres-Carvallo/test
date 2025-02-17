@@ -72,6 +72,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   }, [sidebarOpen]);
 
   const handleLinkClick = (href: string) => {
+    // Cerrar el menú en móvil
+    setSidebarOpen(false);
+    
     if (
       href.includes("/productos/crear/producto-simple") ||
       href.includes("/productos/crear/producto-variable")
@@ -107,7 +110,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   });
 
   const renderLink = (link: (typeof sidebarLinks)[0], index: number) => {
+    if (link.isVisible === false) return null;
+
     if (link.submenu) {
+      const visibleSubmenu = link.submenu.filter(sublink => sublink.isVisible !== false);
+      
+      if (visibleSubmenu.length === 0) return null;
+
       return (
         <SidebarLinkGroup
           activeCondition={pathname.includes(link.path)}
@@ -167,14 +176,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 }`}
               >
                 <ul className="mt-2 mb-3 flex flex-col gap-2 pl-6">
-                  {link.submenu?.map((sublink, index) => (
+                  {visibleSubmenu.map((sublink, index) => (
                     <li key={index}>
                       <Link
                         href={sublink.path}
                         className={`group relative flex items-center gap-3 rounded-lg py-2 px-3 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                           pathname === sublink.path && "bg-black/10"
                         }`}
-                        onClick={() => handleLinkClick(sublink.path)}
+                        onClick={() => {
+                          handleLinkClick(sublink.path);
+                          setOpenMenuIndex(null);
+                        }}
                       >
                         <div className="min-w-max">{sublink.icon}</div>
                         <span
@@ -222,218 +234,269 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   };
 
   return (
-    <aside
-      ref={sidebar}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setUserDropdownOpen(false);
-        setOpenMenuIndex(null);
-      }}
-      className={`absolute ${
-        sidebarOpen ? "top-[64px]" : "top-0"
-      } left-0 z-40 flex h-[calc(100vh-64px)] ${
-        sidebarOpen
-          ? "w-full"
-          : isExpanded || isHovered
-          ? "w-[280px]"
-          : "w-[60px]"
-      } flex-col overflow-hidden bg-primary shadow-lg transition-all duration-300 ease-in-out lg:static lg:top-0 lg:h-screen lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } ${isExpanded || isHovered ? "lg:w-[280px]" : "lg:w-[60px]"}`}
-    >
-      {/* SIDEBAR HEADER - Fixed */}
-      <div
-        className={`relative flex-shrink-0 flex flex-col items-center border-b border-white/10 ${
-          sidebarOpen ? "hidden" : "block"
-        } lg:block ${isExpanded || isHovered ? 'pb-12 pt-12' : 'py-4'}`}
+    <>
+      {/* Botón flotante para móvil */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed bottom-6 right-6 z-50 rounded-full bg-primary p-3 shadow-lg lg:hidden"
       >
-        <div className="flex w-full items-center justify-between px-3">
-          <Link
-            href="/"
-            className={`flex items-center ${
-              isExpanded || isHovered ? 'w-full justify-center' : ''
-            }`}
-          >
-            <div className={`relative ${isExpanded || isHovered ? 'h-20' : 'h-10'} ${
-              isExpanded || isHovered ? 'w-[280px]' : 'w-[120px]'
-            }`}>
-              <div
-                className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
-                  !isExpanded && !isHovered ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <img
-                  src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
-                  alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
-                  className="w-8 h-8 object-contain"
-                />
-              </div>
-              <div
-                className={`absolute ${
-                  isExpanded || isHovered ? 'left-1/2 -translate-x-1/2' : 'left-0'
-                } top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
-                  isExpanded || isHovered ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <img
-                  src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
-                  alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
-                  className={`w-60 object-contain ${
-                    isExpanded || isHovered ? 'scale-110' : 'scale-100'
-                  } transition-transform duration-300`}
-                />
-              </div>
-            </div>
-          </Link>
+        {sidebarOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        )}
+      </button>
 
-          <button
-            ref={trigger}
-            onClick={() => setIsExpanded(!isExpanded)}
-            aria-controls="sidebar"
-            aria-expanded={isExpanded}
-            className={`block transition-all duration-300 ease-in-out lg:hidden ${
-              !isExpanded && !isHovered ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            <svg
-              className="fill-current"
-              width="20"
-              height="18"
-              viewBox="0 0 20 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z"
-                fill=""
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content Area - Scrollable */}
-      <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden sidebar-scroll">
-        {/* Navigation Menu */}
-        <div className="flex flex-1">
-          <nav className="w-full pb-4 pt-8">
-            <div>
-              <ul className="flex flex-col gap-1.5">
-                {sidebarLinks.map((link, index) => (
-                  <React.Fragment key={index}>
-                    {renderLink(link, index)}
-                  </React.Fragment>
-                ))}
-              </ul>
-            </div>
-          </nav>
-        </div>
-      </div>
-
-      {/* User Profile Section - Fixed at bottom */}
-      <div className="flex-shrink-0 border-t border-white/10">
-        <button
-          onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-          className={`flex items-center gap-3 ${
-            !isExpanded && !isHovered ? 'h-[48px] justify-center px-0' : 'py-3 px-4'
-          } w-full hover:bg-black/10`}
+      <aside
+        ref={sidebar}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setUserDropdownOpen(false);
+          setOpenMenuIndex(null);
+        }}
+        className={`fixed top-0 left-0 ${
+          sidebarOpen ? "z-[99999]" : "z-40"
+        } flex h-screen ${
+          sidebarOpen
+            ? "w-full"
+            : isExpanded || isHovered
+            ? "w-[280px]"
+            : "w-[60px]"
+        } flex-col overflow-hidden bg-primary shadow-lg transition-all duration-300 ease-in-out lg:static lg:h-screen lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } ${isExpanded || isHovered ? "lg:w-[280px]" : "lg:w-[60px]"}`}
+      >
+        {/* SIDEBAR HEADER - Fixed */}
+        <div
+          className={`relative flex-shrink-0 flex flex-col items-center border-b border-white/10 ${
+            sidebarOpen ? "block py-2" : "block"
+          } lg:block ${isExpanded || isHovered ? 'pb-8 pt-8' : 'py-4'}`}
         >
-          <span className={`rounded-full flex items-center justify-center bg-gray-200 ${
-            !isExpanded && !isHovered ? 'h-5 w-5' : 'h-8 w-8'
-          }`}>
-            {userDataInfo?.avatarUrl ? (
-              <img
-                src={userDataInfo.avatarUrl}
-                alt="Avatar"
-                className="h-full w-full rounded-full"
-              />
-            ) : (
-              <img
-                src="/img/perfil.webp"
-                alt="Avatar"
-                className="h-full w-full rounded-full"
-              />
-            )}
-          </span>
-          
-          {(isExpanded || isHovered) && (
-            <div className="flex items-center justify-between w-full">
-              <div className="flex flex-col transition-all duration-300 ease-in-out">
-                <span className="text-xs font-medium text-white">
-                  {userDataInfo?.firstname} {userDataInfo?.lastname}
-                </span>
-                {!(userDataInfo?.firstname === "Admin" && userDataInfo?.lastname === "PixelUP") && (
-                  <span className="text-[11px] text-white/70">
-                    {userDataInfo?.email}
-                  </span>
-                )}
-              </div>
-              <svg
-                className={`w-4 h-4 text-white transition-transform duration-300 ${
-                  userDropdownOpen ? 'rotate-180' : ''
-                }`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          {/* Botón de cierre para móvil */}
+          {sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="absolute top-4 right-4 text-white lg:hidden"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                strokeWidth={1.5} 
+                stroke="currentColor" 
+                className="w-6 h-6"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  d="M6 18L18 6M6 6l12 12" 
                 />
               </svg>
+            </button>
+          )}
+
+          <div className="flex w-full items-center justify-between px-3">
+            <Link
+              href="/"
+              className={`flex items-center ${
+                isExpanded || isHovered || sidebarOpen ? 'w-full justify-center' : ''
+              }`}
+            >
+              <div className={`relative ${
+                isExpanded || isHovered || sidebarOpen 
+                  ? 'h-20 lg:h-20' 
+                  : 'h-10'
+              } ${
+                isExpanded || isHovered || sidebarOpen 
+                  ? 'w-[200px] lg:w-[280px]' 
+                  : 'w-[120px]'
+              }`}>
+                <div
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
+                    !isExpanded && !isHovered && !sidebarOpen ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <img
+                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                    alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
+                    className="w-8 h-8 object-contain"
+                  />
+                </div>
+                <div
+                  className={`absolute ${
+                    isExpanded || isHovered || sidebarOpen ? 'left-1/2 -translate-x-1/2' : 'left-0'
+                  } top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
+                    isExpanded || isHovered || sidebarOpen ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  <img
+                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                    alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
+                    className={`object-contain ${
+                      isExpanded || isHovered || sidebarOpen 
+                        ? 'w-40 lg:w-60 scale-110' 
+                        : 'w-60 scale-100'
+                    } transition-transform duration-300`}
+                  />
+                </div>
+              </div>
+            </Link>
+
+            <button
+              ref={trigger}
+              onClick={() => setIsExpanded(!isExpanded)}
+              aria-controls="sidebar"
+              aria-expanded={isExpanded}
+              className={`block transition-all duration-300 ease-in-out lg:hidden ${
+                !isExpanded && !isHovered ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <svg
+                className="fill-current"
+                width="20"
+                height="18"
+                viewBox="0 0 20 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z"
+                  fill=""
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Content Area - Scrollable */}
+        <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden sidebar-scroll">
+          {/* Navigation Menu */}
+          <div className="flex flex-1">
+            <nav className="w-full pb-4 pt-8">
+              <div>
+                <ul className="flex flex-col">
+                  {sidebarLinks
+                    .filter(link => link.isVisible !== false)
+                    .map((link, index) => (
+                      <React.Fragment key={index}>
+                        {renderLink(link, index)}
+                      </React.Fragment>
+                    ))}
+                </ul>
+              </div>
+            </nav>
+          </div>
+        </div>
+
+        {/* User Profile Section - Fixed at bottom */}
+        <div className="flex-shrink-0 border-t border-white/10">
+          <button
+            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+            className={`flex items-center gap-3 ${
+              !isExpanded && !isHovered ? 'h-[48px] justify-center px-0' : 'py-3 px-4'
+            } w-full hover:bg-black/10`}
+          >
+            <span className={`rounded-full flex items-center justify-center bg-gray-200 ${
+              !isExpanded && !isHovered ? 'h-5 w-5' : 'h-8 w-8'
+            }`}>
+              {userDataInfo?.avatarUrl ? (
+                <img
+                  src={userDataInfo.avatarUrl}
+                  alt="Avatar"
+                  className="h-full w-full rounded-full"
+                />
+              ) : (
+                <img
+                  src="/img/perfil.webp"
+                  alt="Avatar"
+                  className="h-full w-full rounded-full"
+                />
+              )}
+            </span>
+            
+            {(isExpanded || isHovered) && (
+              <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col transition-all duration-300 ease-in-out">
+                  <span className="text-xs font-medium text-white">
+                    {userDataInfo?.firstname} {userDataInfo?.lastname}
+                  </span>
+                  {!(userDataInfo?.firstname === "Admin" && userDataInfo?.lastname === "PixelUP") && (
+                    <span className="text-[11px] text-white/70">
+                      {userDataInfo?.email}
+                    </span>
+                  )}
+                </div>
+                <svg
+                  className={`w-4 h-4 text-white transition-transform duration-300 ${
+                    userDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            )}
+          </button>
+
+          {(isExpanded || isHovered) && (
+            <div className={`${userDropdownOpen ? 'block' : 'hidden'} py-3 px-4 bg-black/10`}>
+              <ul className="flex flex-col gap-2.5">
+                <li>
+                  <Link
+                    href="/dashboard/usuarios"
+                    className="flex items-center gap-3 text-xs text-white hover:text-white/70 py-1"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                    Usuarios
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 text-xs text-white hover:text-white/70 py-1 w-full"
+                  >
+                    <svg
+                      className="fill-current size-5"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 22 22"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M15.5375 0.618744H11.6531C10.7594 0.618744 10.0031 1.37499 10.0031 2.26874V4.64062C10.0031 5.05312 10.3469 5.39687 10.7594 5.39687C11.1719 5.39687 11.55 5.05312 11.55 4.64062V2.23437C11.55 2.16562 11.5844 2.13124 11.6531 2.13124H15.5375C16.3625 2.13124 17.0156 2.78437 17.0156 3.60937V18.3562C17.0156 19.1812 16.3625 19.8344 15.5375 19.8344H11.6531C11.5844 19.8344 11.55 19.8 11.55 19.7312V17.3594C11.55 16.9469 11.2062 16.6031 10.7594 16.6031C10.3125 16.6031 10.0031 16.9469 10.0031 17.3594V19.7312C10.0031 20.625 10.7594 21.3812 11.6531 21.3812H15.5375C17.2219 21.3812 18.5625 20.0062 18.5625 18.3562V3.64374C18.5625 1.95937 17.1875 0.618744 15.5375 0.618744Z"
+                        fill=""
+                      />
+                      <path
+                        d="M6.05001 11.7563H12.2031C12.6156 11.7563 12.9594 11.4125 12.9594 11C12.9594 10.5875 12.6156 10.2438 12.2031 10.2438H6.08439L8.21564 8.07813C8.52501 7.76875 8.52501 7.2875 8.21564 6.97812C7.90626 6.66875 7.42501 6.66875 7.11564 6.97812L3.67814 10.4844C3.36876 10.7938 3.36876 11.275 3.67814 11.5844L7.11564 15.0906C7.25314 15.2281 7.45939 15.3312 7.66564 15.3312C7.87189 15.3312 8.04376 15.2625 8.21564 15.125C8.52501 14.8156 8.52501 14.3344 8.21564 14.025L6.05001 11.7563Z"
+                        fill=""
+                      />
+                    </svg>
+                    Cerrar Sesión
+                  </button>
+                </li>
+              </ul>
             </div>
           )}
-        </button>
-
-        {(isExpanded || isHovered) && (
-          <div className={`${userDropdownOpen ? 'block' : 'hidden'} py-3 px-4 bg-black/10`}>
-            <ul className="flex flex-col gap-2.5">
-              <li>
-                <Link
-                  href="/dashboard/usuarios"
-                  className="flex items-center gap-3 text-xs text-white hover:text-white/70 py-1"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  </svg>
-                  Usuarios
-                </Link>
-              </li>
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 text-xs text-white hover:text-white/70 py-1 w-full"
-                >
-                  <svg
-                    className="fill-current size-5"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 22 22"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.5375 0.618744H11.6531C10.7594 0.618744 10.0031 1.37499 10.0031 2.26874V4.64062C10.0031 5.05312 10.3469 5.39687 10.7594 5.39687C11.1719 5.39687 11.55 5.05312 11.55 4.64062V2.23437C11.55 2.16562 11.5844 2.13124 11.6531 2.13124H15.5375C16.3625 2.13124 17.0156 2.78437 17.0156 3.60937V18.3562C17.0156 19.1812 16.3625 19.8344 15.5375 19.8344H11.6531C11.5844 19.8344 11.55 19.8 11.55 19.7312V17.3594C11.55 16.9469 11.2062 16.6031 10.7594 16.6031C10.3125 16.6031 10.0031 16.9469 10.0031 17.3594V19.7312C10.0031 20.625 10.7594 21.3812 11.6531 21.3812H15.5375C17.2219 21.3812 18.5625 20.0062 18.5625 18.3562V3.64374C18.5625 1.95937 17.1875 0.618744 15.5375 0.618744Z"
-                      fill=""
-                    />
-                    <path
-                      d="M6.05001 11.7563H12.2031C12.6156 11.7563 12.9594 11.4125 12.9594 11C12.9594 10.5875 12.6156 10.2438 12.2031 10.2438H6.08439L8.21564 8.07813C8.52501 7.76875 8.52501 7.2875 8.21564 6.97812C7.90626 6.66875 7.42501 6.66875 7.11564 6.97812L3.67814 10.4844C3.36876 10.7938 3.36876 11.275 3.67814 11.5844L7.11564 15.0906C7.25314 15.2281 7.45939 15.3312 7.66564 15.3312C7.87189 15.3312 8.04376 15.2625 8.21564 15.125C8.52501 14.8156 8.52501 14.3344 8.21564 14.025L6.05001 11.7563Z"
-                      fill=""
-                    />
-                  </svg>
-                  Cerrar Sesión
-                </button>
-              </li>
-            </ul>
-          </div>
-        )}
-      </div>
-    </aside>
+        </div>
+      </aside>
+    </>
   );
 };
 
