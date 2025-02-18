@@ -44,7 +44,7 @@ const Mantenimiento: React.FC = () => {
       const data = response.data.contentBlock;
       let maintenanceConfig;
       try {
-        maintenanceConfig = JSON.parse(data.contentText || '{"enabled": false, "message": ""}');
+        maintenanceConfig = JSON.parse(data.contentText || '{"enabled": false, "message": "Estamos realizando mejoras en el sitio. Volveremos pronto."}');
       } catch {
         maintenanceConfig = { enabled: false, message: "" };
       }
@@ -164,12 +164,12 @@ const Mantenimiento: React.FC = () => {
                 className="bg-white"
                 theme="snow"
               />
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-center w-full">
                 <button
                   onClick={handleSaveMessage}
-                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition-colors"
+                  className="w-full max-w-md px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition-colors"
                 >
-                  Guardar Mensaje
+                  Guardar y Actualizar Modo Mantenimiento
                 </button>
               </div>
             </div>

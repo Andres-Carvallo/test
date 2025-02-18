@@ -1,22 +1,22 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getMaintenanceStatus } from './app/components/MaintenancePage';
 
-export function middleware(request: NextRequest) {
-  // Obtener el estado de mantenimiento desde las cookies
-  const maintenanceMode = request.cookies.get('maintenance_mode');
-  const isMaintenanceMode = maintenanceMode?.value === '1';
-  
+export async function middleware(request: NextRequest) {
   // Obtener la ruta actual
   const path = request.nextUrl.pathname;
   
-  // Permitir acceso al dashboard, admin y a la página de mantenimiento
+  // Permitir acceso al dashboard, admin, página de mantenimiento y .env.local
   const isAllowedRoute = path.startsWith('/dashboard') || 
                         path.startsWith('/admin') || 
                         path === '/mantenimiento' ||
-                        path.startsWith('/.env.local');  // Añadir acceso a .env.local
+                        path.startsWith('/.env.local');
+  
+  // Verificar el estado de mantenimiento desde el content block
+  const { isEnabled } = await getMaintenanceStatus();
   
   // Si está en modo mantenimiento y no es una ruta permitida
-  if (isMaintenanceMode && !isAllowedRoute) {
+  if (isEnabled && !isAllowedRoute) {
     // Crear una nueva URL para la redirección
     const maintenanceUrl = new URL('/mantenimiento', request.url);
     return NextResponse.redirect(maintenanceUrl);

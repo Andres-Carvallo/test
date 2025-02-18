@@ -47,6 +47,7 @@ interface ProductDetail02Props {
 const ProductDetail01: React.FC<ProductDetail02Props> = ({
   product: initialProduct,
 }) => {
+  const numeroCuotas = process.env.NEXT_PUBLIC_NUMERO_DE_CUOTAS ? parseInt(process.env.NEXT_PUBLIC_NUMERO_DE_CUOTAS) : 0;
   const [variations, setVariations] = useState<Variation[]>([]);
   const [isOutOfStock, setIsOutOfStock] = useState(false);
   const [stock, setStock] = useState<number | null>(null);
@@ -93,6 +94,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { addToCartHandler } = useAPI();
   const { id } = useParams();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const fetchStockForVariation = useCallback(
     async (productId: string, skuId: string) => {
@@ -779,6 +781,10 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
       const normalPrice = selectedVariation.pricings?.[0]?.unitPrice;
       const offerPrice = selectedVariation.offers?.[0]?.unitPrice;
 
+      // Calcular el precio por cuota
+      const precioBase = offerPrice || normalPrice;
+      const precioPorCuota = precioBase ? Math.ceil(precioBase / numeroCuotas) : 0;
+
       // Si tiene oferta, mostrar ambos precios
       if (offerPrice) {
         const discountPercentage = Math.round(
@@ -786,7 +792,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
         );
 
         return (
-          <div className="flex items-center">
+          <div className="flex flex-col">
             <div className="rounded-lg flex py-2 px-3">
               <div className="flex flex-col">
                 <span className="font-bold text-primary text-3xl line-through mr-4">
@@ -795,6 +801,19 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 <span className="font-bold text-red-700 text-3xl mr-2">
                   ${offerPrice.toLocaleString("es-CL")}
                 </span>
+                {numeroCuotas > 0 && (
+                  <>
+                    <span className="text-sm text-green-500 mt-1 font-medium">
+                    En  {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
+                    </span>
+                    <button 
+                      onClick={() => setShowPaymentModal(true)}
+                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                    >
+                      Ver métodos de pago
+                    </button>
+                  </>
+                )}
               </div>
               <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
                 Dcto. {discountPercentage}%
@@ -807,9 +826,24 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
       // Si no tiene oferta, mostrar solo el precio normal
       if (normalPrice) {
         return (
-          <span className="font-bold text-primary text-3xl">
-            ${normalPrice.toLocaleString("es-CL")}
-          </span>
+          <div className="flex flex-col">
+            <span className="font-bold text-primary text-3xl">
+              ${normalPrice.toLocaleString("es-CL")}
+            </span>
+            {numeroCuotas > 0 && (
+              <>
+                <span className="text-sm text-green-500 mt-1 font-medium">
+                  En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
+                </span>
+                <button 
+                      onClick={() => setShowPaymentModal(true)}
+                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                    >
+                      Ver métodos de pago
+                    </button>
+              </>
+            )}
+          </div>
         );
       }
     }
@@ -831,22 +865,34 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
         const minOfferPrice = Math.min(...offerPrices);
         const maxOfferPrice = Math.max(...offerPrices);
 
+        // Calcular cuotas para el precio mínimo
+        const minPrecioPorCuota = Math.ceil(minOfferPrice / numeroCuotas);
+
         return (
           <div className="flex flex-col">
             <span className="font-bold text-primary text-3xl line-through">
               {minNormalPrice === maxNormalPrice
                 ? `$${minNormalPrice.toLocaleString("es-CL")}`
-                : `$${minNormalPrice.toLocaleString(
-                    "es-CL"
-                  )} - $${maxNormalPrice.toLocaleString("es-CL")}`}
+                : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`}
             </span>
             <span className="font-bold text-red-700 text-3xl">
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
-                : `$${minOfferPrice.toLocaleString(
-                    "es-CL"
-                  )} - $${maxOfferPrice.toLocaleString("es-CL")}`}
+                : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`}
             </span>
+            {numeroCuotas > 0 && (
+              <>
+{/*                 <span className="text-sm text-green-500 mt-1 font-medium">
+                  Hasta {numeroCuotas} cuotas sin interés de ${minPrecioPorCuota.toLocaleString("es-CL")}
+                </span> */}
+{/*                 <button 
+                      onClick={() => setShowPaymentModal(true)}
+                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                    >
+                      Ver métodos de pago
+                    </button> */}
+              </>
+            )}
           </div>
         );
       }
@@ -855,15 +901,29 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
       if (normalPrices.length > 0) {
         const minPrice = Math.min(...normalPrices);
         const maxPrice = Math.max(...normalPrices);
+        const minPrecioPorCuota = Math.ceil(minPrice / numeroCuotas);
 
         return (
-          <span className="font-bold text-primary text-3xl">
-            {minPrice === maxPrice
-              ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${minPrice.toLocaleString(
-                  "es-CL"
-                )} - $${maxPrice.toLocaleString("es-CL")}`}
-          </span>
+          <div className="flex flex-col">
+            <span className="font-bold text-primary text-3xl">
+              {minPrice === maxPrice
+                ? `$${minPrice.toLocaleString("es-CL")}`
+                : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`}
+            </span>
+            {numeroCuotas > 0 && (
+              <>
+{/*                 <span className="text-sm text-green-500 mt-1 font-medium">
+                  Hasta {numeroCuotas} cuotas sin interés de ${minPrecioPorCuota.toLocaleString("es-CL")}
+                </span> */}
+{/*                 <button 
+                      onClick={() => setShowPaymentModal(true)}
+                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                    >
+                      Ver métodos de pago
+                    </button> */}
+              </>
+            )}
+          </div>
         );
       }
     }
@@ -1281,6 +1341,62 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
               className="max-w-full max-h-full object-contain"
               style={{ maxWidth: "80vw", maxHeight: "80vh" }}
             />
+          </div>
+        </div>
+      )}
+      {showPaymentModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50"
+          onClick={() => setShowPaymentModal(false)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg relative max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowPaymentModal(false)}
+              className="absolute top-2 right-4 text-2xl text-gray-600 hover:text-gray-800"
+            >
+              &times;
+            </button>
+            
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Métodos de Pago</h3>
+              
+              <div className="space-y-4">
+                <div className="border-b pb-4">
+                  <h4 className="font-semibold text-gray-700 mb-2">Tarjetas de crédito</h4>
+                  <p className="text-sm text-gray-600 mb-2">Acreditación instantánea.</p>
+                  <p className="text-sm text-green-500 font-medium mb-2">
+                    Paga en {numeroCuotas} cuotas sin interés con estas tarjetas
+                  </p>
+                  <p className="text-sm text-gray-600 mb-3">Con todos los bancos.</p>
+                  <div className="flex gap-4">
+                    <img 
+                      src="/images/Tarjetas/visa.png" 
+                      alt="Visa" 
+                      className="h-10" 
+                    />
+                    <img src="/images/Tarjetas/mastercard.png" alt="Mastercard" className="h-10" />
+                  </div>
+                </div>
+
+                <div className="border-b pb-4">
+                  <h4 className="font-semibold text-gray-700 mb-2">Tarjetas de débito</h4>
+                  <p className="text-sm text-gray-600">Acreditación instantánea.</p>
+                  <div className="flex gap-4 mt-2">
+                  <img 
+                      src="/images/Tarjetas/visa.png" 
+                      alt="Visa" 
+                      className="h-10" 
+                    />
+                    <img src="/images/Tarjetas/mastercard.png" alt="Mastercard" className="h-10" />
+                    <img src="/images/Tarjetas/redcompra.webp" alt="Webpay" className="h-10" />
+
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
