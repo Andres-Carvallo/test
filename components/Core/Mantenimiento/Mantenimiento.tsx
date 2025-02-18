@@ -3,6 +3,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie, setCookie } from "cookies-next";
 import toast from "react-hot-toast";
+import dynamic from 'next/dynamic';
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
 
 const Mantenimiento: React.FC = () => {
   const [maintenanceMode, setMaintenanceMode] = useState<{
@@ -10,6 +13,9 @@ const Mantenimiento: React.FC = () => {
     contentText: string | null;
   } | null>(null);
   const [enableMaintenance, setEnableMaintenance] = useState<boolean>(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState<string>('');
+  const [unsavedMessage, setUnsavedMessage] = useState<string>('');
+  const [unsavedMaintenance, setUnsavedMaintenance] = useState<boolean>(false);
 
   const token = getCookie("AdminTokenAuth");
 
@@ -17,6 +23,11 @@ const Mantenimiento: React.FC = () => {
     fetchMaintenanceMode();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setUnsavedMessage(maintenanceMessage);
+    setUnsavedMaintenance(enableMaintenance);
+  }, [maintenanceMessage, enableMaintenance]);
 
   const fetchMaintenanceMode = async () => {
     try {
@@ -31,15 +42,15 @@ const Mantenimiento: React.FC = () => {
       );
 
       const data = response.data.contentBlock;
-      const isEnabled = data.contentText === "1";
-      
-      // Actualizar la cookie al cargar el estado inicial
-      setCookie('maintenance_mode', isEnabled ? '1' : '0', {
-        maxAge: 30 * 24 * 60 * 60, // 30 días
-        path: '/',
-      });
+      let maintenanceConfig;
+      try {
+        maintenanceConfig = JSON.parse(data.contentText || '{"enabled": false, "message": ""}');
+      } catch {
+        maintenanceConfig = { enabled: false, message: "" };
+      }
 
-      setEnableMaintenance(isEnabled);
+      setEnableMaintenance(maintenanceConfig.enabled);
+      setMaintenanceMessage(maintenanceConfig.message);
       setMaintenanceMode(data);
     } catch (error) {
       console.error("Error al obtener la configuración de mantenimiento:", error);
@@ -48,13 +59,57 @@ const Mantenimiento: React.FC = () => {
   };
 
   const handleToggleChange = async (checked: boolean) => {
+    setUnsavedMaintenance(checked);
+    
+    if (!checked) {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
+        const maintenanceConfig = {
+          enabled: false,
+          message: maintenanceMessage
+        };
+
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            title: "maintenance",
+            contentText: JSON.stringify(maintenanceConfig),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        setEnableMaintenance(false);
+        toast.success("Modo mantenimiento desactivado exitosamente.");
+      } catch (error) {
+        console.error("Error al actualizar la configuración de mantenimiento:", error);
+        toast.error("Error al actualizar la configuración de mantenimiento.");
+        setUnsavedMaintenance(true);
+      }
+    }
+  };
+
+  const handleMessageChange = (content: string) => {
+    setUnsavedMessage(content);
+  };
+
+  const handleSaveMessage = async () => {
     try {
       const contentBlockId = process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
+      const maintenanceConfig = {
+        enabled: unsavedMaintenance,
+        message: unsavedMessage
+      };
+
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: "maintenance",
-          contentText: checked ? "1" : "0",
+          contentText: JSON.stringify(maintenanceConfig),
         },
         {
           headers: {
@@ -64,20 +119,9 @@ const Mantenimiento: React.FC = () => {
         }
       );
 
-      // Actualizar la cookie con el nuevo valor
-      setCookie('maintenance_mode', checked ? '1' : '0', {
-        maxAge: 30 * 24 * 60 * 60, // 30 días
-        path: '/',
-      });
-
-      setEnableMaintenance(checked);
+      setEnableMaintenance(unsavedMaintenance);
+      setMaintenanceMessage(unsavedMessage);
       toast.success("Configuración de mantenimiento actualizada exitosamente.");
-      
-      // Recargar la página después de un breve retraso
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-
     } catch (error) {
       console.error("Error al actualizar la configuración de mantenimiento:", error);
       toast.error("Error al actualizar la configuración de mantenimiento.");
@@ -100,7 +144,7 @@ const Mantenimiento: React.FC = () => {
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={enableMaintenance}
+                    checked={unsavedMaintenance}
                     onChange={(e) => handleToggleChange(e.target.checked)}
                     className="sr-only peer"
                   />
@@ -109,6 +153,27 @@ const Mantenimiento: React.FC = () => {
               </div>
             </div>
           </div>
+          {unsavedMaintenance && (
+            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+              <label className="block text-lg font-medium text-gray-700 mb-4">
+                Mensaje de Mantenimiento
+              </label>
+              <ReactQuill
+                value={unsavedMessage}
+                onChange={handleMessageChange}
+                className="bg-white"
+                theme="snow"
+              />
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={handleSaveMessage}
+                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/80 transition-colors"
+                >
+                  Guardar Mensaje
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex justify-center items-center h-32">
