@@ -15,6 +15,7 @@ import {
   ColumnOrderState,
   Row,
 } from "@tanstack/react-table";
+import { slugify } from "@/app/utils/slugify";
 
 // Interfaces para Tipos de Producto y Respuesta de la API
 interface Product {
@@ -910,11 +911,25 @@ export default function ProductPageBO() {
       enableDragging: false,
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="w-10 min-w-[40px] flex items-center justify-center">
-          <img
-            src={row.original.mainImageUrl}
-            alt="Product"
-            className="rounded-full h-8 w-8 object-cover"
-          />
+          {row.original.statusCode === "ACTIVE" ? (
+            <Link 
+              target="_blank"
+              href={`/tienda/productos/${slugify(row.original.name)}`}
+              className="hover:opacity-75 transition-opacity"
+            >
+              <img
+                src={row.original.mainImageUrl}
+                alt={row.original.name}
+                className="rounded-full h-8 w-8 object-cover"
+              />
+            </Link>
+          ) : (
+            <img
+              src={row.original.mainImageUrl}
+              alt={row.original.name}
+              className="rounded-full h-8 w-8 object-cover opacity-50"
+            />
+          )}
         </div>
       ),
     },
@@ -923,16 +938,29 @@ export default function ProductPageBO() {
       header: "Nombre",
       accessorKey: "name",
       enableDragging: false,
-      cell: ({ row }: { row: Row<Product> }) => (
-        <div
-          className="w-full min-w-[150px] max-w-[300px] truncate"
-          title={row.original.name}
-        >
-          {row.original.name.length > 20
-            ? `${row.original.name.substring(0, 20)}...`
-            : row.original.name}
-        </div>
-      ),
+      cell: ({ row }: { row: Row<Product> }) => {
+        const displayName = row.original.name.length > 20
+          ? `${row.original.name.substring(0, 20)}...`
+          : row.original.name;
+
+        return row.original.statusCode === "ACTIVE" ? (
+          <Link 
+            href={`/tienda/productos/${slugify(row.original.name)}`}
+            target="_blank"
+            className="w-full min-w-[150px] max-w-[300px] truncate hover:text-primary transition-colors hover:underline"
+            title={row.original.name}
+          >
+            {displayName}
+          </Link>
+        ) : (
+          <span 
+            className="w-full min-w-[150px] max-w-[300px] truncate text-gray-500"
+            title={`${row.original.name} (No publicado)`}
+          >
+            {displayName}
+          </span>
+        );
+      },
     },
     {
       id: "price",
