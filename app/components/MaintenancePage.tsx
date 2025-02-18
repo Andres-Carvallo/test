@@ -4,7 +4,7 @@ const MaintenancePage = () => {
       <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center">
         <div className="text-center text-white p-8 max-w-lg">
           <img
-            src={process.env.NEXT_PUBLIC_LOGO}
+            src={process.env.NEXT_PUBLIC_LOGO || '/logo-default.png'}
             alt="Ícono de mantenimiento"
             className="w-40 h-40 mx-auto"
           />

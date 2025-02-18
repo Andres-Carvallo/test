@@ -9,6 +9,7 @@ import { UserData } from "@/types/UserData";
 import { deleteCookie, getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
+import axios from "axios";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -26,6 +27,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const router = useRouter();
   const token = getCookie("AdminTokenAuth")?.toString();
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
+  const [menuEnabled, setMenuEnabled] = useState<boolean>(true);
 
   useEffect(() => {
     if (!token) {
@@ -57,19 +59,47 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     fetchData();
   }, [token, router]);
 
-  const handleLogout = async () => {
-    deleteCookie("AdminTokenAuth");
-    router.push("/");
-  };
+  useEffect(() => {
+    const fetchMenuOption = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_MENUOPTION_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = response.data.contentBlock;
+        const isEnabled = data.contentText !== "0" && data.contentText !== null;
+        setMenuEnabled(isEnabled);
+        if (!isEnabled) {
+          setIsExpanded(true);
+        }
+      } catch (error) {
+        console.error("Error al obtener la configuración del menú:", error);
+      }
+    };
+
+    if (token) {
+      fetchMenuOption();
+    }
+  }, [token]);
 
   useEffect(() => {
-    if (sidebarOpen) {
+    if (sidebarOpen || !menuEnabled) {
       setIsExpanded(true);
     } else {
       setIsExpanded(false);
       setOpenMenuIndex(null);
     }
-  }, [sidebarOpen]);
+  }, [sidebarOpen, menuEnabled]);
+
+  const handleLogout = async () => {
+    deleteCookie("AdminTokenAuth");
+    router.push("/");
+  };
 
   const handleLinkClick = (href: string) => {
     // Cerrar el menú en móvil
@@ -248,41 +278,43 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   return (
     <>
-      {/* Botón flotante para móvil */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed bottom-6 right-6 z-50 rounded-full bg-primary p-3 shadow-lg lg:hidden"
-      >
-        {sidebarOpen ? (
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        )}
-      </button>
+      {/* Botón flotante para móvil - solo mostrar si el menú está habilitado */}
+      {menuEnabled && (
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="fixed bottom-6 right-6 z-50 rounded-full bg-primary p-3 shadow-lg lg:hidden"
+        >
+          {sidebarOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          )}
+        </button>
+      )}
 
       <aside
         ref={sidebar}
-        onMouseEnter={() => setIsHovered(true)}
+        onMouseEnter={() => menuEnabled && setIsHovered(true)}
         onMouseLeave={() => {
-          setIsHovered(false);
-          setUserDropdownOpen(false);
-          setOpenMenuIndex(null);
+          if (menuEnabled) {
+            setIsHovered(false);
+            setUserDropdownOpen(false);
+            setOpenMenuIndex(null);
+          }
         }}
         className={`fixed top-0 left-0 ${
           sidebarOpen ? "z-[99999]" : "z-40"
         } flex h-screen ${
-          sidebarOpen
-            ? "w-full"
-            : isExpanded || isHovered
+          !menuEnabled || sidebarOpen || isExpanded || isHovered
             ? "w-[280px]"
             : "w-[60px]"
         } flex-col overflow-hidden bg-primary shadow-lg transition-all duration-300 ease-in-out lg:static lg:h-screen lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${isExpanded || isHovered ? "lg:w-[280px]" : "lg:w-[60px]"}`}
+        } ${!menuEnabled || isExpanded || isHovered ? "lg:w-[280px]" : "lg:w-[60px]"}`}
       >
         {/* SIDEBAR HEADER - Fixed */}
         <div
@@ -360,29 +392,32 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </div>
             </Link>
 
-            <button
-              ref={trigger}
-              onClick={() => setIsExpanded(!isExpanded)}
-              aria-controls="sidebar"
-              aria-expanded={isExpanded}
-              className={`block transition-all duration-300 ease-in-out lg:hidden ${
-                !isExpanded && !isHovered ? "opacity-0" : "opacity-100"
-              }`}
-            >
-              <svg
-                className="fill-current"
-                width="20"
-                height="18"
-                viewBox="0 0 20 18"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            {/* Modificar el botón de expansión para que solo sea visible si el menú está habilitado */}
+            {menuEnabled && (
+              <button
+                ref={trigger}
+                onClick={() => setIsExpanded(!isExpanded)}
+                aria-controls="sidebar"
+                aria-expanded={isExpanded}
+                className={`block transition-all duration-300 ease-in-out lg:hidden ${
+                  !isExpanded && !isHovered ? "opacity-0" : "opacity-100"
+                }`}
               >
-                <path
-                  d="M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z"
-                  fill=""
-                />
-              </svg>
-            </button>
+                <svg
+                  className="fill-current"
+                  width="20"
+                  height="18"
+                  viewBox="0 0 20 18"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M19 8.175H2.98748L9.36248 1.6875C9.69998 1.35 9.69998 0.825 9.36248 0.4875C9.02498 0.15 8.49998 0.15 8.16248 0.4875L0.399976 8.3625C0.0624756 8.7 0.0624756 9.225 0.399976 9.5625L8.16248 17.4375C8.31248 17.5875 8.53748 17.7 8.76248 17.7C8.98748 17.7 9.17498 17.625 9.36248 17.475C9.69998 17.1375 9.69998 16.6125 9.36248 16.275L3.02498 9.8625H19C19.45 9.8625 19.825 9.4875 19.825 9.0375C19.825 8.55 19.45 8.175 19 8.175Z"
+                    fill=""
+                  />
+                </svg>
+              </button>
+            )}
           </div>
 
 

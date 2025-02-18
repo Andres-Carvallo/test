@@ -6,6 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
+import Cuotas from "@/components/Core/Cuotas/Cuotas";
 
 interface Product {
   id: number;
@@ -143,7 +144,9 @@ function Ofertas() {
   return (
     <section className="mx-10 py-10">
       <Breadcrumb pageName="Ofertas" />
-
+      <div className="flex flex-col gap-10">
+        <Cuotas/>
+      </div>
       <div className="rounded-lg p-4 bg-white my-6 overflow-x-auto">
         <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6">
           <div>Ofertas Activas</div>

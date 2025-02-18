@@ -2,10 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  console.log('MAINTENANCE_MODE:', process.env.MAINTENANCE_MODE);
-  console.log('Is maintenance mode?:', process.env.MAINTENANCE_MODE === 'true');
-  // Obtener el estado de mantenimiento desde las variables de entorno
-  const isMaintenanceMode = process.env.MAINTENANCE_MODE === 'true';
+  // Obtener el estado de mantenimiento desde las cookies
+  const maintenanceMode = request.cookies.get('maintenance_mode');
+  const isMaintenanceMode = maintenanceMode?.value === '1';
   
   // Obtener la ruta actual
   const path = request.nextUrl.pathname;

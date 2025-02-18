@@ -1,7 +1,9 @@
 import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import TableUsers from "@/components/Core/Tables/TableUsers";
-
+import Cuotas from "@/components/Core/Cuotas/Cuotas";
+import MenuOpcion from "@/components/Core/MenuOpcion/MenuOpcion";
 import { Metadata } from "next";
+import Mantenimiento from "@/components/Core/Mantenimiento/Mantenimiento";
 export const metadata: Metadata = {
   title: "CRUD de Usuarios | PixelUP",
   description: "PixelUP",
@@ -13,7 +15,14 @@ const UsuariosPage = () => {
     <section className="p-10">
       <Breadcrumb pageName="Usuarios" />
 
-      <div className="flex flex-col gap-10 min-h-screen">
+      <div className="flex flex-col gap-10">
+        <div className="grid grid-cols-2 gap-10">
+          <MenuOpcion/>
+          <Mantenimiento/>
+        </div>
+      </div>
+
+      <div className="flex flex-col mt-10 gap-10 min-h-screen">
         <TableUsers />
       </div>
     </section>
