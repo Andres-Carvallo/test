@@ -792,11 +792,11 @@ const BannerPrincipal01BO: React.FC = () => {
         </div>
         {isPreviewVisible && (
           <div>
-            <div className="h-[40vh] transition-all duration-300 ease-in-out">
+            <div className="h-[450px] transition-all duration-300 ease-in-out">
               {skeletonLoading ? (
                 <SkeletonLoader />
               ) : (
-                <div className="relative h-full overflow-hidden">
+                <div className="relative h-[450px] overflow-hidden">
                   <div className="absolute inset-0">
                     <img
                       src={mainImage || formData.mainImage.url}
@@ -810,11 +810,11 @@ const BannerPrincipal01BO: React.FC = () => {
                         (displayConfig.showPrice || displayConfig.showValue)) ||
                       displayConfig.showButton1 ||
                       displayConfig.showButton2) && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
+                      <div className="absolute inset-0 bg-black/50" />
                     )}
                   </div>
 
-                  <div className="relative h-full max-w-7xl mx-auto px-4">
+                  <div className="relative h-full  mx-auto px-20 md:px-24 ">
                     <div
                       className={`flex flex-col justify-center h-full ${(() => {
                         switch (displayConfig.contentAlignment) {
@@ -828,7 +828,7 @@ const BannerPrincipal01BO: React.FC = () => {
                       })()} max-w-2xl`}
                     >
                       {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
-                        <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+                        <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
                           {formData.buttonLink}
                         </span>
                       )}
@@ -1459,7 +1459,7 @@ const BannerPrincipal01BO: React.FC = () => {
                 image={mainImage || ""}
                 crop={crop}
                 zoom={zoom}
-                aspect={16 / 9}
+                aspect={1900 / 450}
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={handleCropComplete}

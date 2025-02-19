@@ -42,6 +42,7 @@ const BannerPrincipal01: React.FC = () => {
   const [bannerData, setBannerData] = useState<BannerData | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">(
     "left"
   );
@@ -72,16 +73,16 @@ const BannerPrincipal01: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (bannerData && bannerData.images.length > 1) {
+    if (bannerData && bannerData.images.length > 1 && !isPaused) {
       const interval = setInterval(() => {
         setCurrentIndex((prevIndex) => {
           const nextIndex = (prevIndex + 1) % bannerData.images.length;
           return nextIndex;
         });
-      }, 8000);
+      }, 4000);
       return () => clearInterval(interval);
     }
-  }, [bannerData]);
+  }, [bannerData, isPaused]);
 
   const handlePrev = () => {
     if (!bannerData) return;
@@ -261,7 +262,11 @@ const BannerPrincipal01: React.FC = () => {
   console.log("Link del botón Ver detalles:", currentImage.mainImageLink);
 
   return (
-    <section className="relative h-[80vh] md:h-[80vh] overflow-hidden">
+    <section
+      className="relative overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       {/* Contenedor de imágenes */}
       <div className="absolute inset-0 z-0">
         {bannerData.images.map((image, index) => (
@@ -278,7 +283,7 @@ const BannerPrincipal01: React.FC = () => {
             />
             {shouldShowOverlay(image) && index === currentIndex && (
               <div
-                className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"
+                className="absolute inset-0 bg-black/30"
                 style={{ pointerEvents: "none" }}
               />
             )}
@@ -287,10 +292,10 @@ const BannerPrincipal01: React.FC = () => {
       </div>
 
       {/* Contenido del banner */}
-      <div className="relative h-full z-10">
-        <div className="h-full max-w-7xl mx-auto px-4">
+      <div className="relative h-full z-10 ">
+        <div className="h-full  mx-auto px-20 md:px-24 ">
           <div
-            className={`flex flex-col justify-center h-full ${(() => {
+            className={`flex flex-col justify-center h-full min-h-[450px] ${(() => {
               const config = parseDisplayConfig(currentImage.landingText);
               switch (config.contentAlignment) {
                 case "center":
@@ -303,7 +308,7 @@ const BannerPrincipal01: React.FC = () => {
             })()} max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-              <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+              <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
                 {currentImage.buttonLink}
               </span>
             )}
@@ -411,6 +416,24 @@ const BannerPrincipal01: React.FC = () => {
               />
             </svg>
           </button>
+        </div>
+      )}
+
+      {/* Indicador de posición */}
+      {bannerData.images.length > 1 && (
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-30">
+          {bannerData.images.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`h-1 transition-all duration-300 rounded ${
+                index === currentIndex
+                  ? "w-8 bg-white"
+                  : "w-4 bg-white/50 hover:bg-white/75"
+              }`}
+              aria-label={`Ir a la imagen ${index + 1}`}
+            />
+          ))}
         </div>
       )}
     </section>
