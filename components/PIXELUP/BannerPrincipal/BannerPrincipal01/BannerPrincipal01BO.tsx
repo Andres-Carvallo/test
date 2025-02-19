@@ -748,6 +748,22 @@ const BannerPrincipal01BO: React.FC = () => {
     updateDisplayConfig({ fullBannerLink: checked });
   };
 
+  const handleButton1Toggle = (checked: boolean) => {
+    if (checked && displayConfig.fullBannerLink) {
+      setIsAlertModalOpen(true);
+      return;
+    }
+    updateDisplayConfig({ showButton1: checked });
+  };
+
+  const handleButton2Toggle = (checked: boolean) => {
+    if (checked && displayConfig.fullBannerLink) {
+      setIsAlertModalOpen(true);
+      return;
+    }
+    updateDisplayConfig({ showButton2: checked });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -964,66 +980,74 @@ const BannerPrincipal01BO: React.FC = () => {
         )}
       </div>
 
+      {/* Botones de acción principales */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={handleAddImageClick}
+            className={`py-2 px-4 rounded text-white font-medium text-sm ${
+              isAddingImage
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
+          >
+            {isAddingImage ? "Cancelar" : "Agregar Banner"}
+          </button>
+
+          {bannerData.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-medium text-sm"
+            >
+              Borrar Banner
+            </button>
+          )}
+
+          <button
+            type="submit"
+            form="bannerForm"
+            disabled={loading}
+            className="py-2 px-4 rounded bg-primary hover:bg-secondary text-white font-medium text-sm flex items-center justify-center"
+          >
+            {loading && (
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            )}
+            {loading
+              ? "Guardando..."
+              : isAddingImage
+              ? "Crear Banner"
+              : "Actualizar"}
+          </button>
+        </div>
+      </div>
+
       {/* Panel de Control */}
       <form
+        id="bannerForm"
         onSubmit={handleSubmit}
         className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 space-y-4"
       >
-        {/* Controles de Imagen */}
-        <div>
-          <h3 className="text-md font-medium text-gray-900 mb-2">Imagen</h3>
-          <input
-            type="file"
-            accept="image/*"
-            id="mainImage"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-          />
-          {isMainImageUploaded ? (
-            <div className="relative">
-              <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-                <div className="relative rounded-lg overflow-hidden h-32">
-                  <img
-                    src={mainImage || formData.mainImage.url}
-                    alt="Banner Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 w-full inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Cambiar imagen
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer bg-gray-50 text-center"
-            >
-              <svg
-                className="mx-auto h-8 w-8 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              <span className="mt-1 text-sm text-gray-500 block">
-                PNG, JPG, GIF hasta 10MB
-              </span>
-            </div>
-          )}
-        </div>
-
         {/* Grid de 3 columnas para los controles */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Columna 1: Controles de Contenido */}
@@ -1327,9 +1351,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   <label className="text-sm text-gray-700">Botón 1</label>
                   <Switch
                     checked={displayConfig.showButton1}
-                    onChange={(checked) =>
-                      updateDisplayConfig({ showButton1: checked })
-                    }
+                    onChange={handleButton1Toggle}
                   />
                 </div>
                 <input
@@ -1372,9 +1394,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   <label className="text-sm text-gray-700">Botón 2</label>
                   <Switch
                     checked={displayConfig.showButton2}
-                    onChange={(checked) =>
-                      updateDisplayConfig({ showButton2: checked })
-                    }
+                    onChange={handleButton2Toggle}
                   />
                 </div>
                 <input
@@ -1452,63 +1472,58 @@ const BannerPrincipal01BO: React.FC = () => {
           </div>
         </div>
 
-        {/* Botones de Acción */}
-        <div className="flex gap-2 pt-4 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={handleAddImageClick}
-            className={`flex-1 py-2 px-4 rounded text-white font-medium text-sm ${
-              isAddingImage
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-          >
-            {isAddingImage ? "Cancelar" : "Agregar Banner"}
-          </button>
+        {/* Sección de carga de imagen */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-md font-medium text-gray-900">
+              Imagen del Banner
+            </h3>
+            <input
+              type="file"
+              accept="image/*"
+              id="mainImage"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+            />
+          </div>
 
-          {bannerData.length > 1 && (
-            <button
-              type="button"
-              onClick={() => setIsDeleteModalOpen(true)}
-              className="flex-1 py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-medium text-sm"
+          {isMainImageUploaded ? (
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-600">
+                {fileName || "banner-image.jpg"}
+              </div>
+              <button
+                type="button"
+                onClick={handleClearImage}
+                className="text-red-600 hover:text-red-700 text-sm"
+              >
+                Eliminar
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer bg-white text-center"
             >
-              Borrar Banner
-            </button>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 py-2 px-4 rounded bg-primary hover:bg-secondary text-white font-medium text-sm flex items-center justify-center"
-          >
-            {loading && (
               <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                xmlns="http://www.w3.org/2000/svg"
+                className="mx-auto h-8 w-8 text-gray-400"
                 fill="none"
                 viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
                 <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
-            )}
-            {loading
-              ? "Guardando..."
-              : isAddingImage
-              ? "Crear Banner"
-              : "Actualizar"}
-          </button>
+              <span className="mt-1 text-sm text-gray-500 block">
+                PNG, JPG, GIF hasta 5MB
+              </span>
+            </div>
+          )}
         </div>
       </form>
 
@@ -1675,11 +1690,11 @@ const BannerPrincipal01BO: React.FC = () => {
             </div>
             <div className="text-center">
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No se puede activar el banner clickeable
+                No se pueden activar los botones
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                Debes desactivar los botones existentes antes de hacer todo el
-                banner clickeable.
+                Debes desactivar el banner clickeable antes de poder activar los
+                botones individuales.
               </p>
               <button
                 onClick={() => setIsAlertModalOpen(false)}
