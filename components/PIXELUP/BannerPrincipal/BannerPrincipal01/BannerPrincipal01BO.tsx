@@ -14,6 +14,7 @@ import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
 import { Switch } from "@/components/Core/Switch";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
 
 interface BannerImage {
   id: string;
@@ -45,6 +46,8 @@ interface DisplayConfig {
   button1Link: string;
   button2Link: string;
   contentAlignment: "left" | "center" | "right";
+  fullBannerLink: boolean;
+  fullBannerLinkUrl: string;
 }
 
 // Modificar la interfaz BannerData
@@ -109,6 +112,8 @@ const BannerPrincipal01BO: React.FC = () => {
     button1Link: "",
     button2Link: "",
     contentAlignment: "left",
+    fullBannerLink: false,
+    fullBannerLinkUrl: "",
   });
 
   // Agregar constantes para valores por defecto
@@ -117,6 +122,8 @@ const BannerPrincipal01BO: React.FC = () => {
 
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
+
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
   const parseButtonTextData = (buttonText: string): ButtonTextData => {
     try {
@@ -304,12 +311,6 @@ const BannerPrincipal01BO: React.FC = () => {
         return;
       }
 
-      console.log("Enviando datos:", {
-        isAddingImage,
-        token: !!token,
-        bannerId,
-      });
-
       // Preparar los datos a enviar incluyendo toda la configuración actual
       const dataToSend = {
         title:
@@ -328,6 +329,8 @@ const BannerPrincipal01BO: React.FC = () => {
           button1Link: displayConfig.button1Link,
           button2Link: displayConfig.button2Link,
           contentAlignment: displayConfig.contentAlignment,
+          fullBannerLink: displayConfig.fullBannerLink,
+          fullBannerLinkUrl: displayConfig.fullBannerLinkUrl,
         }),
         buttonText: JSON.stringify({
           price: buttonTextData.price || "",
@@ -349,8 +352,6 @@ const BannerPrincipal01BO: React.FC = () => {
         ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
         : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
-      console.log("URL de la petición:", url);
-
       const response = await axios({
         method: isAddingImage ? "POST" : "PUT",
         url,
@@ -361,15 +362,13 @@ const BannerPrincipal01BO: React.FC = () => {
         data: dataToSend,
       });
 
-      console.log("Respuesta:", response.status, response.data);
-
       if (response.status === 200 || response.status === 201) {
         toast.success(
           isAddingImage
             ? "Banner creado exitosamente"
             : "Banner actualizado exitosamente"
         );
-        fetchBannerHome();
+        await fetchBannerHome();
         if (isAddingImage) {
           setIsAddingImage(false);
         }
@@ -511,10 +510,18 @@ const BannerPrincipal01BO: React.FC = () => {
       // Inicializar con valores por defecto para el nuevo banner
       const initialLandingText = JSON.stringify({
         text: "",
+        showText: false,
         showPrice: false,
         showValue: false,
         showButton1: false,
         showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "",
+        button2Link: "",
+        contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
       });
 
       const initialButtonText = JSON.stringify({
@@ -553,6 +560,8 @@ const BannerPrincipal01BO: React.FC = () => {
         button1Link: "",
         button2Link: "",
         contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
       });
 
       // Establecer la configuración inicial del botón
@@ -624,6 +633,8 @@ const BannerPrincipal01BO: React.FC = () => {
           button1Link: parsed.button1Link || "",
           button2Link: parsed.button2Link || "",
           contentAlignment: parsed.contentAlignment || "left",
+          fullBannerLink: parsed.fullBannerLink ?? false,
+          fullBannerLinkUrl: parsed.fullBannerLinkUrl || "",
         };
       }
       return {
@@ -638,6 +649,8 @@ const BannerPrincipal01BO: React.FC = () => {
         button1Link: "",
         button2Link: "",
         contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
       };
     } catch {
       return {
@@ -652,6 +665,8 @@ const BannerPrincipal01BO: React.FC = () => {
         button1Link: "",
         button2Link: "",
         contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
       };
     }
   };
@@ -723,6 +738,14 @@ const BannerPrincipal01BO: React.FC = () => {
     }
 
     return formattedURL;
+  };
+
+  const handleFullBannerLinkToggle = (checked: boolean) => {
+    if (checked && (displayConfig.showButton1 || displayConfig.showButton2)) {
+      setIsAlertModalOpen(true);
+      return;
+    }
+    updateDisplayConfig({ fullBannerLink: checked });
   };
 
   if (loading) {
@@ -797,6 +820,14 @@ const BannerPrincipal01BO: React.FC = () => {
                 <SkeletonLoader />
               ) : (
                 <div className="relative h-[450px] overflow-hidden">
+                  {displayConfig.fullBannerLink &&
+                    displayConfig.fullBannerLinkUrl && (
+                      <Link
+                        href={displayConfig.fullBannerLinkUrl}
+                        className="absolute inset-0 z-30 cursor-pointer"
+                        target="_blank"
+                      />
+                    )}
                   <div className="absolute inset-0">
                     <img
                       src={mainImage || formData.mainImage.url}
@@ -1380,6 +1411,43 @@ const BannerPrincipal01BO: React.FC = () => {
                   disabled={!displayConfig.showButton2}
                 />
               </div>
+
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <label className="text-sm text-gray-700">
+                      Banner Clickeable
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Todo el banner será un enlace
+                    </p>
+                  </div>
+                  <Switch
+                    checked={displayConfig.fullBannerLink}
+                    onChange={handleFullBannerLinkToggle}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={displayConfig.fullBannerLinkUrl}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      fullBannerLinkUrl: e.target.value,
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    const formattedLink = formatURL(e.target.value);
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      fullBannerLinkUrl: formattedLink,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Link del banner completo"
+                  disabled={!displayConfig.fullBannerLink}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -1576,6 +1644,49 @@ const BannerPrincipal01BO: React.FC = () => {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal de Alerta para Banner Clickeable */}
+      {isAlertModalOpen && (
+        <Modal
+          showModal={isAlertModalOpen}
+          onClose={() => setIsAlertModalOpen(false)}
+        >
+          <div className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100">
+                <svg
+                  className="h-6 w-6 text-yellow-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No se puede activar el banner clickeable
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Debes desactivar los botones existentes antes de hacer todo el
+                banner clickeable.
+              </p>
+              <button
+                onClick={() => setIsAlertModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                Entendido
+              </button>
             </div>
           </div>
         </Modal>

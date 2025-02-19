@@ -32,6 +32,8 @@ interface DisplayConfig {
   button1Link: string;
   button2Link: string;
   contentAlignment: "left" | "center" | "right";
+  fullBannerLink: boolean;
+  fullBannerLinkUrl: string;
 }
 
 interface BannerData {
@@ -139,6 +141,8 @@ const BannerPrincipal01: React.FC = () => {
           button1Link: parsed.button1Link || "#",
           button2Link: parsed.button2Link || "#",
           contentAlignment: parsed.contentAlignment || "left",
+          fullBannerLink: parsed.fullBannerLink ?? false,
+          fullBannerLinkUrl: parsed.fullBannerLinkUrl || "#",
         };
       }
       return {
@@ -153,6 +157,8 @@ const BannerPrincipal01: React.FC = () => {
         button1Link: "#",
         button2Link: "#",
         contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "#",
       };
     } catch {
       return {
@@ -167,6 +173,8 @@ const BannerPrincipal01: React.FC = () => {
         button1Link: "#",
         button2Link: "#",
         contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "#",
       };
     }
   };
@@ -268,32 +276,46 @@ const BannerPrincipal01: React.FC = () => {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Contenedor de imágenes */}
-      <div className="absolute inset-0 z-0">
-        {bannerData.images.map((image, index) => (
-          <div
-            key={index}
-            className="absolute inset-0"
-          >
-            <img
-              src={image.mainImage.url}
-              alt={image.title !== DEFAULT_TITLE ? image.title : ""}
-              className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-                index === currentIndex ? "opacity-100" : "opacity-0"
-              }`}
-            />
-            {shouldShowOverlay(image) && index === currentIndex && (
-              <div
-                className="absolute inset-0 bg-black/30"
-                style={{ pointerEvents: "none" }}
+      <div className="absolute inset-0">
+        {bannerData.images.map((image, index) => {
+          const config = parseDisplayConfig(image.landingText);
+          return (
+            <div
+              key={index}
+              className="absolute inset-0"
+            >
+              <img
+                src={image.mainImage.url}
+                alt={image.title !== DEFAULT_TITLE ? image.title : ""}
+                className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+                  index === currentIndex ? "opacity-100" : "opacity-0"
+                }`}
               />
-            )}
-          </div>
-        ))}
+              {shouldShowOverlay(image) && index === currentIndex && (
+                <div
+                  className="absolute inset-0 bg-black/30"
+                  style={{ pointerEvents: "none" }}
+                />
+              )}
+              {config.fullBannerLink &&
+                config.fullBannerLinkUrl &&
+                index === currentIndex && (
+                  <Link
+                    href={config.fullBannerLinkUrl}
+                    className="absolute inset-0 z-50 cursor-pointer"
+                    target="_blank"
+                  >
+                    <span className="sr-only">Ver más</span>
+                  </Link>
+                )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Contenido del banner */}
-      <div className="relative h-full z-10 ">
-        <div className="h-full  mx-auto px-20 md:px-24 ">
+      <div className="relative h-full z-20">
+        <div className="h-full mx-auto px-20 md:px-24">
           <div
             className={`flex flex-col justify-center h-full min-h-[450px] ${(() => {
               const config = parseDisplayConfig(currentImage.landingText);
@@ -308,7 +330,7 @@ const BannerPrincipal01: React.FC = () => {
             })()} max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-              <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+              <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
                 {currentImage.buttonLink}
               </span>
             )}
@@ -346,40 +368,39 @@ const BannerPrincipal01: React.FC = () => {
               )}
 
             {/* Botones */}
-            <div className="flex flex-wrap gap-4 relative z-20">
-              {(() => {
-                const config = parseDisplayConfig(currentImage.landingText);
-                return (
-                  <>
-                    {config.showButton1 && config.button1Text && (
-                      <Link
-                        href={config.button1Link}
-                        target="_blank"
-                        className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
-                      >
-                        {config.button1Text}
-                      </Link>
-                    )}
-                    {config.showButton2 && config.button2Text && (
-                      <Link
-                        href={config.button2Link}
-                        target="_blank"
-                        className="relative inline-block bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
-                      >
-                        {config.button2Text}
-                      </Link>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
+            {(() => {
+              const config = parseDisplayConfig(currentImage.landingText);
+              if (config.fullBannerLink) return null; // No mostrar botones si el banner es clickeable
+              return (
+                <div className="flex flex-wrap gap-4 relative z-20">
+                  {config.showButton1 && config.button1Text && (
+                    <Link
+                      href={config.button1Link}
+                      target="_blank"
+                      className="bg-primary/60 text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                    >
+                      {config.button1Text}
+                    </Link>
+                  )}
+                  {config.showButton2 && config.button2Text && (
+                    <Link
+                      href={config.button2Link}
+                      target="_blank"
+                      className="relative inline-block bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
+                    >
+                      {config.button2Text}
+                    </Link>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
 
       {/* Botones de navegación */}
       {bannerData.images.length > 1 && (
-        <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between items-center z-30 pointer-events-none">
+        <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between items-center z-40 pointer-events-none">
           <button
             onClick={handlePrev}
             className="pointer-events-auto ml-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
@@ -421,7 +442,7 @@ const BannerPrincipal01: React.FC = () => {
 
       {/* Indicador de posición */}
       {bannerData.images.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-30">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-40">
           {bannerData.images.map((_, index) => (
             <button
               key={index}
