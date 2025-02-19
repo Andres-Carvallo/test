@@ -93,6 +93,9 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { addToCartHandler } = useAPI();
   const { id } = useParams();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [cuotasEnabled, setCuotasEnabled] = useState(false);
+  const [numeroCuotas, setNumeroCuotas] = useState(0);
 
   const fetchStockForVariation = useCallback(
     async (productId: string, skuId: string) => {
@@ -802,21 +805,67 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
     // Para variación seleccionada con oferta
     if (selectedVariation) {
       if (selectedVariation.offers?.length > 0) {
+        const normalPrice = selectedVariationPrice;
+        const offerPrice = selectedVariation.offers[0].unitPrice;
+        const precioPorCuota = offerPrice && cuotasEnabled ? Math.ceil(offerPrice / numeroCuotas) : 0;
+
         return (
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-medium text-red-600">
-              ${selectedVariation.offers[0].unitPrice.toLocaleString('es-CL')}
-            </span>
-            <span className="text-lg text-gray-500 line-through">
-              ${selectedVariationPrice?.toLocaleString('es-CL')}
-            </span>
-            <span className="bg-red-100 text-red-600 text-sm px-2 py-1 rounded">
-              {discountPercentage}% Dcto.
-            </span>
+          <div className="flex flex-col">
+            <div className="rounded-lg flex py-2 px-3">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-medium text-gray-500 line-through">
+                    ${normalPrice?.toLocaleString('es-CL')}
+                  </span>
+                  <span className="bg-red-100 text-red-600 text-sm px-2 py-1 rounded h-fit">
+                    {discountPercentage}% Dcto.
+                  </span>
+                </div>
+                <span className="text-2xl font-medium text-red-600">
+                  ${offerPrice.toLocaleString('es-CL')}
+                </span>
+                {cuotasEnabled && numeroCuotas > 0 && (
+                  <>
+                    <span className="text-sm text-green-500 mt-1 font-medium">
+                      En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
+                    </span>
+                    <button 
+                      onClick={() => setShowPaymentModal(true)}
+                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                    >
+                      Ver métodos de pago
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         );
-      } else if (selectedVariationPrice) {
-        return <span className="text-2xl">${selectedVariationPrice.toLocaleString("es-CL")}</span>;
+      }
+
+      // Si no tiene oferta, mostrar solo el precio normal
+      if (selectedVariationPrice) {
+        const precioPorCuota = cuotasEnabled ? Math.ceil(selectedVariationPrice / numeroCuotas) : 0;
+        return (
+          <div className="flex flex-col">
+            <span className="text-2xl">
+              ${selectedVariationPrice.toLocaleString("es-CL")}
+            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <>
+                <span className="text-sm text-green-500 mt-1 font-medium">
+                  En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
+                </span>
+                <button 
+                  onClick={() => setShowPaymentModal(true)}
+                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                >
+                  Ver métodos de pago
+                </button>
+              </>
+            )}
+          </div>
+        );
       }
     }
 
@@ -886,6 +935,28 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
 
     return "Precio no disponible";
   };
+
+  useEffect(() => {
+    const fetchCuotasConfig = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        if (response.data.contentBlock?.contentText) {
+          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+          setCuotasEnabled(cuotasConfig.enabled);
+          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cuotas:", error);
+        setCuotasEnabled(false);
+        setNumeroCuotas(0);
+      }
+    };
+
+    fetchCuotasConfig();
+  }, []);
 
   return (
     <>
@@ -1046,6 +1117,62 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
             {/* Aquí puedes agregar el contenido de tu guía de tallas */}
             <div className="prose">
               <p>Contenido de la guía de tallas...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50"
+          onClick={() => setShowPaymentModal(false)}
+        >
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg relative max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowPaymentModal(false)}
+              className="absolute top-2 right-4 text-2xl text-gray-600 hover:text-gray-800"
+            >
+              &times;
+            </button>
+            
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Métodos de Pago</h3>
+              
+              <div className="space-y-4">
+                <div className="border-b pb-4">
+                  <h4 className="font-semibold text-gray-700 mb-2">Tarjetas de crédito</h4>
+                  <p className="text-sm text-gray-600 mb-2">Acreditación instantánea.</p>
+                  <p className="text-sm text-green-500 font-medium mb-2">
+                    Paga en {numeroCuotas} cuotas sin interés con estas tarjetas
+                  </p>
+                  <p className="text-sm text-gray-600 mb-3">Con todos los bancos.</p>
+                  <div className="flex gap-4">
+                    <img 
+                      src="/images/Tarjetas/visa.png" 
+                      alt="Visa" 
+                      className="h-10" 
+                    />
+                    <img src="/images/Tarjetas/mastercard.png" alt="Mastercard" className="h-10" />
+                  </div>
+                </div>
+
+                <div className="border-b pb-4">
+                  <h4 className="font-semibold text-gray-700 mb-2">Tarjetas de débito</h4>
+                  <p className="text-sm text-gray-600">Acreditación instantánea.</p>
+                  <div className="flex gap-4 mt-2">
+                    <img 
+                      src="/images/Tarjetas/visa.png" 
+                      alt="Visa" 
+                      className="h-10" 
+                    />
+                    <img src="/images/Tarjetas/mastercard.png" alt="Mastercard" className="h-10" />
+                    <img src="/images/Tarjetas/redcompra.webp" alt="Webpay" className="h-10" />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

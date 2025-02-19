@@ -32,10 +32,16 @@ const Cuotas: React.FC = () => {
       );
 
       const data = response.data.contentBlock;
-      const isEnabled = data.contentText !== "0" && data.contentText !== null;
-      setEnableCuotas(isEnabled);
+      let cuotasConfig;
+      try {
+        cuotasConfig = JSON.parse(data.contentText || '{"enabled": false, "installments": "3"}');
+      } catch {
+        cuotasConfig = { enabled: false, installments: "3" };
+      }
+
+      setEnableCuotas(cuotasConfig.enabled);
       setCuotasOption(data);
-      setSelectedValue(isEnabled ? data.contentText : "3");
+      setSelectedValue(cuotasConfig.installments);
     } catch (error) {
       console.error("Error al obtener la configuración de cuotas:", error);
       toast.error("Error al obtener la configuración de cuotas.");
@@ -44,10 +50,7 @@ const Cuotas: React.FC = () => {
 
   const handleToggleChange = async (checked: boolean) => {
     setEnableCuotas(checked);
-
-    if (!checked) {
-      await updateCuotas("0");
-    }
+    await updateCuotas(checked ? selectedValue : "0", checked);
   };
 
   const handleValueChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -55,20 +58,25 @@ const Cuotas: React.FC = () => {
     setSelectedValue(value);
     
     if (enableCuotas) {
-      await updateCuotas(value);
+      await updateCuotas(value, enableCuotas);
     }
   };
 
-  const updateCuotas = async (value: string) => {
+  const updateCuotas = async (value: string, enabled: boolean) => {
     if (!cuotasOption) return;
 
     try {
       const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+      const cuotasConfig = {
+        enabled: enabled,
+        installments: value
+      };
+
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: "cuotas",
-          contentText: value,
+          contentText: JSON.stringify(cuotasConfig),
         },
         {
           headers: {
@@ -81,7 +89,7 @@ const Cuotas: React.FC = () => {
       toast.success("Configuración de cuotas actualizada exitosamente.");
       setCuotasOption((prev) => ({
         ...prev!,
-        contentText: value,
+        contentText: JSON.stringify(cuotasConfig),
       }));
     } catch (error) {
       console.error("Error al actualizar las cuotas:", error);

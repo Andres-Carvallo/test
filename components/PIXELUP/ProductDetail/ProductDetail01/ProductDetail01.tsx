@@ -47,7 +47,6 @@ interface ProductDetail02Props {
 const ProductDetail01: React.FC<ProductDetail02Props> = ({
   product: initialProduct,
 }) => {
-  const numeroCuotas = process.env.NEXT_PUBLIC_NUMERO_DE_CUOTAS ? parseInt(process.env.NEXT_PUBLIC_NUMERO_DE_CUOTAS) : 0;
   const [variations, setVariations] = useState<Variation[]>([]);
   const [isOutOfStock, setIsOutOfStock] = useState(false);
   const [stock, setStock] = useState<number | null>(null);
@@ -95,6 +94,8 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
   const { addToCartHandler } = useAPI();
   const { id } = useParams();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [cuotasEnabled, setCuotasEnabled] = useState(false);
+  const [numeroCuotas, setNumeroCuotas] = useState(0);
 
   const fetchStockForVariation = useCallback(
     async (productId: string, skuId: string) => {
@@ -775,22 +776,43 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
     return <div>Cargando...</div>;
   }
 
+  // Modificar el useEffect para obtener la configuración de cuotas
+  useEffect(() => {
+    const fetchCuotasConfig = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        console.log("dataCOUTAS", response.data);
+        if (response.data.contentBlock?.contentText) {
+          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+          setCuotasEnabled(cuotasConfig.enabled);
+          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cuotas:", error);
+        setCuotasEnabled(false);
+        setNumeroCuotas(0);
+      }
+    };
+
+    fetchCuotasConfig();
+  }, []);
+
+  // Modificar la función renderPrice para incluir la lógica de cuotas
   const renderPrice = () => {
     // Para variación seleccionada
     if (selectedVariation) {
       const normalPrice = selectedVariation.pricings?.[0]?.unitPrice;
       const offerPrice = selectedVariation.offers?.[0]?.unitPrice;
 
-      // Calcular el precio por cuota
+      // Calcular el precio por cuota solo si las cuotas están habilitadas
       const precioBase = offerPrice || normalPrice;
-      const precioPorCuota = precioBase ? Math.ceil(precioBase / numeroCuotas) : 0;
+      const precioPorCuota = precioBase && cuotasEnabled ? Math.ceil(precioBase / numeroCuotas) : 0;
 
       // Si tiene oferta, mostrar ambos precios
       if (offerPrice) {
-        const discountPercentage = Math.round(
-          ((normalPrice - offerPrice) / normalPrice) * 100
-        );
-
         return (
           <div className="flex flex-col">
             <div className="rounded-lg flex py-2 px-3">
@@ -801,10 +823,10 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 <span className="font-bold text-red-700 text-3xl mr-2">
                   ${offerPrice.toLocaleString("es-CL")}
                 </span>
-                {numeroCuotas > 0 && (
+                {cuotasEnabled && numeroCuotas > 0 && (
                   <>
                     <span className="text-sm text-green-500 mt-1 font-medium">
-                    En  {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
+                      En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                     </span>
                     <button 
                       onClick={() => setShowPaymentModal(true)}
@@ -816,7 +838,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 )}
               </div>
               <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
-                Dcto. {discountPercentage}%
+                Dcto. {calculateDiscount(normalPrice, offerPrice)}%
               </span>
             </div>
           </div>
@@ -830,17 +852,17 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
             <span className="font-bold text-primary text-3xl">
               ${normalPrice.toLocaleString("es-CL")}
             </span>
-            {numeroCuotas > 0 && (
+            {cuotasEnabled && numeroCuotas > 0 && (
               <>
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                 </span>
                 <button 
-                      onClick={() => setShowPaymentModal(true)}
-                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                    >
-                      Ver métodos de pago
-                    </button>
+                  onClick={() => setShowPaymentModal(true)}
+                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                >
+                  Ver métodos de pago
+                </button>
               </>
             )}
           </div>
@@ -882,15 +904,6 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
             </span>
             {numeroCuotas > 0 && (
               <>
-{/*                 <span className="text-sm text-green-500 mt-1 font-medium">
-                  Hasta {numeroCuotas} cuotas sin interés de ${minPrecioPorCuota.toLocaleString("es-CL")}
-                </span> */}
-{/*                 <button 
-                      onClick={() => setShowPaymentModal(true)}
-                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                    >
-                      Ver métodos de pago
-                    </button> */}
               </>
             )}
           </div>
@@ -912,15 +925,6 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
             </span>
             {numeroCuotas > 0 && (
               <>
-{/*                 <span className="text-sm text-green-500 mt-1 font-medium">
-                  Hasta {numeroCuotas} cuotas sin interés de ${minPrecioPorCuota.toLocaleString("es-CL")}
-                </span> */}
-{/*                 <button 
-                      onClick={() => setShowPaymentModal(true)}
-                      className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                    >
-                      Ver métodos de pago
-                    </button> */}
               </>
             )}
           </div>
