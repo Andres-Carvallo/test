@@ -75,7 +75,7 @@ export default function RootLayout({
         setSiteStatus(response.data.site.statusCode);
 
         if (
-          response.data.site.statusCode === "SUBSCRIPTION_PENDING" &&
+          response.data.site.statusCode !== "SUBSCRIPTION_ACTIVE" &&
           !pathname.startsWith("/admin") &&
           !pathname.startsWith("/dashboard")
         ) {

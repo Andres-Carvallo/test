@@ -62,18 +62,15 @@ const RenovarSuscripcion = () => {
 
       console.log("Respuesta de suscripciones:", response.data);
 
-      // Asumimos que queremos la primera suscripción activa
-      const activeSubscription = response.data.subscriptions.find(
-        (sub: SubscriptionData) => sub.statusCode === "ACTIVE"
+      // Buscamos la primera suscripción que sea ACTIVE o EXPIRED
+      const validSubscription = response.data.subscriptions.find(
+        (sub: SubscriptionData) =>
+          sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
       );
 
-      if (activeSubscription) {
-        setSubscriptionData(activeSubscription);
-        // Usar este ID para la renovación
-        console.log(
-          "ID de suscripción para renovación:",
-          activeSubscription.id
-        );
+      if (validSubscription) {
+        setSubscriptionData(validSubscription);
+        console.log("ID de suscripción para renovación:", validSubscription.id);
       }
     } catch (err) {
       console.error("Error fetching subscription data:", err);
@@ -160,12 +157,14 @@ const RenovarSuscripcion = () => {
   useEffect(() => {
     fetchSubscription();
     // Solo llamar a fetchRenewalOptions cuando tengamos el subscriptionData
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   useEffect(() => {
     if (subscriptionData?.id) {
       fetchRenewalOptions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscriptionData]);
 
   if (loading) {

@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import Link from 'next/link';
-import { Home } from 'lucide-react';
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -11,7 +10,7 @@ export default function NotFound() {
           alt="Logo PixelUp"
           className="w-40 h-40 mx-auto mb-6"
         />
-        
+
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-4">
             404 - Página no encontrada
@@ -34,16 +33,32 @@ export default function NotFound() {
                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Lo sentimos, la página que buscas parece que se ha perdido en el espacio.
+            Lo sentimos, la página que buscas parece que se ha perdido en el
+            espacio.
           </p>
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-100">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="inline-flex items-center px-6 py-3 bg-rosa text-white font-semibold rounded-lg hover:bg-dark transition-colors duration-200"
           >
-            <Home className="w-5 h-5 mr-2" />
+            <span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                />
+              </svg>
+            </span>
             Volver al inicio
           </Link>
         </div>
