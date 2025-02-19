@@ -31,6 +31,7 @@ interface DisplayConfig {
   button2Text: string;
   button1Link: string;
   button2Link: string;
+  contentAlignment: "left" | "center" | "right";
 }
 
 interface BannerData {
@@ -136,6 +137,7 @@ const BannerPrincipal01: React.FC = () => {
           button2Text: parsed.button2Text || "Botón 2",
           button1Link: parsed.button1Link || "#",
           button2Link: parsed.button2Link || "#",
+          contentAlignment: parsed.contentAlignment || "left",
         };
       }
       return {
@@ -149,6 +151,7 @@ const BannerPrincipal01: React.FC = () => {
         button2Text: "Botón 2",
         button1Link: "#",
         button2Link: "#",
+        contentAlignment: "left",
       };
     } catch {
       return {
@@ -162,6 +165,7 @@ const BannerPrincipal01: React.FC = () => {
         button2Text: "Botón 2",
         button1Link: "#",
         button2Link: "#",
+        contentAlignment: "left",
       };
     }
   };
@@ -285,7 +289,19 @@ const BannerPrincipal01: React.FC = () => {
       {/* Contenido del banner */}
       <div className="relative h-full z-10">
         <div className="h-full max-w-7xl mx-auto px-4">
-          <div className="flex flex-col justify-center h-full max-w-2xl items-start text-left">
+          <div
+            className={`flex flex-col justify-center h-full ${(() => {
+              const config = parseDisplayConfig(currentImage.landingText);
+              switch (config.contentAlignment) {
+                case "center":
+                  return "items-center text-center mx-auto";
+                case "right":
+                  return "items-end text-right ml-auto";
+                default:
+                  return "items-start text-left";
+              }
+            })()} max-w-2xl`}
+          >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
               <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
                 {currentImage.buttonLink}

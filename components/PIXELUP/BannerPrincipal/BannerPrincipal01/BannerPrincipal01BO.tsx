@@ -44,6 +44,7 @@ interface DisplayConfig {
   button2Text: string;
   button1Link: string;
   button2Link: string;
+  contentAlignment: "left" | "center" | "right";
 }
 
 // Modificar la interfaz BannerData
@@ -107,6 +108,7 @@ const BannerPrincipal01BO: React.FC = () => {
     button2Text: "Botón 2",
     button1Link: "",
     button2Link: "",
+    contentAlignment: "left",
   });
 
   // Agregar constantes para valores por defecto
@@ -308,7 +310,7 @@ const BannerPrincipal01BO: React.FC = () => {
         bannerId,
       });
 
-      // Simplificar la lógica: usar valores por defecto si los campos están desactivados
+      // Preparar los datos a enviar incluyendo toda la configuración actual
       const dataToSend = {
         title:
           formData.title === DEFAULT_TITLE || !formData.title
@@ -325,6 +327,7 @@ const BannerPrincipal01BO: React.FC = () => {
           button2Text: displayConfig.button2Text,
           button1Link: displayConfig.button1Link,
           button2Link: displayConfig.button2Link,
+          contentAlignment: displayConfig.contentAlignment,
         }),
         buttonText: JSON.stringify({
           price: buttonTextData.price || "",
@@ -549,6 +552,7 @@ const BannerPrincipal01BO: React.FC = () => {
         button2Text: "Botón 2",
         button1Link: "",
         button2Link: "",
+        contentAlignment: "left",
       });
 
       // Establecer la configuración inicial del botón
@@ -619,6 +623,7 @@ const BannerPrincipal01BO: React.FC = () => {
           button2Text: parsed.button2Text || "Botón 2",
           button1Link: parsed.button1Link || "",
           button2Link: parsed.button2Link || "",
+          contentAlignment: parsed.contentAlignment || "left",
         };
       }
       return {
@@ -632,6 +637,7 @@ const BannerPrincipal01BO: React.FC = () => {
         button2Text: "Botón 2",
         button1Link: "",
         button2Link: "",
+        contentAlignment: "left",
       };
     } catch {
       return {
@@ -645,114 +651,21 @@ const BannerPrincipal01BO: React.FC = () => {
         button2Text: "Botón 2",
         button1Link: "",
         button2Link: "",
+        contentAlignment: "left",
       };
     }
   };
 
-  // Modificar la función updateDisplayConfig
-  const updateDisplayConfig = async (updates: Partial<DisplayConfig>) => {
-    try {
-      // Actualizar el estado local inmediatamente
-      const newDisplayConfig = { ...displayConfig, ...updates };
-      setDisplayConfig(newDisplayConfig);
+  // Modificar la función updateDisplayConfig para que solo actualice el estado local
+  const updateDisplayConfig = (updates: Partial<DisplayConfig>) => {
+    const newDisplayConfig = { ...displayConfig, ...updates };
+    setDisplayConfig(newDisplayConfig);
 
-      // Si estamos en modo de creación (isAddingImage es true),
-      // solo actualizamos el estado local y el formData
-      if (isAddingImage) {
-        const newLandingText = JSON.stringify({
-          text: newDisplayConfig.text,
-          showText: newDisplayConfig.showText,
-          showPrice: newDisplayConfig.showPrice,
-          showValue: newDisplayConfig.showValue,
-          showButton1: newDisplayConfig.showButton1,
-          showButton2: newDisplayConfig.showButton2,
-          button1Text: newDisplayConfig.button1Text,
-          button2Text: newDisplayConfig.button2Text,
-          button1Link: newDisplayConfig.button1Link,
-          button2Link: newDisplayConfig.button2Link,
-        });
-
-        setFormData((prev) => ({
-          ...prev,
-          landingText: newLandingText,
-        }));
-
-        console.log("Configuración actualizada en modo creación:", {
-          newDisplayConfig,
-          newLandingText,
-        });
-
-        return;
-      }
-
-      // Si estamos editando, continuamos con la actualización en el servidor
-      const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
-
-      // Crear el nuevo objeto landingText con todos los campos necesarios
-      const newLandingText = JSON.stringify({
-        text: newDisplayConfig.text,
-        showText: newDisplayConfig.showText,
-        showPrice: newDisplayConfig.showPrice,
-        showValue: newDisplayConfig.showValue,
-        showButton1: newDisplayConfig.showButton1,
-        showButton2: newDisplayConfig.showButton2,
-        button1Text: newDisplayConfig.button1Text,
-        button2Text: newDisplayConfig.button2Text,
-        button1Link: newDisplayConfig.button1Link,
-        button2Link: newDisplayConfig.button2Link,
-      });
-
-      // Preparar datos para enviar
-      const dataToSend = {
-        title: formData.title,
-        landingText: newLandingText,
-        buttonText: formData.buttonText,
-        buttonLink: formData.buttonLink,
-        mainImageLink: formData.mainImageLink,
-        orderNumber: formData.orderNumber,
-      };
-
-      console.log("Datos a enviar al servidor:", dataToSend);
-
-      // Enviar actualización al servidor
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        dataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      console.log("Respuesta del servidor:", response.data);
-
-      // Actualizar el estado local de formData
-      setFormData((prev) => ({
-        ...prev,
-        landingText: newLandingText,
-      }));
-
-      // Actualizar el estado local de bannerData
-      setBannerData((prev) =>
-        prev.map((image, index) =>
-          index === currentIndex
-            ? { ...image, landingText: newLandingText }
-            : image
-        )
-      );
-
-      console.log("Configuración actualizada:", {
-        newDisplayConfig,
-        newLandingText,
-        dataToSend,
-      });
-    } catch (error) {
-      console.error("Error al actualizar la configuración:", error);
-      toast.error("Error al actualizar la configuración");
-    }
+    // Actualizar el formData.landingText con la nueva configuración
+    setFormData((prev) => ({
+      ...prev,
+      landingText: JSON.stringify(newDisplayConfig),
+    }));
   };
 
   // Modificar el manejo del checkbox para el título
@@ -902,7 +815,18 @@ const BannerPrincipal01BO: React.FC = () => {
                   </div>
 
                   <div className="relative h-full max-w-7xl mx-auto px-4">
-                    <div className="flex flex-col justify-center h-full max-w-2xl items-start text-left">
+                    <div
+                      className={`flex flex-col justify-center h-full ${(() => {
+                        switch (displayConfig.contentAlignment) {
+                          case "center":
+                            return "items-center text-center mx-auto";
+                          case "right":
+                            return "items-end text-right ml-auto";
+                          default:
+                            return "items-start text-left";
+                        }
+                      })()} max-w-2xl`}
+                    >
                       {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
                         <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
                           {formData.buttonLink}
@@ -1077,6 +1001,156 @@ const BannerPrincipal01BO: React.FC = () => {
               Contenido
             </h3>
             <div className="space-y-4">
+              {/* Controles de alineación */}
+              <div>
+                <label className="text-sm text-gray-700 mb-2 block">
+                  Alineación del contenido
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDisplayConfig({ contentAlignment: "left" })
+                    }
+                    className={`flex-1 p-2 border rounded-md ${
+                      displayConfig.contentAlignment === "left"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5 mx-auto"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 4.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 9.5H12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 14.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 19.5H12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDisplayConfig({ contentAlignment: "center" })
+                    }
+                    className={`flex-1 p-2 border rounded-md ${
+                      displayConfig.contentAlignment === "center"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5 mx-auto"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 4.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 9.5H18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 14.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 19.5H18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDisplayConfig({ contentAlignment: "right" })
+                    }
+                    className={`flex-1 p-2 border rounded-md ${
+                      displayConfig.contentAlignment === "right"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5 mx-auto"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 4.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 9.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 14.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 19.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-700">Epígrafe</label>
