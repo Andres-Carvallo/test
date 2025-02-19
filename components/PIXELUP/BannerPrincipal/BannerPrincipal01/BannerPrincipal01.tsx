@@ -302,8 +302,8 @@ const BannerPrincipal01: React.FC = () => {
                 index === currentIndex && (
                   <Link
                     href={config.fullBannerLinkUrl}
-                    className="absolute inset-0 z-50 cursor-pointer"
-                    target="_blank"
+                    className="absolute inset-0 z-30 cursor-pointer pointer-events-auto"
+                    target="_self"
                   >
                     <span className="sr-only">Ver más</span>
                   </Link>
@@ -376,7 +376,7 @@ const BannerPrincipal01: React.FC = () => {
                   {config.showButton1 && config.button1Text && (
                     <Link
                       href={config.button1Link}
-                      target="_blank"
+                      target="_self"
                       className="bg-primary/60 text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
                     >
                       {config.button1Text}
@@ -385,7 +385,7 @@ const BannerPrincipal01: React.FC = () => {
                   {config.showButton2 && config.button2Text && (
                     <Link
                       href={config.button2Link}
-                      target="_blank"
+                      target="_self"
                       className="relative inline-block bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
                     >
                       {config.button2Text}
@@ -403,7 +403,7 @@ const BannerPrincipal01: React.FC = () => {
         <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between items-center z-40 pointer-events-none">
           <button
             onClick={handlePrev}
-            className="pointer-events-auto ml-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="pointer-events-auto ml-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
           >
             <svg
               className="w-5 h-5 md:w-6 md:h-6"
@@ -421,7 +421,7 @@ const BannerPrincipal01: React.FC = () => {
           </button>
           <button
             onClick={handleNext}
-            className="pointer-events-auto mr-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            className="pointer-events-auto mr-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
           >
             <svg
               className="w-5 h-5 md:w-6 md:h-6"
@@ -442,12 +442,12 @@ const BannerPrincipal01: React.FC = () => {
 
       {/* Indicador de posición */}
       {bannerData.images.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-40">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-40 pointer-events-none">
           {bannerData.images.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`h-1 transition-all duration-300 rounded ${
+              className={`pointer-events-auto h-1 transition-all duration-300 rounded relative z-50 ${
                 index === currentIndex
                   ? "w-8 bg-white"
                   : "w-4 bg-white/50 hover:bg-white/75"
