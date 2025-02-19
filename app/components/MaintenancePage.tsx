@@ -39,7 +39,7 @@ const MaintenancePage = () => {
         <img
           src={process.env.NEXT_PUBLIC_LOGO || '/logo-default.png'}
           alt="Ícono de mantenimiento"
-          className="w-40 h-40 mx-auto"
+          className="w-60 mx-auto"
         />
         <h1 className="text-4xl font-bold mb-4">Sitio en Mantenimiento</h1>
         <div 

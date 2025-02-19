@@ -120,7 +120,7 @@ export default async function Page() {
         <DynamicFooter /> */}
         {/* <DiscountModal /> */}
         <a
-          href={`https://wa.me/56978334123`}
+          href={process.env.NEXT_PUBLIC_WHATSAPP_LINK || ""}
           target="_blank"
           rel="noopener noreferrer"
           className="fixed right-6 bottom-[30px] z-50 bg-green-500 rounded-full p-3 hover:bg-green-600 transition-colors animate-pulse-whatsapp"
