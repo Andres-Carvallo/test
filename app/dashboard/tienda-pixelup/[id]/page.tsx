@@ -261,7 +261,7 @@ export default function DetalleCanje() {
               <img 
                 src={exchange?.companyImageUrl} 
                 alt={exchange?.name}
-                className="w-full h-full object-cover"
+                className="h-full object-cover"
               />
             </div>
             <div>
