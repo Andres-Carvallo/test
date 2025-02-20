@@ -776,29 +776,29 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
     return <div>Cargando...</div>;
   }
 
-  // Mover la función fetchCuotasConfig fuera del useEffect
-  const fetchCuotasConfig = async () => {
-    try {
-      const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      if (response.data.contentBlock?.contentText) {
-        const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
-        setCuotasEnabled(cuotasConfig.enabled);
-        setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
-      }
-    } catch (error) {
-      console.error("Error al obtener configuración de cuotas:", error);
-      setCuotasEnabled(false);
-      setNumeroCuotas(0);
-    }
-  };
-
-  // Mover el useEffect antes del return y sin condiciones
+  // Modificar el useEffect para obtener la configuración de cuotas
   useEffect(() => {
+    const fetchCuotasConfig = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        console.log("dataCOUTAS", response.data);
+        if (response.data.contentBlock?.contentText) {
+          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+          setCuotasEnabled(cuotasConfig.enabled);
+          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cuotas:", error);
+        setCuotasEnabled(false);
+        setNumeroCuotas(0);
+      }
+    };
+
     fetchCuotasConfig();
-  }, []); // Solo se ejecuta al montar el componente
+  }, []);
 
   // Modificar la función renderPrice para incluir la lógica de cuotas
   const renderPrice = () => {
