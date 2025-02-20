@@ -97,26 +97,23 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
   const [cuotasEnabled, setCuotasEnabled] = useState(false);
   const [numeroCuotas, setNumeroCuotas] = useState(0);
 
-  const fetchStockForVariation = useCallback(
-    async (productId: string, skuId: string) => {
-      try {
-        const data = await fetchStockData(productId, skuId);
-        if (data.code === 0 && data.skuInventories.length > 0) {
-          const totalStock = data.skuInventories.reduce(
-            (acc: number, inventory: any) => acc + inventory.quantity,
-            0
-          );
-          setStock(totalStock);
-        } else {
-          setStock(0);
-        }
-      } catch (error) {
-        console.error("Error fetching stock:", error);
+  const fetchStockForVariation = useCallback(async (productId: string, skuId: string) => {
+    try {
+      const data = await fetchStockData(productId, skuId);
+      if (data.code === 0 && data.skuInventories.length > 0) {
+        const totalStock = data.skuInventories.reduce(
+          (acc: number, inventory: any) => acc + inventory.quantity,
+          0
+        );
+        setStock(totalStock);
+      } else {
         setStock(0);
       }
-    },
-    []
-  );
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      setStock(0);
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedVariation) {
@@ -125,7 +122,7 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
         selectedVariation.id
       );
     }
-  }, [selectedVariation]);
+  }, [selectedVariation, fetchStockForVariation]);
 
   const fetchThumbnails = useCallback(
     async (productId: string, skuId: string) => {
@@ -156,28 +153,47 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
     [mainImageUrl, selectedVariation, initialProduct?.skus, selectedThumbnail]
   );
 
-  useEffect(() => {
-    const resetToBaseProduct = async () => {
-      if (!selectedVariation && initialProduct?.skus?.length > 0) {
-        const baseSku = initialProduct.skus.find((sku: any) => sku.isBaseSku);
-        if (baseSku) {
-          // Primero reseteamos los estados de navegación
-          setCurrentSlide(0);
-          setSelectedThumbnail(baseSku.mainImageUrl);
-
-          // Luego actualizamos los thumbnails
-          await fetchThumbnails(baseSku.product.id, baseSku.id);
-        }
-      } else if (selectedVariation) {
-        await fetchThumbnails(
-          selectedVariation.product.id,
-          selectedVariation.id
-        );
+  const resetToBaseProduct = useCallback(async () => {
+    if (!selectedVariation && initialProduct?.skus?.length > 0) {
+      const baseSku = initialProduct.skus.find((sku: any) => sku.isBaseSku);
+      if (baseSku) {
+        setCurrentSlide(0);
+        setSelectedThumbnail(baseSku.mainImageUrl);
+        await fetchThumbnails(baseSku.product.id, baseSku.id);
       }
-    };
+    } else if (selectedVariation) {
+      await fetchThumbnails(
+        selectedVariation.product.id,
+        selectedVariation.id
+      );
+    }
+  }, [selectedVariation, initialProduct?.skus, fetchThumbnails]);
 
+  useEffect(() => {
     resetToBaseProduct();
-  }, [selectedVariation, initialProduct?.skus]);
+  }, [resetToBaseProduct]);
+
+  const fetchCuotasConfig = useCallback(async () => {
+    try {
+      const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      if (response.data.contentBlock?.contentText) {
+        const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+        setCuotasEnabled(cuotasConfig.enabled);
+        setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+      }
+    } catch (error) {
+      console.error("Error al obtener configuración de cuotas:", error);
+      setCuotasEnabled(false);
+      setNumeroCuotas(0);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCuotasConfig();
+  }, [fetchCuotasConfig]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -928,28 +944,6 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
 
     return "Precio no disponible";
   };
-
-  useEffect(() => {
-    const fetchCuotasConfig = async () => {
-      try {
-        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-        if (response.data.contentBlock?.contentText) {
-          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
-          setCuotasEnabled(cuotasConfig.enabled);
-          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
-        }
-      } catch (error) {
-        console.error("Error al obtener configuración de cuotas:", error);
-        setCuotasEnabled(false);
-        setNumeroCuotas(0);
-      }
-    };
-
-    fetchCuotasConfig();
-  }, []);
 
   return (
     <>

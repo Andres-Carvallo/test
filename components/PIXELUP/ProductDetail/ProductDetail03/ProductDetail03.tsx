@@ -119,13 +119,39 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   );
 
   useEffect(() => {
-    if (selectedVariation) {
-      fetchStockForVariation(
-        selectedVariation.product.id,
-        selectedVariation.id
-      );
-    }
-  }, [selectedVariation]);
+    const fetchCuotasConfig = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        if (response.data.contentBlock?.contentText) {
+          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+          setCuotasEnabled(cuotasConfig.enabled);
+          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cuotas:", error);
+        setCuotasEnabled(false);
+        setNumeroCuotas(0);
+      }
+    };
+
+    fetchCuotasConfig();
+  }, []);
+
+  useEffect(() => {
+    const fetchStockData = async () => {
+      if (selectedVariation) {
+        await fetchStockForVariation(
+          selectedVariation.product.id,
+          selectedVariation.id
+        );
+      }
+    };
+
+    fetchStockData();
+  }, [selectedVariation, fetchStockForVariation]);
 
   const fetchThumbnails = useCallback(
     async (productId: string, skuId: string) => {
@@ -158,16 +184,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
 
   useEffect(() => {
     const resetToBaseProduct = async () => {
-      if (!selectedVariation && initialProduct?.skus?.length > 0) {
-        const baseSku = initialProduct.skus.find((sku: any) => sku.isBaseSku);
-        if (baseSku) {
-          // Primero reseteamos los estados de navegación
-          setCurrentSlide(0);
-          setSelectedThumbnail(baseSku.mainImageUrl);
-
-          // Luego actualizamos los thumbnails
-          await fetchThumbnails(baseSku.product.id, baseSku.id);
-        }
+      const baseSku = initialProduct?.skus?.find((sku: any) => sku.isBaseSku);
+      
+      if (!selectedVariation && baseSku) {
+        setCurrentSlide(0);
+        setSelectedThumbnail(baseSku.mainImageUrl);
+        await fetchThumbnails(baseSku.product.id, baseSku.id);
       } else if (selectedVariation) {
         await fetchThumbnails(
           selectedVariation.product.id,
@@ -177,7 +199,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
     };
 
     resetToBaseProduct();
-  }, [selectedVariation, initialProduct?.skus]);
+  }, [selectedVariation, initialProduct?.skus, fetchThumbnails]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -527,73 +549,47 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   }, [currentAttributes, selectedAttributes, variations]);
 
   useEffect(() => {
-    console.log("Selected attributes changed:", selectedAttributes);
-    console.log("Current variations:", variations);
-
-    const matchingVariation = variations.find((variation) => {
-      const matches = Object.keys(selectedAttributes).every((key) => {
-        const attribute = variation.attributes.find(
-          (attr) => attr.label === key
-        );
-        const isMatch =
-          attribute && attribute.value === selectedAttributes[key];
-        console.log(`Checking attribute ${key}:`, { attribute, isMatch });
-        return isMatch;
+    const updateVariationAndPrice = () => {
+      const matchingVariation = variations.find((variation) => {
+        return Object.keys(selectedAttributes).every((key) => {
+          const attribute = variation.attributes.find(
+            (attr) => attr.label === key
+          );
+          return attribute && attribute.value === selectedAttributes[key];
+        });
       });
-      console.log("Variation matches:", matches);
-      return matches;
-    });
 
-    console.log("Found matching variation:", matchingVariation);
+      if (matchingVariation) {
+        setSelectedVariation(matchingVariation);
+        if (matchingVariation.pricings && matchingVariation.pricings.length > 0) {
+          setSelectedVariationPrice(matchingVariation.pricings[0].unitPrice);
+        } else {
+          setSelectedVariationPrice(currentPrices[matchingVariation.id] || null);
+        }
 
-    if (matchingVariation) {
-      setSelectedVariation(matchingVariation);
-      // Actualizar el precio según la variación seleccionada
-      if (matchingVariation.pricings && matchingVariation.pricings.length > 0) {
-        console.log(
-          "Setting price from pricings:",
-          matchingVariation.pricings[0].unitPrice
-        );
-        setSelectedVariationPrice(matchingVariation.pricings[0].unitPrice);
-      } else {
-        console.log(
-          "No pricings found, using currentPrices:",
-          currentPrices[matchingVariation.id]
-        );
-        setSelectedVariationPrice(currentPrices[matchingVariation.id] || null);
-      }
-
-      if (matchingVariation.mainImageUrl) {
         setMainImageUrl(matchingVariation.mainImageUrl);
         setSelectedThumbnail(matchingVariation.mainImageUrl);
-      }
-
-      if (matchingVariation.isBaseSku) {
-        setDescription(matchingVariation.product.description);
-      } else {
         setDescription(
-          matchingVariation.description || matchingVariation.product.description
+          matchingVariation.isBaseSku 
+            ? matchingVariation.product.description 
+            : matchingVariation.description || matchingVariation.product.description
         );
-      }
-
-      fetchThumbnails(matchingVariation.product.id, matchingVariation.id);
-    } else {
-      const baseSku = variations.find((v) => v.isBaseSku);
-      if (baseSku) {
-        setSelectedVariation(null);
-        if (baseSku.pricings && baseSku.pricings.length > 0) {
-          console.log("Setting base price:", baseSku.pricings[0].unitPrice);
-          setSelectedVariationPrice(baseSku.pricings[0].unitPrice);
-        } else {
-          setSelectedVariationPrice(null);
+      } else {
+        const baseSku = variations.find((v) => v.isBaseSku);
+        if (baseSku) {
+          setSelectedVariation(null);
+          setSelectedVariationPrice(
+            baseSku.pricings?.[0]?.unitPrice || null
+          );
+          setMainImageUrl(baseSku.mainImageUrl);
+          setDescription(baseSku.product.description);
+          setSelectedThumbnail(baseSku.mainImageUrl);
         }
-        setMainImageUrl(baseSku.mainImageUrl);
-        setDescription(baseSku.product.description);
-        setSelectedThumbnail(baseSku.mainImageUrl);
-        fetchThumbnails(baseSku.product.id, baseSku.id);
       }
-    }
-  }, [selectedAttributes, variations]);
+    };
+
+    updateVariationAndPrice();
+  }, [selectedAttributes, variations, currentPrices]);
 
   const fetchAttributesForVariation = async (variationId: string) => {
     try {
@@ -935,28 +931,6 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
 
     return "Precio no disponible";
   };
-
-  useEffect(() => {
-    const fetchCuotasConfig = async () => {
-      try {
-        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-        if (response.data.contentBlock?.contentText) {
-          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
-          setCuotasEnabled(cuotasConfig.enabled);
-          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
-        }
-      } catch (error) {
-        console.error("Error al obtener configuración de cuotas:", error);
-        setCuotasEnabled(false);
-        setNumeroCuotas(0);
-      }
-    };
-
-    fetchCuotasConfig();
-  }, []);
 
   return (
     <>
