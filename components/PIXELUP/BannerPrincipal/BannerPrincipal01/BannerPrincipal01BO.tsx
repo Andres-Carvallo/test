@@ -311,6 +311,11 @@ const BannerPrincipal01BO: React.FC = () => {
         return;
       }
 
+      // Asegurarse de que la URL del banner clickeable esté formateada
+      const formattedFullBannerLinkUrl = displayConfig.fullBannerLink
+        ? formatURL(displayConfig.fullBannerLinkUrl)
+        : "";
+
       // Preparar los datos a enviar incluyendo toda la configuración actual
       const dataToSend = {
         title:
@@ -318,19 +323,8 @@ const BannerPrincipal01BO: React.FC = () => {
             ? DEFAULT_TITLE
             : formData.title,
         landingText: JSON.stringify({
-          text: displayConfig.text || "",
-          showText: displayConfig.showText,
-          showPrice: displayConfig.showPrice,
-          showValue: displayConfig.showValue,
-          showButton1: displayConfig.showButton1,
-          showButton2: displayConfig.showButton2,
-          button1Text: displayConfig.button1Text,
-          button2Text: displayConfig.button2Text,
-          button1Link: displayConfig.button1Link,
-          button2Link: displayConfig.button2Link,
-          contentAlignment: displayConfig.contentAlignment,
-          fullBannerLink: displayConfig.fullBannerLink,
-          fullBannerLinkUrl: displayConfig.fullBannerLinkUrl,
+          ...displayConfig,
+          fullBannerLinkUrl: formattedFullBannerLinkUrl,
         }),
         buttonText: JSON.stringify({
           price: buttonTextData.price || "",
@@ -581,18 +575,19 @@ const BannerPrincipal01BO: React.FC = () => {
   const handleButtonTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setButtonTextData((prev) => {
-      const otherFieldValue = name === "price" ? prev.value : prev.price;
-      const hasValues = Boolean(value) || Boolean(otherFieldValue);
       const newData = {
         ...prev,
         [name]: value,
-        show: hasValues ? prev.show : false, // Si no hay valores, forzar show a false
+        show:
+          Boolean(value) || Boolean(name === "price" ? prev.value : prev.price),
       };
+
       // Actualizar formData.buttonText con el nuevo JSON
       setFormData((prevForm) => ({
         ...prevForm,
         buttonText: JSON.stringify(newData),
       }));
+
       return newData;
     });
   };
@@ -621,6 +616,11 @@ const BannerPrincipal01BO: React.FC = () => {
           };
         }
 
+        // Asegurarse de que la URL esté formateada al cargar los datos
+        const fullBannerLinkUrl = parsed.fullBannerLink
+          ? formatURL(parsed.fullBannerLinkUrl || "")
+          : "";
+
         return {
           text: parsed.text || "",
           showText: parsed.showText ?? false,
@@ -634,7 +634,7 @@ const BannerPrincipal01BO: React.FC = () => {
           button2Link: parsed.button2Link || "",
           contentAlignment: parsed.contentAlignment || "left",
           fullBannerLink: parsed.fullBannerLink ?? false,
-          fullBannerLinkUrl: parsed.fullBannerLinkUrl || "",
+          fullBannerLinkUrl: fullBannerLinkUrl,
         };
       }
       return {
@@ -1293,15 +1293,99 @@ const BannerPrincipal01BO: React.FC = () => {
             </div>
           </div>
 
-          {/* Columna 2: Controles de Precios */}
+          {/* Columna 2: Imagen y Precios */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            {/* Sección de Imagen */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-md font-medium text-gray-900">
+                  Imagen del Banner
+                </h3>
+              </div>
+
+              <div className="text-center">
+                {isMainImageUploaded ? (
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm text-gray-600 mb-2">
+                      Tu fotografía{" "}
+                      <span className="font-bold">
+                        {fileName || "POST PIXELUP"}
+                      </span>{" "}
+                      ya ha sido cargada.
+                    </p>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Actualiza para ver los cambios.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (fileInputRef.current) {
+                          fileInputRef.current.click();
+                        }
+                      }}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Seleccionar otra Imagen
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                  >
+                    <div className="flex flex-col items-center">
+                      <svg
+                        className="w-12 h-12 text-gray-400 mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                      <p className="text-sm text-gray-500">
+                        PNG, JPG, GIF hasta 5MB
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+              </div>
+            </div>
+
+            {/* Separador */}
+            <div className="border-t border-gray-200 my-6"></div>
+
+            {/* Sección de Precios y Valores */}
             <h3 className="text-md font-medium text-gray-900 mb-4">
-              Precios y Valores
+              Cajas Informativas
             </h3>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-700">Precio</label>
+                  <label className="text-sm text-gray-700">Caja 1</label>
                   <Switch
                     checked={displayConfig.showPrice}
                     onChange={(checked) =>
@@ -1315,13 +1399,13 @@ const BannerPrincipal01BO: React.FC = () => {
                   value={buttonTextData.price}
                   onChange={handleButtonTextChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
-                  placeholder="Ej: $29.990"
+                  placeholder="Ej: Desde $29.990 / Temporada 2024 / etc."
                   disabled={!displayConfig.showPrice}
                 />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-700">Valor</label>
+                  <label className="text-sm text-gray-700">Caja 2</label>
                   <Switch
                     checked={displayConfig.showValue}
                     onChange={(checked) =>
@@ -1335,7 +1419,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   value={buttonTextData.value}
                   onChange={handleButtonTextChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
-                  placeholder="Ej: 60 min"
+                  placeholder="Ej: 60 min / Envío Gratis / etc."
                   disabled={!displayConfig.showValue}
                 />
               </div>
@@ -1470,60 +1554,6 @@ const BannerPrincipal01BO: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Sección de carga de imagen */}
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-md font-medium text-gray-900">
-              Imagen del Banner
-            </h3>
-            <input
-              type="file"
-              accept="image/*"
-              id="mainImage"
-              className="hidden"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-            />
-          </div>
-
-          {isMainImageUploaded ? (
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-gray-600">
-                {fileName || "banner-image.jpg"}
-              </div>
-              <button
-                type="button"
-                onClick={handleClearImage}
-                className="text-red-600 hover:text-red-700 text-sm"
-              >
-                Eliminar
-              </button>
-            </div>
-          ) : (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors cursor-pointer bg-white text-center"
-            >
-              <svg
-                className="mx-auto h-8 w-8 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              <span className="mt-1 text-sm text-gray-500 block">
-                PNG, JPG, GIF hasta 5MB
-              </span>
-            </div>
-          )}
         </div>
       </form>
 

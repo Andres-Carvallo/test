@@ -91,16 +91,16 @@ export default async function Page() {
     return (
       <>
         <DynamicNavbar />
-         <Suspense fallback={<Banner />}>
+
+        <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
-        </Suspense> 
-        <Suspense 
-          fallback={<div className="h-48 animate-pulse bg-gray-100" />
-}  >
-          <Destacados01 text="Destacados" />
         </Suspense>
-{/*         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <Destacados01 text="Destacados" />
         </Suspense>
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Categoria02 />
@@ -108,7 +108,7 @@ export default async function Page() {
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase01 />
         </Suspense>
-        <Suspense fallback={<Destacados/>}>
+        <Suspense fallback={<Destacados />}>
           <Destacados01 text="Destacados" />
         </Suspense>
         <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
@@ -117,7 +117,8 @@ export default async function Page() {
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase02 />
         </Suspense>
-        <DynamicFooter /> */}
+        <DynamicFooter />
+
         {/* <DiscountModal /> */}
         <a
           href={process.env.NEXT_PUBLIC_WHATSAPP_LINK || ""}

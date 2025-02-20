@@ -349,23 +349,24 @@ const BannerPrincipal01: React.FC = () => {
                 </p>
               )}
 
-            {/* Precios y valores */}
-            {parseButtonTextData(currentImage.buttonText).show &&
-              (parseDisplayConfig(currentImage.landingText).showPrice ||
-                parseDisplayConfig(currentImage.landingText).showValue) && (
-                <div className="flex items-center gap-4 mb-8">
-                  {parseDisplayConfig(currentImage.landingText).showPrice && (
+            {/* Mostrar precio y valor según la configuración */}
+            {(parseDisplayConfig(currentImage.landingText).showPrice ||
+              parseDisplayConfig(currentImage.landingText).showValue) && (
+              <div className="flex items-center gap-4 mb-8">
+                {parseDisplayConfig(currentImage.landingText).showPrice &&
+                  parseButtonTextData(currentImage.buttonText).price && (
                     <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
                       {parseButtonTextData(currentImage.buttonText).price}
                     </span>
                   )}
-                  {parseDisplayConfig(currentImage.landingText).showValue && (
+                {parseDisplayConfig(currentImage.landingText).showValue &&
+                  parseButtonTextData(currentImage.buttonText).value && (
                     <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
                       {parseButtonTextData(currentImage.buttonText).value}
                     </span>
                   )}
-                </div>
-              )}
+              </div>
+            )}
 
             {/* Botones */}
             {(() => {
