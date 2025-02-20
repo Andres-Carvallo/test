@@ -97,6 +97,28 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   const [cuotasEnabled, setCuotasEnabled] = useState(false);
   const [numeroCuotas, setNumeroCuotas] = useState(0);
 
+  const fetchCuotasConfig = async () => {
+    try {
+      const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      if (response.data.contentBlock?.contentText) {
+        const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+        setCuotasEnabled(cuotasConfig.enabled);
+        setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+      }
+    } catch (error) {
+      console.error("Error al obtener configuración de cuotas:", error);
+      setCuotasEnabled(false);
+      setNumeroCuotas(0);
+    }
+  };
+
+  useEffect(() => {
+    fetchCuotasConfig();
+  }, []);
+
   const fetchStockForVariation = useCallback(
     async (productId: string, skuId: string) => {
       try {
@@ -935,28 +957,6 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
 
     return "Precio no disponible";
   };
-
-  useEffect(() => {
-    const fetchCuotasConfig = async () => {
-      try {
-        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-        if (response.data.contentBlock?.contentText) {
-          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
-          setCuotasEnabled(cuotasConfig.enabled);
-          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
-        }
-      } catch (error) {
-        console.error("Error al obtener configuración de cuotas:", error);
-        setCuotasEnabled(false);
-        setNumeroCuotas(0);
-      }
-    };
-
-    fetchCuotasConfig();
-  }, []);
 
   return (
     <>
