@@ -71,10 +71,7 @@ const CreditChecker = () => {
   }, []);
 
   const formatCLP = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
+    return new Intl.NumberFormat("es-CL").format(amount);
   };
 
   const handleCopyCode = async () => {

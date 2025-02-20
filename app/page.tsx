@@ -95,7 +95,7 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
         </Suspense>
-
+{/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
         </Suspense>
@@ -116,7 +116,7 @@ export default async function Page() {
         </Suspense>
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase02 />
-        </Suspense>
+        </Suspense> */}
         <DynamicFooter />
 
         {/* <DiscountModal /> */}
