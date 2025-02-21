@@ -261,7 +261,7 @@ export default function DetalleCanje() {
               <img 
                 src={exchange?.companyImageUrl} 
                 alt={exchange?.name}
-                className="h-full object-cover"
+                className="h-full object-contain"
               />
             </div>
             <div>
@@ -349,13 +349,13 @@ export default function DetalleCanje() {
 
             {/* Detalles del producto */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex flex-col items-center gap-4 mb-4">
                 <img
                   src={exchange?.companyImageUrl}
                   alt={exchange?.name}
                   className="h-16 rounded-lg object-cover"
                 />
-                <div className="text-left">
+                <div className="text-center">
                   <p className="font-medium text-gray-900">{exchange?.name}</p>
                   <p className="text-sm text-gray-500">{exchange?.companyName}</p>
                 </div>
