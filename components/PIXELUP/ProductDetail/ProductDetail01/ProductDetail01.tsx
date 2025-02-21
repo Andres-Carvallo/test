@@ -771,14 +771,13 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
     "/img/iconos/slowfashion.png",
     "/img/iconos/conamor.png",
   ];
-  // Modificar la renderización para mostrar el skeleton solo cuando sea necesario
-  if (!initialProduct) {
-    return <div>Cargando...</div>;
-  }
 
-  // Modificar el useEffect para obtener la configuración de cuotas
+  // Mover la lógica del useEffect fuera del condicional
   useEffect(() => {
     const fetchCuotasConfig = async () => {
+      // Si no hay producto inicial, no hacer nada
+      if (!initialProduct) return;
+
       try {
         const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
         const response = await axios.get(
@@ -798,7 +797,12 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
     };
 
     fetchCuotasConfig();
-  }, []);
+  }, [initialProduct]); // Agregar initialProduct como dependencia
+
+  // Modificar el renderizado condicional
+  if (!initialProduct) {
+    return <div>Cargando...</div>;
+  }
 
   // Modificar la función renderPrice para incluir la lógica de cuotas
   const renderPrice = () => {

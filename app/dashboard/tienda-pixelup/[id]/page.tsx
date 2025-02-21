@@ -351,9 +351,9 @@ export default function DetalleCanje() {
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <div className="flex items-center gap-4 mb-4">
                 <img
-                  src={exchange?.mainImageUrl}
+                  src={exchange?.companyImageUrl}
                   alt={exchange?.name}
-                  className="w-16 h-16 rounded-lg object-cover"
+                  className="h-16 rounded-lg object-cover"
                 />
                 <div className="text-left">
                   <p className="font-medium text-gray-900">{exchange?.name}</p>

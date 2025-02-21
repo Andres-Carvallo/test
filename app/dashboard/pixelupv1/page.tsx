@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import { jwtDecode } from "jwt-decode";
 
 const ContentBlockForm = () => {
   const [title, setTitle] = useState("");
@@ -27,9 +28,39 @@ const ContentBlockForm = () => {
     nombre: string;
     id: string;
   }>>([]);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     fetchContentBlocks();
+    const fetchUserData = async () => {
+      const token = getCookie("AdminTokenAuth");
+      try {
+        if (!token) return;
+        
+        const decodedToken = jwtDecode<{ sub: string }>(token as string);
+        const userId = decodedToken.sub;
+        
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        const userEmail = response.data.user.email;
+        setUserEmail(userEmail);
+        // Autorizar automáticamente solo si es el usuario de PixelUP
+        if (userEmail === "hola.pixelup@gmail.com") {
+          setIsAuthorized(true);
+        }
+      } catch (error) {
+        console.error("Error al obtener datos del usuario:", error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   const fetchContentBlocks = async () => {
@@ -331,7 +362,7 @@ const ContentBlockForm = () => {
       });
   };
 
-  if (!isAuthorized) {
+  if (!isAuthorized && userEmail !== "hola.pixelup@gmail.com") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="p-8 bg-white rounded-lg shadow-md w-96">
