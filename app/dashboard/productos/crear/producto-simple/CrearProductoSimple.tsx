@@ -605,10 +605,16 @@ const CrearProductoSimple: React.FC = ({}) => {
     setPendingImageChanges(changes);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
+    
+    // Prevenir múltiples envíos
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setIsLoading(true);
 
     const dataToSend: any = { ...formData };
@@ -619,6 +625,7 @@ const CrearProductoSimple: React.FC = ({}) => {
 
     if (!isEditMode && !validateForm()) {
       setIsLoading(false);
+      setIsSubmitting(false);
       toast.error("Por favor, corrige los errores antes de enviar");
       return;
     }
@@ -730,6 +737,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       await triggerRevalidation();
       setProductId(currentProductId);
       setNewProductId(currentProductId);
+      console.log(isEditMode ? "¡Producto Actualizado!" : "¡Producto Creado Exitosamente!");
       toast.custom(
         (t) => (
           <div 
@@ -847,6 +855,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       );
     } finally {
       setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 

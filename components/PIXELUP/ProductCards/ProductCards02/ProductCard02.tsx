@@ -130,7 +130,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
           <img
             src={product.mainImageUrl}
             alt={product.name}
-            className="h-60 w-full object-cover rounded-t-xl"
+            className="h-60 w-full object-cover rounded-t-xl "
           />
         </Link>
         <div className="px-4 py-3 w-full">
