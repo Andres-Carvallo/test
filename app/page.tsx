@@ -19,6 +19,7 @@ import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01";
 import Banner from "@/components/PIXELUP/Skeleton/Banner";
 import Destacados from "@/components/PIXELUP/Skeleton/Destacados";
+import Parallax from "@/components/PIXELUP/Parallax/Parallax";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -94,6 +95,9 @@ export default async function Page() {
 
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Parallax />
         </Suspense>
 {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>

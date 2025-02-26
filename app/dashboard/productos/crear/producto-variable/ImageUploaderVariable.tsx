@@ -317,10 +317,15 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
       {isCropModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50">
           <div className="bg-white rounded-lg shadow-lg relative w-[95%] md:w-[80%] max-w-3xl p-6">
-            <div className="sticky top-0 bg-white border-b flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Recortar Imagen {currentFileIndex + 1} de {selectedFiles.length}
-              </h2>
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Imagen {currentFileIndex + 1} de {selectedFiles.length}
+                </p>
+              </div>
               <button
                 onClick={() => {
                   setSelectedFiles([]);

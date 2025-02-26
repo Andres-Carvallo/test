@@ -55,7 +55,7 @@ interface BannerData {
   images: BannerImage[];
 }
 
-const BannerPrincipal01BO: React.FC = () => {
+const ParallaxBO: React.FC = () => {
   const [fileName, setFileName] = useState<string | null>(null);
 
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
@@ -146,7 +146,7 @@ const BannerPrincipal01BO: React.FC = () => {
       setLoading(true);
       setSkeletonLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -305,7 +305,7 @@ const BannerPrincipal01BO: React.FC = () => {
         return;
       }
 
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
       if (!bannerId) {
         toast.error("No se encontró el ID del banner");
         return;
@@ -316,8 +316,8 @@ const BannerPrincipal01BO: React.FC = () => {
         ? formatURL(displayConfig.fullBannerLinkUrl)
         : "";
 
-      // Preparar los datos a enviar incluyendo toda la configuración actual
-      const dataToSend = {
+      // Preparar los datos base a enviar
+      const baseData = {
         title:
           formData.title === DEFAULT_TITLE || !formData.title
             ? DEFAULT_TITLE
@@ -337,8 +337,12 @@ const BannerPrincipal01BO: React.FC = () => {
             : formData.buttonLink,
         mainImageLink: formData.mainImageLink || "#",
         orderNumber: formData.orderNumber,
-        ...(isMainImageUploaded && { mainImage: formData.mainImage }),
       };
+
+      // Solo incluir la imagen si ha sido modificada
+      const dataToSend = isMainImageUploaded
+        ? { ...baseData, mainImage: formData.mainImage }
+        : baseData;
 
       console.log("Datos a enviar:", dataToSend);
 
@@ -366,6 +370,8 @@ const BannerPrincipal01BO: React.FC = () => {
         if (isAddingImage) {
           setIsAddingImage(false);
         }
+        // Resetear el estado de la imagen después de un guardado exitoso
+        setIsMainImageUploaded(false);
       } else {
         throw new Error(`Error en la respuesta: ${response.status}`);
       }
@@ -400,7 +406,7 @@ const BannerPrincipal01BO: React.FC = () => {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
 
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -844,22 +850,21 @@ const BannerPrincipal01BO: React.FC = () => {
                         target="_blank"
                       />
                     )}
-                  <div className="absolute inset-0">
-                    <img
-                      src={mainImage || formData.mainImage.url}
-                      alt="Banner Image"
-                      className="w-full h-full object-cover"
-                    />
-                    {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
-                      formData.title !== DEFAULT_TITLE ||
-                      displayConfig.text ||
-                      (buttonTextData.show &&
-                        (displayConfig.showPrice || displayConfig.showValue)) ||
-                      displayConfig.showButton1 ||
-                      displayConfig.showButton2) && (
-                      <div className="absolute inset-0 bg-black/50" />
-                    )}
-                  </div>
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center bg-fixed bg-no-repeat"
+                    style={{ 
+                      backgroundImage: `url(${mainImage || formData.mainImage.url})`,
+                    }}
+                  />
+                  {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
+                    formData.title !== DEFAULT_TITLE ||
+                    displayConfig.text ||
+                    (buttonTextData.show &&
+                      (displayConfig.showPrice || displayConfig.showValue)) ||
+                    displayConfig.showButton1 ||
+                    displayConfig.showButton2) && (
+                    <div className="absolute inset-0 bg-black/50" />
+                  )}
 
                   <div className="relative h-full  mx-auto px-20 md:px-24 ">
                     <div
@@ -982,19 +987,7 @@ const BannerPrincipal01BO: React.FC = () => {
 
       {/* Botones de acción principales */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={handleAddImageClick}
-            className={`py-2 px-4 rounded text-white font-medium text-sm ${
-              isAddingImage
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-          >
-            {isAddingImage ? "Cancelar" : "Agregar Banner"}
-          </button>
-
+        <div className="grid grid-cols-1 gap-2">
           {bannerData.length > 1 && (
             <button
               type="button"
@@ -1254,7 +1247,7 @@ const BannerPrincipal01BO: React.FC = () => {
                 />
               </div>
 
-              <div>
+{/*               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-700">Descripción</label>
                   <div className="flex items-center">
@@ -1289,7 +1282,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   placeholder="Ingresa la descripción"
                   disabled={!displayConfig.showText}
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -1299,7 +1292,7 @@ const BannerPrincipal01BO: React.FC = () => {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-md font-medium text-gray-900">
-                  Imagen del Banner
+                  Imagen del Parallax
                 </h3>
               </div>
 
@@ -1376,10 +1369,10 @@ const BannerPrincipal01BO: React.FC = () => {
             </div>
 
             {/* Separador */}
-            <div className="border-t border-gray-200 my-6"></div>
+            {/* <div className="border-t border-gray-200 my-6"></div> */}
 
             {/* Sección de Precios y Valores */}
-            <h3 className="text-md font-medium text-gray-900 mb-4">
+{/*             <h3 className="text-md font-medium text-gray-900 mb-4">
               Cajas Informativas
             </h3>
             <div className="space-y-4">
@@ -1423,12 +1416,12 @@ const BannerPrincipal01BO: React.FC = () => {
                   disabled={!displayConfig.showValue}
                 />
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Columna 3: Controles de Botones */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-md font-medium text-gray-900 mb-4">Botones</h3>
+            <h3 className="text-md font-medium text-gray-900 mb-4">Botón</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -1473,7 +1466,7 @@ const BannerPrincipal01BO: React.FC = () => {
                 />
               </div>
 
-              <div>
+{/*               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-700">Botón 2</label>
                   <Switch
@@ -1514,8 +1507,8 @@ const BannerPrincipal01BO: React.FC = () => {
                   placeholder="Link del botón"
                   disabled={!displayConfig.showButton2}
                 />
-              </div>
-
+              </div> */}
+{/* 
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
@@ -1551,7 +1544,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   placeholder="Link del banner completo"
                   disabled={!displayConfig.fullBannerLink}
                 />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -1559,8 +1552,7 @@ const BannerPrincipal01BO: React.FC = () => {
 
       {/* Modal de Recorte */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
@@ -1766,4 +1758,4 @@ const BannerPrincipal01BO: React.FC = () => {
   );
 };
 
-export default BannerPrincipal01BO;
+export default ParallaxBO;
