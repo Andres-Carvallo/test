@@ -280,7 +280,7 @@ const VariationForm: React.FC<any> = ({
   const handleInputChange = (index: number, newValue: string) => {
     const sanitizedValue = newValue
       .toUpperCase()
-      .replace(/[^A-ZÁÉÍÓÚÑ0-9\s]/gi, "");
+      .replace(/[^A-ZÁÉÍÓÚÑ0-9\s.,-/()=#$%&!]/gi, "");
     const updatedPairs = [...attributePairs];
     updatedPairs[index].value = sanitizedValue;
     setAttributePairs(updatedPairs);
