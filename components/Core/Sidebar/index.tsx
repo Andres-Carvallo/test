@@ -105,14 +105,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     // Cerrar el menú en móvil
     setSidebarOpen(false);
     
-    if (
-      href.includes("/productos/crear/producto-simple") ||
-      href.includes("/productos/crear/producto-variable")
-    ) {
-      window.location.href = href;
-    } else if (href === pathname) {
-      window.location.reload();
-    }
+    // Permitir navegación directa
+    window.location.href = href;
   };
 
   useEffect(() => {
@@ -348,6 +342,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <div className="flex w-full items-center justify-between px-3">
             <Link
               href="/"
+              target="_blank"
               className={`flex items-center ${
                 isExpanded || isHovered || sidebarOpen ? 'w-full justify-center' : ''
               }`}
@@ -454,6 +449,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   {/* Botón Ir a tienda */}
                   <Link
             href="/tienda"
+            target="_blank"
             className={`text-center justify-center mt-4 mx-auto flex items-center text-sm gap-2 rounded-lg py-1.5 px-2 font-medium text-white hover:bg-black/10 transition-all duration-300 ${
               !isExpanded && !isHovered ? 'w-[40px] justify-center' : 'w-[150px] border border-white '
             }`}

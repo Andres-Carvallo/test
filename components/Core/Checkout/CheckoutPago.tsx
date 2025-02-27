@@ -628,12 +628,14 @@ function CheckoutPago() {
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">Despacho</p>
                   <p className="font-semibold text-gray-900">
-                    {hasFreeShipping ? (
+                    {hasFreeShipping || (orderDetail.totals.shippingAmount === 0) ? (
                       <span>
-                        <span className="line-through">
-                          ${formatPrice(orderDetail.totals.shippingAmount)}
-                        </span>
-                        <span className="ml-2 text-green-600">
+                        {orderDetail.totals.shippingAmount > 0 && (
+                          <span className="line-through">
+                            ${formatPrice(orderDetail.totals.shippingAmount)}
+                          </span>
+                        )}
+                        <span className={`${orderDetail.totals.shippingAmount > 0 ? "ml-2" : ""} text-green-600`}>
                           Envío Gratis
                         </span>
                       </span>
