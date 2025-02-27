@@ -262,6 +262,15 @@ function DetalleOferta() {
 
   useEffect(() => {
     if (product) {
+      if (!product.hasVariations) {
+        // Para productos simples
+        fetchHasOfferForVariation(id as string, product.skuId).then(hasOffer => {
+          setVariationsWithOffers((prev: Record<string, boolean>) => ({
+            ...prev,
+            [product.skuId]: hasOffer
+          }));
+        });
+      }
       fetchOffersForProduct(id as string, product.skuId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -817,11 +826,11 @@ function DetalleOferta() {
                       <span>No hay atributos disponibles</span>
                     </td>
                     <td className="px-2 py-2 border border-gray-300">
-                      {variationsWithOffers[product.id] ? "Sí" : "No"}
+                      {variationsWithOffers[product.skuId] ? "Sí" : "No"}
                     </td>
                     <td className="px-2 py-2 border border-gray-300">
                       <div className="flex flex-wrap justify-center gap-4">
-                        {variationsWithOffers[product.id] ? (
+                        {variationsWithOffers[product.skuId] ? (
                           <button
                             onClick={() =>
                               fetchOffersForProduct(id as string, product.skuId)
@@ -986,22 +995,42 @@ function DetalleOferta() {
       {/* Modal de confirmación */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-4">
-              ¿Está seguro de eliminar la oferta?
-            </h2>
-            <p className="mb-4">
-              Una vez eliminada, no podrá recuperar la oferta.
-            </p>
-            <div className="flex justify-end space-x-4">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Confirmar Eliminación
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  ¿Está seguro de que desea eliminar esta oferta? Una vez eliminada, no podrá recuperarla.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-center gap-4">
               <button
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
                 onClick={handleModalConfirm}
               >
-                Aceptar
+                Eliminar
               </button>
               <button
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
                 onClick={handleModalCancel}
               >
                 Cancelar
