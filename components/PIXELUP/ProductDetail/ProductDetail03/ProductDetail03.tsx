@@ -463,6 +463,37 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   const customOrder = ["XS", "S", "M", "L", "XL", "XXL"];
 
   const sortAttributes = (attributeName: string, values: string[]) => {
+
+        // Función auxiliar para extraer números de un rango
+        const extractRange = (value: string) => {
+          // Intenta encontrar números en formato "X-Y" o "X a Y"
+          const numbers = value.match(/\d+/g);
+          if (numbers && numbers.length >= 2) {
+            return {
+              start: parseInt(numbers[0]),
+              end: parseInt(numbers[1])
+            };
+          }
+          return null;
+        };
+    
+        // Verifica si los valores son rangos
+        const containsRanges = values.some(value => 
+          value.includes('-') || value.toLowerCase().includes(' a ')
+        );
+    
+        if (containsRanges) {
+          return values.sort((a, b) => {
+            const rangeA = extractRange(a);
+            const rangeB = extractRange(b);
+            
+            if (rangeA && rangeB) {
+              // Ordena por el número inicial del rango
+              return rangeA.start - rangeB.start;
+            }
+            return a.localeCompare(b);
+          });
+        }
     // Intentamos convertir todos los valores a números primero.
     const allValuesAreNumbers = values.every((value) => !isNaN(Number(value)));
 
@@ -883,20 +914,45 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
         const minOfferPrice = Math.min(...offerPrices);
         const maxOfferPrice = Math.max(...offerPrices);
 
+        // Calcular el descuento más alto
+        const maxDiscount = Math.max(
+          ...variations
+            .filter(v => v.offers?.[0]?.unitPrice && v.pricings?.[0]?.unitPrice)
+            .map(v => calculateDiscount(v.pricings[0].unitPrice, v.offers![0].unitPrice))
+        );
+
         return (
           <div className="flex flex-col">
-            <span className="text-2xl text-gray-500 line-through">
-              {minNormalPrice === maxNormalPrice
-                ? `$${minNormalPrice.toLocaleString("es-CL")}`
-                : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
-              }
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl text-gray-500 line-through">
+                {minNormalPrice === maxNormalPrice
+                  ? `$${minNormalPrice.toLocaleString("es-CL")}`
+                  : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
+                }
+              </span>
+              <span className="bg-red-100 text-red-600 text-sm px-2 py-1 rounded h-fit">
+                {maxDiscount}% Dcto.
+              </span>
+            </div>
             <span className="text-2xl font-medium text-red-600">
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
                 : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
               }
             </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <>
+                <span className="text-sm text-green-500 mt-1 font-medium">
+                  En {numeroCuotas} cuotas sin interés desde ${Math.ceil(minOfferPrice / numeroCuotas).toLocaleString("es-CL")}
+                </span>
+                <button 
+                  onClick={() => setShowPaymentModal(true)}
+                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                >
+                  Ver métodos de pago
+                </button>
+              </>
+            )}
           </div>
         );
       }
@@ -905,27 +961,62 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
       if (normalPrices.length > 0) {
         const minPrice = Math.min(...normalPrices);
         const maxPrice = Math.max(...normalPrices);
+        const precioPorCuota = cuotasEnabled ? Math.ceil(minPrice / numeroCuotas) : 0;
 
         return (
-          <span className="text-2xl">
-            {minPrice === maxPrice
-              ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
-            }
-          </span>
+          <div className="flex flex-col">
+            <span className="text-2xl">
+              {minPrice === maxPrice
+                ? `$${minPrice.toLocaleString("es-CL")}`
+                : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
+              }
+            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <>
+                <span className="text-sm text-green-500 mt-1 font-medium">
+                  En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
+                </span>
+                <button 
+                  onClick={() => setShowPaymentModal(true)}
+                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+                >
+                  Ver métodos de pago
+                </button>
+              </>
+            )}
+          </div>
         );
       }
     }
 
     // Para precio base sin variaciones
     if (minPrice && maxPrice && !isNaN(parseFloat(minPrice)) && !isNaN(parseFloat(maxPrice))) {
-      if (minPrice === maxPrice) {
-        return <span className="text-2xl">${parseFloat(minPrice).toLocaleString("es-CL")}</span>;
-      }
+      const minPriceNum = parseFloat(minPrice);
+      const maxPriceNum = parseFloat(maxPrice);
+      const precioPorCuota = cuotasEnabled ? Math.ceil(minPriceNum / numeroCuotas) : 0;
+
       return (
-        <span className="text-2xl">
-          ${parseFloat(minPrice).toLocaleString("es-CL")} - ${parseFloat(maxPrice).toLocaleString("es-CL")}
-        </span>
+        <div className="flex flex-col">
+          <span className="text-2xl">
+            {minPriceNum === maxPriceNum
+              ? `$${minPriceNum.toLocaleString("es-CL")}`
+              : `$${minPriceNum.toLocaleString("es-CL")} - $${maxPriceNum.toLocaleString("es-CL")}`
+            }
+          </span>
+          {cuotasEnabled && numeroCuotas > 0 && (
+            <>
+              <span className="text-sm text-green-500 mt-1 font-medium">
+                En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+              <button 
+                onClick={() => setShowPaymentModal(true)}
+                className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
+              >
+                Ver métodos de pago
+              </button>
+            </>
+          )}
+        </div>
       );
     }
 
@@ -1045,7 +1136,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
               {/* Descripción */}
               <div className="border-t pt-6">
                 <h2 className="font-medium mb-4">Descripción</h2>
-                <div className="prose prose-sm" dangerouslySetInnerHTML={{ __html: description }} />
+                <div className="ql-editor" dangerouslySetInnerHTML={{ __html: description }} />
               </div>
             </div>
           </div>

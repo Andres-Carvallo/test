@@ -457,6 +457,37 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
   const customOrder = ["XS", "S", "M", "L", "XL", "XXL"];
 
   const sortAttributes = (attributeName: string, values: string[]) => {
+
+        // Función auxiliar para extraer números de un rango
+        const extractRange = (value: string) => {
+          // Intenta encontrar números en formato "X-Y" o "X a Y"
+          const numbers = value.match(/\d+/g);
+          if (numbers && numbers.length >= 2) {
+            return {
+              start: parseInt(numbers[0]),
+              end: parseInt(numbers[1])
+            };
+          }
+          return null;
+        };
+    
+        // Verifica si los valores son rangos
+        const containsRanges = values.some(value => 
+          value.includes('-') || value.toLowerCase().includes(' a ')
+        );
+    
+        if (containsRanges) {
+          return values.sort((a, b) => {
+            const rangeA = extractRange(a);
+            const rangeB = extractRange(b);
+            
+            if (rangeA && rangeB) {
+              // Ordena por el número inicial del rango
+              return rangeA.start - rangeB.start;
+            }
+            return a.localeCompare(b);
+          });
+        }
     // Intentamos convertir todos los valores a números primero.
     const allValuesAreNumbers = values.every((value) => !isNaN(Number(value)));
 
@@ -830,20 +861,18 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
       // Si tiene oferta, mostrar ambos precios
       if (offerPrice) {
         return (
-          <div className="flex flex-col">
-            <div className="rounded-lg flex py-2 px-3">
-              <div className="flex flex-col">
-                <span className="font-bold text-primary text-3xl line-through mr-4">
-                  ${normalPrice.toLocaleString("es-CL")}
-                </span>
-                <span className="font-bold text-red-700 text-3xl mr-2">
-                  ${offerPrice.toLocaleString("es-CL")}
-                </span>
-              </div>
-              <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
-                Dcto. {calculateDiscount(normalPrice, offerPrice)}%
+          <div className="flex items-center">
+            <div className="flex flex-col mr-2">
+              <span className="font-bold text-primary text-3xl line-through">
+                ${selectedVariationPrice?.toLocaleString("es-CL")}
+              </span>
+              <span className="font-bold text-red-700 text-3xl">
+                ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
               </span>
             </div>
+            <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
+              Dcto. {discountPercentage}%
+            </span>
           </div>
         );
       }
@@ -894,27 +923,24 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
         const precioPorCuota = minOfferPrice && cuotasEnabled ? Math.ceil(minOfferPrice / numeroCuotas) : 0;
 
         return (
-          <div className="flex flex-col">
-            <div className="rounded-lg flex py-2 px-3">
-              <div className="flex flex-col">
-                <span className="font-bold text-primary text-3xl line-through mr-4">
-                  {minNormalPrice === maxNormalPrice
-                    ? `$${minNormalPrice.toLocaleString("es-CL")}`
-                    : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
-                  }
-                </span>
-                <span className="font-bold text-red-700 text-3xl mr-2">
-                  {minOfferPrice === maxOfferPrice
-                    ? `$${minOfferPrice.toLocaleString("es-CL")}`
-                    : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
-                  }
-                </span>
-                
-              </div>
-              <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
-                Dcto. {calculateDiscount(minNormalPrice, minOfferPrice)}%
+          <div className="flex items-center">
+            <div className="flex flex-col mr-2">
+              <span className="font-bold text-primary text-3xl line-through">
+                {minNormalPrice === maxNormalPrice
+                  ? `$${minNormalPrice.toLocaleString("es-CL")}`
+                  : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
+                }
+              </span>
+              <span className="font-bold text-red-700 text-3xl">
+                {minOfferPrice === maxOfferPrice
+                  ? `$${minOfferPrice.toLocaleString("es-CL")}`
+                  : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
+                }
               </span>
             </div>
+            <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
+              Dcto. {calculateDiscount(minNormalPrice, minOfferPrice)}%
+            </span>
           </div>
         );
       }
@@ -1086,12 +1112,19 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                           const precioPorCuota = cuotasEnabled ? Math.ceil(precioBase / numeroCuotas) : 0;
                           return (
                             <>
-                              <span className="font-bold text-primary text-3xl line-through mr-4">
-                                ${selectedVariationPrice?.toLocaleString("es-CL")}
-                              </span>
-                              <span className="font-bold text-red-700 text-3xl mr-2">
-                                ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
-                              </span>
+                              <div className="flex items-center">
+                                <div className="flex flex-col mr-2">
+                                  <span className="font-bold text-primary text-3xl line-through">
+                                    ${selectedVariationPrice?.toLocaleString("es-CL")}
+                                  </span>
+                                  <span className="font-bold text-red-700 text-3xl">
+                                    ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
+                                  </span>
+                                </div>
+                                <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
+                                  Dcto. {discountPercentage}%
+                                </span>
+                              </div>
                               {cuotasEnabled && numeroCuotas > 0 && (
                                 <>
                                   <span className="text-sm text-green-500 mt-1 font-medium">
@@ -1109,9 +1142,6 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                           );
                         })()}
                       </div>
-                      <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded">
-                        Dcto. {discountPercentage}%
-                      </span>
                     </div>
                   </div>
                 ) : (
@@ -1128,7 +1158,8 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                   Acerca del producto
                 </h3>
 
-                <div dangerouslySetInnerHTML={{ __html: description }} />
+                <div className="ql-editor" dangerouslySetInnerHTML={{ __html: description }} />
+
               </div>
 
               {hasAttributes() && (

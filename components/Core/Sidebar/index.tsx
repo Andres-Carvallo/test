@@ -135,6 +135,33 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   const isAdminPixelUP = userDataInfo?.email === "hola.pixelup@gmail.com";
 
+  // Función de utilidad para verificar si una ruta está activa
+  const isRouteActive = (path: string, exact: boolean = false, submenuPaths: string[] = []) => {
+    // Normalizar las rutas eliminando el slash final si existe
+    const normalizedPath = path.endsWith('/') ? path.slice(0, -1) : path;
+    const normalizedPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+
+    // Caso especial para el dashboard
+    if (normalizedPath === '/dashboard' && normalizedPathname === '/dashboard') {
+      return true;
+    }
+
+    if (exact) {
+      return normalizedPathname === normalizedPath;
+    }
+
+    // Verificar si la ruta actual coincide con alguna de las rutas del submenú
+    if (submenuPaths.length > 0) {
+      return submenuPaths.some(submenuPath => {
+        const normalizedSubmenuPath = submenuPath.endsWith('/') ? submenuPath.slice(0, -1) : submenuPath;
+        return normalizedPathname === normalizedSubmenuPath || normalizedPathname.startsWith(normalizedSubmenuPath + '/');
+      });
+    }
+
+    // Para rutas con submenu, verificamos si la ruta actual comienza con la ruta del menú
+    return normalizedPathname.startsWith(normalizedPath);
+  };
+
   const renderLink = (link: (typeof sidebarLinks)[0], index: number) => {
     if (link.isVisible === false) return null;
 
@@ -154,9 +181,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       
       if (visibleSubmenu.length === 0) return null;
 
+      // Obtener todas las rutas del submenú
+      const submenuPaths = visibleSubmenu.map(sublink => sublink.path);
+
       return (
         <SidebarLinkGroup
-          activeCondition={pathname.includes(link.path)}
+          activeCondition={isRouteActive(link.path, false, submenuPaths)}
           isExpanded={isExpanded || isHovered}
           isOpen={openMenuIndex === index}
           setIsOpen={(open) => {
@@ -168,7 +198,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <Link
                 href="#"
                 className={`group relative flex items-center gap-3 rounded-lg py-2.5 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
-                  open && "bg-black/10"
+                  isRouteActive(link.path, false, submenuPaths) && "bg-secondary/10"
                 }`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -218,7 +248,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       <Link
                         href={sublink.path}
                         className={`group relative flex items-center gap-3 rounded-lg py-2 px-3 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
-                          pathname === sublink.path && "bg-black/10"
+                          isRouteActive(sublink.path, true) && "bg-black/10"
                         }`}
                         onClick={() => {
                           handleLinkClick(sublink.path);
@@ -251,7 +281,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         <Link
           href={link.path}
           className={`group relative flex items-center gap-3 rounded-lg py-2.5 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
-            pathname === link.path && "bg-black/10"
+            isRouteActive(link.path, true) && "bg-secondary/10"
           }`}
           onClick={() => handleLinkClick(link.path)}
         >

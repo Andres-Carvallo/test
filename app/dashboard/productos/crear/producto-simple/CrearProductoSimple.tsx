@@ -14,7 +14,7 @@ import Select from "react-select";
 import { useSearchParams, useRouter } from "next/navigation";
 import ImageUploader from "./ImageUploader";
 import StarCheckbox from "@/components/Core/Checkbox/StarCheckbox";
-import Loader from "@/components/common/Loader";
+import LoaderProgress from "@/components/common/LoaderProgress";
 import { Toaster, toast } from "react-hot-toast";
 import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
@@ -737,7 +737,21 @@ const CrearProductoSimple: React.FC = ({}) => {
       await triggerRevalidation();
       setProductId(currentProductId);
       setNewProductId(currentProductId);
-      console.log(isEditMode ? "¡Producto Actualizado!" : "¡Producto Creado Exitosamente!");
+
+      // Obtener los datos actualizados del producto
+      const updatedProductResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      const updatedProductData = await updatedProductResponse.json();
+      const productName = updatedProductData.product.name;
+
       toast.custom(
         (t) => (
           <div 
@@ -791,8 +805,8 @@ const CrearProductoSimple: React.FC = ({}) => {
                     </Link>
                     <button
                       onClick={() => {
-                        if (newProductId && formData.name) {
-                          const productSlug = slugify(formData.name);
+                        if (currentProductId && productName) {
+                          const productSlug = slugify(productName);
                           window.open(`/tienda/productos/${productSlug}`, "_blank");
                         }
                         toast.dismiss(t.id);
@@ -1007,7 +1021,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   };
 
   if (isLoading) {
-    return <Loader />;
+    return <LoaderProgress />;
   }
 
   return (
@@ -1027,6 +1041,8 @@ const CrearProductoSimple: React.FC = ({}) => {
             duration: 10000,
           }
         }}
+        // Agregar esta propiedad para prevenir toasts duplicados
+        gutter={8}
       />
       <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-0 py-2 z-50 -mt-6">
         <div className="flex w-full justify-between px-6">

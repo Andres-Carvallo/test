@@ -787,16 +787,13 @@ export default function ProductPageBO() {
         }
       );
       const variationsData = await variationsResponse.json();
-
-      const filteredVariations = variationsData.skus
-        .filter((sku: any) => !sku.isBaseSku)
-        .sort((a: any, b: any) => a.id.localeCompare(b.id));
+      const variations = variationsData.skus.filter((sku: any) => !sku.isBaseSku);
 
       const pricesWithAttributes = await Promise.all(
-        filteredVariations.map(async (sku: any, index: number) => {
+        variations.map(async (variation: any, index: number) => {
           const [priceResponse, attributesResponse] = await Promise.all([
             fetch(
-              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${sku.id}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -804,7 +801,7 @@ export default function ProductPageBO() {
               }
             ),
             fetch(
-              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${sku.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${variation.id}/attributes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -818,14 +815,16 @@ export default function ProductPageBO() {
             attributesResponse.json(),
           ]);
 
-          const attributes = attributesData.skuAttributes.map((attr: any) => ({
-            label: attr.attribute.name,
-            value: attr.value,
-          }));
+          const attributes = attributesData.skuAttributes
+            .filter((attr: any) => attr.attribute.statusCode === "ACTIVE")
+            .map((attr: any) => ({
+              label: attr.attribute.name,
+              value: attr.value,
+            }));
 
           return {
-            skuId: sku.id,
-            name: sku.name,
+            skuId: variation.id,
+            name: variation.name,
             price: priceData.skuPricings[0]?.unitPrice || 0,
             attributes: attributes,
             variationNumber: index + 1,
