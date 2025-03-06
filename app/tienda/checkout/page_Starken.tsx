@@ -1,5 +1,11 @@
 "use client";
-import React, { useEffect, useState, useMemo, Suspense } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  Suspense,
+  useCallback,
+} from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import axios from "axios";
@@ -8,35 +14,52 @@ import { useRouter } from "next/navigation";
 import { Customer, ItemAvailability } from "@/types/types";
 import { jwtDecode } from "jwt-decode";
 import Loader from "@/components/common/Loader";
+import { COURIERS, DELIVERY_TYPES, Courier } from "@/app/config/couriers";
+import LoaderProgress from "@/components/common/LoaderProgress";
+const CartList = React.lazy(
+  () => import("@/components/Core/CartCanva/CartList")
+);
 
-const CartList = React.lazy(() => import("@/components/Core/CartCanva/CartList"));
+interface Region {
+  id: string;
+  name: string;
+  hasDeliveryAvailable: boolean;
+  hasCourierAvailable: boolean;
+}
+
+interface Commune {
+  id: string;
+  name: string;
+  regionId: string;
+}
+
+interface CommuneResponse {
+  delivery: Commune[];
+  pickup: Commune[];
+}
+
+interface CommunesByRegion {
+  [key: string]: {
+    pickup?: Commune[];
+    delivery?: Commune[];
+  };
+}
 
 const Checkout: React.FC = () => {
-  const [regionsDelivery, setRegionsDelivery] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [communesDelivery, setCommunesDelivery] = useState<
-    { id: string; name: string; regionId: string }[]
-  >([]);
-  const [regionsPickup, setRegionsPickup] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [communesPickup, setCommunesPickup] = useState<
-    { id: string; name: string; regionId: string }[]
-  >([]);
+  const [regionsDelivery, setRegionsDelivery] = useState<Region[]>([]);
+  const [communesDelivery, setCommunesDelivery] = useState<Commune[]>([]);
+  const [regionsPickup, setRegionsPickup] = useState<Region[]>([]);
+  const [communesPickup, setCommunesPickup] = useState<Commune[]>([]);
   const [availableDeliveryTypes, setAvailableDeliveryTypes] = useState<any[]>(
     []
   );
-
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingRegions, setLoadingRegions] = useState<boolean>(false);
   const [loadingCommunes, setLoadingCommunes] = useState<boolean>(false);
-
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [selectedCommune, setSelectedCommune] = useState<string>("");
   const [enabledCommunes, setEnabledCommunes] = useState<string[]>([]);
   const [termsAccepted, setTermsAccepted] = useState<boolean>(true); // Puedes cambiar el valor predeterminado según lo que necesites
-
   const {
     cartItems,
     setCartItems,
@@ -45,18 +68,31 @@ const Checkout: React.FC = () => {
     setCartData,
     setTotalItems,
   } = useAPI();
-
   const router = useRouter();
+    /* ************************ */
+  /* PREDETERMINADO */
+  /* ************************ */
 
-  const [deliveryType, setDeliveryType] = useState<string>(
-    "HOME_DELIVERY_WITHOUT_COURIER"
-  );
-
+/*   const [deliveryType, setDeliveryType] = useState<string>(
+    DELIVERY_TYPES.WITHDRAWAL
+  ); */
+  const [deliveryType, setDeliveryType] = useState<string>("");
   const [deliveryTypeID, setDeliveryTypeID] = useState<string>("");
   const [itemAvailability, setItemAvailability] = useState<{
     [key: string]: ItemAvailability;
   }>({});
   const cartId = getCookie("cartId") as string | undefined;
+  const [allRegions, setAllRegions] = useState<Region[]>([]);
+  const [regionsForWithdrawal, setRegionsForWithdrawal] = useState<Region[]>(
+    []
+  );
+  const [regionsForDelivery, setRegionsForDelivery] = useState<Region[]>([]);
+  const [regionsForCourier, setRegionsForCourier] = useState<Region[]>([]);
+  const [communesByRegion, setCommunesByRegion] = useState<CommunesByRegion>(
+    {}
+  );
+  const [showLoader, setShowLoader] = useState(false);
+  const [loaderMessage, setLoaderMessage] = useState("Calculando valor de despacho...");
 
   const setItemAvailabilityHandler = (
     itemId: string,
@@ -68,38 +104,150 @@ const Checkout: React.FC = () => {
       [itemId]: { enabledForDelivery, enabledForWithdrawal },
     }));
   };
+
   useEffect(() => {
-    const fetchDeliveryTypeId = async () => {
+    const fetchAllRegions = async () => {
+      setLoadingRegions(true);
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
-        );
-        const deliveryTypes = response.data.deliveryTypes;
+        // Fetch para retiro en tienda (sin filtros)
+        const withdrawalUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/CL/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+        const withdrawalResponse = await axios.get(withdrawalUrl);
+        setRegionsForWithdrawal(withdrawalResponse.data.regions);
+        console.log("Regiones para retiro:", withdrawalResponse.data.regions);
 
-        setAvailableDeliveryTypes(deliveryTypes); // Guardar los tipos de entrega disponibles
+        // Fetch para delivery (con hasDeliveryAvailable)
+        const deliveryUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/CL/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&hasDeliveryAvailable=true`;
+        const deliveryResponse = await axios.get(deliveryUrl);
+        setRegionsForDelivery(deliveryResponse.data.regions);
+        console.log("Regiones para delivery:", deliveryResponse.data.regions);
 
-        const selectedDeliveryType = deliveryTypes.find(
-          (type: any) => type.code === "HOME_DELIVERY_WITHOUT_COURIER"
-        );
-        if (selectedDeliveryType) {
-          setDeliveryTypeID(selectedDeliveryType.id);
-        } else {
-          console.error(
-            "No se encontró el deliveryType por defecto en la respuesta de la API"
-          );
-        }
+        // Fetch para Starken (con hasDeliveryAvailable y courierId)
+        const starkenUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/CL/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&hasDeliveryAvailable=true&courierId=${COURIERS.STARKEN.id}`;
+        const starkenResponse = await axios.get(starkenUrl);
+        setRegionsForCourier(starkenResponse.data.regions);
+        console.log("Regiones para Starken:", starkenResponse.data.regions);
       } catch (error) {
-        console.error("Error al obtener los tipos de entrega:", error);
+        console.error("Error al cargar las regiones:", error);
+        toast.error("Error al cargar las regiones");
+      } finally {
+        setLoadingRegions(false);
       }
     };
 
-    fetchDeliveryTypeId();
-  }, []); // Se ejecuta solo una vez al montar el componente
+    fetchAllRegions();
+  }, []);
 
+  const getCommunesUrl = (
+    regionId: string,
+    deliveryType: string,
+    isDelivery: boolean
+  ) => {
+    // URL base solo con siteId
+    const baseUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/CL/regions/${regionId}/communes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+
+    switch (deliveryType) {
+      case DELIVERY_TYPES.WITHDRAWAL:
+        return baseUrl; // Solo siteId para retiro en tienda
+      case DELIVERY_TYPES.DELIVERY:
+        return `${baseUrl}&hasDeliveryAvailable=true`; // siteId + hasDeliveryAvailable para delivery
+      case DELIVERY_TYPES.COURIER:
+        return `${baseUrl}&hasDeliveryAvailable=true&courierId=${COURIERS.STARKEN.id}`; // siteId + hasDeliveryAvailable + courierId para Starken
+      default:
+        return baseUrl;
+    }
+  };
+
+  const fetchRegionsAndCommunes = async (applyShippingZonesFilter: boolean) => {
+    setLoadingRegions(true);
+    try {
+      // Obtener regiones según el tipo de entrega
+      let regionsUrl = `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/CL/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+
+      if (deliveryType === DELIVERY_TYPES.DELIVERY) {
+        regionsUrl += "&hasDeliveryAvailable=true";
+      } else if (deliveryType === DELIVERY_TYPES.COURIER) {
+        regionsUrl += `&hasDeliveryAvailable=true&courierId=${COURIERS.STARKEN.id}`;
+      }
+
+      const regionsResponse = await axios.get(regionsUrl);
+      const allRegions: Region[] = regionsResponse.data.regions;
+
+      // Fetch communes para las regiones obtenidas
+      const fetchCommunesForRegion = async (
+        regionId: string
+      ): Promise<CommuneResponse> => {
+        const url = getCommunesUrl(regionId, deliveryType, true);
+        const response = await axios.get(url);
+        return {
+          delivery: response.data.communes.map((commune: any) => ({
+            id: commune.id,
+            name: commune.name,
+            regionId: regionId,
+          })),
+          pickup: response.data.communes.map((commune: any) => ({
+            id: commune.id,
+            name: commune.name,
+            regionId: regionId,
+          })),
+        };
+      };
+
+      // Fetch communes para todas las regiones obtenidas
+      const communesPromises = allRegions.map((region) =>
+        fetchCommunesForRegion(region.id)
+      );
+      const communesResults = await Promise.all(communesPromises);
+
+      // Asignar regiones y comunas según el tipo de entrega
+      switch (deliveryType) {
+        case DELIVERY_TYPES.WITHDRAWAL:
+          setRegionsPickup(allRegions);
+          setCommunesPickup(communesResults.flatMap((result) => result.pickup));
+          break;
+
+        case DELIVERY_TYPES.DELIVERY:
+          const regionsWithDelivery = allRegions.filter((region) => {
+            const communesForRegion = communesResults.find(
+              (result, index) => allRegions[index].id === region.id
+            );
+            return (communesForRegion?.delivery?.length ?? 0) > 0;
+          });
+          setRegionsDelivery(regionsWithDelivery);
+          setCommunesDelivery(
+            communesResults.flatMap((result) => result.delivery)
+          );
+          break;
+
+        case DELIVERY_TYPES.COURIER:
+          const regionsWithCourier = allRegions.filter((region) => {
+            const communesForRegion = communesResults.find(
+              (result, index) => allRegions[index].id === region.id
+            );
+            return (communesForRegion?.delivery?.length ?? 0) > 0;
+          });
+          setRegionsDelivery(regionsWithCourier);
+          setCommunesDelivery(
+            communesResults.flatMap((result) => result.delivery)
+          );
+          break;
+      }
+
+      // Actualizar las comunas habilitadas
+      const enabledCommunesList = communesResults.flatMap((result) =>
+        result.delivery.map((commune) => commune.id)
+      );
+      setEnabledCommunes(enabledCommunesList);
+    } catch (error) {
+      console.error("Error fetching regions and communes:", error);
+      toast.error("Error al cargar las regiones y comunas");
+    } finally {
+      setLoading(false);
+      setLoadingRegions(false);
+    }
+  };
   const isLoggedIn = getCookie("ClientTokenAuth");
   const [useDifferentShippingAddress, setUseDifferentShippingAddress] =
     useState<boolean>(false);
-
   const initialCustomerState: Customer = {
     cartId: cartId || "",
     deliveryTypeId: "",
@@ -116,11 +264,9 @@ const Checkout: React.FC = () => {
           communeId: "",
         },
   };
-
   const [customer, setCustomer] = useState<Customer>(initialCustomerState);
   const Token = getCookie("ClientTokenAuth");
   const decodeToken = Token ? jwtDecode(Token) : null;
-
   useEffect(() => {
     if (isLoggedIn) {
       // Fetch customer data if logged in
@@ -163,149 +309,59 @@ const Checkout: React.FC = () => {
           console.error("Error fetching customer data:", error);
         }
       };
-
       fetchCustomerData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn]);
-
-  const fetchRegionsAndCommunes = async (applyShippingZonesFilter: boolean) => {
-    setLoadingRegions(true);
-    try {
-      if (regionsDelivery.length > 0 && regionsPickup.length > 0) {
-        return;
-      }
-
-      const Pais = "CL";
-      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const regionsResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}`
-      );
-
-      const allRegions = regionsResponse.data.regions;
-
-      // Fetch communes for both delivery and pickup
-      const fetchCommunesForDelivery = async (regionId: string) => {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=true`
-        );
-        return response.data.communes.map((commune: any) => ({
-          id: commune.id,
-          name: commune.name,
-          regionId: regionId,
-        }));
-      };
-
-      const fetchCommunesForPickup = async (regionId: string) => {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=false`
-        );
-        return response.data.communes.map((commune: any) => ({
-          id: commune.id,
-          name: commune.name,
-          regionId: regionId,
-        }));
-      };
-
-      const regionsForDelivery = [];
-      const regionsForPickup = [];
-      const allCommunesForDelivery = [];
-      const allCommunesForPickup = [];
-
-      for (const region of allRegions) {
-        const communesForDelivery = await fetchCommunesForDelivery(region.id);
-        const communesForPickup = await fetchCommunesForPickup(region.id);
-
-        if (communesForDelivery.length > 0) {
-          regionsForDelivery.push({ id: region.id, name: region.name });
-          allCommunesForDelivery.push(...communesForDelivery);
-        }
-
-        if (communesForPickup.length > 0) {
-          regionsForPickup.push({ id: region.id, name: region.name });
-          allCommunesForPickup.push(...communesForPickup);
-        }
-      }
-
-      setRegionsDelivery(regionsForDelivery);
-      setCommunesDelivery(allCommunesForDelivery);
-      setRegionsPickup(regionsForPickup);
-      setCommunesPickup(allCommunesForPickup);
-
-      // Guardar las comunas habilitadas para delivery
-      setEnabledCommunes(
-        allCommunesForDelivery.map((commune: any) => commune.id)
-      );
-    } catch (error) {
-      console.error("Error fetching regions and communes:", error);
-    } finally {
-      setLoading(false);
-      setLoadingRegions(false);
-    }
-  };
-
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
-
   const validatePhoneNumber = (phoneNumber: string) => {
     const re = /^\+?\d{9,11}$/;
     return re.test(phoneNumber);
   };
-
   const handleSubmitOrder = async () => {
     // if (!termsAccepted) {
     //   toast.error("Debes aceptar los términos y condiciones para continuar.");
     //   return;
     // }
-
     const invalidItems = validateItemsForDeliveryType(deliveryType);
-
     if (invalidItems.length > 0) {
       toast.error(
         `Los siguientes productos no son elegibles para ${
-          deliveryType === "HOME_DELIVERY_WITHOUT_COURIER"
-            ? "delivery"
-            : "retiro"
+          deliveryType === DELIVERY_TYPES.DELIVERY ? "delivery" : "retiro"
         }: ${invalidItems.map((item: any) => item.sku.product.name).join(", ")}`
       );
       return;
     }
-
     const addressLine2 = customer.customer?.addressLine2?.trim()
       ? customer.customer.addressLine2
       : "Sin Comentarios";
-
     let communeIdToSend: string | undefined;
-    if (deliveryType === "WITHDRAWAL_FROM_STORE" && !isLoggedIn) {
+    if (deliveryType === DELIVERY_TYPES.WITHDRAWAL && !isLoggedIn) {
       communeIdToSend = selectedCommune; // Enviar comuna seleccionada para retiro en tienda cuando no está logueado
     } else if (useDifferentShippingAddress) {
       communeIdToSend = selectedCommune;
     } else {
       communeIdToSend = customer.customer?.communeId;
     }
-
     const email = customer.customer?.email?.trim();
     const phoneNumber = customer.customer?.phoneNumber?.trim();
-
     if (email && !validateEmail(email)) {
       toast.error("Ingrese un mail válido.");
       return;
     }
-
     if (phoneNumber && !validatePhoneNumber(phoneNumber)) {
       toast.error("Ingrese un número de teléfono válido ");
       return;
     }
-
     console.log("Submitting order with customer data:", {
       ...customer,
       deliveryTypeId: deliveryTypeID, // Asegurarse de incluir el deliveryTypeID
       addressLine2,
       communeId: communeIdToSend,
     });
-
     if (
       !isLoggedIn &&
       (!customer.customer?.firstname?.trim() ||
@@ -318,12 +374,13 @@ const Checkout: React.FC = () => {
       toast.error("Por favor, completa todos los campos requeridos.");
       return;
     }
-
-    if (deliveryType !== "WITHDRAWAL_FROM_STORE") {
+    if (
+      deliveryType !== DELIVERY_TYPES.WITHDRAWAL &&
+      deliveryType !== DELIVERY_TYPES.COURIER
+    ) {
       const communeIdToCheck = useDifferentShippingAddress
         ? selectedCommune
         : customer.customer?.communeId;
-
       if (!enabledCommunes.includes(communeIdToCheck || "")) {
         toast.error(
           "La comuna seleccionada no está habilitada para despacho. Por favor, selecciona otra dirección."
@@ -331,7 +388,6 @@ const Checkout: React.FC = () => {
         return;
       }
     }
-
     const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
     const orderData = {
       cartId: customer.cartId,
@@ -358,9 +414,13 @@ const Checkout: React.FC = () => {
             },
           }
         : {}),
+      // Agregar courierId solo si es Starken, usando el ID correcto del courier
+      ...(deliveryType === DELIVERY_TYPES.COURIER && {
+        courierId: COURIERS.STARKEN.id,
+      }),
     };
-
     try {
+      setShowLoader(true);
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders?siteId=${SiteId}`,
         orderData,
@@ -370,13 +430,12 @@ const Checkout: React.FC = () => {
             }
           : {}
       );
-
       if (response.data) {
         const idOrder = response.data.order.id;
         console.log("idOrder", idOrder);
+        setLoaderMessage("Redirigiendo a la página de pago...");
         router.push(`/tienda/checkout/pago?orderId=${idOrder}`);
         setCookie("idOrder", idOrder);
-
         setCustomer(initialCustomerState);
         setCartData(null);
         setCartItems([]);
@@ -384,18 +443,21 @@ const Checkout: React.FC = () => {
         deleteCookie("cartId");
       }
       console.log("Order confirmation response:", response.data);
-    } catch (error) {
-      toast.error("Error al confirmar la compra. Por favor, intenta de nuevo.");
+    } catch (error: any) {
+      setShowLoader(false);
+      if (error.response?.data?.message?.toLowerCase().includes("comuna de destino no disponible para despacho")) {
+        toast.error("Comuna de destino no disponible para despacho");
+      } else {
+        toast.error("Error al confirmar la compra. Por favor, intenta de nuevo.");
+      }
       console.error("Error al confirmar la compra:", error);
     }
   };
-
   const incrementQuantity = async (itemId: string) => {
     try {
       const itemIndex = cartItems.findIndex((item: any) => item.id === itemId);
       if (itemIndex !== -1) {
         const newQuantity = cartItems[itemIndex].quantity + 1;
-
         // Actualizar la cantidad en la API primero
         const cartId = getCookie("cartId");
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -403,7 +465,6 @@ const Checkout: React.FC = () => {
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/carts/${cartId}/items/${itemId}?siteId=${SiteId}`,
           { quantity: newQuantity }
         );
-
         // Si la API se actualizó con éxito, actualizar el estado
         const updatedCartItems = [...cartItems];
         updatedCartItems[itemIndex] = {
@@ -411,13 +472,11 @@ const Checkout: React.FC = () => {
           quantity: newQuantity,
         };
         setCartItems(updatedCartItems);
-
         // Opcionalmente, puedes volver a obtener los datos del carrito
         fetchCartData();
       }
     } catch (error: any) {
       console.error("Error incrementing quantity:", error);
-
       // Mostrar el mensaje de error si está disponible
       if (
         error.response &&
@@ -430,7 +489,6 @@ const Checkout: React.FC = () => {
       }
     }
   };
-
   const decrementQuantity = async (itemId: string) => {
     try {
       const itemIndex = cartItems.findIndex((item: any) => item.id === itemId);
@@ -441,7 +499,6 @@ const Checkout: React.FC = () => {
           quantity: updatedCartItems[itemIndex].quantity - 1,
         };
         setCartItems(updatedCartItems);
-
         const cartId = getCookie("cartId") as string;
         const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         await axios.put(
@@ -454,7 +511,6 @@ const Checkout: React.FC = () => {
       console.error("Error decrementing quantity:", error);
     }
   };
-
   const removeItem = async (itemId: string) => {
     try {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -470,29 +526,108 @@ const Checkout: React.FC = () => {
       console.error("Error removing item from cart:", error);
     }
   };
+  const getCachedCommunes = useMemo(() => {
+    if (!selectedRegion) return [];
+    const cachedData = communesByRegion[selectedRegion];
 
-  useEffect(() => {
-    fetchRegionsAndCommunes(false);
-    fetchCartData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (deliveryType === DELIVERY_TYPES.WITHDRAWAL) {
+      return cachedData?.pickup || [];
+    } else {
+      return cachedData?.delivery || [];
+    }
+  }, [selectedRegion, deliveryType, communesByRegion]);
+  const fetchCommunesForRegion = async (regionId: string) => {
+    // Si ya tenemos las comunas en caché para este tipo de entrega, las usamos
+    const cachedData = communesByRegion[regionId];
+    const needsPickupData =
+      deliveryType === DELIVERY_TYPES.WITHDRAWAL && !cachedData?.pickup;
+    const needsDeliveryData =
+      (deliveryType === DELIVERY_TYPES.DELIVERY ||
+        deliveryType === DELIVERY_TYPES.COURIER) &&
+      !cachedData?.delivery;
 
-  // Memoized values based on the selected delivery type
+    if (!needsPickupData && !needsDeliveryData) {
+      console.log("Usando comunas en caché para la región:", regionId);
+      if (deliveryType === DELIVERY_TYPES.WITHDRAWAL) {
+        setCommunesPickup(cachedData.pickup || []);
+      } else {
+        setCommunesDelivery(cachedData.delivery || []);
+      }
+      return;
+    }
+
+    setLoadingCommunes(true);
+    try {
+      const url = getCommunesUrl(regionId, deliveryType, true);
+      const response = await axios.get(url);
+      
+      // Verificar si la respuesta contiene el mensaje de error específico
+      if (response.data.message && response.data.message.toLowerCase().includes("comuna de destino no disponible para despacho")) {
+        toast.error("La comuna seleccionada no está disponible para despacho");
+        return;
+      }
+
+      const communes = response.data.communes.map((commune: any) => ({
+        id: commune.id,
+        name: commune.name,
+        regionId: regionId,
+      }));
+
+      // Actualizar el caché y el estado correspondiente
+      setCommunesByRegion((prev) => ({
+        ...prev,
+        [regionId]: {
+          ...prev[regionId],
+          [deliveryType === DELIVERY_TYPES.WITHDRAWAL ? "pickup" : "delivery"]:
+            communes,
+        },
+      }));
+
+      if (deliveryType === DELIVERY_TYPES.WITHDRAWAL) {
+        setCommunesPickup(communes);
+      } else {
+        setCommunesDelivery(communes);
+      }
+
+      console.log(
+        `Comunas cargadas para la región ${regionId} (${deliveryType}):`,
+        communes
+      );
+    } catch (error) {
+      console.error("Error fetching communes:", error);
+      toast.error("Error al cargar las comunas");
+    } finally {
+      setLoadingCommunes(false);
+    }
+  };
+
   const displayedRegions = useMemo(() => {
-    return deliveryType === "WITHDRAWAL_FROM_STORE"
-      ? regionsPickup
-      : regionsDelivery;
-  }, [deliveryType, regionsPickup, regionsDelivery]);
+    switch (deliveryType) {
+      case DELIVERY_TYPES.WITHDRAWAL:
+        return regionsForWithdrawal;
+      case DELIVERY_TYPES.DELIVERY:
+        return regionsForDelivery;
+      case DELIVERY_TYPES.COURIER:
+        return regionsForCourier;
+      default:
+        return [];
+    }
+  }, [
+    deliveryType,
+    regionsForWithdrawal,
+    regionsForDelivery,
+    regionsForCourier,
+  ]);
 
   const displayedCommunes = useMemo(() => {
-    return deliveryType === "WITHDRAWAL_FROM_STORE"
-      ? communesPickup
-      : communesDelivery;
-  }, [deliveryType, communesPickup, communesDelivery]);
-
-  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRegion(e.target.value);
-    setSelectedCommune(""); // Reset selected commune
+    return getCachedCommunes;
+  }, [getCachedCommunes]);
+  const handleRegionChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newRegionId = e.target.value;
+    setSelectedRegion(newRegionId);
+    setSelectedCommune("");
     setCustomer((prevState) => ({
       ...prevState,
       customer: {
@@ -500,8 +635,11 @@ const Checkout: React.FC = () => {
         communeId: "",
       },
     }));
-  };
 
+    if (newRegionId) {
+      await fetchCommunesForRegion(newRegionId);
+    }
+  };
   const handleCommuneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const communeId = e.target.value;
     setSelectedCommune(communeId);
@@ -515,22 +653,26 @@ const Checkout: React.FC = () => {
   };
   const validateItemsForDeliveryType = (deliveryType: string) => {
     return cartItems.filter((item: any) => {
-      if (deliveryType === "HOME_DELIVERY_WITHOUT_COURIER")
+      if (
+        deliveryType === DELIVERY_TYPES.DELIVERY ||
+        deliveryType === DELIVERY_TYPES.COURIER
+      )
         return !itemAvailability[item.id]?.enabledForDelivery;
-      if (deliveryType === "WITHDRAWAL_FROM_STORE")
+      if (deliveryType === DELIVERY_TYPES.WITHDRAWAL)
         return !itemAvailability[item.id]?.enabledForWithdrawal;
       return false;
     });
   };
-
   const handleChangeDeliveryType = async (newValue: string) => {
     setDeliveryType(newValue);
-
     // Validar la opción de entrega según la disponibilidad del producto
     const invalidItems = cartItems.filter((item: any) => {
-      if (newValue === "HOME_DELIVERY_WITHOUT_COURIER")
+      if (
+        newValue === DELIVERY_TYPES.DELIVERY ||
+        newValue === DELIVERY_TYPES.COURIER
+      )
         return !itemAvailability[item.id]?.enabledForDelivery;
-      if (newValue === "WITHDRAWAL_FROM_STORE")
+      if (newValue === DELIVERY_TYPES.WITHDRAWAL)
         return !itemAvailability[item.id]?.enabledForWithdrawal;
       return false;
     });
@@ -538,45 +680,85 @@ const Checkout: React.FC = () => {
     if (invalidItems.length > 0) {
       toast.error(
         `Los siguientes productos no son elegibles para ${
-          newValue === "HOME_DELIVERY_WITHOUT_COURIER" ? "delivery" : "retiro"
+          newValue === DELIVERY_TYPES.WITHDRAWAL ? "retiro" : "delivery"
         }: ${invalidItems.map((item: any) => item.sku.product.name).join(", ")}`
       );
       return;
     }
 
-    const selectedDeliveryType = availableDeliveryTypes.find(
-      (type: any) => type.code === newValue
-    );
-
-    if (selectedDeliveryType) {
-      setDeliveryTypeID(selectedDeliveryType.id);
-    } else {
-      console.error(
-        "No se encontró el deliveryType seleccionado en los tipos de entrega disponibles"
+    // Asignar el ID correcto según el tipo de entrega
+    if (newValue === DELIVERY_TYPES.COURIER) {
+      const courier = Object.values(COURIERS).find(
+        (c) => c.code === DELIVERY_TYPES.COURIER
       );
-    }
-
-    // Si las regiones y comunas ya están cargadas, no hacer fetch
-    if (regionsDelivery.length === 0 || regionsPickup.length === 0) {
-      // Si el usuario no está logueado y selecciona retiro, mostrar todas las comunas
-      if (!isLoggedIn && newValue === "WITHDRAWAL_FROM_STORE") {
-        await fetchRegionsAndCommunes(false); // false para no aplicar el filtro
+      if (courier) {
+        setDeliveryTypeID(courier.deliveryTypeId);
+        console.log(
+          "Estableciendo deliveryTypeId para Starken:",
+          courier.deliveryTypeId
+        );
+      }
+    } else {
+      const selectedDeliveryType = availableDeliveryTypes.find(
+        (type: any) => type.code === newValue
+      );
+      if (selectedDeliveryType) {
+        setDeliveryTypeID(selectedDeliveryType.id);
       } else {
-        await fetchRegionsAndCommunes(true); // true para aplicar el filtro de shipping zones
+        console.error("No se encontró el deliveryType seleccionado");
       }
     }
-  };
 
+    // Resetear la selección de región y comuna
+    setSelectedRegion("");
+    setSelectedCommune("");
+
+    // Actualizar las comunas habilitadas según el tipo de entrega
+    let enabledCommunesList: string[] = [];
+    switch (newValue) {
+      case DELIVERY_TYPES.WITHDRAWAL:
+        // Para retiro, todas las comunas están habilitadas
+        enabledCommunesList = communesPickup.map((commune) => commune.id);
+        break;
+      case DELIVERY_TYPES.DELIVERY:
+      case DELIVERY_TYPES.COURIER:
+        // Para delivery y courier, solo las comunas con delivery disponible
+        enabledCommunesList = communesDelivery.map((commune) => commune.id);
+        break;
+    }
+    setEnabledCommunes(enabledCommunesList);
+
+    console.log(`Cambiando a tipo de entrega: ${newValue}`);
+  };
   const loggedInRegion = isLoggedIn ? customer.customer?.regionName : "";
   const loggedInCommune = isLoggedIn ? customer.customer?.communeName : "";
 
+  useEffect(() => {
+    const fetchAllRegions = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/CL/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        setAllRegions(response.data.regions);
+      } catch (error) {
+        console.error("Error fetching all regions:", error);
+        toast.error("Error al cargar las regiones");
+      }
+    };
+    fetchAllRegions();
+  }, []);
+
   return (
     <>
+      {showLoader && <LoaderProgress message={loaderMessage} />}
       <div>
         <title>Checkout</title>
         <div className="pb-12">
           <div className="flex flex-col items-center border-b bg-white py-4 sm:flex-row sm:px-10 lg:px-20 xl:px-32">
-            <a href="#" className="text-2xl font-bold text-gray-800">
+            <a
+              href="#"
+              className="text-2xl font-bold text-gray-800"
+            >
               Checkout
             </a>
             <div className="mt-4 py-2 text-xs sm:mt-0 sm:ml-auto sm:text-base">
@@ -691,9 +873,9 @@ const Checkout: React.FC = () => {
                         type="radio"
                         name="radio"
                         value="WITHDRAWAL_FROM_STORE"
-                        checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
+                        checked={deliveryType === DELIVERY_TYPES.WITHDRAWAL}
                         onChange={() =>
-                          handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")
+                          handleChangeDeliveryType(DELIVERY_TYPES.WITHDRAWAL)
                         }
                       />
                       <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
@@ -725,27 +907,25 @@ const Checkout: React.FC = () => {
                         </div>
                       </label>
                     </div>
-                    {/* Botón para delivery */}
+                    {/* Botón para Starken */}
                     <div className="relative">
                       <input
                         className="peer hidden"
-                        id="radio_delivery"
+                        id="radio_starken"
                         type="radio"
                         name="radio"
-                        value="HOME_DELIVERY_WITHOUT_COURIER"
-                        checked={deliveryType === "HOME_DELIVERY_WITHOUT_COURIER"}
+                        value="HOME_DELIVERY_WITH_COURIER"
+                        checked={deliveryType === DELIVERY_TYPES.COURIER}
                         onChange={() =>
-                          handleChangeDeliveryType(
-                            "HOME_DELIVERY_WITHOUT_COURIER"
-                          )
+                          handleChangeDeliveryType(DELIVERY_TYPES.COURIER)
                         }
                       />
                       <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
                       <label
                         className="bg-white peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                        htmlFor="radio_delivery"
+                        htmlFor="radio_starken"
                       >
-                        {/* Icono y texto para delivery */}
+                        {/* Icono y texto para Starken */}
                         <div className="flex items-center w-full">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -762,7 +942,7 @@ const Checkout: React.FC = () => {
                             />
                           </svg>
                           <div className="ml-4">
-                            <span className="font-semibold block">Delivery</span>
+                            <span className="font-semibold block">Starken</span>
                           </div>
                         </div>
                       </label>
@@ -770,7 +950,7 @@ const Checkout: React.FC = () => {
                   </form>
 
                   {/* Campos de dirección, región y comuna */}
-                  {(deliveryType === "WITHDRAWAL_FROM_STORE" || deliveryType === "HOME_DELIVERY_WITHOUT_COURIER") && (
+                  {(deliveryType === DELIVERY_TYPES.WITHDRAWAL || deliveryType === DELIVERY_TYPES.COURIER) && (
                     <div className="mt-5 grid gap-4">
                       {isLoggedIn && (
                         <>
@@ -863,6 +1043,7 @@ const Checkout: React.FC = () => {
                                 required
                               />
                             </label>
+
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <label htmlFor="region" className="block">
@@ -878,11 +1059,24 @@ const Checkout: React.FC = () => {
                                 ) : (
                                   <>
                                     <option value="">Selecciona Región</option>
-                                    {displayedRegions.map((region) => (
-                                      <option key={region.id} value={region.id}>
-                                        {region.name}
-                                      </option>
-                                    ))}
+                                    {deliveryType === DELIVERY_TYPES.WITHDRAWAL &&
+                                      regionsForWithdrawal.map((region) => (
+                                        <option
+                                          key={region.id}
+                                          value={region.id}
+                                        >
+                                          {region.name}
+                                        </option>
+                                      ))}
+                                    {deliveryType === DELIVERY_TYPES.COURIER &&
+                                      regionsForCourier.map((region) => (
+                                        <option
+                                          key={region.id}
+                                          value={region.id}
+                                        >
+                                          {region.name}
+                                        </option>
+                                      ))}
                                   </>
                                 )}
                               </select>
@@ -897,15 +1091,32 @@ const Checkout: React.FC = () => {
                                 disabled={!selectedRegion || loadingCommunes}
                               >
                                 <option value="">Selecciona Comuna</option>
-                                {displayedCommunes
-                                  .filter(
-                                    (commune) => commune.regionId === selectedRegion
-                                  )
-                                  .map((commune) => (
-                                    <option key={commune.id} value={commune.id}>
-                                      {commune.name}
-                                    </option>
-                                  ))}
+                                {deliveryType === DELIVERY_TYPES.WITHDRAWAL &&
+                                  communesPickup
+                                    .filter(
+                                      (commune) => commune.regionId === selectedRegion
+                                    )
+                                    .map((commune) => (
+                                      <option
+                                        key={commune.id}
+                                        value={commune.id}
+                                      >
+                                        {commune.name}
+                                      </option>
+                                    ))}
+                                {deliveryType === DELIVERY_TYPES.COURIER &&
+                                  communesDelivery
+                                    .filter(
+                                      (commune) => commune.regionId === selectedRegion
+                                    )
+                                    .map((commune) => (
+                                      <option
+                                        key={commune.id}
+                                        value={commune.id}
+                                      >
+                                        {commune.name}
+                                      </option>
+                                    ))}
                               </select>
                             </label>
                           </div>
@@ -920,7 +1131,10 @@ const Checkout: React.FC = () => {
                   <p className="text-xl font-medium">Datos Personales</p>
                   <p className="text-gray-400">Completa tus datos personales</p>
                   <div className="grid grid-cols-2 gap-4 mt-4">
-                    <label htmlFor="firstname" className="block mt-4">
+                    <label
+                      htmlFor="firstname"
+                      className="block mt-4"
+                    >
                       Nombre <span className="text-red-500">*</span>
                       <input
                         type="text"
@@ -942,7 +1156,10 @@ const Checkout: React.FC = () => {
                         disabled={!!isLoggedIn}
                       />
                     </label>
-                    <label htmlFor="lastname" className="block mt-4">
+                    <label
+                      htmlFor="lastname"
+                      className="block mt-4"
+                    >
                       Apellido <span className="text-red-500">*</span>
                       <input
                         type="text"
@@ -966,7 +1183,10 @@ const Checkout: React.FC = () => {
                     </label>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <label htmlFor="phoneNumber" className="block mt-4">
+                    <label
+                      htmlFor="phoneNumber"
+                      className="block mt-4"
+                    >
                       Teléfono <span className="text-red-500">*</span>
                       <input
                         type="text"
@@ -988,7 +1208,10 @@ const Checkout: React.FC = () => {
                         disabled={!!isLoggedIn}
                       />
                     </label>
-                    <label htmlFor="email" className="block mt-4">
+                    <label
+                      htmlFor="email"
+                      className="block mt-4"
+                    >
                       Email <span className="text-red-500">*</span>
                       <input
                         type="text"
@@ -1010,25 +1233,26 @@ const Checkout: React.FC = () => {
                         disabled={!!isLoggedIn}
                       />
                     </label>
+                    
                   </div>
                   <label htmlFor="addressLine2" className="block mt-4">
-                    Indicaciones extra
-                    <input
-                      type="text"
-                      id="addressLine2"
-                      value={customer.customer?.addressLine2 || ""}
-                      onChange={(e) =>
-                        setCustomer({
-                          ...customer,
-                          customer: {
-                            ...customer.customer,
-                            addressLine2: e.target.value,
-                          },
-                        })
-                      }
-                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                    />
-                  </label>
+                              Indicaciones extra
+                              <input
+                                type="text"
+                                id="addressLine2"
+                                value={customer.customer?.addressLine2 || ""}
+                                onChange={(e) =>
+                                  setCustomer({
+                                    ...customer,
+                                    customer: {
+                                      ...customer.customer,
+                                      addressLine2: e.target.value,
+                                    },
+                                  })
+                                }
+                                className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                              />
+                            </label>
                 </div>
               </div>
               <button
@@ -1044,5 +1268,4 @@ const Checkout: React.FC = () => {
     </>
   );
 };
-
 export default React.memo(Checkout);
