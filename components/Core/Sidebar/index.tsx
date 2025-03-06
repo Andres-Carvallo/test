@@ -104,7 +104,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const handleLinkClick = (href: string) => {
     // Cerrar el menú en móvil
     setSidebarOpen(false);
-    
+
     // Permitir navegación directa
     window.location.href = href;
   };
@@ -136,13 +136,22 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const isAdminPixelUP = userDataInfo?.email === "hola.pixelup@gmail.com";
 
   // Función de utilidad para verificar si una ruta está activa
-  const isRouteActive = (path: string, exact: boolean = false, submenuPaths: string[] = []) => {
+  const isRouteActive = (
+    path: string,
+    exact: boolean = false,
+    submenuPaths: string[] = []
+  ) => {
     // Normalizar las rutas eliminando el slash final si existe
-    const normalizedPath = path.endsWith('/') ? path.slice(0, -1) : path;
-    const normalizedPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+    const normalizedPath = path.endsWith("/") ? path.slice(0, -1) : path;
+    const normalizedPathname = pathname.endsWith("/")
+      ? pathname.slice(0, -1)
+      : pathname;
 
     // Caso especial para el dashboard
-    if (normalizedPath === '/dashboard' && normalizedPathname === '/dashboard') {
+    if (
+      normalizedPath === "/dashboard" &&
+      normalizedPathname === "/dashboard"
+    ) {
       return true;
     }
 
@@ -152,9 +161,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
     // Verificar si la ruta actual coincide con alguna de las rutas del submenú
     if (submenuPaths.length > 0) {
-      return submenuPaths.some(submenuPath => {
-        const normalizedSubmenuPath = submenuPath.endsWith('/') ? submenuPath.slice(0, -1) : submenuPath;
-        return normalizedPathname === normalizedSubmenuPath || normalizedPathname.startsWith(normalizedSubmenuPath + '/');
+      return submenuPaths.some((submenuPath) => {
+        const normalizedSubmenuPath = submenuPath.endsWith("/")
+          ? submenuPath.slice(0, -1)
+          : submenuPath;
+        return (
+          normalizedPathname === normalizedSubmenuPath ||
+          normalizedPathname.startsWith(normalizedSubmenuPath + "/")
+        );
       });
     }
 
@@ -165,24 +179,31 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const renderLink = (link: (typeof sidebarLinks)[0], index: number) => {
     if (link.isVisible === false) return null;
 
-    if ((link.title === "Opciones de Cuenta" || link.title === "Creación IDs") && !isAdminPixelUP) {
+    if (
+      (link.title === "Opciones de Cuenta" || link.title === "Creación IDs") &&
+      !isAdminPixelUP
+    ) {
       return null;
     }
 
     if (link.submenu) {
       const visibleSubmenu = link.submenu
-        .filter(sublink => sublink.isVisible !== false)
-        .filter(sublink => {
-          if ((sublink.title === "Opciones de Cuenta" || sublink.title === "Creación IDs") && !isAdminPixelUP) {
+        .filter((sublink) => sublink.isVisible !== false)
+        .filter((sublink) => {
+          if (
+            (sublink.title === "Opciones de Cuenta" ||
+              sublink.title === "Creación IDs") &&
+            !isAdminPixelUP
+          ) {
             return false;
           }
           return true;
         });
-      
+
       if (visibleSubmenu.length === 0) return null;
 
       // Obtener todas las rutas del submenú
-      const submenuPaths = visibleSubmenu.map(sublink => sublink.path);
+      const submenuPaths = visibleSubmenu.map((sublink) => sublink.path);
 
       return (
         <SidebarLinkGroup
@@ -198,7 +219,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <Link
                 href="#"
                 className={`group relative flex items-center gap-3 rounded-lg py-2.5 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
-                  isRouteActive(link.path, false, submenuPaths) && "bg-secondary/10"
+                  isRouteActive(link.path, false, submenuPaths) &&
+                  "bg-secondary/10"
                 }`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -207,7 +229,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               >
                 <div className="min-w-max">{link.icon}</div>
                 <span
-                  className={`whitespace-nowrap transition-all duration-300 ease-in-out ${
+                  className={`whitespace-nowrap transition-all text-[14px] duration-300 ease-in-out ${
                     !isExpanded && !isHovered
                       ? "opacity-0 -translate-x-10"
                       : "opacity-100 translate-x-0"
@@ -257,7 +279,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       >
                         <div className="min-w-max">{sublink.icon}</div>
                         <span
-                          className={`whitespace-nowrap transition-all duration-300 ease-in-out ${
+                          className={`whitespace-nowrap transition-all text-[14px] duration-300 ease-in-out ${
                             !isExpanded && !isHovered
                               ? "opacity-0 -translate-x-10"
                               : "opacity-100 translate-x-0"
@@ -280,14 +302,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <li>
         <Link
           href={link.path}
-          className={`group relative flex items-center gap-3 rounded-lg py-2.5 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+          className={`group relative flex items-center gap-2 rounded-lg py-2 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
             isRouteActive(link.path, true) && "bg-secondary/10"
           }`}
           onClick={() => handleLinkClick(link.path)}
         >
           <div className="min-w-max">{link.icon}</div>
           <span
-            className={`whitespace-nowrap transition-all duration-300 ease-in-out ${
+            className={`whitespace-nowrap text-[14px] transition-all duration-300 ease-in-out ${
               !isExpanded && !isHovered
                 ? "opacity-0 -translate-x-10"
                 : "opacity-100 translate-x-0"
@@ -309,12 +331,34 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           className="fixed bottom-6 right-6 z-50 rounded-full bg-primary p-3 shadow-lg lg:hidden"
         >
           {sidebarOpen ? (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 text-white"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 text-white"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
             </svg>
           )}
         </button>
@@ -338,13 +382,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             : "w-[60px]"
         } flex-col overflow-hidden bg-primary shadow-lg transition-all duration-300 ease-in-out lg:static lg:h-screen lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${!menuEnabled || isExpanded || isHovered ? "lg:w-[280px]" : "lg:w-[60px]"}`}
+        } ${
+          !menuEnabled || isExpanded || isHovered
+            ? "lg:w-[280px]"
+            : "lg:w-[60px]"
+        }`}
       >
         {/* SIDEBAR HEADER - Fixed */}
         <div
           className={`relative flex-shrink-0 flex flex-col items-center border-b border-white/10 ${
             sidebarOpen ? "block py-2" : "block"
-          } lg:block ${isExpanded || isHovered ? 'pb-8 pt-8' : 'py-4'}`}
+          } lg:block ${isExpanded || isHovered ? "pb-8 pt-8" : "py-4"}`}
         >
           {/* Botón de cierre para móvil */}
           {sidebarOpen && (
@@ -352,18 +400,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               onClick={() => setSidebarOpen(false)}
               className="absolute top-4 right-4 text-white lg:hidden"
             >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                strokeWidth={1.5} 
-                stroke="currentColor" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
                 className="w-6 h-6"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  d="M6 18L18 6M6 6l12 12" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
             </button>
@@ -374,43 +422,57 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               href="/"
               target="_blank"
               className={`flex items-center ${
-                isExpanded || isHovered || sidebarOpen ? 'w-full justify-center' : ''
+                isExpanded || isHovered || sidebarOpen
+                  ? "w-full justify-center"
+                  : ""
               }`}
             >
-              <div className={`relative ${
-                isExpanded || isHovered || sidebarOpen 
-                  ? 'h-20 lg:h-20' 
-                  : 'h-10'
-              } ${
-                isExpanded || isHovered || sidebarOpen 
-                  ? 'w-[200px] lg:w-[280px]' 
-                  : 'w-[120px]'
-              }`}>
+              <div
+                className={`relative ${
+                  isExpanded || isHovered || sidebarOpen
+                    ? "h-20 lg:h-20"
+                    : "h-10"
+                } ${
+                  isExpanded || isHovered || sidebarOpen
+                    ? "w-[200px] lg:w-[280px]"
+                    : "w-[120px]"
+                }`}
+              >
                 <div
                   className={`absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
-                    !isExpanded && !isHovered && !sidebarOpen ? "opacity-100" : "opacity-0"
+                    !isExpanded && !isHovered && !sidebarOpen
+                      ? "opacity-100"
+                      : "opacity-0"
                   }`}
                 >
                   <img
                     src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
-                    alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
+                    alt={
+                      process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
+                    }
                     className="w-8 h-8 object-contain"
                   />
                 </div>
                 <div
                   className={`absolute ${
-                    isExpanded || isHovered || sidebarOpen ? 'left-1/2 -translate-x-1/2' : 'left-0'
+                    isExpanded || isHovered || sidebarOpen
+                      ? "left-1/2 -translate-x-1/2"
+                      : "left-0"
                   } top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${
-                    isExpanded || isHovered || sidebarOpen ? "opacity-100" : "opacity-0"
+                    isExpanded || isHovered || sidebarOpen
+                      ? "opacity-100"
+                      : "opacity-0"
                   }`}
                 >
                   <img
                     src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
-                    alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
+                    alt={
+                      process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
+                    }
                     className={`object-contain ${
-                      isExpanded || isHovered || sidebarOpen 
-                        ? 'w-40 lg:w-60 scale-110' 
-                        : 'w-60 scale-100'
+                      isExpanded || isHovered || sidebarOpen
+                        ? "w-40 lg:w-60 scale-110"
+                        : "w-60 scale-100"
                     } transition-transform duration-300`}
                   />
                 </div>
@@ -444,8 +506,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </button>
             )}
           </div>
-
-
         </div>
 
         {/* Main Content Area - Scrollable */}
@@ -456,9 +516,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <div>
                 <ul className="flex flex-col">
                   {sidebarLinks
-                    .filter(link => link.isVisible !== false)
-                    .filter(link => {
-                      if ((link.title === "Opciones de Cuenta" || link.title === "Creación IDs") && !isAdminPixelUP) {
+                    .filter((link) => link.isVisible !== false)
+                    .filter((link) => {
+                      if (
+                        (link.title === "Opciones de Cuenta" ||
+                          link.title === "Creación IDs") &&
+                        !isAdminPixelUP
+                      ) {
                         return false;
                       }
                       return true;
@@ -476,17 +540,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
         {/* User Profile Section - Fixed at bottom */}
         <div className="flex-shrink-0 border-t border-white/10">
-                  {/* Botón Ir a tienda */}
-                  <Link
+          {/* Botón Ir a tienda */}
+          <Link
             href="/tienda"
             target="_blank"
             className={`text-center justify-center mt-4 mx-auto flex items-center text-sm gap-2 rounded-lg py-1.5 px-2 font-medium text-white hover:bg-black/10 transition-all duration-300 ${
-              !isExpanded && !isHovered ? 'w-[40px] justify-center' : 'w-[150px] border border-white '
+              !isExpanded && !isHovered
+                ? "w-[40px] justify-center"
+                : "w-[150px] border border-white "
             }`}
           >
             <span
               className={` whitespace-nowrap transition-all duration-300 ease-in-out ${
-                !isExpanded && !isHovered ? "opacity-0 -translate-x-10" : "opacity-100 translate-x-0"
+                !isExpanded && !isHovered
+                  ? "opacity-0 -translate-x-10"
+                  : "opacity-100 translate-x-0"
               }`}
             >
               Ir a la tienda
@@ -495,12 +563,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <button
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
             className={`flex items-center gap-3 ${
-              !isExpanded && !isHovered ? 'h-[48px] justify-center px-0' : 'py-3 px-4'
+              !isExpanded && !isHovered
+                ? "h-[48px] justify-center px-0"
+                : "py-3 px-4"
             } w-full hover:bg-black/10`}
           >
-            <span className={`rounded-full flex items-center justify-center bg-gray-200 ${
-              !isExpanded && !isHovered ? 'h-5 w-5' : 'h-7 w-8'
-            }`}>
+            <span
+              className={`rounded-full flex items-center justify-center bg-gray-200 ${
+                !isExpanded && !isHovered ? "h-5 w-5" : "h-7 w-8"
+              }`}
+            >
               {userDataInfo?.avatarUrl ? (
                 <img
                   src={userDataInfo.avatarUrl}
@@ -515,14 +587,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 />
               )}
             </span>
-            
+
             {(isExpanded || isHovered) && (
               <div className="flex items-center justify-between w-full">
                 <div className="flex flex-col transition-all duration-300 ease-in-out">
                   <span className="text-xs font-medium text-white">
                     {userDataInfo?.firstname} {userDataInfo?.lastname}
                   </span>
-                  {!(userDataInfo?.firstname === "Admin" && userDataInfo?.lastname === "PixelUP") && (
+                  {!(
+                    userDataInfo?.firstname === "Admin" &&
+                    userDataInfo?.lastname === "PixelUP"
+                  ) && (
                     <span className="text-[11px] text-white/70">
                       {userDataInfo?.email}
                     </span>
@@ -530,7 +605,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 </div>
                 <svg
                   className={`w-4 h-4 text-white transition-transform duration-300 ${
-                    userDropdownOpen ? 'rotate-180' : ''
+                    userDropdownOpen ? "rotate-180" : ""
                   }`}
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -549,18 +624,35 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           </button>
 
           {(isExpanded || isHovered) && (
-            
-            <div className={`${userDropdownOpen ? 'block' : 'hidden'} py-3 px-4 bg-black/10`}>
-              
+            <div
+              className={`${
+                userDropdownOpen ? "block" : "hidden"
+              } py-3 px-4 bg-black/10`}
+            >
               <ul className="flex flex-col gap-2.5">
                 <li>
                   <Link
                     href="/dashboard/usuarios"
                     className="flex items-center gap-3 text-xs text-white hover:text-white/70 py-1"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      className="size-5"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                      />
                     </svg>
                     Configuración
                   </Link>

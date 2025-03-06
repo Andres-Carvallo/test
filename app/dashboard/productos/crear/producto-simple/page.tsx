@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import CrearProductoSimple from "./CrearProductoSimple";
+import CrearProductoSimple from "./CrearProductoSimple_Starken";
 
 export const metadata: Metadata = {
   title: "Crear Producto Simple",
