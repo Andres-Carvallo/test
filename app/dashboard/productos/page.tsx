@@ -1636,10 +1636,10 @@ export default function ProductPageBO() {
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 ${
-                      currentPage === 1 ? "cursor-not-allowed" : ""
+                      currentPage === 1 ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
-                    <span className="sr-only">Previous</span>
+                    <span className="sr-only">Anterior</span>
                     <svg
                       className="w-3 h-3 rtl:rotate-180"
                       aria-hidden="true"
@@ -1658,21 +1658,54 @@ export default function ProductPageBO() {
                   </button>
                 </li>
 
-                {/* Botones de número de página */}
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <li key={index}>
-                    <button
-                      onClick={() => handlePageChange(index + 1)}
-                      className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
-                        currentPage === index + 1
-                          ? "text-primary bg-gray-200"
-                          : "text-gray-300 bg-white"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  </li>
-                ))}
+                {/* Botones de número de página con puntos suspensivos */}
+                {(() => {
+                  const delta = 1; // Número de páginas a mostrar antes y después de la página actual
+                  const range = [];
+                  const rangeWithDots = [];
+                  let l;
+
+                  for (let i = 1; i <= totalPages; i++) {
+                    if (
+                      i === 1 || 
+                      i === totalPages || 
+                      i === currentPage || 
+                      (i >= currentPage - delta && i <= currentPage + delta)
+                    ) {
+                      range.push(i);
+                    }
+                  }
+
+                  for (let i of range) {
+                    if (l) {
+                      if (i - l === 2) {
+                        rangeWithDots.push(l + 1);
+                      } else if (i - l !== 1) {
+                        rangeWithDots.push('...');
+                      }
+                    }
+                    rangeWithDots.push(i);
+                    l = i;
+                  }
+
+                  return rangeWithDots.map((pageNum, index) => (
+                    <li key={index}>
+                      <button
+                        onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
+                        disabled={pageNum === '...'}
+                        className={`flex items-center justify-center px-4 h-10 leading-tight border border-gray-300 ${
+                          pageNum === currentPage
+                            ? "text-white bg-primary border-primary z-10"
+                            : pageNum === '...'
+                            ? "text-gray-500 bg-white cursor-default"
+                            : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    </li>
+                  ));
+                })()}
 
                 {/* Botón de página siguiente */}
                 <li>
@@ -1680,10 +1713,10 @@ export default function ProductPageBO() {
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
-                      currentPage === totalPages ? "cursor-not-allowed" : ""
+                      currentPage === totalPages ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
-                    <span className="sr-only">Next</span>
+                    <span className="sr-only">Siguiente</span>
                     <svg
                       className="w-3 h-3 rtl:rotate-180"
                       aria-hidden="true"

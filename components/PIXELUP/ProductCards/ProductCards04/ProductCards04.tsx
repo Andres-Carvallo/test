@@ -132,9 +132,9 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             )}
           </div>
         </div>
-        <div className="p-4">
+        <div className="p-4 min-h-[114px]">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
-            <h3 className="text-primary font-medium mb-2 line-clamp-1">
+            <h3 className="text-primary font-medium mb-2 max-w-[15ch] truncate">
               {product.name}
             </h3>
           </Link>

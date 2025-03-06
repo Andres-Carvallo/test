@@ -6,7 +6,6 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
 import Loader from "@/components/common/Loader-t";
-import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import ProductCard04 from "@/components/PIXELUP/ProductCards/ProductCards04/ProductCards04";
 
 interface ProductGridShopProps {
@@ -32,6 +31,38 @@ const ProductGridShop = ({
   const searchParams = useSearchParams();
   const { addToCartHandler } = useAPI();
   const pageSize = 12;
+
+  const getPageNumbers = (currentPage: number, totalPages: number) => {
+    const delta = 1; // Número de páginas a mostrar antes y después de la página actual
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 || 
+        i === totalPages || 
+        i === currentPage || 
+        (i >= currentPage - delta && i <= currentPage + delta)
+      ) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
 
   // Efecto para recargar datos cuando shouldRevalidate es true
   useEffect(() => {
@@ -250,17 +281,20 @@ const ProductGridShop = ({
       <div className="max-w-7xl mx-auto px-4 mt-10">
         <div className="flex flex-col items-center gap-4">
           <div className="flex flex-wrap justify-center gap-2">
-            {Array.from({ length: totalPages }, (_, index) => (
+            {getPageNumbers(page, totalPages).map((pageNum, index) => (
               <button
                 key={index}
-                onClick={() => handlePageChange(index + 1)}
+                onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
                 className={`px-3 py-1 text-sm border rounded-md transition-colors duration-200 ${
-                  page === index + 1
+                  pageNum === page
                     ? "bg-primary text-white border-primary"
+                    : pageNum === '...'
+                    ? "bg-white border-gray-300 cursor-default"
                     : "bg-white hover:bg-gray-50 border-gray-300"
                 }`}
+                disabled={pageNum === '...'}
               >
-                {index + 1}
+                {pageNum}
               </button>
             ))}
           </div>
