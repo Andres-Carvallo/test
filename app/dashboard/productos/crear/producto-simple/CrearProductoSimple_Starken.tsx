@@ -598,8 +598,6 @@ const CrearProductoSimple: React.FC = ({}) => {
         isFeatured,
       };
 
-      console.log("Datos que se envían en la solicitud:", data);
-
       const response = await axios.put(url, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -609,6 +607,7 @@ const CrearProductoSimple: React.FC = ({}) => {
 
       if (response.status >= 200 && response.status < 300) {
         console.log("SKU data updated successfully");
+        await triggerRevalidation();
       } else {
         console.error("Error updating SKU data:", response.statusText);
         toast.error("Error al actualizar los datos de la SKU");
@@ -721,21 +720,23 @@ const CrearProductoSimple: React.FC = ({}) => {
     // Convertir las medidas con comas a números antes de enviar
     const processedFormData = {
       ...formData,
-      measures: {
-        ...formData.measures,
-        length: formData.measures.length
-          ? parseFloat(String(formData.measures.length).replace(/,/g, "."))
-          : formData.measures.length,
-        width: formData.measures.width
-          ? parseFloat(String(formData.measures.width).replace(/,/g, "."))
-          : formData.measures.width,
-        height: formData.measures.height
-          ? parseFloat(String(formData.measures.height).replace(/,/g, "."))
-          : formData.measures.height,
-        weight: formData.measures.weight
-          ? parseFloat(String(formData.measures.weight).replace(/,/g, "."))
-          : formData.measures.weight,
-      },
+      measures: formData.enabledForDelivery
+        ? {
+            ...formData.measures,
+            length: formData.measures.length
+              ? parseFloat(String(formData.measures.length).replace(/,/g, "."))
+              : formData.measures.length,
+            width: formData.measures.width
+              ? parseFloat(String(formData.measures.width).replace(/,/g, "."))
+              : formData.measures.width,
+            height: formData.measures.height
+              ? parseFloat(String(formData.measures.height).replace(/,/g, "."))
+              : formData.measures.height,
+            weight: formData.measures.weight
+              ? parseFloat(String(formData.measures.weight).replace(/,/g, "."))
+              : formData.measures.weight,
+          }
+        : undefined,
     };
 
     const dataToSend: any = {
@@ -753,6 +754,11 @@ const CrearProductoSimple: React.FC = ({}) => {
       delete dataToSend.previewImage;
     }
 
+    // Eliminar measures si es undefined (cuando no hay delivery)
+    if (!dataToSend.measures) {
+      delete dataToSend.measures;
+    }
+
     if (!alertStock) {
       setAlertStock(0);
     }
@@ -765,20 +771,28 @@ const CrearProductoSimple: React.FC = ({}) => {
         ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
         : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
-      const productResponse = await fetch(url, {
+      const response = await fetch(url, {
         method: isEditMode ? "PUT" : "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(dataToSend),
       });
 
-      if (!productResponse.ok) {
-        throw new Error("Error en la respuesta del servidor");
+      if (!response.ok) {
+        throw new Error("Error al guardar el producto");
       }
 
-      const productData = await productResponse.json();
+      await triggerRevalidation();
+
+      toast.success(
+        isEditMode
+          ? "Producto actualizado exitosamente"
+          : "Producto creado exitosamente"
+      );
+
+      const productData = await response.json();
       const { product } = productData;
       const currentProductId = isEditMode ? productId : product.id;
       const currentSkuId = isEditMode ? skuId : product.skuId;
@@ -858,8 +872,61 @@ const CrearProductoSimple: React.FC = ({}) => {
         currentImages: [],
       });
 
-      // Actualizar la UI
+      // Revalidar rutas y tags
+      await Promise.all([
+        fetch("/api/revalidate?tag=products", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+        fetch("/api/revalidate?tag=categories", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+        fetch(`/api/revalidate?tag=product-${currentProductId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+        fetch("/api/revalidate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            path: "/tienda",
+            type: "page",
+          }),
+        }),
+        fetch("/api/revalidate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            path: "/tienda/productos",
+            type: "page",
+          }),
+        }),
+        fetch("/api/revalidate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            path: "/dashboard/productos",
+            type: "page",
+          }),
+        }),
+      ]);
+
+      // Trigger revalidation through context
       await triggerRevalidation();
+
       setProductId(currentProductId);
       setNewProductId(currentProductId);
 
