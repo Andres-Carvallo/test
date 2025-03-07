@@ -5,6 +5,7 @@ import VariationForm from "./VariationForm";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
+import VariationForm_sinstarken from "./VariationForm_sinstarken";
 
 interface Variation {
   description: string;
@@ -866,7 +867,7 @@ function VariationsComponente({
                           </div>
                         </div>
                       )}
-                      <VariationForm
+                      <VariationForm_sinstarken
                         variation={variation}
                         variations={variations}
                         fetchVariations={fetchVariations}

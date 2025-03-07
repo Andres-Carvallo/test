@@ -94,6 +94,33 @@ const Checkout: React.FC = () => {
   const [showLoader, setShowLoader] = useState(false);
   const [loaderMessage, setLoaderMessage] = useState("Calculando valor de despacho...");
 
+  useEffect(() => {
+    const fetchDeliveryTypeId = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
+        );
+        const deliveryTypes = response.data.deliveryTypes;
+        setAvailableDeliveryTypes(deliveryTypes);
+
+        // Establecer el deliveryTypeId por defecto para retiro en tienda
+        const withdrawalType = deliveryTypes.find(
+          (type: any) => type.code === DELIVERY_TYPES.WITHDRAWAL
+        );
+        if (withdrawalType) {
+          setDeliveryTypeID(withdrawalType.id);
+        } else {
+          console.error("No se encontró el deliveryType para retiro en tienda");
+        }
+      } catch (error) {
+        console.error("Error al obtener los tipos de entrega:", error);
+        toast.error("Error al cargar los tipos de entrega");
+      }
+    };
+
+    fetchDeliveryTypeId();
+  }, []);
+
   const setItemAvailabilityHandler = (
     itemId: string,
     enabledForDelivery: boolean,
@@ -704,8 +731,13 @@ const Checkout: React.FC = () => {
       );
       if (selectedDeliveryType) {
         setDeliveryTypeID(selectedDeliveryType.id);
+        console.log(
+          `Estableciendo deliveryTypeId para ${newValue}:`,
+          selectedDeliveryType.id
+        );
       } else {
         console.error("No se encontró el deliveryType seleccionado");
+        toast.error("Error al seleccionar el tipo de entrega");
       }
     }
 
