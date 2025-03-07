@@ -9,3 +9,25 @@
 .ql-container {
   min-height: 60px !important;
 }
+
+.ql-editor {
+  padding: 0 !important;
+  min-height: 60px !important;
+}
+
+.ql-container.ql-bubble {
+  border: none;
+  font-family: inherit;
+}
+
+.ql-editor p {
+  color: #4B5563;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}
+
+/* Eliminar bordes y estilos por defecto de Quill */
+.ql-bubble .ql-tooltip {
+  display: none !important;
+}

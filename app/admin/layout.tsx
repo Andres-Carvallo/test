@@ -3,6 +3,10 @@ import Footer02 from "@/components/PIXELUP/Footer/Footer02/Footer02";
 import Footer01 from "@/components/PIXELUP/Footer/Footer01/Footer01";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import { Metadata } from "next";
+import {
+  DynamicNavbar,
+  DynamicFooter,
+} from "@/app/components/LayoutComponents";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -16,10 +20,10 @@ export default function RootLayout({
   return (
     <>
       <MarqueeTOP />
-      <Navbar02 />
+      <DynamicNavbar/>
       <div>{children}</div>
       {/* <Footer01 /> */}
-      <Footer02 />
+      <DynamicFooter/> 
     </>
   );
 }

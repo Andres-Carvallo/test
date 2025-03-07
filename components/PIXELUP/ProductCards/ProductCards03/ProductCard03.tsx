@@ -111,7 +111,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
 
   const handleButtonClick = () => {
     if (product.hasVariations) {
-      window.location.href = `/tienda/productos/${slugify(product.name)}`;
+      window.location.href = `/tienda/productosv2/${slugify(product.name)}`;
     } else {
       addToCartHandler(product.skuId, 1);
     }
@@ -134,7 +134,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
           className="w-96 object-cover "
           style={{ borderRadius: "var(--radius)" }}
         />
-        <p className={`font-semibold mt-4 `}>{product.name}</p>
+        <p className={`font-semibold mt-4 line-clamp-1 `}>{product.name}</p>
         <div className={`font-bold text-xl mt-2 min-h-[48px]`}>{renderPrice()}</div>
         <button
           type="button"

@@ -62,24 +62,39 @@ export default function RootLayout({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [siteStatus, setSiteStatus] = useState<string | null>(null);
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const ActiveSiteCheck = async () => {
+    const checkSiteStatus = async () => {
       try {
+        // Verificar estado de suscripción
         const id = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-        const response = await axios.get(
+        const siteResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/sites/${id}`
         );
-        setSiteStatus(response.data.site.statusCode);
+        setSiteStatus(siteResponse.data.site.statusCode);
 
+        // Verificar estado de mantenimiento
+        const contentBlockId = process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
+        const maintenanceResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${id}`
+        );
+        
+        const maintenanceConfig = JSON.parse(maintenanceResponse.data.contentBlock.contentText);
+        setIsMaintenanceMode(maintenanceConfig.enabled || false);
+
+        // Redireccionar según las condiciones
         if (
-          response.data.site.statusCode === "SUBSCRIPTION_PENDING" &&
           !pathname.startsWith("/admin") &&
           !pathname.startsWith("/dashboard")
         ) {
-          router.push("/subscription-pending");
+          if (siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE") {
+            router.push("/subscription-pending");
+          } else if (maintenanceConfig.enabled) {
+            router.push("/mantenimiento");
+          }
         }
       } catch (error) {
         setError(error as Error);
@@ -87,7 +102,8 @@ export default function RootLayout({
         setLoading(false);
       }
     };
-    ActiveSiteCheck();
+
+    checkSiteStatus();
   }, [router, pathname]);
 
   return (

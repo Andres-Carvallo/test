@@ -674,12 +674,252 @@ const Checkout: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="mt-10 bg-gray-100 px-4 pt-8 lg:mt-0">
-              <p className="text-xl font-medium">Datos Personales</p>
-              <p className="text-gray-400">Completa tus datos de Personales</p>
-              <div className="">
-                <div className="mt-10 px-4 pt-2 lg:mt-0">
-                  <div className="grid grid-cols-2 gap-4">
+            <div className="md:mt-10 bg-white px-4 pt-8 lg:mt-0">
+              <div className="space-y-4">
+                {/* Tipo de envío */}
+                <div className="bg-gray-100 rounded-lg shadow-sm p-6">
+                  <p className="text-xl font-medium">Tipo de envío</p>
+                  <p className="text-gray-400">Selecciona el tipo de envío</p>
+                  
+                  {/* Formulario de tipo de entrega */}
+                  <form className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Botón para retiro en tienda */}
+                    <div className="relative">
+                      <input
+                        className="peer hidden"
+                        id="radio_retiroTienda"
+                        type="radio"
+                        name="radio"
+                        value="WITHDRAWAL_FROM_STORE"
+                        checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
+                        onChange={() =>
+                          handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")
+                        }
+                      />
+                      <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                      <label
+                        className="bg-white peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                        htmlFor="radio_retiroTienda"
+                      >
+                        {/* Icono y texto para retiro en tienda */}
+                        <div className="flex items-center w-full">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-8 h-8 flex-shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                            />
+                          </svg>
+                          <div className="ml-4">
+                            <span className="font-semibold block">
+                              Retiro en Tienda
+                            </span>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                    {/* Botón para delivery */}
+                    <div className="relative">
+                      <input
+                        className="peer hidden"
+                        id="radio_delivery"
+                        type="radio"
+                        name="radio"
+                        value="HOME_DELIVERY_WITHOUT_COURIER"
+                        checked={deliveryType === "HOME_DELIVERY_WITHOUT_COURIER"}
+                        onChange={() =>
+                          handleChangeDeliveryType(
+                            "HOME_DELIVERY_WITHOUT_COURIER"
+                          )
+                        }
+                      />
+                      <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                      <label
+                        className="bg-white peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                        htmlFor="radio_delivery"
+                      >
+                        {/* Icono y texto para delivery */}
+                        <div className="flex items-center w-full">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-8 h-8 flex-shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                            />
+                          </svg>
+                          <div className="ml-4">
+                            <span className="font-semibold block">Delivery</span>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </form>
+
+                  {/* Campos de dirección, región y comuna */}
+                  {(deliveryType === "WITHDRAWAL_FROM_STORE" || deliveryType === "HOME_DELIVERY_WITHOUT_COURIER") && (
+                    <div className="mt-5 grid gap-4">
+                      {isLoggedIn && (
+                        <>
+                          <div className="grid gap-4">
+                            <label htmlFor="addressLine1" className="block">
+                              Dirección <span className="text-red-500">*</span>
+                              <input
+                                type="text"
+                                id="addressLine1"
+                                name="addressLine1"
+                                value={customer.customer?.addressLine1 || ""}
+                                onChange={(e) =>
+                                  setCustomer({
+                                    ...customer,
+                                    customer: {
+                                      ...customer.customer,
+                                      addressLine1: e.target.value,
+                                    },
+                                  })
+                                }
+                                className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                                  isLoggedIn ? "bg-gray-200" : "bg-white"
+                                }`}
+                                disabled={!!isLoggedIn}
+                              />
+                            </label>
+                          </div>
+
+                          <div className="grid gap-4">
+                            <label htmlFor="RegionName" className="block">
+                              Región
+                              <input
+                                type="text"
+                                id="RegionName"
+                                name="RegionName"
+                                value={loggedInRegion || ""}
+                                className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-gray-200"
+                                disabled
+                              />
+                            </label>
+                            <label htmlFor="CommuneName" className="block">
+                              Comuna
+                              <input
+                                type="text"
+                                id="CommuneName"
+                                name="CommuneName"
+                                value={loggedInCommune || ""}
+                                className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-gray-200"
+                                disabled
+                              />
+                            </label>
+                          </div>
+
+                          <label className="block">
+                            <input
+                              type="checkbox"
+                              checked={useDifferentShippingAddress}
+                              onChange={() =>
+                                setUseDifferentShippingAddress(
+                                  !useDifferentShippingAddress
+                                )
+                              }
+                            />
+                            <span className="ml-2">
+                              Enviar a una dirección diferente
+                            </span>
+                          </label>
+                        </>
+                      )}
+
+                      {(!isLoggedIn || useDifferentShippingAddress) && (
+                        <div className="grid gap-4">
+                          <div className="grid gap-4">
+                            <label htmlFor="addressLine1" className="block">
+                              Dirección <span className="text-red-500">*</span>
+                              <input
+                                type="text"
+                                id="addressLine1"
+                                value={customer.customer?.addressLine1 || ""}
+                                onChange={(e) =>
+                                  setCustomer({
+                                    ...customer,
+                                    customer: {
+                                      ...customer.customer,
+                                      addressLine1: e.target.value,
+                                    },
+                                  })
+                                }
+                                className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                                required
+                              />
+                            </label>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <label htmlFor="region" className="block">
+                              Región <span className="text-red-500">*</span>
+                              <select
+                                id="region"
+                                value={selectedRegion}
+                                onChange={handleRegionChange}
+                                className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                              >
+                                {loadingRegions ? (
+                                  <option>Cargando Regiones...</option>
+                                ) : (
+                                  <>
+                                    <option value="">Selecciona Región</option>
+                                    {displayedRegions.map((region) => (
+                                      <option key={region.id} value={region.id}>
+                                        {region.name}
+                                      </option>
+                                    ))}
+                                  </>
+                                )}
+                              </select>
+                            </label>
+                            <label htmlFor="commune" className="block">
+                              Comuna <span className="text-red-500">*</span>
+                              <select
+                                id="commune"
+                                value={selectedCommune}
+                                onChange={handleCommuneChange}
+                                className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                                disabled={!selectedRegion || loadingCommunes}
+                              >
+                                <option value="">Selecciona Comuna</option>
+                                {displayedCommunes
+                                  .filter(
+                                    (commune) => commune.regionId === selectedRegion
+                                  )
+                                  .map((commune) => (
+                                    <option key={commune.id} value={commune.id}>
+                                      {commune.name}
+                                    </option>
+                                  ))}
+                              </select>
+                            </label>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Datos personales */}
+                <div className="bg-gray-100 rounded-lg shadow-sm p-6">
+                  <p className="text-xl font-medium">Datos Personales</p>
+                  <p className="text-gray-400">Completa tus datos personales</p>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
                     <label htmlFor="firstname" className="block mt-4">
                       Nombre <span className="text-red-500">*</span>
                       <input
@@ -749,7 +989,7 @@ const Checkout: React.FC = () => {
                       />
                     </label>
                     <label htmlFor="email" className="block mt-4">
-                      Email
+                      Email <span className="text-red-500">*</span>
                       <input
                         type="text"
                         id="email"
@@ -771,295 +1011,29 @@ const Checkout: React.FC = () => {
                       />
                     </label>
                   </div>
-                  {isLoggedIn && (
-                    <div className=" gap-4">
-                      <label htmlFor="addressLine1" className="block mt-4">
-                        Dirección <span className="text-red-500">*</span>
-                        <input
-                          type="text"
-                          id="addressLine1"
-                          name="addressLine1"
-                          value={customer.customer?.addressLine1 || ""}
-                          onChange={(e) =>
-                            setCustomer({
-                              ...customer,
-                              customer: {
-                                ...customer.customer,
-                                addressLine1: e.target.value,
-                              },
-                            })
-                          }
-                          className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                            isLoggedIn ? "bg-gray-200" : "bg-white"
-                          }`}
-                          disabled={!!isLoggedIn}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </div>
-
-                {isLoggedIn && (
-                  <>
-                    <div className="grid gap-4 mx-4">
-                      <label htmlFor="RegionName" className="block mt-4">
-                        Región
-                        <input
-                          type="text"
-                          id="RegionName"
-                          name="RegionName"
-                          value={loggedInRegion || ""}
-                          className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-gray-200"
-                          disabled
-                        />
-                      </label>
-                      <label htmlFor="CommuneName" className="block ">
-                        Comuna
-                        <input
-                          type="text"
-                          id="CommuneName"
-                          name="CommuneName"
-                          value={loggedInCommune || ""}
-                          className="block w-full rounded-md border-dark/50 border p-1 mt-1 bg-gray-200"
-                          disabled
-                        />
-                      </label>
-                    </div>
-
-                    <label className="block mt-4 ml-6">
-                      <input
-                        type="checkbox"
-                        checked={useDifferentShippingAddress}
-                        onChange={() =>
-                          setUseDifferentShippingAddress(
-                            !useDifferentShippingAddress
-                          )
-                        }
-                      />
-                      <span className="ml-2">
-                        Enviar a una dirección diferente
-                      </span>
-                    </label>
-                  </>
-                )}
-                {(!isLoggedIn || useDifferentShippingAddress) && (
-                  <div className="mt-5 grid gap-4">
-
-                    <div className="grid grid-cols-2 gap-4 px-4">
-                      <label htmlFor="addressLine1" className="block">
-                        Dirección <span className="text-red-500">*</span>
-                        <input
-                          type="text"
-                          id="addressLine1"
-                          value={customer.customer?.addressLine1 || ""}
-                          onChange={(e) =>
-                            setCustomer({
-                              ...customer,
-                              customer: {
-                                ...customer.customer,
-                                addressLine1: e.target.value,
-                              },
-                            })
-                          }
-                          className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                          required
-                        />
-                      </label>
-
-                      <label htmlFor="addressLine2" className="block">
-                        Indicaciones extra
-                        <input
-                          type="text"
-                          id="addressLine2"
-                          value={customer.customer?.addressLine2 || ""}
-                          onChange={(e) =>
-                            setCustomer({
-                              ...customer,
-                              customer: {
-                                ...customer.customer,
-                                addressLine2: e.target.value,
-                              },
-                            })
-                          }
-                          className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                        />
-                      </label>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 px-4">
-                      <label htmlFor="region" className="block">
-                        Región
-                        <select
-                          id="region"
-                          value={selectedRegion}
-                          onChange={handleRegionChange}
-                          className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                        >
-                          {loadingRegions ? (
-                            <option>Cargando Regiones...</option>
-                          ) : (
-                            <>
-                              <option>Selecciona Región</option>
-                              {displayedRegions.map((region) => (
-                                <option key={region.id} value={region.id}>
-                                  {region.name}
-                                </option>
-                              ))}
-                            </>
-                          )}
-                        </select>
-                      </label>
-                      <label htmlFor="commune" className="block">
-                        Comuna
-                        {loadingCommunes ? (
-                          <Loader />
-                        ) : (
-                          <select
-                            id="commune"
-                            value={selectedCommune}
-                            onChange={handleCommuneChange}
-                            className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                          >
-                            <option>Selecciona Comuna</option>
-                            {displayedCommunes
-                              .filter(
-                                (commune) => commune.regionId === selectedRegion
-                              )
-                              .map((commune) => (
-                                <option key={commune.id} value={commune.id}>
-                                  {commune.name}
-                                </option>
-                              ))}
-                          </select>
-                        )}
-                      </label>
-                    </div>
-                  </div>
-                )}
-                <div
-                  style={{ borderRadius: "var(--radius)" }}
-                  className="shadow  flex items-center p-4 mt-4 my-2  text-sm text-blue-800 border border-blue-300 bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 mx-4"
-                  role="alert"
-                >
-                  <svg
-                    className="flex-shrink-0 inline w-4 h-4 me-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                  </svg>
-                  <span className="sr-only">Delivery</span>
-                  <div className="flex flex-col">
-                    <div>
-                      Cuando selecciones <strong>Delivery</strong>, sólo
-                      aparecerán las Regiones/Comunas{" "}
-                      <strong>disponible para despacho a domicilio</strong>.
-                    </div>
-                  </div>
-                </div>
-
-                <form className="mt-5 grid gap-2 px-4">
-                  <div className="relative">
+                  <label htmlFor="addressLine2" className="block mt-4">
+                    Indicaciones extra
                     <input
-                      className="peer hidden"
-                      id="radio_retiroTienda"
-                      type="radio"
-                      name="radio"
-                      value="WITHDRAWAL_FROM_STORE"
-                      checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
-                      onChange={() =>
-                        handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")
+                      type="text"
+                      id="addressLine2"
+                      value={customer.customer?.addressLine2 || ""}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            addressLine2: e.target.value,
+                          },
+                        })
                       }
+                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
                     />
-                    <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
-                    <label
-                      className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                      htmlFor="radio_retiroTienda"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-12 h-12"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                        />
-                      </svg>
-                      <div className="ml-5 flex flex-col justify-center h-full">
-                        <span className="mt-3 font-semibold">
-                          Retiro en Tienda
-                        </span>
-{/*                         <p className="text-slate-500 text-sm leading-6">
-                          Retiro: 0-1 Día
-                        </p> */}
-                      </div>
-                    </label>
-                  </div>
-                  <div className="relative">
-                    <input
-                      className="peer hidden"
-                      id="radio_delivery"
-                      type="radio"
-                      name="radio"
-                      value="HOME_DELIVERY_WITHOUT_COURIER"
-                      checked={deliveryType === "HOME_DELIVERY_WITHOUT_COURIER"}
-                      onChange={() =>
-                        handleChangeDeliveryType(
-                          "HOME_DELIVERY_WITHOUT_COURIER"
-                        )
-                      }
-                    />
-                    <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
-                    <label
-                      className="peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                      htmlFor="radio_delivery"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-12 h-12"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-                        />
-                      </svg>
-                      <div className="ml-5 flex flex-col justify-center h-full">
-                        <span className="mt-3 font-semibold">Delivery</span>
-{/*                         <p className="text-slate-500 text-sm leading-6">
-                          Delivery: 2-4 Days
-                        </p> */}
-                      </div>
-                    </label>
-                  </div>
-                </form>
+                  </label>
+                </div>
               </div>
-              {/* <label className="block mt-4 ml-6">
-                  <input
-                    type="checkbox"
-                    checked={termsAccepted}
-                    onChange={() => setTermsAccepted(!termsAccepted)}
-                  />
-                  <span className="ml-2">
-                    Acepto{" "}
-                    <span className="font-bold">
-                      <a href="#">términos y condiciones</a>
-                    </span>
-                  </span>
-                </label> */}
               <button
                 onClick={handleSubmitOrder}
-                className="mt-4 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white"
+                className="mt-8 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white"
               >
                 Confirmar Compra
               </button>

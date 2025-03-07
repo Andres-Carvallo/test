@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { getCookie, setCookie } from "cookies-next";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -80,9 +80,12 @@ const ManualOrder: React.FC = () => {
     setModalConfirmCallback(null);
   };
 
-  const [regions, setRegions] = useState<{ id: string; name: string }[]>([]);
-  const [communes, setCommunes] = useState<{ id: string; name: string }[]>([]);
-  const [shippingCommunes, setShippingCommunes] = useState<Commune[]>([]);
+  const [regionsDelivery, setRegionsDelivery] = useState<{ id: string; name: string }[]>([]);
+  const [communesDelivery, setCommunesDelivery] = useState<{ id: string; name: string; regionId: string }[]>([]);
+  const [regionsPickup, setRegionsPickup] = useState<{ id: string; name: string }[]>([]);
+  const [communesPickup, setCommunesPickup] = useState<{ id: string; name: string; regionId: string }[]>([]);
+  const [loadingRegions, setLoadingRegions] = useState<boolean>(false);
+  const [loadingCommunes, setLoadingCommunes] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingAttributes, setLoadingAttributes] = useState<boolean>(false);
   const [enabledCommunes, setEnabledCommunes] = useState<string[]>([]);
@@ -128,45 +131,75 @@ const ManualOrder: React.FC = () => {
   };
 
   const fetchRegionsAndCommunes = async (applyShippingZonesFilter: boolean) => {
-    setLoading(true); // Iniciar loader
+    setLoadingRegions(true);
     try {
+      if (regionsDelivery.length > 0 && regionsPickup.length > 0) {
+        return;
+      }
+
       const Pais = "CL";
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const regionsResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}`
       );
 
       const allRegions = regionsResponse.data.regions;
-      const filteredRegions: { id: string; name: string }[] = [];
-      const allCommunes: { id: string; name: string; regionId: string }[] = [];
+
+      // Fetch communes for both delivery and pickup
+      const fetchCommunesForDelivery = async (regionId: string) => {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=true`
+        );
+        return response.data.communes.map((commune: any) => ({
+          id: commune.id,
+          name: commune.name,
+          regionId: regionId,
+        }));
+      };
+
+      const fetchCommunesForPickup = async (regionId: string) => {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=false`
+        );
+        return response.data.communes.map((commune: any) => ({
+          id: commune.id,
+          name: commune.name,
+          regionId: regionId,
+        }));
+      };
+
+      const regionsForDelivery = [];
+      const regionsForPickup = [];
+      const allCommunesForDelivery = [];
+      const allCommunesForPickup = [];
 
       for (const region of allRegions) {
-        const communesResponse = await axios.get(
-          `${
-            process.env.NEXT_PUBLIC_API_URL_CLIENTE
-          }/api/v1/countries/${Pais}/regions/${region.id}/communes?siteId=${
-            process.env.NEXT_PUBLIC_API_URL_SITEID
-          }${applyShippingZonesFilter ? "&hasDeliveryAvailable=true" : ""}`
-        );
-        const communesData = communesResponse.data.communes;
-        if (communesData.length > 0) {
-          filteredRegions.push({ id: region.id, name: region.name });
-          allCommunes.push(
-            ...communesData.map((commune: any) => ({
-              id: commune.id,
-              name: commune.name,
-              regionId: region.id,
-            }))
-          );
+        const communesForDelivery = await fetchCommunesForDelivery(region.id);
+        const communesForPickup = await fetchCommunesForPickup(region.id);
+
+        if (communesForDelivery.length > 0) {
+          regionsForDelivery.push({ id: region.id, name: region.name });
+          allCommunesForDelivery.push(...communesForDelivery);
+        }
+
+        if (communesForPickup.length > 0) {
+          regionsForPickup.push({ id: region.id, name: region.name });
+          allCommunesForPickup.push(...communesForPickup);
         }
       }
 
-      setRegions(filteredRegions);
-      setCommunes(allCommunes);
-      setEnabledCommunes(allCommunes.map((commune: any) => commune.id));
+      setRegionsDelivery(regionsForDelivery);
+      setCommunesDelivery(allCommunesForDelivery);
+      setRegionsPickup(regionsForPickup);
+      setCommunesPickup(allCommunesForPickup);
+
+      // Guardar las comunas habilitadas para delivery
+      setEnabledCommunes(allCommunesForDelivery.map((commune: any) => commune.id));
     } catch (error) {
       console.error("Error fetching regions and communes:", error);
     } finally {
-      setLoading(false); // Terminar loader
+      setLoading(false);
+      setLoadingRegions(false);
     }
   };
 
@@ -303,10 +336,25 @@ const ManualOrder: React.FC = () => {
     );
   };
 
+  const displayedRegions = useMemo(() => {
+    return deliveryType === "WITHDRAWAL_FROM_STORE" ? regionsPickup : regionsDelivery;
+  }, [deliveryType, regionsPickup, regionsDelivery]);
+
+  const displayedCommunes = useMemo(() => {
+    return deliveryType === "WITHDRAWAL_FROM_STORE" ? communesPickup : communesDelivery;
+  }, [deliveryType, communesPickup, communesDelivery]);
+
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
-    setSelectedCommune("");
+    setSelectedCommune(""); // Reset selected commune
+    setCustomer((prevState) => ({
+      ...prevState,
+      customer: {
+        ...prevState.customer,
+        communeId: "",
+      },
+    }));
   };
 
   const handleCommuneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -736,56 +784,54 @@ const ManualOrder: React.FC = () => {
                 </div>
                 <div className="mt-5 grid gap-4 px-4">
                   <label
-                    htmlFor="RegionId"
+                    htmlFor="region"
                     className="block"
                   >
                     Región
                     <select
                       id="region"
                       value={selectedRegion}
-                      onChange={(event) => {
-                        handleRegionChange(event);
-                      }}
+                      onChange={handleRegionChange}
                       className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
                     >
-                      <option>Selecciona Región</option>
-                      {regions.map((region) => (
-                        <option
-                          key={region.id}
-                          value={region.id}
-                        >
-                          {region.name}
-                        </option>
-                      ))}
+                      {loadingRegions ? (
+                        <option>Cargando Regiones...</option>
+                      ) : (
+                        <>
+                          <option>Selecciona Región</option>
+                          {displayedRegions.map((region) => (
+                            <option key={region.id} value={region.id}>
+                              {region.name}
+                            </option>
+                          ))}
+                        </>
+                      )}
                     </select>
                   </label>
                   <label
-                    htmlFor="communeId"
+                    htmlFor="commune"
                     className="block"
                   >
                     Comuna
-                    <select
-                      id="commune"
-                      value={selectedCommune}
-                      onChange={(event) => {
-                        handleCommuneChange(event);
-                      }}
-                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                    >
-                      <option>Selecciona Comuna</option>
-                      {communes
-                        .filter(
-                          (commune: any) => commune.regionId === selectedRegion
-                        )
-                        .map((commune) => (
-                          <option
-                            key={commune.id}
-                            value={commune.id}
-                          >
-                            {commune.name}
-                          </option>
-                        ))}
-                    </select>
+                    {loadingCommunes ? (
+                      <Loader />
+                    ) : (
+                      <select
+                        id="commune"
+                        value={selectedCommune}
+                        onChange={handleCommuneChange}
+                        className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                      >
+                        <option>Selecciona Comuna</option>
+                        {displayedCommunes
+                          .filter((commune) => commune.regionId === selectedRegion)
+                          .map((commune) => (
+                            <option key={commune.id} value={commune.id}>
+                              {commune.name}
+                            </option>
+                          ))}
+                      </select>
+                    )}
                   </label>
                 </div>
               </div>

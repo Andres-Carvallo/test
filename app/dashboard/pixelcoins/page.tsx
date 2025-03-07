@@ -29,6 +29,10 @@ const CreditChecker = () => {
   const [creditMovements, setCreditMovements] = useState<CreditMovement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [paginatedMovements, setPaginatedMovements] = useState<CreditMovement[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     const fetchCreditsAndMovements = async () => {
@@ -70,11 +74,19 @@ const CreditChecker = () => {
     fetchCreditsAndMovements();
   }, []);
 
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setPaginatedMovements(creditMovements.slice(startIndex, endIndex));
+    setTotalPages(Math.ceil(creditMovements.length / pageSize));
+  }, [creditMovements, currentPage, pageSize]);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
   const formatCLP = (amount: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(amount);
+    return new Intl.NumberFormat("es-CL").format(amount);
   };
 
   const handleCopyCode = async () => {
@@ -120,6 +132,36 @@ const CreditChecker = () => {
       encodeURIComponent(text);
 
     window.open(facebookShareUrl, "_blank");
+  };
+
+  const getMovementTypeDisplay = (type: string) => {
+    const typeMap: Record<string, string> = {
+      WITHDRAWAL: "CARGO",
+      PAYMENT: "ABONO"
+    };
+    return typeMap[type] || type;
+  };
+
+  const getMovementDescriptionDisplay = (description: string) => {
+    const descriptionMap: Record<string, string> = {
+      "Exchange generation": "Canje PixelCoins"
+    };
+
+    // Si está en el mapa de descripciones, retorna directamente
+    if (descriptionMap[description]) {
+      return descriptionMap[description];
+    }
+
+    // Para el caso de Subscription commerce
+    if (description.includes("Subscription commerce")) {
+      // Reemplaza "Subscription commerce" por "Recompensa Suscripción" y elimina el [Order ID...]
+      return description
+        .replace("Subscription commerce reward", "Recompensa Suscripción")
+        .replace(/\[Order ID:.*?\]/g, "")
+        .trim();
+    }
+
+    return description;
   };
 
   return (
@@ -323,16 +365,16 @@ const CreditChecker = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {creditMovements.map((movement) => (
+                      {paginatedMovements.map((movement) => (
                         <tr
                           key={movement.id}
                           className="hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-6 py-4 text-sm text-gray-700">
-                            {movement.type}
+                            {getMovementTypeDisplay(movement.type)}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700">
-                            {movement.description}
+                            {getMovementDescriptionDisplay(movement.description)}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700 text-right font-medium">
                             {formatCLP(movement.amount)}
@@ -341,6 +383,82 @@ const CreditChecker = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                <div
+                  aria-label="Page navigation example"
+                  className="my-6 flex justify-center pt-8"
+                >
+                  <ul className="flex items-center -space-x-px h-10 text-base">
+                    <li>
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 ${
+                          currentPage === 1 ? "cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <span className="sr-only">Previous</span>
+                        <svg
+                          className="w-3 h-3 rtl:rotate-180"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 6 10"
+                        >
+                          <path
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M5 1 1 5l4 4"
+                          />
+                        </svg>
+                      </button>
+                    </li>
+
+                    {Array.from({ length: totalPages }, (_, index) => (
+                      <li key={index}>
+                        <button
+                          onClick={() => handlePageChange(index + 1)}
+                          className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
+                            currentPage === index + 1
+                              ? "text-primary bg-gray-200"
+                              : "text-gray-300 bg-white"
+                          }`}
+                        >
+                          {index + 1}
+                        </button>
+                      </li>
+                    ))}
+
+                    <li>
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
+                          currentPage === totalPages ? "cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <span className="sr-only">Next</span>
+                        <svg
+                          className="w-3 h-3 rtl:rotate-180"
+                          aria-hidden="true"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 6 10"
+                        >
+                          <path
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="m1 9 4-4-4-4"
+                          />
+                        </svg>
+                      </button>
+                    </li>
+                  </ul>
                 </div>
               </div>
             )}

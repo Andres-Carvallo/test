@@ -249,7 +249,7 @@ function AdminLoginForm() {
 
       {/* Indicador de carga */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-[9999]">
           <div role="status">
             <svg
               aria-hidden="true"

@@ -248,7 +248,7 @@ const ExchangesGrid = () => {
         </div>
       </div>
 
-      <div className="mx-auto px-4 pt-8 pb-16 bg-gradient-to-b from-gray-50 to-white">
+      <div className="mx-auto px-4 py-14 bg-gradient-to-b from-gray-50 to-white">
         {/* Barra de búsqueda y filtros mejorados */}
         <div className="mb-12 space-y-4 max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row gap-4">
@@ -366,62 +366,52 @@ const ExchangesGrid = () => {
               filteredExchanges.map((exchange) => (
                 <div
                   key={exchange.id}
-                  className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500
-                  overflow-hidden transform hover:-translate-y-2"
+                  className="group bg-white rounded shadow-lg hover:shadow-xl transition-all duration-500
+                  overflow-hidden transform hover:-translate-y-1"
                 >
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+                  {/* Imagen principal con contenedor relativo */}
+                  <div className="relative h-40">
                     <img
                       src={exchange.mainImageUrl}
                       alt={exchange.name}
-                      className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover"
                     />
-                    <div className="absolute -bottom-6 left-0 right-0 flex items-center justify-between z-20">
-                      <div className="w-full mx-4 flex items-center justify-between bg-gray-100 backdrop-blur-sm rounded-xl px-4 py-2 text-white">
-                        {/* Valor en PixelCoins */}
-                        <div className="flex flex-col items-center">
-                          <span className="text-[12px] font-bold text-rosa">
-                            {exchange.creditAmount.toLocaleString()}
-                          </span>
-                          <span className="text-[10px] text-dark">
-                            PixelCoins
-                          </span>
-                        </div>
-
-                        {/* Logo de la compañía */}
-                        <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 top-0">
+                    
+                    {/* Contenedor para logo */}
+                    <div className="absolute left-1/2 top-6 -translate-x-1/2">
+                      <div className="bg-white rounded p-4 shadow-lg">
+                        <div className="w-16 h-16 flex items-center justify-center">
                           <img
                             src={exchange.companyImageUrl}
                             alt={exchange.companyName}
-                            className="w-16 h-16 rounded-xl border-4 border-white shadow-lg bg-white 
-                            object-contain p-1"
+                            className="w-16 h-16 object-contain"
                           />
                         </div>
+                      </div>
+                    </div>
 
-                        {/* Valor en CLP */}
-                        <div className="flex flex-col items-center">
-                          <span className="text-[12px] font-bold text-rosa">
-                            ${exchange.creditAmount.toLocaleString()}
-                          </span>
-                          <span className="text-[10px] text-dark">CLP</span>
+                    {/* Contenedor de precios */}
+                    <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-white rounded p-2 px-3 shadow-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-rosa">{exchange.creditAmount.toLocaleString()}</span>
+                          <span className="text-[12px] text-gray-500">PixelCoins</span>
+                          <div className="w-px h-8 bg-gray-200"></div>
+                          <span className="text-sm text-rosa">${exchange.creditAmount.toLocaleString()}</span>
+                          <span className="text-[12px] text-gray-500">CLP</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 pt-8">
-                    {/* Encabezado de la card */}
-                    <div className="">
-                      <h3 className="text-[14px] font-semibold text-center text-dark group-hover:text-rosa transition-colors line-clamp-1">
-                        {exchange.name}
-                      </h3>
-                    </div>
-
-                    {/* Descripción del producto */}
-                    <div
-                      id="descriptionTeindaPixelup"
-                      className="mb-4"
-                    >
+                  {/* Contenido de la tarjeta con padding superior adicional */}
+                  <div className="p-6 pt-12">
+                    {/* Título y descripción */}
+                    <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-1">
+                      {exchange.name}
+                    </h3>
+                    
+                    <div className="text-gray-600 text-sm mb-6 line-clamp-3 min-h-[90px]">
                       <ReactQuill
                         value={exchange.description}
                         readOnly={true}
@@ -433,16 +423,13 @@ const ExchangesGrid = () => {
                     {/* Botón de acción */}
                     <Link
                       href={`/dashboard/tienda-pixelup/${exchange.id}`}
-                      className="block"
+                      className="block w-full"
                     >
-                      <button
-                        className="w-full bg-dark
-                        text-white font-semibold py-3 px-4 rounded-xl text-sm
-                        transition-all duration-300 transform hover:scale-[1.02]
-                        focus:outline-none focus:ring-2 focus:ring-rosa 
-                        focus:ring-opacity-50 shadow-md hover:shadow-lg"
-                      >
-                        Ver Detalle
+                      <button className="w-full bg-gray-800 hover:bg-gray-900
+                                     text-white font-medium py-4 px-6 rounded-xl
+                                     transition-all duration-300 text-sm
+                                     focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                        Ver detalle
                       </button>
                     </Link>
                   </div>

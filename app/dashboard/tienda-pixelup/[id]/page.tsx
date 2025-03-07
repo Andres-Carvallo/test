@@ -43,6 +43,7 @@ export default function DetalleCanje() {
   >(null);
   const Token = String(getCookie("AdminTokenAuth"));
   const router = useRouter(); // Para redirigir después de la compra
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchExchange = async () => {
@@ -69,7 +70,7 @@ export default function DetalleCanje() {
   const handlePurchase = async () => {
     if (!exchange || loadingPurchase || !paymentMethod) return;
 
-    setLoadingPurchase(true); // Indicamos que la compra está en proceso
+    setLoadingPurchase(true);
 
     try {
       const body = {
@@ -91,19 +92,17 @@ export default function DetalleCanje() {
       if (paymentMethod === "MONEY") {
         const orderId = response.data.exchange.orderId;
         const checkoutUrl = `${process.env.NEXT_PUBLIC_CHECKOUT_URL}/order-checkout?orderId=${orderId}`;
-        router.push(checkoutUrl);
+        window.open(checkoutUrl, '_blank');
       } else {
-        toast.success(
-          "Compra realizada con éxito. Recibirás un correo con la confirmación."
-        );
+        setShowSuccessModal(true);
       }
 
       setLoadingPurchase(false);
-      setShowModal(false); // Cerrar el modal después de la compra
+      setShowModal(false);
     } catch (error: any) {
       console.error("Error en la compra:", error.response?.data || error);
       toast.error(`Error: ${error.response?.data?.message || error.message}`);
-      setLoadingPurchase(false); // Terminamos el proceso de compra
+      setLoadingPurchase(false);
     }
   };
 
@@ -216,7 +215,7 @@ export default function DetalleCanje() {
                     className="bg-rosa hover:bg-rosa/90 text-white py-2 sm:py-2.5 px-4
                               rounded-lg font-medium transition-all duration-300
                               disabled:opacity-50 disabled:cursor-not-allowed
-                              text-xs sm:text-sm hover:shadow-lg hover:scale-105"
+                              text-xs sm:text-sm hover:shadow-lg hover:scale-[1.02]"
                   >
                     {loadingPurchase
                       ? "Procesando..."
@@ -229,7 +228,7 @@ export default function DetalleCanje() {
                     className="bg-gray-800 hover:bg-gray-900 text-white py-2 sm:py-2.5 px-4
                               rounded-lg font-medium transition-all duration-300
                               disabled:opacity-50 disabled:cursor-not-allowed
-                              text-xs sm:text-sm hover:shadow-lg hover:scale-105"
+                              text-xs sm:text-sm hover:shadow-lg hover:scale-[1.02]"
                   >
                     {loadingPurchase ? "Procesando..." : "Comprar"}
                   </button>
@@ -255,30 +254,132 @@ export default function DetalleCanje() {
         showModal={showModal}
         onClose={() => setShowModal(false)}
       >
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Confirmar {paymentMethod === "MONEY" ? "compra" : "canje"}
-          </h2>
-          <p className="text-gray-600 mb-6">
-            ¿Estás seguro de que deseas{" "}
-            {paymentMethod === "MONEY" ? "comprar" : "canjear"}
-            este producto?
+        <div className="p-6 max-w-md w-full">
+          {/* Encabezado del modal */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+              <img 
+                src={exchange?.companyImageUrl} 
+                alt={exchange?.name}
+                className="h-full object-contain"
+              />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {paymentMethod === "MONEY" ? "Comprar producto" : "Canjear producto"}
+              </h2>
+              <p className="text-sm text-gray-500">{exchange?.name}</p>
+            </div>
+          </div>
+
+          {/* Detalles de la transacción */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-gray-600">Método de pago:</span>
+              <span className="font-medium text-gray-800">
+                {paymentMethod === "MONEY" ? "Dinero (CLP)" : "PixelCoins"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Total:</span>
+              <span className="font-bold text-lg text-gray-800">
+                {paymentMethod === "MONEY" 
+                  ? `$${exchange?.product?.productPricings?.[0]?.amount?.toLocaleString("es-CL")}`
+                  : `${exchange?.creditAmount?.toLocaleString("es-CL")} PixelCoins`
+                }
+              </span>
+            </div>
+          </div>
+
+          {/* Mensaje de confirmación */}
+          <p className="text-gray-600 mb-6 text-center">
+            ¿Estás seguro de que deseas continuar con esta {paymentMethod === "MONEY" ? "compra" : "canje"}?
           </p>
-          <div className="flex justify-end gap-4">
+
+          {/* Botones de acción */}
+          <div className="flex justify-center gap-3">
             <button
               onClick={() => setShowModal(false)}
-              className="px-6 py-2 border border-gray-300 rounded-lg
-                       text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-6 py-2.5 border border-gray-300 rounded-lg
+                       text-gray-700 hover:bg-gray-50 transition-all duration-200
+                       font-medium text-sm focus:ring-2 focus:ring-gray-200"
             >
               Cancelar
             </button>
             <button
               onClick={handlePurchase}
               disabled={loadingPurchase}
-              className="px-6 py-2 bg-rosa text-white rounded-lg
-                       hover:bg-rosa/90 transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 bg-rosa text-white rounded-lg
+                       hover:bg-rosa/90 transition-all duration-200
+                       font-medium text-sm focus:ring-2 focus:ring-rosa/50
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       flex items-center justify-center min-w-[120px]"
             >
-              {loadingPurchase ? "Procesando..." : "Confirmar"}
+              {loadingPurchase ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Procesando...
+                </>
+              ) : "Confirmar"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal de éxito */}
+      <Modal
+        showModal={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+      >
+        <div className="p-6 max-w-md w-full">
+          <div className="text-center">
+            {/* Ícono de éxito */}
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+              <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            
+            <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+              ¡Canje exitoso!
+            </h3>
+
+            {/* Detalles del producto */}
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="flex flex-col items-center gap-4 mb-4">
+                <img
+                  src={exchange?.companyImageUrl}
+                  alt={exchange?.name}
+                  className="h-16 rounded-lg object-cover"
+                />
+                <div className="text-center">
+                  <p className="font-medium text-gray-900">{exchange?.name}</p>
+                  <p className="text-sm text-gray-500">{exchange?.companyName}</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center border-t pt-4">
+                <span className="text-gray-600">Costo:</span>
+                <span className="font-bold text-rosa">
+                  {exchange?.creditAmount?.toLocaleString("es-CL")} PixelCoins
+                </span>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-500 mb-6">
+              Recibirás un correo electrónico con la confirmación y los detalles de tu canje.
+            </p>
+
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full px-4 py-2 bg-rosa text-white rounded-lg
+                       hover:bg-rosa/90 transition-all duration-200
+                       font-medium focus:ring-2 focus:ring-rosa/50"
+            >
+              Entendido
             </button>
           </div>
         </div>

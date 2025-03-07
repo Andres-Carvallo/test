@@ -78,7 +78,7 @@ export default function RootLayout({
             setSidebarOpen={setSidebarOpen}
           /> */}
           <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          <main className="mx-auto w-full p-4 md:p-6 2xl:p-10">{children}</main>
+          <main className="mx-auto w-full">{children}</main>
           </div>
 
       </div>

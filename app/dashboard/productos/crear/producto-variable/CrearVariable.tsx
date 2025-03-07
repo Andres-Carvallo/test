@@ -16,6 +16,7 @@ import CreateAtribute from "@/components/Core/Products/CreateAtribute";
 import toast from "react-hot-toast";
 import StarCheckbox from "@/components/Core/Checkbox/StarCheckbox";
 import Loader from "@/components/common/Loader";
+import LoaderProgress from "@/components/common/LoaderProgress";
 import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
@@ -787,7 +788,7 @@ const CrearVariable: React.FC = () => {
   };
 
   if (isLoading) {
-    return <Loader />;
+    return <LoaderProgress />;
   }
 
   return (

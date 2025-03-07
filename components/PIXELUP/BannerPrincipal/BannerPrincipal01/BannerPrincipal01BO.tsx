@@ -12,6 +12,9 @@ import Modal from "@/components/Core/Modals/ModalSeo"; // Asegúrate de importar
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
+import { Switch } from "@/components/Core/Switch";
+import { toast } from "react-hot-toast";
+import Link from "next/link";
 
 interface BannerImage {
   id: string;
@@ -22,6 +25,34 @@ interface BannerImage {
   mainImageLink: string;
   orderNumber: number;
   mainImage?: any;
+}
+
+interface ButtonTextData {
+  price: string;
+  value: string;
+  show: boolean;
+}
+
+// Agregar la interfaz DisplayConfig
+interface DisplayConfig {
+  text: string;
+  showText: boolean;
+  showPrice: boolean;
+  showValue: boolean;
+  showButton1: boolean;
+  showButton2: boolean;
+  button1Text: string;
+  button2Text: string;
+  button1Link: string;
+  button2Link: string;
+  contentAlignment: "left" | "center" | "right";
+  fullBannerLink: boolean;
+  fullBannerLinkUrl: string;
+}
+
+// Modificar la interfaz BannerData
+interface BannerData {
+  images: BannerImage[];
 }
 
 const BannerPrincipal01BO: React.FC = () => {
@@ -35,11 +66,11 @@ const BannerPrincipal01BO: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [formData, setFormData] = useState<BannerImage>({
     id: "",
-    title: "",
+    title: "Banner",
     landingText: "",
-    buttonLink: "pixelup.cl",
-    buttonText: "pixelup.cl",
-    mainImageLink: "pixelup.cl",
+    buttonLink: "#",
+    buttonText: "Button Text",
+    mainImageLink: "#",
     orderNumber: 1,
     mainImage: {
       url: "",
@@ -58,13 +89,64 @@ const BannerPrincipal01BO: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [buttonTextData, setButtonTextData] = useState<ButtonTextData>({
+    price: "",
+    value: "",
+    show: false,
+  });
+
+  const [showControlPanel, setShowControlPanel] = useState(true);
+
+  // Agregar estado para la configuración de visualización
+  const [displayConfig, setDisplayConfig] = useState<DisplayConfig>({
+    text: "",
+    showText: false,
+    showPrice: false,
+    showValue: false,
+    showButton1: false,
+    showButton2: false,
+    button1Text: "Botón 1",
+    button2Text: "Botón 2",
+    button1Link: "",
+    button2Link: "",
+    contentAlignment: "left",
+    fullBannerLink: false,
+    fullBannerLinkUrl: "",
+  });
+
+  // Agregar constantes para valores por defecto
+  const DEFAULT_TITLE = "Banner";
+  const DEFAULT_BUTTON_LINK = "#";
+
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
+  const [isPreviewVisible, setIsPreviewVisible] = useState(true);
+
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+
+  const parseButtonTextData = (buttonText: string): ButtonTextData => {
+    try {
+      const parsed = JSON.parse(buttonText);
+      // Asegurar que show solo sea true si hay valores y está explícitamente activado
+      return {
+        price: parsed.price || "",
+        value: parsed.value || "",
+        show:
+          Boolean(parsed.show) &&
+          (Boolean(parsed.price) || Boolean(parsed.value)),
+      };
+    } catch {
+      return { price: "", value: "", show: false };
+    }
+  };
 
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
       setSkeletonLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL03_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -76,20 +158,28 @@ const BannerPrincipal01BO: React.FC = () => {
         }
       );
 
-      setBannerData(response.data.bannerImages);
-      if (response.data.bannerImages.length > 0) {
-        console.log(response.data.bannerImages, "response.data.bannerImages");
-        const initialImage = response.data.bannerImages[0];
-        setFileName(initialImage.mainImage.name);
+      // Asegurar que cada imagen tenga los valores por defecto si están vacíos
+      const imagesWithDefaults = response.data.bannerImages.map(
+        (image: BannerImage) => ({
+          ...image,
+          title: image.title || DEFAULT_TITLE,
+          buttonLink: image.buttonLink || DEFAULT_BUTTON_LINK,
+          mainImageLink: image.mainImageLink || "#",
+        })
+      );
+
+      setBannerData(imagesWithDefaults);
+      if (imagesWithDefaults.length > 0) {
+        const initialImage = imagesWithDefaults[0];
+        const parsedButtonText = parseButtonTextData(initialImage.buttonText);
+        setButtonTextData(parsedButtonText);
+        const parsedLandingText = parseDisplayConfig(initialImage.landingText);
+        setDisplayConfig(parsedLandingText);
         setFormData({
-          id: initialImage.id,
-          title: initialImage.title,
-          landingText: initialImage.landingText,
-          buttonLink: initialImage.buttonLink,
-          buttonText: initialImage.buttonText,
-          mainImageLink: initialImage.mainImageLink,
-          orderNumber: initialImage.orderNumber,
-          mainImage: initialImage.mainImage,
+          ...initialImage,
+          title: initialImage.title || DEFAULT_TITLE,
+          buttonLink: initialImage.buttonLink || DEFAULT_BUTTON_LINK,
+          mainImageLink: initialImage.mainImageLink || "#",
         });
         setMainImage(initialImage.mainImage.url || initialImage.mainImage.data);
       }
@@ -103,11 +193,15 @@ const BannerPrincipal01BO: React.FC = () => {
 
   useEffect(() => {
     fetchBannerHome();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -118,8 +212,7 @@ const BannerPrincipal01BO: React.FC = () => {
       reader.onload = () => {
         const result = reader.result as string;
         setMainImage(result);
-        setIsMainImageUploaded(true); // Indicar que una nueva imagen ha sido cargada
-        setIsModalOpen(true); // Open modal for cropping
+        setIsModalOpen(true); // Abre el modal para recortar
       };
       reader.readAsDataURL(file);
     }
@@ -147,6 +240,7 @@ const BannerPrincipal01BO: React.FC = () => {
         useWebWorker: true,
         initialQuality: 0.95,
       };
+
       const compressedFile = await imageCompression(
         croppedImage as File,
         options
@@ -154,7 +248,7 @@ const BannerPrincipal01BO: React.FC = () => {
       const base64 = await convertToBase64(compressedFile);
 
       const imageInfo = {
-        name: fileName, // Usa el nombre del archivo almacenado
+        name: fileName || "banner-image.jpg",
         type: compressedFile.type,
         size: compressedFile.size,
         data: base64,
@@ -164,6 +258,7 @@ const BannerPrincipal01BO: React.FC = () => {
         ...prevFormData,
         mainImage: imageInfo,
       }));
+
       setMainImage(base64);
       setIsModalOpen(false);
       setIsMainImageUploaded(true);
@@ -182,57 +277,119 @@ const BannerPrincipal01BO: React.FC = () => {
   };
 
   const handleClearImage = () => {
-    setMainImage(formData.mainImage.url || formData.mainImage.data);
-    setIsMainImageUploaded(false); // Reiniciar el estado
+    setMainImage(null);
+    setIsMainImageUploaded(false);
+    setFormData((prev) => ({
+      ...prev,
+      mainImage: {
+        url: "",
+        name: "",
+        type: "",
+        size: null,
+        data: "",
+      },
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("handleSubmit llamado");
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL03_ID}`;
+      if (!token) {
+        toast.error("No se encontró el token de autenticación");
+        return;
+      }
 
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
+      if (!bannerId) {
+        toast.error("No se encontró el ID del banner");
+        return;
+      }
+
+      // Asegurarse de que la URL del banner clickeable esté formateada
+      const formattedFullBannerLinkUrl = displayConfig.fullBannerLink
+        ? formatURL(displayConfig.fullBannerLinkUrl)
+        : "";
+
+      // Preparar los datos a enviar incluyendo toda la configuración actual
       const dataToSend = {
-        title: formData.title,
-        landingText: formData.landingText,
-        buttonLink: "buttonLink",
-        buttonText: "buttonText",
-        mainImageLink: "mainImageLink",
+        title:
+          formData.title === DEFAULT_TITLE || !formData.title
+            ? DEFAULT_TITLE
+            : formData.title,
+        landingText: JSON.stringify({
+          ...displayConfig,
+          fullBannerLinkUrl: formattedFullBannerLinkUrl,
+        }),
+        buttonText: JSON.stringify({
+          price: buttonTextData.price || "",
+          value: buttonTextData.value || "",
+          show: buttonTextData.show,
+        }),
+        buttonLink:
+          formData.buttonLink === DEFAULT_BUTTON_LINK || !formData.buttonLink
+            ? DEFAULT_BUTTON_LINK
+            : formData.buttonLink,
+        mainImageLink: formData.mainImageLink || "#",
         orderNumber: formData.orderNumber,
         ...(isMainImageUploaded && { mainImage: formData.mainImage }),
       };
 
-      if (isAddingImage) {
-        // Realizar una solicitud POST para crear una nueva imagen
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          dataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+      console.log("Datos a enviar:", dataToSend);
+
+      const url = isAddingImage
+        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+
+      const response = await axios({
+        method: isAddingImage ? "POST" : "PUT",
+        url,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        data: dataToSend,
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success(
+          isAddingImage
+            ? "Banner creado exitosamente"
+            : "Banner actualizado exitosamente"
         );
-        setIsAddingImage(false); // Resetear el estado después de agregar
+        await fetchBannerHome();
+        if (isAddingImage) {
+          setIsAddingImage(false);
+        }
       } else {
-        // Realizar una solicitud PUT para actualizar la imagen existente
-        await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          dataToSend,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+        throw new Error(`Error en la respuesta: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error al procesar el banner:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Detalles del error:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+        toast.error(
+          error.response?.data?.message ||
+            (isAddingImage
+              ? "Error al crear el banner. Por favor, intente nuevamente."
+              : "Error al actualizar el banner. Por favor, intente nuevamente.")
+        );
+      } else {
+        toast.error(
+          isAddingImage
+            ? "Error al crear el banner. Por favor, intente nuevamente."
+            : "Error al actualizar el banner. Por favor, intente nuevamente."
         );
       }
-
-      fetchBannerHome();
-    } catch (error) {
-      console.error("Error al actualizar el banner:", error);
     } finally {
       setLoading(false);
     }
@@ -243,7 +400,7 @@ const BannerPrincipal01BO: React.FC = () => {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
 
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL03_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL01_ID}`;
       await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -254,9 +411,14 @@ const BannerPrincipal01BO: React.FC = () => {
         }
       );
 
+      toast.success("Banner eliminado exitosamente");
+      setIsDeleteModalOpen(false);
       fetchBannerHome();
     } catch (error) {
       console.error("Error al borrar la imagen del banner:", error);
+      toast.error(
+        "Error al eliminar el banner. Por favor, intente nuevamente."
+      );
     } finally {
       setLoading(false);
     }
@@ -266,11 +428,24 @@ const BannerPrincipal01BO: React.FC = () => {
     setSkeletonLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
     const nextIndex = (currentIndex + 1) % bannerData.length;
-    setCurrentIndex(nextIndex);
     const nextImage = bannerData[nextIndex];
-    setFormData(nextImage);
+
+    const nextConfig = parseDisplayConfig(nextImage.landingText);
+    setDisplayConfig(nextConfig);
+
+    // Parsear y validar el buttonText
+    const parsedButtonText = parseButtonTextData(nextImage.buttonText);
+    setButtonTextData(parsedButtonText);
+
+    setCurrentIndex(nextIndex);
+    setFormData({
+      ...nextImage,
+      title: nextImage.title || DEFAULT_TITLE,
+      buttonLink: nextImage.buttonLink || DEFAULT_BUTTON_LINK,
+      mainImageLink: nextImage.mainImageLink || "#",
+    });
     setMainImage(nextImage.mainImage.url || nextImage.mainImage.data);
-    setIsMainImageUploaded(false); // Reiniciar el estado de la imagen cargada
+    setIsMainImageUploaded(false);
     setSkeletonLoading(false);
   };
 
@@ -279,11 +454,24 @@ const BannerPrincipal01BO: React.FC = () => {
     await new Promise((resolve) => setTimeout(resolve, 200));
     const prevIndex =
       (currentIndex - 1 + bannerData.length) % bannerData.length;
-    setCurrentIndex(prevIndex);
     const prevImage = bannerData[prevIndex];
-    setFormData(prevImage);
+
+    const prevConfig = parseDisplayConfig(prevImage.landingText);
+    setDisplayConfig(prevConfig);
+
+    // Parsear y validar el buttonText
+    const parsedButtonText = parseButtonTextData(prevImage.buttonText);
+    setButtonTextData(parsedButtonText);
+
+    setCurrentIndex(prevIndex);
+    setFormData({
+      ...prevImage,
+      title: prevImage.title || DEFAULT_TITLE,
+      buttonLink: prevImage.buttonLink || DEFAULT_BUTTON_LINK,
+      mainImageLink: prevImage.mainImageLink || "#",
+    });
     setMainImage(prevImage.mainImage.url || prevImage.mainImage.data);
-    setIsMainImageUploaded(false); // Reiniciar el estado de la imagen cargada
+    setIsMainImageUploaded(false);
     setSkeletonLoading(false);
   };
   const handleAddImageClick = () => {
@@ -291,11 +479,11 @@ const BannerPrincipal01BO: React.FC = () => {
       // Si ya estamos en el estado de agregar, esto cancela la operación
       setFormData({
         id: bannerData[currentIndex]?.id || "",
-        title: bannerData[currentIndex]?.title || "",
+        title: bannerData[currentIndex]?.title || DEFAULT_TITLE,
         landingText: bannerData[currentIndex]?.landingText || "",
-        buttonLink: bannerData[currentIndex]?.buttonLink || "",
+        buttonLink: bannerData[currentIndex]?.buttonLink || DEFAULT_BUTTON_LINK,
         buttonText: bannerData[currentIndex]?.buttonText || "",
-        mainImageLink: bannerData[currentIndex]?.mainImageLink || "",
+        mainImageLink: bannerData[currentIndex]?.mainImageLink || "#",
         orderNumber: bannerData[currentIndex]?.orderNumber || 1,
         mainImage: bannerData[currentIndex]?.mainImage || {
           url: "",
@@ -313,14 +501,36 @@ const BannerPrincipal01BO: React.FC = () => {
       setIsAddingImage(false);
       setIsMainImageUploaded(false);
     } else {
-      // Si no estamos agregando, iniciar el proceso de agregar
+      // Inicializar con valores por defecto para el nuevo banner
+      const initialLandingText = JSON.stringify({
+        text: "",
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "",
+        button2Link: "",
+        contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
+      });
+
+      const initialButtonText = JSON.stringify({
+        price: "",
+        value: "",
+        show: false,
+      });
+
       setFormData({
         id: "",
-        title: "",
-        landingText: "",
-        buttonLink: "",
-        buttonText: "",
-        mainImageLink: "",
+        title: DEFAULT_TITLE,
+        landingText: initialLandingText,
+        buttonLink: DEFAULT_BUTTON_LINK,
+        buttonText: initialButtonText,
+        mainImageLink: "#",
         orderNumber: 1,
         mainImage: {
           url: "",
@@ -330,11 +540,56 @@ const BannerPrincipal01BO: React.FC = () => {
           data: "",
         },
       });
+
+      // Establecer la configuración inicial de visualización
+      setDisplayConfig({
+        text: "",
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "",
+        button2Link: "",
+        contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
+      });
+
+      // Establecer la configuración inicial del botón
+      setButtonTextData({
+        price: "",
+        value: "",
+        show: false,
+      });
+
       setMainImage(null);
       setIsAddingImage(true);
       fileInputRef.current?.click();
       setIsMainImageUploaded(false);
     }
+  };
+
+  const handleButtonTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setButtonTextData((prev) => {
+      const newData = {
+        ...prev,
+        [name]: value,
+        show:
+          Boolean(value) || Boolean(name === "price" ? prev.value : prev.price),
+      };
+
+      // Actualizar formData.buttonText con el nuevo JSON
+      setFormData((prevForm) => ({
+        ...prevForm,
+        buttonText: JSON.stringify(newData),
+      }));
+
+      return newData;
+    });
   };
 
   const SkeletonLoader = () => (
@@ -346,6 +601,168 @@ const BannerPrincipal01BO: React.FC = () => {
       </div>
     </div>
   );
+
+  // Modificar la función parseDisplayConfig
+  const parseDisplayConfig = (landingText: string): DisplayConfig => {
+    try {
+      if (typeof landingText === "string") {
+        let parsed = JSON.parse(landingText);
+
+        if (typeof parsed.text === "string" && parsed.text.startsWith("{")) {
+          const nestedParsed = JSON.parse(parsed.text);
+          parsed = {
+            ...parsed,
+            text: nestedParsed.text || "",
+          };
+        }
+
+        // Asegurarse de que la URL esté formateada al cargar los datos
+        const fullBannerLinkUrl = parsed.fullBannerLink
+          ? formatURL(parsed.fullBannerLinkUrl || "")
+          : "";
+
+        return {
+          text: parsed.text || "",
+          showText: parsed.showText ?? false,
+          showPrice: parsed.showPrice ?? false,
+          showValue: parsed.showValue ?? false,
+          showButton1: parsed.showButton1 ?? false,
+          showButton2: parsed.showButton2 ?? false,
+          button1Text: parsed.button1Text || "Botón 1",
+          button2Text: parsed.button2Text || "Botón 2",
+          button1Link: parsed.button1Link || "",
+          button2Link: parsed.button2Link || "",
+          contentAlignment: parsed.contentAlignment || "left",
+          fullBannerLink: parsed.fullBannerLink ?? false,
+          fullBannerLinkUrl: fullBannerLinkUrl,
+        };
+      }
+      return {
+        text: landingText,
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "",
+        button2Link: "",
+        contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
+      };
+    } catch {
+      return {
+        text: landingText,
+        showText: false,
+        showPrice: false,
+        showValue: false,
+        showButton1: false,
+        showButton2: false,
+        button1Text: "Botón 1",
+        button2Text: "Botón 2",
+        button1Link: "",
+        button2Link: "",
+        contentAlignment: "left",
+        fullBannerLink: false,
+        fullBannerLinkUrl: "",
+      };
+    }
+  };
+
+  // Modificar la función updateDisplayConfig para que solo actualice el estado local
+  const updateDisplayConfig = (updates: Partial<DisplayConfig>) => {
+    const newDisplayConfig = { ...displayConfig, ...updates };
+    setDisplayConfig(newDisplayConfig);
+
+    // Actualizar el formData.landingText con la nueva configuración
+    setFormData((prev) => ({
+      ...prev,
+      landingText: JSON.stringify(newDisplayConfig),
+    }));
+  };
+
+  // Modificar el manejo del checkbox para el título
+  const handleTitleToggle = (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: checked ? "" : DEFAULT_TITLE,
+    }));
+  };
+
+  // Modificar el manejo del checkbox para el buttonLink
+  const handleButtonLinkToggle = (checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      buttonLink: checked ? "" : DEFAULT_BUTTON_LINK,
+    }));
+  };
+
+  // Función de utilidad para formatear URLs
+  const formatURL = (url: string): string => {
+    // Si está vacío o es solo espacios en blanco, devolver string vacío
+    if (!url || url.trim() === "") return "";
+
+    let formattedURL = url.trim().toLowerCase();
+
+    // Si es una ruta interna que comienza con /, la devolvemos tal cual
+    if (formattedURL.startsWith("/")) return formattedURL;
+
+    // Si no tiene protocolo (http/https)
+    if (
+      !formattedURL.startsWith("http://") &&
+      !formattedURL.startsWith("https://")
+    ) {
+      // Si comienza con www., agregamos https://
+      if (formattedURL.startsWith("www.")) {
+        formattedURL = "https://" + formattedURL;
+      }
+      // Si no comienza con www., agregamos https://www.
+      else {
+        // Excluimos dominios comunes que no necesitan www
+        const noWWWDomains = [
+          "localhost",
+          "mail.",
+          "api.",
+          "app.",
+          "dev.",
+          "stage.",
+        ];
+        const shouldAddWWW = !noWWWDomains.some((domain) =>
+          formattedURL.startsWith(domain)
+        );
+
+        formattedURL = "https://" + (shouldAddWWW ? "www." : "") + formattedURL;
+      }
+    }
+
+    return formattedURL;
+  };
+
+  const handleFullBannerLinkToggle = (checked: boolean) => {
+    if (checked && (displayConfig.showButton1 || displayConfig.showButton2)) {
+      setIsAlertModalOpen(true);
+      return;
+    }
+    updateDisplayConfig({ fullBannerLink: checked });
+  };
+
+  const handleButton1Toggle = (checked: boolean) => {
+    if (checked && displayConfig.fullBannerLink) {
+      setIsAlertModalOpen(true);
+      return;
+    }
+    updateDisplayConfig({ showButton1: checked });
+  };
+
+  const handleButton2Toggle = (checked: boolean) => {
+    if (checked && displayConfig.fullBannerLink) {
+      setIsAlertModalOpen(true);
+      return;
+    }
+    updateDisplayConfig({ showButton2: checked });
+  };
 
   if (loading) {
     return (
@@ -374,163 +791,788 @@ const BannerPrincipal01BO: React.FC = () => {
   }
 
   return (
-    <section
-      id="banner"
-      className="w-full"
-    >
-      {skeletonLoading ? (
-        <SkeletonLoader />
-      ) : (
-        <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
-          <img
-            src={mainImage || formData.mainImage.url}
-            alt="Banner Image"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-
-          <div className="min-h-[300px] relative z-20 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-            <h2 className="text-2xl font-semibold mb-2">{formData.title}</h2>
-            <p className="text-md text-center text-gray-200">
-              {formData.landingText}
-            </p>
-            {/* <a
-            href={formData.buttonLink}
-            className="mt-8 bg-dark bg-primary text-secondary hover:text-primary text-base font-semibold py-2.5 px-6 rounded hover:bg-secondary"
+    <div className="space-y-6">
+      {/* Panel de Vista Previa */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h3 className="text-lg font-medium text-gray-900">Vista Previa</h3>
+          <button
+            onClick={() => setIsPreviewVisible(!isPreviewVisible)}
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
           >
-            {formData.buttonText}
-          </a> */}
-          </div>
+            {isPreviewVisible ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+          </button>
         </div>
-      )}
-      <div className="flex justify-center mt-4">
-        {bannerData.map((_, index) => (
-          <span
-            key={index}
-            className={`h-2 w-2 mx-1 rounded-full ${
-              index === currentIndex ? "bg-dark" : "bg-gray-400"
-            }`}
-          />
-        ))}
-      </div>
-      <div className="flex justify-center gap-4 items-center mt-4">
-        {bannerData.length > 1 && (
-          <>
-            <button
-              onClick={handlePrevImage}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Anterior
-            </button>
-            <button
-              onClick={handleNextImage}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Siguiente
-            </button>
-          </>
+        {isPreviewVisible && (
+          <div>
+            <div className="h-[450px] transition-all duration-300 ease-in-out">
+              {skeletonLoading ? (
+                <SkeletonLoader />
+              ) : (
+                <div className="relative h-[450px] overflow-hidden">
+                  {displayConfig.fullBannerLink &&
+                    displayConfig.fullBannerLinkUrl && (
+                      <Link
+                        href={displayConfig.fullBannerLinkUrl}
+                        className="absolute inset-0 z-30 cursor-pointer"
+                        target="_blank"
+                      />
+                    )}
+                  <div className="absolute inset-0">
+                    <img
+                      src={mainImage || formData.mainImage.url}
+                      alt="Banner Image"
+                      className="w-full h-full object-cover"
+                    />
+                    {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
+                      formData.title !== DEFAULT_TITLE ||
+                      displayConfig.text ||
+                      (buttonTextData.show &&
+                        (displayConfig.showPrice || displayConfig.showValue)) ||
+                      displayConfig.showButton1 ||
+                      displayConfig.showButton2) && (
+                      <div className="absolute inset-0 bg-black/50" />
+                    )}
+                  </div>
+
+                  <div className="relative h-full  mx-auto px-20 md:px-24 ">
+                    <div
+                      className={`flex flex-col justify-center h-full ${(() => {
+                        switch (displayConfig.contentAlignment) {
+                          case "center":
+                            return "items-center text-center mx-auto";
+                          case "right":
+                            return "items-end text-right ml-auto";
+                          default:
+                            return "items-start text-left";
+                        }
+                      })()} max-w-2xl`}
+                    >
+                      {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
+                        <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+                          {formData.buttonLink}
+                        </span>
+                      )}
+
+                      {formData.title !== DEFAULT_TITLE && (
+                        <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+                          {formData.title}
+                        </h2>
+                      )}
+
+                      {displayConfig.showText && displayConfig.text && (
+                        <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                          {displayConfig.text}
+                        </p>
+                      )}
+
+                      {/* Mostrar precio y valor según la configuración */}
+                      <div className="flex items-center gap-4 mb-8">
+                        {displayConfig.showPrice && buttonTextData.price && (
+                          <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                            {buttonTextData.price}
+                          </span>
+                        )}
+                        {displayConfig.showValue && buttonTextData.value && (
+                          <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                            {buttonTextData.value}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Mostrar botones según la configuración */}
+                      <div className="flex flex-wrap gap-4">
+                        {displayConfig.showButton1 && (
+                          <a
+                            href={displayConfig.button1Link}
+                            className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                          >
+                            {displayConfig.button1Text}
+                          </a>
+                        )}
+                        {displayConfig.showButton2 && (
+                          <a
+                            href={displayConfig.button2Link}
+                            className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
+                          >
+                            {displayConfig.button2Text}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Controles de Navegación */}
+            {bannerData.length > 1 && !isAddingImage && (
+              <div className="flex items-center justify-between p-4 border-t border-gray-100">
+                <button
+                  onClick={handlePrevImage}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                  disabled={loading}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Banner Anterior
+                </button>
+                <span className="text-sm text-gray-500">
+                  {currentIndex + 1} de {bannerData.length}
+                </span>
+                <button
+                  onClick={handleNextImage}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+                  disabled={loading}
+                >
+                  Banner Siguiente
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
-      <div className="flex justify-between mt-6">
-        <button
-          type="button"
-          onClick={handleAddImageClick}
-          className={`shadow w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap ${
-            isAddingImage
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-green-600 hover:bg-green-700"
-          }`}
-        >
-          {isAddingImage ? "Cancelar" : "Agregar Banner"}
-        </button>
 
-        {bannerData.length > 1 && (
+      {/* Botones de acción principales */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="grid grid-cols-3 gap-2">
           <button
             type="button"
-            onClick={handleDeleteImage}
-            className="shadow bg-red-600 hover:bg-red-700 w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap ml-4"
+            onClick={handleAddImageClick}
+            className={`py-2 px-4 rounded text-white font-medium text-sm ${
+              isAddingImage
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
           >
-            Borrar Imagen
+            {isAddingImage ? "Cancelar" : "Agregar Banner"}
           </button>
-        )}
+
+          {bannerData.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-medium text-sm"
+            >
+              Borrar Banner
+            </button>
+          )}
+
+          <button
+            type="submit"
+            form="bannerForm"
+            disabled={loading}
+            className="py-2 px-4 rounded bg-primary hover:bg-secondary text-white font-medium text-sm flex items-center justify-center"
+          >
+            {loading && (
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            )}
+            {loading
+              ? "Guardando..."
+              : isAddingImage
+              ? "Crear Banner"
+              : "Actualizar"}
+          </button>
+        </div>
       </div>
 
+      {/* Panel de Control */}
       <form
+        id="bannerForm"
         onSubmit={handleSubmit}
-        className="px-4 mx-auto mt-8"
+        className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 space-y-4"
       >
-        <h3 className="font-normal text-primary">
-          Título <span className="text-primary">*</span>
-        </h3>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-          placeholder="Título"
-        />
-        <h3 className="font-normal text-primary">
-          Texto <span className="text-primary">*</span>
-        </h3>
-        <input
-          type="text"
-          name="landingText"
-          value={formData.landingText}
-          onChange={handleChange}
-          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-          placeholder="Texto"
-        />
-        {/*         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
-          <div>
-            <h3 className="font-normal text-primary">
-              Texto Boton <span className="text-primary">*</span>
+        {/* Grid de 3 columnas para los controles */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Columna 1: Controles de Contenido */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-md font-medium text-gray-900 mb-4">
+              Contenido
             </h3>
-            <input
-              type="text"
-              name="buttonText"
-              value={formData.buttonText}
-              onChange={handleChange}
-              className="shadow block w-full px-4 py-3 mb-4 mt-2 border border-gray-300 rounded-md"
-              placeholder="Button Text"
-            />
-          </div>
-          <div>
-            <h3 className="font-normal text-primary">
-              Link de destino <span className="text-primary">*</span>
-            </h3>
-            <input
-              type="text"
-              name="buttonLink"
-              value={formData.buttonLink}
-              onChange={handleChange}
-              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Button Link"
-            />
-          </div>
-        </div> */}
-        <div>
-          <input
-            type="file"
-            accept="image/*"
-            id="mainImage"
-            className="hidden"
-            ref={fileInputRef} // Asigna la referencia al input
-            onChange={handleImageChange}
-          />
-          {isMainImageUploaded ? (
-            <div className="flex flex-col items-center mt-3 relative">
-              <h4 className="font-normal text-primary text-center text-slate-600 w-full">
-                Tu fotografía{" "}
-                <span className="text-dark"> {formData.mainImage.name}</span> ya
-                ha sido cargada.
-                <br /> Actualiza para ver los cambios.
-              </h4>
+            <div className="space-y-4">
+              {/* Controles de alineación */}
+              <div>
+                <label className="text-sm text-gray-700 mb-2 block">
+                  Alineación del contenido
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDisplayConfig({ contentAlignment: "left" })
+                    }
+                    className={`flex-1 p-2 border rounded-md ${
+                      displayConfig.contentAlignment === "left"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5 mx-auto"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 4.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 9.5H12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 14.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 19.5H12"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDisplayConfig({ contentAlignment: "center" })
+                    }
+                    className={`flex-1 p-2 border rounded-md ${
+                      displayConfig.contentAlignment === "center"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5 mx-auto"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 4.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 9.5H18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 14.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M6 19.5H18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDisplayConfig({ contentAlignment: "right" })
+                    }
+                    className={`flex-1 p-2 border rounded-md ${
+                      displayConfig.contentAlignment === "right"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <svg
+                      className="w-5 h-5 mx-auto"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 4.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 9.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M3 14.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M12 19.5H21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
 
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Epígrafe</label>
+                  <div className="flex items-center">
+                    <span className="text-xs text-gray-500 mr-1">Mostrar</span>
+                    <Switch
+                      checked={formData.buttonLink !== DEFAULT_BUTTON_LINK}
+                      onChange={handleButtonLinkToggle}
+                    />
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  name="buttonLink"
+                  value={
+                    formData.buttonLink === DEFAULT_BUTTON_LINK
+                      ? ""
+                      : formData.buttonLink
+                  }
+                  onChange={handleChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ingresa el epígrafe"
+                  disabled={formData.buttonLink === DEFAULT_BUTTON_LINK}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Título</label>
+                  <div className="flex items-center">
+                    <span className="text-xs text-gray-500 mr-1">Mostrar</span>
+                    <Switch
+                      checked={formData.title !== DEFAULT_TITLE}
+                      onChange={handleTitleToggle}
+                    />
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title === DEFAULT_TITLE ? "" : formData.title}
+                  onChange={handleChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ingresa el título"
+                  disabled={formData.title === DEFAULT_TITLE}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Descripción</label>
+                  <div className="flex items-center">
+                    <span className="text-xs text-gray-500 mr-1">Mostrar</span>
+                    <Switch
+                      checked={displayConfig.showText}
+                      onChange={(checked) =>
+                        updateDisplayConfig({ showText: checked })
+                      }
+                    />
+                  </div>
+                </div>
+                <textarea
+                  name="landingText"
+                  value={displayConfig.text}
+                  onChange={(e) => {
+                    const newText = e.target.value;
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      text: newText,
+                    }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      landingText: JSON.stringify({
+                        ...displayConfig,
+                        text: newText,
+                      }),
+                    }));
+                  }}
+                  rows={3}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ingresa la descripción"
+                  disabled={!displayConfig.showText}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Columna 2: Imagen y Precios */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            {/* Sección de Imagen */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-md font-medium text-gray-900">
+                  Imagen del Banner
+                </h3>
+              </div>
+
+              <div className="text-center">
+                {isMainImageUploaded ? (
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm text-gray-600 mb-2">
+                      Tu fotografía{" "}
+                      <span className="font-bold">
+                        {fileName || "POST PIXELUP"}
+                      </span>{" "}
+                      ya ha sido cargada.
+                    </p>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Actualiza para ver los cambios.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (fileInputRef.current) {
+                          fileInputRef.current.click();
+                        }
+                      }}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Seleccionar otra Imagen
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                  >
+                    <div className="flex flex-col items-center">
+                      <svg
+                        className="w-12 h-12 text-gray-400 mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                      <p className="text-sm text-gray-500">
+                        PNG, JPG, GIF hasta 5MB
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+              </div>
+            </div>
+
+            {/* Separador */}
+            <div className="border-t border-gray-200 my-6"></div>
+
+            {/* Sección de Precios y Valores */}
+            <h3 className="text-md font-medium text-gray-900 mb-4">
+              Cajas Informativas
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Caja 1</label>
+                  <Switch
+                    checked={displayConfig.showPrice}
+                    onChange={(checked) =>
+                      updateDisplayConfig({ showPrice: checked })
+                    }
+                  />
+                </div>
+                <input
+                  type="text"
+                  name="price"
+                  value={buttonTextData.price}
+                  onChange={handleButtonTextChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ej: Desde $29.990 / Temporada 2024 / etc."
+                  disabled={!displayConfig.showPrice}
+                />
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Caja 2</label>
+                  <Switch
+                    checked={displayConfig.showValue}
+                    onChange={(checked) =>
+                      updateDisplayConfig({ showValue: checked })
+                    }
+                  />
+                </div>
+                <input
+                  type="text"
+                  name="value"
+                  value={buttonTextData.value}
+                  onChange={handleButtonTextChange}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Ej: 60 min / Envío Gratis / etc."
+                  disabled={!displayConfig.showValue}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Columna 3: Controles de Botones */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-md font-medium text-gray-900 mb-4">Botones</h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Botón 1</label>
+                  <Switch
+                    checked={displayConfig.showButton1}
+                    onChange={handleButton1Toggle}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={displayConfig.button1Text}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button1Text: e.target.value,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
+                  placeholder="Texto del botón"
+                  disabled={!displayConfig.showButton1}
+                />
+                <input
+                  type="text"
+                  value={displayConfig.button1Link}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button1Link: e.target.value,
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    const formattedLink = formatURL(e.target.value);
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button1Link: formattedLink,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Link del botón"
+                  disabled={!displayConfig.showButton1}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-700">Botón 2</label>
+                  <Switch
+                    checked={displayConfig.showButton2}
+                    onChange={handleButton2Toggle}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={displayConfig.button2Text}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button2Text: e.target.value,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
+                  placeholder="Texto del botón"
+                  disabled={!displayConfig.showButton2}
+                />
+                <input
+                  type="text"
+                  value={displayConfig.button2Link}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button2Link: e.target.value,
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    const formattedLink = formatURL(e.target.value);
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      button2Link: formattedLink,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Link del botón"
+                  disabled={!displayConfig.showButton2}
+                />
+              </div>
+
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <label className="text-sm text-gray-700">
+                      Banner Clickeable
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Todo el banner será un enlace
+                    </p>
+                  </div>
+                  <Switch
+                    checked={displayConfig.fullBannerLink}
+                    onChange={handleFullBannerLinkToggle}
+                  />
+                </div>
+                <input
+                  type="text"
+                  value={displayConfig.fullBannerLinkUrl}
+                  onChange={(e) => {
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      fullBannerLinkUrl: e.target.value,
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    const formattedLink = formatURL(e.target.value);
+                    setDisplayConfig((prev) => ({
+                      ...prev,
+                      fullBannerLinkUrl: formattedLink,
+                    }));
+                  }}
+                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  placeholder="Link del banner completo"
+                  disabled={!displayConfig.fullBannerLink}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      {/* Modal de Recorte */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+              </div>
               <button
-                className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full   text-xs mt-4"
-                onClick={handleClearImage}
+                onClick={() => {
+                  setMainImage(null);
+                  setIsModalOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                <span className="self-center">Seleccionar otra Imagen</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -542,133 +1584,185 @@ const BannerPrincipal01BO: React.FC = () => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </button>
             </div>
-          ) : (
-            <div>
-              <h3 className="font-normal text-primary">
-                Foto <span className="text-primary">*</span>
-              </h3>
-              <label
-                htmlFor="mainImage"
-                className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
-              >
-                <div className="flex flex-col justify-center items-center">
-                  <svg
-                    className="w-12 h-12 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Subir Imagen</span>
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    PNG, JPG o Webp (1800x400px)
-                  </p>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mainImage || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={4 / 3}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
                 </div>
-              </label>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMainImage(null);
+                      setIsModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6"
-          style={{ borderRadius: "var(--radius)" }}
-        >
-          <svg
-            aria-hidden="true"
-            role="status"
-            className={`inline w-4 h-4 me-3 text-white animate-spin ${
-              loading ? "block" : "hidden"
-            }`}
-            viewBox="0 0 100 101"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-              fill="#E5E7EB"
-            />
-            <path
-              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-              fill="currentFill"
-            />
-          </svg>
-          {loading
-            ? "Loading..."
-            : isAddingImage
-            ? "Crear Banner"
-            : "Actualizar"}
-        </button>
-      </form>
-      {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        >
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={mainImage || ""} // Asegurar que se pasa una cadena no nula
-              crop={crop}
-              zoom={zoom}
-              aspect={5 / 1}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-            />
-            <div className="controls"></div>
           </div>
-          <div className="flex flex-col  justify-end ">
-            <div className="w-full py-6">
-              <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.01}
-                aria-labelledby="Zoom"
-                onChange={(e) => {
-                  setZoom(parseFloat(e.target.value));
-                }}
-                className="zoom-range w-full custom-range "
-              />
-            </div>
+        </div>
+      )}
 
-            <div className="flex justify-between w-full gap-2">
+      {/* Modal de Confirmación de Borrado */}
+      {isDeleteModalOpen && (
+        <Modal
+          showModal={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+        >
+          <div className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                ¿Estás seguro de que deseas eliminar este banner?
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Esta acción no se puede deshacer. El banner será eliminado
+                permanentemente.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteImage}
+                  disabled={loading}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                >
+                  {loading ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Eliminando...
+                    </>
+                  ) : (
+                    "Sí, eliminar banner"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal de Alerta para Banner Clickeable */}
+      {isAlertModalOpen && (
+        <Modal
+          showModal={isAlertModalOpen}
+          onClose={() => setIsAlertModalOpen(false)}
+        >
+          <div className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-yellow-100">
+                <svg
+                  className="h-6 w-6 text-yellow-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No se pueden activar los botones
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Debes desactivar el banner clickeable antes de poder activar los
+                botones individuales.
+              </p>
               <button
-                onClick={handleCrop}
-                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => setIsAlertModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
               >
-                Recortar y Subir
-              </button>
-              <button
-                onClick={() => {
-                  setMainImage(null);
-                  setIsMainImageUploaded(false);
-                  setIsModalOpen(false);
-                }}
-                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
-              >
-                Cancelar
+                Entendido
               </button>
             </div>
           </div>
         </Modal>
       )}
-    </section>
+    </div>
   );
 };
 

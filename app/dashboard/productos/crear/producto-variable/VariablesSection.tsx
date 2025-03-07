@@ -5,6 +5,7 @@ import VariationForm from "./VariationForm";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
+import VariationForm_sinstarken from "./VariationForm_sinstarken";
 
 interface Variation {
   description: string;
@@ -50,6 +51,9 @@ function VariationsComponente({
     number | null
   >(null);
   const [isLoadingVariations, setIsLoadingVariations] = useState(true);
+  const [baseProductInfo, setBaseProductInfo] = useState<any>({
+    enabledForDelivery: false,
+  });
 
   const sortAttributes = (attributeName: string, values: string[]) => {
     // Intentamos convertir todos los valores a números primero
@@ -689,6 +693,38 @@ function VariationsComponente({
     }
   };
 
+  // Función para obtener la información del producto base
+  const fetchBaseProductInfo = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data && response.data.product) {
+        setBaseProductInfo({
+          enabledForDelivery: response.data.product.enabledForDelivery,
+        });
+      }
+    } catch (error) {
+      console.error("Error al obtener información del producto base:", error);
+    }
+  };
+
+  // Llamar a la función cuando cambie el productId
+  useEffect(() => {
+    if (productId) {
+      fetchBaseProductInfo();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
+
   if (!isEditMode) {
     return null;
   }
@@ -820,7 +856,7 @@ function VariationsComponente({
                 </div>
                 <div>
                   {currentVariationIndex === index && (
-                    <div className="relative">
+                    <div className="relative ">
                       {isLoadingImages && (
                         <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
                           <div className="flex flex-col items-center">
@@ -831,7 +867,7 @@ function VariationsComponente({
                           </div>
                         </div>
                       )}
-                      <VariationForm
+                      <VariationForm_sinstarken
                         variation={variation}
                         variations={variations}
                         fetchVariations={fetchVariations}
@@ -863,6 +899,7 @@ function VariationsComponente({
                         handleImageGalleryChange={handleImageGalleryChange}
                         handleImageRemove={handleImageRemove}
                         baseProductDescription={baseProductDescription}
+                        baseProductInfo={baseProductInfo}
                       />
                     </div>
                   )}

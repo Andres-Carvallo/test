@@ -510,36 +510,87 @@ const Hero: React.FC = () => {
       </form>
 
       {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        >
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={mainImageHero || ""} // Asegurar que se pasa una cadena no nula
-              crop={crop}
-              zoom={zoom}
-              aspect={4 / 3}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-            />
-          </div>
-          <div className="flex justify-end mt-4 space-x-4">
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+          <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+            </div>
             <button
-              onClick={handleCrop}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => {
+                setMainImageHero(null);
+                setIsModalOpen(false);
+              }}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
             >
-              Recortar y Subir
-            </button>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Cancelar
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </div>
-        </Modal>
+          <div className="p-6">
+            <div className="relative h-96 w-full">
+              <Cropper
+                image={mainImageHero || ""}
+                crop={crop}
+                zoom={zoom}
+                aspect={4 / 3}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={handleCropComplete}
+              />
+            </div>
+            <div className="mt-6 space-y-4">
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Zoom
+                </label>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  aria-labelledby="Zoom"
+                  onChange={(e) => {
+                    setZoom(parseFloat(e.target.value));
+                  }}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                onClick={handleCrop}
+                  className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Recortar y Continuar
+                </button>
+                <button
+                onClick={() => {
+                  setMainImageHero(null);
+                  setIsModalOpen(false);
+                }}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       )}
     </section>
   );

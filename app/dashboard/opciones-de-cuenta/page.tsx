@@ -3,6 +3,7 @@ import { useEffect, useState, ChangeEvent } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import BodegasStarken from "./BodegasStarken";
+import { jwtDecode } from "jwt-decode";
 
 interface Option {
   id: string;
@@ -27,6 +28,7 @@ const OptionsComponent = () => {
   });
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
   const [accessCode, setAccessCode] = useState<string>("");
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const token = getCookie("AdminTokenAuth");
 
@@ -110,11 +112,42 @@ const OptionsComponent = () => {
   };
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        if (!token) return;
+        
+        const decodedToken = jwtDecode<{ sub: string }>(token as string);
+        const userId = decodedToken.sub;
+        
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        const userEmail = response.data.user.email;
+        setUserEmail(userEmail);
+        // Autorizar automáticamente solo si es el usuario de PixelUP
+        if (userEmail === "hola.pixelup@gmail.com") {
+          setIsAuthorized(true);
+        }
+      } catch (error) {
+        console.error("Error al obtener datos del usuario:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [token]);
+
+  useEffect(() => {
     fetchOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!isAuthorized) {
+  if (!isAuthorized && userEmail !== "hola.pixelup@gmail.com") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="p-8 bg-white rounded-lg shadow-md w-96">

@@ -6,6 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
+import Cuotas from "@/components/Core/Cuotas/Cuotas";
 
 interface Product {
   id: number;
@@ -143,7 +144,9 @@ function Ofertas() {
   return (
     <section className="mx-10 py-10">
       <Breadcrumb pageName="Ofertas" />
-
+      <div className="flex flex-col gap-10">
+        <Cuotas/>
+      </div>
       <div className="rounded-lg p-4 bg-white my-6 overflow-x-auto">
         <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6">
           <div>Ofertas Activas</div>
@@ -245,10 +248,10 @@ function Ofertas() {
                     onClick={() => handleOffersPageChange(currentOffersPage - 1)}
                     disabled={currentOffersPage === 1}
                     className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 ${
-                      currentOffersPage === 1 ? "cursor-not-allowed" : ""
+                      currentOffersPage === 1 ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
-                    <span className="sr-only">Previous</span>
+                    <span className="sr-only">Anterior</span>
                     <svg
                       className="w-3 h-3 rtl:rotate-180"
                       aria-hidden="true"
@@ -266,29 +269,62 @@ function Ofertas() {
                     </svg>
                   </button>
                 </li>
-                {Array.from({ length: totalOffersPages }, (_, index) => (
-                  <li key={index}>
-                    <button
-                      onClick={() => handleOffersPageChange(index + 1)}
-                      className={`flex items-center justify-center px-4 h-10 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
-                        currentOffersPage === index + 1
-                          ? "text-primary bg-gray-200"
-                          : "text-gray-300 bg-white"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  </li>
-                ))}
+                {(() => {
+                  const delta = 1;
+                  const range = [];
+                  const rangeWithDots = [];
+                  let l;
+
+                  for (let i = 1; i <= totalOffersPages; i++) {
+                    if (
+                      i === 1 || 
+                      i === totalOffersPages || 
+                      i === currentOffersPage || 
+                      (i >= currentOffersPage - delta && i <= currentOffersPage + delta)
+                    ) {
+                      range.push(i);
+                    }
+                  }
+
+                  for (let i of range) {
+                    if (l) {
+                      if (i - l === 2) {
+                        rangeWithDots.push(l + 1);
+                      } else if (i - l !== 1) {
+                        rangeWithDots.push('...');
+                      }
+                    }
+                    rangeWithDots.push(i);
+                    l = i;
+                  }
+
+                  return rangeWithDots.map((pageNum, index) => (
+                    <li key={index}>
+                      <button
+                        onClick={() => typeof pageNum === 'number' ? handleOffersPageChange(pageNum) : undefined}
+                        disabled={pageNum === '...'}
+                        className={`flex items-center justify-center px-4 h-10 leading-tight border border-gray-300 ${
+                          pageNum === currentOffersPage
+                            ? "text-white bg-primary border-primary z-10"
+                            : pageNum === '...'
+                            ? "text-gray-500 bg-white cursor-default"
+                            : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    </li>
+                  ));
+                })()}
                 <li>
                   <button
                     onClick={() => handleOffersPageChange(currentOffersPage + 1)}
                     disabled={currentOffersPage === totalOffersPages}
                     className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
-                      currentOffersPage === totalOffersPages ? "cursor-not-allowed" : ""
+                      currentOffersPage === totalOffersPages ? "cursor-not-allowed opacity-50" : ""
                     }`}
                   >
-                    <span className="sr-only">Next</span>
+                    <span className="sr-only">Siguiente</span>
                     <svg
                       className="w-3 h-3 rtl:rotate-180"
                       aria-hidden="true"
@@ -438,10 +474,10 @@ function Ofertas() {
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
                       className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700 ${
-                        currentPage === 1 ? "cursor-not-allowed" : ""
+                        currentPage === 1 ? "cursor-not-allowed opacity-50" : ""
                       }`}
                     >
-                      <span className="sr-only">Previous</span>
+                      <span className="sr-only">Anterior</span>
                       <svg
                         className="w-3 h-3 rtl:rotate-180"
                         aria-hidden="true"
@@ -459,29 +495,62 @@ function Ofertas() {
                       </svg>
                     </button>
                   </li>
-                  {Array.from({ length: totalPages }, (_, index) => (
-                    <li key={index}>
-                      <button
-                        onClick={() => handlePageChange(index + 1)}
-                        className={`flex items-center justify-center px-4 h-10 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
-                          currentPage === index + 1
-                          ? "text-primary bg-gray-200"
-                          : "text-gray-300 bg-white"
-                        }`}
-                      >
-                        {index + 1}
-                      </button>
-                    </li>
-                  ))}
+                  {(() => {
+                    const delta = 1;
+                    const range = [];
+                    const rangeWithDots = [];
+                    let l;
+
+                    for (let i = 1; i <= totalPages; i++) {
+                      if (
+                        i === 1 || 
+                        i === totalPages || 
+                        i === currentPage || 
+                        (i >= currentPage - delta && i <= currentPage + delta)
+                      ) {
+                        range.push(i);
+                      }
+                    }
+
+                    for (let i of range) {
+                      if (l) {
+                        if (i - l === 2) {
+                          rangeWithDots.push(l + 1);
+                        } else if (i - l !== 1) {
+                          rangeWithDots.push('...');
+                        }
+                      }
+                      rangeWithDots.push(i);
+                      l = i;
+                    }
+
+                    return rangeWithDots.map((pageNum, index) => (
+                      <li key={index}>
+                        <button
+                          onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
+                          disabled={pageNum === '...'}
+                          className={`flex items-center justify-center px-4 h-10 leading-tight border border-gray-300 ${
+                            pageNum === currentPage
+                              ? "text-white bg-primary border-primary z-10"
+                              : pageNum === '...'
+                              ? "text-gray-500 bg-white cursor-default"
+                              : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      </li>
+                    ));
+                  })()}
                   <li>
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
                       className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
-                        currentPage === totalPages ? "cursor-not-allowed" : ""
+                        currentPage === totalPages ? "cursor-not-allowed opacity-50" : ""
                       }`}
                     >
-                      <span className="sr-only">Next</span>
+                      <span className="sr-only">Siguiente</span>
                       <svg
                         className="w-3 h-3 rtl:rotate-180"
                         aria-hidden="true"

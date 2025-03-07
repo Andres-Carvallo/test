@@ -16,6 +16,10 @@ import {
 import DiscountModal from "@/components/PIXELUP/Modal/DiscountModal";
 import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
+import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01";
+import Banner from "@/components/PIXELUP/Skeleton/Banner";
+import Destacados from "@/components/PIXELUP/Skeleton/Destacados";
+import Parallax from "@/components/PIXELUP/Parallax/Parallax";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -88,13 +92,19 @@ export default async function Page() {
     return (
       <>
         <DynamicNavbar />
-        <Suspense
-          fallback={<div className="min-h-screen animate-pulse bg-gray-100" />}
-        >
-          <BannerResponsive />
+
+        <Suspense fallback={<Banner />}>
+          <BannerPrincipal01 />
         </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Parallax />
+        </Suspense>
+{/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <Destacados01 text="Destacados" />
         </Suspense>
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Categoria02 />
@@ -102,7 +112,7 @@ export default async function Page() {
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase01 />
         </Suspense>
-        <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
+        <Suspense fallback={<Destacados />}>
           <Destacados01 text="Destacados" />
         </Suspense>
         <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
@@ -110,11 +120,12 @@ export default async function Page() {
         </Suspense>
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase02 />
-        </Suspense>
+        </Suspense> */}
         <DynamicFooter />
+
         {/* <DiscountModal /> */}
         <a
-          href={`https://wa.me/56978334123`}
+          href={process.env.NEXT_PUBLIC_WHATSAPP_LINK || ""}
           target="_blank"
           rel="noopener noreferrer"
           className="fixed right-6 bottom-[30px] z-50 bg-green-500 rounded-full p-3 hover:bg-green-600 transition-colors animate-pulse-whatsapp"

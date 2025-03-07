@@ -17,6 +17,7 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
 import LoaderProgress from "@/components/common/LoaderProgress";
+import Link from "next/link";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -43,6 +44,7 @@ const VariationForm: React.FC<any> = ({
   handleImageRemove,
   baseProductDescription, //descripcion del producto base
   skuImages, // Imágenes del producto base
+  baseProductInfo, // Información del producto base
 }) => {
   const { attributes, setAttributes, loading, error } = useAPI();
   const editFormRef = useRef<HTMLDivElement>(null);
@@ -64,6 +66,26 @@ const VariationForm: React.FC<any> = ({
   const [stockQuantity, setStockQuantity] = useState<number | null>(
     currentStocks[variation.id] !== null ? currentStocks[variation.id] : null
   );
+
+  // Agregar estado para las medidas
+  const [measures, setMeasures] = useState({
+    length: "",
+    width: "",
+    height: "",
+    weight: "",
+  });
+
+  // Inicializar medidas con valores predeterminados si el delivery está habilitado
+  useEffect(() => {
+    if (baseProductInfo && baseProductInfo.enabledForDelivery && !isEditMode) {
+      setMeasures({
+        length: "1",
+        width: "1",
+        height: "1",
+        weight: "0,5",
+      });
+    }
+  }, [baseProductInfo, isEditMode]);
 
   const searchParams = useSearchParams();
   const [checkOfferChecked, setCheckOfferChecked] = useState(
@@ -279,7 +301,7 @@ const VariationForm: React.FC<any> = ({
   const handleInputChange = (index: number, newValue: string) => {
     const sanitizedValue = newValue
       .toUpperCase()
-      .replace(/[^A-ZÁÉÍÓÚÑ0-9\s]/gi, "");
+      .replace(/[^A-ZÁÉÍÓÚÑ0-9\s.,-/()=#$%&!]/gi, "");
     const updatedPairs = [...attributePairs];
     updatedPairs[index].value = sanitizedValue;
     setAttributePairs(updatedPairs);
@@ -399,6 +421,46 @@ const VariationForm: React.FC<any> = ({
     const currentVariation = variation;
     const errorMessages = [];
 
+    // Validar medidas si el delivery está habilitado
+    if (baseProductInfo.enabledForDelivery) {
+      if (
+        !measures.length ||
+        measures.length === "" ||
+        parseFloat(String(measures.length).replace(/,/g, ".")) <= 0
+      ) {
+        errorMessages.push(
+          "El largo es obligatorio y debe ser mayor a 0 cuando el envío está habilitado."
+        );
+      }
+      if (
+        !measures.width ||
+        measures.width === "" ||
+        parseFloat(String(measures.width).replace(/,/g, ".")) <= 0
+      ) {
+        errorMessages.push(
+          "El ancho es obligatorio y debe ser mayor a 0 cuando el envío está habilitado."
+        );
+      }
+      if (
+        !measures.height ||
+        measures.height === "" ||
+        parseFloat(String(measures.height).replace(/,/g, ".")) <= 0
+      ) {
+        errorMessages.push(
+          "El alto es obligatorio y debe ser mayor a 0 cuando el envío está habilitado."
+        );
+      }
+      if (
+        !measures.weight ||
+        measures.weight === "" ||
+        parseFloat(String(measures.weight).replace(/,/g, ".")) <= 0
+      ) {
+        errorMessages.push(
+          "El peso es obligatorio y debe ser mayor a 0 cuando el envío está habilitado."
+        );
+      }
+    }
+
     if (!isEditMode) {
       if (!currentVariation.description) {
         errorMessages.push("Descripción es obligatoria.");
@@ -441,7 +503,31 @@ const VariationForm: React.FC<any> = ({
         hasStockNotifications: currentVariation.hasStockNotifications,
         previewImage: currentVariation.previewImage,
         mainImage: currentVariation.mainImage,
+        // Agregar medidas si el envío está habilitado
+        measures: baseProductInfo.enabledForDelivery
+          ? {
+              ...measures,
+              length: measures.length
+                ? parseFloat(String(measures.length).replace(/,/g, "."))
+                : measures.length,
+              width: measures.width
+                ? parseFloat(String(measures.width).replace(/,/g, "."))
+                : measures.width,
+              height: measures.height
+                ? parseFloat(String(measures.height).replace(/,/g, "."))
+                : measures.height,
+              weight: measures.weight
+                ? parseFloat(String(measures.weight).replace(/,/g, "."))
+                : measures.weight,
+            }
+          : undefined,
+        enabledForDelivery: baseProductInfo.enabledForDelivery,
       };
+
+      // Eliminar measures si es undefined (cuando no hay delivery)
+      if (!variationData.measures) {
+        delete variationData.measures;
+      }
 
       let variationResponse;
       let variationId: any;
@@ -640,15 +726,194 @@ const VariationForm: React.FC<any> = ({
           pendingImages: [],
           pendingDeletions: [],
         });
-        toast.success(
-          isEditMode ? "Variación actualizada" : "Variación creada"
+
+        toast.custom(
+          (t) => (
+            <div
+              className={`${
+                t.visible ? "animate-enter" : "animate-leave"
+              } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 mb-4 mr-4 hover:[animation-play-state:paused]`}
+            >
+              <div className="flex-1 w-0 p-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-6 w-6 text-green-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {isEditMode
+                        ? "¡Variación Actualizada!"
+                        : "¡Variación Creada Exitosamente!"}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      ¿Qué deseas hacer ahora?
+                    </p>
+                    <div className="mt-4 flex space-x-3">
+                      <Link
+                        href="/dashboard/productos"
+                        onClick={() => {
+                          onCloseForm();
+                          toast.dismiss(t.id);
+                        }}
+                        className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                      >
+                        <svg
+                          className="mr-2 h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                          />
+                        </svg>
+                        Ver lista
+                      </Link>
+                      <button
+                        onClick={() => {
+                          const searchParams = new URLSearchParams(
+                            window.location.search
+                          );
+                          const productVariableId =
+                            searchParams.get("productVariableId");
+                          if (productVariableId) {
+                            const token = getCookie("AdminTokenAuth");
+                            fetch(
+                              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productVariableId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                              {
+                                headers: {
+                                  Authorization: `Bearer ${token}`,
+                                  "Content-Type": "application/json",
+                                },
+                              }
+                            )
+                              .then((response) => response.json())
+                              .then((data) => {
+                                if (data.product && data.product.name) {
+                                  const productSlug = slugify(
+                                    data.product.name
+                                  );
+                                  window.open(
+                                    `/tienda/productos/${productSlug}`,
+                                    "_blank"
+                                  );
+                                }
+                              })
+                              .catch((error) => {
+                                console.error(
+                                  "Error fetching product details:",
+                                  error
+                                );
+                                toast.error(
+                                  "Error al obtener los detalles del producto"
+                                );
+                              });
+                          }
+                          toast.dismiss(t.id);
+                        }}
+                        className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary bg-primary/10 hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                      >
+                        <svg
+                          className="mr-2 h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                        Ver producto
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex border-l border-gray-200">
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition-colors m-2"
+                >
+                  <svg
+                    className="h-5 w-5 text-gray-400 hover:text-gray-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ),
+          {
+            duration: 5000,
+            position: "bottom-right",
+          }
         );
       }
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Error al procesar la variación");
-    } finally {
+    } catch (error: any) {
+      console.error("Error al procesar la variación:", error);
+
+      // Mostrar mensaje de error más específico
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+
+        // Verificar si hay errores específicos de validación
+        if (
+          errorData.validationErrors &&
+          errorData.validationErrors.length > 0
+        ) {
+          errorData.validationErrors.forEach((validationError: any) => {
+            toast.error(`Error de validación: ${validationError.message}`);
+          });
+        } else if (errorData.message) {
+          // Si hay un mensaje de error general
+          toast.error(`Error: ${errorData.message}`);
+        } else {
+          // Mensaje por defecto
+          toast.error(
+            "Error al procesar la variación. Verifica los campos de medidas si el envío está habilitado."
+          );
+        }
+      } else {
+        // Si no hay información detallada del error
+        toast.error(
+          "Error al procesar la variación. Verifica los campos de medidas si el envío está habilitado."
+        );
+      }
+
       setIsLoading(false);
+      return;
     }
   };
 
@@ -784,9 +1049,94 @@ const VariationForm: React.FC<any> = ({
       const searchParams = new URLSearchParams(window.location.search);
       const idVariable = searchParams.get("productVariableId");
       fetchVariationImages(idVariable, variation.id);
+
+      // Cargar datos de delivery y medidas si existen
+      const loadVariationData = async () => {
+        try {
+          const token = getCookie("AdminTokenAuth");
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${idVariable}/skus/${variation.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (response.data && response.data.sku) {
+            const skuData = response.data.sku;
+
+            // Cargar medidas si existen
+            if (skuData.measures) {
+              setMeasures({
+                length:
+                  skuData.measures.length !== null
+                    ? String(skuData.measures.length)
+                    : "",
+                width:
+                  skuData.measures.width !== null
+                    ? String(skuData.measures.width)
+                    : "",
+                height:
+                  skuData.measures.height !== null
+                    ? String(skuData.measures.height)
+                    : "",
+                weight:
+                  skuData.measures.weight !== null
+                    ? String(skuData.measures.weight).replace(".", ",")
+                    : "",
+              });
+            } else if (baseProductInfo.enabledForDelivery) {
+              // Si no hay medidas pero el delivery está habilitado, establecer valores predeterminados
+              setMeasures({
+                length: "1",
+                width: "1",
+                height: "1",
+                weight: "0,5",
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error al cargar datos de la variación:", error);
+        }
+      };
+
+      loadVariationData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variation.id]); // Solo se ejecuta cuando cambia el ID de la variación
+
+  // Agregar función para manejar cambios en los campos de medidas
+  const handleMeasureChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    measure: keyof typeof measures
+  ) => {
+    const value = e.target.value;
+
+    // Si el valor está vacío, permitimos que se quede vacío
+    if (value === "") {
+      setMeasures((prevMeasures) => ({
+        ...prevMeasures,
+        [measure]: "",
+      }));
+      return;
+    }
+
+    // Solo para validación numérica, convertimos comas a puntos
+    const numericValue = value.replace(/,/g, ".");
+    const numValue = parseFloat(numericValue);
+
+    // Solo validamos que sea un número válido, permitimos 0 para poder escribir decimales
+    if (isNaN(numValue) || numValue < 0) {
+      return;
+    }
+
+    // Para la interfaz de usuario mantenemos el valor con comas
+    setMeasures((prevMeasures) => ({
+      ...prevMeasures,
+      [measure]: value,
+    }));
+  };
 
   return (
     <>
@@ -1096,6 +1446,226 @@ const VariationForm: React.FC<any> = ({
             </div>
           </div>
         </div>
+
+        {/* Sección de Medidas (solo si el producto base tiene delivery habilitado) */}
+        {baseProductInfo.enabledForDelivery && (
+          <div className="mt-4 grid grid-cols-1 space-y-8">
+            <div
+              className="shadow border p-4"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <div className="flex items-center mb-4">
+                <div className="ms-2 text-sm font-medium text-gray-900">
+                  <span className="font-semibold">Medidas para envío</span>{" "}
+                  (configuradas desde el producto base)
+                </div>
+              </div>
+
+              <div
+                style={{ borderRadius: "var(--radius)" }}
+                className="shadow p-4 my-3 w-full flex items-center mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 dark:bg-gray-800 dark:text-yellow-300 border-yellow-400 border "
+                role="alert"
+              >
+                <svg
+                  className="flex-shrink-0 inline w-4 h-4 me-3"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div className="flex flex-col">
+                  <div>
+                    Todos los campos de medidas son{" "}
+                    <strong>obligatorios</strong> y deben ser mayores a 0 cuando
+                    el envío está habilitado.
+                  </div>
+                </div>
+              </div>
+
+              {/* Medidas para Delivery */}
+              <div
+                id="measuresData"
+                className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4 p-4 border rounded-lg"
+              >
+                <div>
+                  <label>
+                    Alto (cm): <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="height"
+                    value={measures.height}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "");
+                      if (value === "") {
+                        handleMeasureChange(
+                          {
+                            target: { value: "" },
+                          } as React.ChangeEvent<HTMLInputElement>,
+                          "height"
+                        );
+                        return;
+                      }
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue)) {
+                        handleMeasureChange(
+                          {
+                            target: { value: value },
+                          } as React.ChangeEvent<HTMLInputElement>,
+                          "height"
+                        );
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      const allowedKeys = [
+                        "Backspace",
+                        "Tab",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Delete",
+                      ];
+                      if (
+                        !allowedKeys.includes(e.key) &&
+                        !/^[0-9]$/.test(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                    placeholder="Ingrese el alto"
+                  />
+                </div>
+                <div>
+                  <label>
+                    Largo (cm): <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="length"
+                    value={measures.length}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "");
+                      if (value === "") {
+                        handleMeasureChange(
+                          {
+                            target: { value: "" },
+                          } as React.ChangeEvent<HTMLInputElement>,
+                          "length"
+                        );
+                        return;
+                      }
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue)) {
+                        handleMeasureChange(
+                          {
+                            target: { value: value },
+                          } as React.ChangeEvent<HTMLInputElement>,
+                          "length"
+                        );
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      const allowedKeys = [
+                        "Backspace",
+                        "Tab",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Delete",
+                      ];
+                      if (
+                        !allowedKeys.includes(e.key) &&
+                        !/^[0-9]$/.test(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                    placeholder="Ingrese el largo"
+                  />
+                </div>
+                <div>
+                  <label>
+                    Ancho (cm): <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="width"
+                    value={measures.width}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, "");
+                      if (value === "") {
+                        handleMeasureChange(
+                          {
+                            target: { value: "" },
+                          } as React.ChangeEvent<HTMLInputElement>,
+                          "width"
+                        );
+                        return;
+                      }
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue)) {
+                        handleMeasureChange(
+                          {
+                            target: { value: value },
+                          } as React.ChangeEvent<HTMLInputElement>,
+                          "width"
+                        );
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      const allowedKeys = [
+                        "Backspace",
+                        "Tab",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "Delete",
+                      ];
+                      if (
+                        !allowedKeys.includes(e.key) &&
+                        !/^[0-9]$/.test(e.key)
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                    placeholder="Ingrese el ancho"
+                  />
+                </div>
+                <div>
+                  <label>
+                    Peso (kg) ej 0,5: <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="weight"
+                    value={measures.weight || ""}
+                    onChange={(e) => {
+                      let value = e.target.value;
+
+                      // Eliminar todos los caracteres excepto números, comas y puntos
+                      value = value.replace(/[^\d,.]/g, "");
+
+                      // Reemplazar puntos por comas
+                      value = value.replace(/\./g, ",");
+
+                      handleMeasureChange(
+                        {
+                          target: { value },
+                        } as React.ChangeEvent<HTMLInputElement>,
+                        "weight"
+                      );
+                    }}
+                    className="shadow block w-full px-4 rounded py-3 mt-2 mb-4 border border-gray-300"
+                    placeholder="Ingrese el peso"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-4 mt-8 gap-4">
           <div className="col-span-4 mb-4">

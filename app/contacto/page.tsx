@@ -100,7 +100,7 @@ export default function ContactForm() {
           </div>
           <div className="md:text-right max-md:mt-12 h-full">
             <img
-              src="/img/Anillo-Infinito_01.webp"
+              src="/logo-w.png"
               alt="Premium Benefits"
               className="w-full h-full object-cover"
             />

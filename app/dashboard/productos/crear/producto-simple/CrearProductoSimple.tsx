@@ -14,8 +14,8 @@ import Select from "react-select";
 import { useSearchParams, useRouter } from "next/navigation";
 import ImageUploader from "./ImageUploader";
 import StarCheckbox from "@/components/Core/Checkbox/StarCheckbox";
-import Loader from "@/components/common/Loader";
-import toast from "react-hot-toast";
+import LoaderProgress from "@/components/common/LoaderProgress";
+import { Toaster, toast } from "react-hot-toast";
 import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
@@ -585,7 +585,6 @@ const CrearProductoSimple: React.FC = ({}) => {
 
   const { triggerRevalidation } = useRevalidation();
 
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [newProductId, setNewProductId] = useState<string | null>(null);
 
   const [pendingImageChanges, setPendingImageChanges] = useState<{
@@ -606,10 +605,16 @@ const CrearProductoSimple: React.FC = ({}) => {
     setPendingImageChanges(changes);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
+    
+    // Prevenir múltiples envíos
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setIsLoading(true);
 
     const dataToSend: any = { ...formData };
@@ -620,6 +625,7 @@ const CrearProductoSimple: React.FC = ({}) => {
 
     if (!isEditMode && !validateForm()) {
       setIsLoading(false);
+      setIsSubmitting(false);
       toast.error("Por favor, corrige los errores antes de enviar");
       return;
     }
@@ -654,91 +660,206 @@ const CrearProductoSimple: React.FC = ({}) => {
       const currentProductId = isEditMode ? productId : product.id;
       const currentSkuId = isEditMode ? skuId : product.skuId;
 
-      if (currentProductId && currentSkuId) {
-        // 2. Procesar todas las actualizaciones en paralelo
-        await Promise.all([
-          // Actualizar SKU data
-          handleSkuData(
-            currentProductId,
-            currentSkuId,
-            "hola",
-            skuData.hasUnlimitedStock,
-            skuData.hasStockNotifications,
-            skuData.isFeatured
-          ),
-
-          // Actualizar stock
-          handleStockSku(
-            currentProductId,
-            currentSkuId,
-            stockQuantity,
-            alertStock
-          ),
-
-          // Actualizar precio
-          precioNormal !== null
-            ? HandlePriceSku(currentProductId, currentSkuId, precioNormal)
-            : Promise.resolve(),
-
-          // Procesar imágenes pendientes
-          (async () => {
-            if (pendingImageChanges.pendingDeletions.length > 0) {
-              await Promise.all(
-                pendingImageChanges.pendingDeletions.map((imageId) =>
-                  fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                    {
-                      method: "DELETE",
-                      headers: { Authorization: `Bearer ${token}` },
-                    }
-                  )
-                )
-              );
-            }
-
-            if (pendingImageChanges.pendingImages.length > 0) {
-              await Promise.all(
-                pendingImageChanges.pendingImages.map((newImage) =>
-                  fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-                    {
-                      method: "POST",
-                      headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({ mainImage: newImage }),
-                    }
-                  )
-                )
-              );
-            }
-          })(),
-        ]);
-
-        // Limpiar los cambios pendientes
-        setPendingImageChanges({
-          pendingImages: [],
-          pendingDeletions: [],
-          currentImages: [],
-        });
-
-        // Actualizar la UI
-        await triggerRevalidation();
-        setProductId(currentProductId);
-        setNewProductId(currentProductId);
-        setShowConfirmationModal(true);
-        setIsEditMode(true);
-
-        toast.success(
-          isEditMode
-            ? "Producto actualizado correctamente"
-            : "Producto creado correctamente"
-        );
-
-        // Actualizar la galería
-        fetchImages(currentProductId, currentSkuId);
+      // Si no estamos en modo edición, redirigir a la misma página con el nuevo ID
+      if (!isEditMode && currentProductId) {
+        router.push(`${window.location.pathname}?productId=${currentProductId}`);
       }
+
+      // 2. Procesar todas las actualizaciones en paralelo
+      await Promise.all([
+        // Actualizar SKU data
+        handleSkuData(
+          currentProductId,
+          currentSkuId,
+          "hola",
+          skuData.hasUnlimitedStock,
+          skuData.hasStockNotifications,
+          skuData.isFeatured
+        ),
+
+        // Actualizar stock
+        handleStockSku(
+          currentProductId,
+          currentSkuId,
+          stockQuantity,
+          alertStock
+        ),
+
+        // Actualizar precio
+        precioNormal !== null
+          ? HandlePriceSku(currentProductId, currentSkuId, precioNormal)
+          : Promise.resolve(),
+
+        // Procesar imágenes pendientes
+        (async () => {
+          if (pendingImageChanges.pendingDeletions.length > 0) {
+            await Promise.all(
+              pendingImageChanges.pendingDeletions.map((imageId) =>
+                fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                  {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                  }
+                )
+              )
+            );
+          }
+
+          if (pendingImageChanges.pendingImages.length > 0) {
+            await Promise.all(
+              pendingImageChanges.pendingImages.map((newImage) =>
+                fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}/skus/${currentSkuId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ mainImage: newImage }),
+                  }
+                )
+              )
+            );
+          }
+        })(),
+      ]);
+
+      // Limpiar los cambios pendientes
+      setPendingImageChanges({
+        pendingImages: [],
+        pendingDeletions: [],
+        currentImages: [],
+      });
+
+      // Actualizar la UI
+      await triggerRevalidation();
+      setProductId(currentProductId);
+      setNewProductId(currentProductId);
+
+      // Obtener los datos actualizados del producto
+      const updatedProductResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${currentProductId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      const updatedProductData = await updatedProductResponse.json();
+      const productName = updatedProductData.product.name;
+
+      toast.custom(
+        (t) => (
+          <div 
+            className={`${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 mb-4 mr-4 hover:[animation-play-state:paused]`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg 
+                    className="h-6 w-6 text-green-400" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {isEditMode ? "¡Producto Actualizado!" : "¡Producto Creado Exitosamente!"}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    ¿Qué deseas hacer ahora?
+                  </p>
+                  <div className="mt-4 flex space-x-3">
+                    <Link
+                      href="/dashboard/productos"
+                      className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                    >
+                      <svg 
+                        className="mr-2 h-4 w-4" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M4 6h16M4 10h16M4 14h16M4 18h16" 
+                        />
+                      </svg>
+                      Ver lista
+                    </Link>
+                    <button
+                      onClick={() => {
+                        if (currentProductId && productName) {
+                          const productSlug = slugify(productName);
+                          window.open(`/tienda/productos/${productSlug}`, "_blank");
+                        }
+                        toast.dismiss(t.id);
+                      }}
+                      className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary bg-primary/10 hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                    >
+                      <svg 
+                        className="mr-2 h-4 w-4" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+                        />
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" 
+                        />
+                      </svg>
+                      Ver producto
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-gray-200">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition-colors m-2"
+              >
+                <svg 
+                  className="h-5 w-5 text-gray-400 hover:text-gray-500" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ),
+        { 
+          duration: 5000,
+          position: 'bottom-right'
+        }
+      );
     } catch (error) {
       console.error("Error al procesar el producto:", error);
       toast.error(
@@ -748,21 +869,7 @@ const CrearProductoSimple: React.FC = ({}) => {
       );
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleContinueEditing = () => {
-    setShowConfirmationModal(false);
-    if (newProductId) {
-      window.location.href = `${window.location.pathname}?productId=${newProductId}`;
-    }
-  };
-
-  const handleViewProduct = () => {
-    setShowConfirmationModal(false);
-    if (newProductId && formData.name) {
-      const productSlug = slugify(formData.name);
-      window.open(`/tienda/productos/${productSlug}`, "_blank");
+      setIsSubmitting(false);
     }
   };
 
@@ -914,11 +1021,29 @@ const CrearProductoSimple: React.FC = ({}) => {
   };
 
   if (isLoading) {
-    return <Loader />;
+    return <LoaderProgress />;
   }
 
   return (
     <div className="min-h-screen">
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          duration: 10000,
+          style: {
+            background: '#fff',
+            color: '#363636',
+          },
+          success: {
+            duration: 10000,
+          },
+          custom: {
+            duration: 10000,
+          }
+        }}
+        // Agregar esta propiedad para prevenir toasts duplicados
+        gutter={8}
+      />
       <div className="w-full mx-auto sticky backdrop-blur-md flex justify-center top-0 py-2 z-50 -mt-6">
         <div className="flex w-full justify-between px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-1 md:gap-4 w-full">
@@ -1662,32 +1787,6 @@ const CrearProductoSimple: React.FC = ({}) => {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Confirmación */}
-      {showConfirmationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <h2 className="text-2xl font-bold mb-4">
-              {isEditMode ? "Producto Actualizado" : "Producto Creado"}
-            </h2>
-            <p className="mb-6">¿Qué deseas hacer ahora?</p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={handleContinueEditing}
-                className="flex-1 bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
-              >
-                Seguir Editando
-              </button>
-              <button
-                onClick={handleViewProduct}
-                className="flex-1 bg-secondary text-primary px-4 py-2 rounded hover:bg-opacity-90 transition-colors"
-              >
-                Ver Producto
-              </button>
             </div>
           </div>
         </div>
