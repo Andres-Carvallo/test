@@ -212,7 +212,7 @@ export default function Navbar() {
                     href="/"
                     className="text-base font-semibold"
                   >
-                    HOME 1
+                    HOME
                   </Link>
                 </li>
                 {/*             <li className={pathname === "/tienda" ? "text-primary" : ""}>
@@ -328,30 +328,6 @@ export default function Navbar() {
                     </ul>
                   </li>
                 )}
-                <li
-                  className={
-                    pathname === "/home2" ? "text-primary" : "text-primary"
-                  }
-                >
-                  <Link
-                    href="/home2"
-                    className="font-semibold text-primary text-base"
-                  >
-                    HOME 2
-                  </Link>
-                </li>
-                <li
-                  className={
-                    pathname === "/tienda" ? "text-primary" : "text-primary"
-                  }
-                >
-                  <Link
-                    href="/tienda"
-                    className="font-semibold text-primary text-base"
-                  >
-                    TIENDA
-                  </Link>
-                </li>
                 <li
                   className={
                     pathname === "/blog" ? "text-primary" : "text-primary"
@@ -671,16 +647,6 @@ export default function Navbar() {
               </div>
             )}
 
-            <li
-              className={pathname === "/componentes-pixelup" ? "text-primary" : "text-primary"}
-            >
-              <Link
-                href="/componentes-pixelup"
-                className="hover:text-primary text-base font-medium uppercase"
-              >
-                HOME 2
-              </Link>
-            </li>
             <li
                   className={
                     pathname === "/componentes-pixelup" ? "text-primary" : "text-primary"

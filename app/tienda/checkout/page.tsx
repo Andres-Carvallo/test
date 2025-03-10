@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Customer, ItemAvailability } from "@/types/types";
 import { jwtDecode } from "jwt-decode";
 import Loader from "@/components/common/Loader";
+import { COURIERS, DELIVERY_TYPES, Courier } from "@/app/config/couriers";
 
 const CartList = React.lazy(() => import("@/components/Core/CartCanva/CartList"));
 
@@ -48,9 +49,7 @@ const Checkout: React.FC = () => {
 
   const router = useRouter();
 
-  const [deliveryType, setDeliveryType] = useState<string>(
-    "HOME_DELIVERY_WITHOUT_COURIER"
-  );
+  const [deliveryType, setDeliveryType] = useState<string>("");
 
   const [deliveryTypeID, setDeliveryTypeID] = useState<string>("");
   const [itemAvailability, setItemAvailability] = useState<{
@@ -75,26 +74,15 @@ const Checkout: React.FC = () => {
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
         );
         const deliveryTypes = response.data.deliveryTypes;
-
-        setAvailableDeliveryTypes(deliveryTypes); // Guardar los tipos de entrega disponibles
-
-        const selectedDeliveryType = deliveryTypes.find(
-          (type: any) => type.code === "HOME_DELIVERY_WITHOUT_COURIER"
-        );
-        if (selectedDeliveryType) {
-          setDeliveryTypeID(selectedDeliveryType.id);
-        } else {
-          console.error(
-            "No se encontró el deliveryType por defecto en la respuesta de la API"
-          );
-        }
+        setAvailableDeliveryTypes(deliveryTypes);
       } catch (error) {
         console.error("Error al obtener los tipos de entrega:", error);
+        toast.error("Error al cargar los tipos de entrega");
       }
     };
 
     fetchDeliveryTypeId();
-  }, []); // Se ejecuta solo una vez al montar el componente
+  }, []);
 
   const isLoggedIn = getCookie("ClientTokenAuth");
   const [useDifferentShippingAddress, setUseDifferentShippingAddress] =
@@ -528,9 +516,9 @@ const Checkout: React.FC = () => {
 
     // Validar la opción de entrega según la disponibilidad del producto
     const invalidItems = cartItems.filter((item: any) => {
-      if (newValue === "HOME_DELIVERY_WITHOUT_COURIER")
+      if (newValue === DELIVERY_TYPES.DELIVERY)
         return !itemAvailability[item.id]?.enabledForDelivery;
-      if (newValue === "WITHDRAWAL_FROM_STORE")
+      if (newValue === DELIVERY_TYPES.WITHDRAWAL)
         return !itemAvailability[item.id]?.enabledForWithdrawal;
       return false;
     });
@@ -538,7 +526,7 @@ const Checkout: React.FC = () => {
     if (invalidItems.length > 0) {
       toast.error(
         `Los siguientes productos no son elegibles para ${
-          newValue === "HOME_DELIVERY_WITHOUT_COURIER" ? "delivery" : "retiro"
+          newValue === DELIVERY_TYPES.WITHDRAWAL ? "retiro" : "delivery"
         }: ${invalidItems.map((item: any) => item.sku.product.name).join(", ")}`
       );
       return;
@@ -550,16 +538,16 @@ const Checkout: React.FC = () => {
 
     if (selectedDeliveryType) {
       setDeliveryTypeID(selectedDeliveryType.id);
+      console.log(`Estableciendo deliveryTypeId para ${newValue}:`, selectedDeliveryType.id);
     } else {
-      console.error(
-        "No se encontró el deliveryType seleccionado en los tipos de entrega disponibles"
-      );
+      console.error("No se encontró el deliveryType seleccionado");
+      toast.error("Error al seleccionar el tipo de entrega");
     }
 
     // Si las regiones y comunas ya están cargadas, no hacer fetch
     if (regionsDelivery.length === 0 || regionsPickup.length === 0) {
       // Si el usuario no está logueado y selecciona retiro, mostrar todas las comunas
-      if (!isLoggedIn && newValue === "WITHDRAWAL_FROM_STORE") {
+      if (!isLoggedIn && newValue === DELIVERY_TYPES.WITHDRAWAL) {
         await fetchRegionsAndCommunes(false); // false para no aplicar el filtro
       } else {
         await fetchRegionsAndCommunes(true); // true para aplicar el filtro de shipping zones
@@ -569,6 +557,20 @@ const Checkout: React.FC = () => {
 
   const loggedInRegion = isLoggedIn ? customer.customer?.regionName : "";
   const loggedInCommune = isLoggedIn ? customer.customer?.communeName : "";
+
+  const getAvailableDeliveryTypes = () => {
+    const hasDeliveryAvailable = cartItems.every(
+      (item: any) => itemAvailability[item.id]?.enabledForDelivery
+    );
+    const hasWithdrawalAvailable = cartItems.every(
+      (item: any) => itemAvailability[item.id]?.enabledForWithdrawal
+    );
+
+    return {
+      hasDeliveryAvailable,
+      hasWithdrawalAvailable,
+    };
+  };
 
   return (
     <>
@@ -676,97 +678,239 @@ const Checkout: React.FC = () => {
             </div>
             <div className="md:mt-10 bg-white px-4 pt-8 lg:mt-0">
               <div className="space-y-4">
+
+                              {/* Datos personales */}
+                <div className="bg-gray-100 rounded-lg shadow-sm p-6">
+                  <p className="text-xl font-medium">Datos Personales</p>
+                  <p className="text-gray-400">Completa tus datos personales</p>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <label htmlFor="firstname" className="block mt-4">
+                      Nombre <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="firstname"
+                        name="firstname"
+                        value={customer.customer?.firstname || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              firstname: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                    <label htmlFor="lastname" className="block mt-4">
+                      Apellido <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="lastname"
+                        name="lastname"
+                        value={customer.customer?.lastname || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              lastname: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <label htmlFor="phoneNumber" className="block mt-4">
+                      Teléfono <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        value={customer.customer?.phoneNumber || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              phoneNumber: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                    <label htmlFor="email" className="block mt-4">
+                      Email <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="email"
+                        name="email"
+                        value={customer.customer?.email || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              email: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                  </div>
+                  <label htmlFor="addressLine2" className="block mt-4">
+                    Indicaciones extra
+                    <input
+                      type="text"
+                      id="addressLine2"
+                      value={customer.customer?.addressLine2 || ""}
+                      onChange={(e) =>
+                        setCustomer({
+                          ...customer,
+                          customer: {
+                            ...customer.customer,
+                            addressLine2: e.target.value,
+                          },
+                        })
+                      }
+                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                    />
+                  </label>
+                </div>
                 {/* Tipo de envío */}
                 <div className="bg-gray-100 rounded-lg shadow-sm p-6">
                   <p className="text-xl font-medium">Tipo de envío</p>
                   <p className="text-gray-400">Selecciona el tipo de envío</p>
                   
                   {/* Formulario de tipo de entrega */}
-                  <form className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Botón para retiro en tienda */}
-                    <div className="relative">
-                      <input
-                        className="peer hidden"
-                        id="radio_retiroTienda"
-                        type="radio"
-                        name="radio"
-                        value="WITHDRAWAL_FROM_STORE"
-                        checked={deliveryType === "WITHDRAWAL_FROM_STORE"}
-                        onChange={() =>
-                          handleChangeDeliveryType("WITHDRAWAL_FROM_STORE")
-                        }
-                      />
-                      <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
-                      <label
-                        className="bg-white peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                        htmlFor="radio_retiroTienda"
-                      >
-                        {/* Icono y texto para retiro en tienda */}
-                        <div className="flex items-center w-full">
+                  <form className={`mt-5 grid gap-4 ${
+                    getAvailableDeliveryTypes().hasDeliveryAvailable && getAvailableDeliveryTypes().hasWithdrawalAvailable
+                      ? 'grid-cols-1 sm:grid-cols-2'
+                      : 'grid-cols-1'
+                  }`}>
+                    {!getAvailableDeliveryTypes().hasDeliveryAvailable && !getAvailableDeliveryTypes().hasWithdrawalAvailable ? (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex items-center">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="w-8 h-8 flex-shrink-0"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.5}
+                            className="h-5 w-5 text-red-400 mr-2"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
                           >
                             <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                              clipRule="evenodd"
                             />
                           </svg>
-                          <div className="ml-4">
-                            <span className="font-semibold block">
-                              Retiro en Tienda
-                            </span>
-                          </div>
+                          <span className="text-red-700 font-medium">
+                            Hay productos con conflictos en sus tipos de envío. Por favor, revisa tu carrito y ajusta los productos para que sean compatibles con al menos un tipo de envío.
+                          </span>
                         </div>
-                      </label>
-                    </div>
-                    {/* Botón para delivery */}
-                    <div className="relative">
-                      <input
-                        className="peer hidden"
-                        id="radio_delivery"
-                        type="radio"
-                        name="radio"
-                        value="HOME_DELIVERY_WITHOUT_COURIER"
-                        checked={deliveryType === "HOME_DELIVERY_WITHOUT_COURIER"}
-                        onChange={() =>
-                          handleChangeDeliveryType(
-                            "HOME_DELIVERY_WITHOUT_COURIER"
-                          )
-                        }
-                      />
-                      <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
-                      <label
-                        className="bg-white peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
-                        htmlFor="radio_delivery"
-                      >
-                        {/* Icono y texto para delivery */}
-                        <div className="flex items-center w-full">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-8 h-8 flex-shrink-0"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1.5}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                      </div>
+                    ) : (
+                      <>
+                        {getAvailableDeliveryTypes().hasWithdrawalAvailable && (
+                          /* Botón para retiro en tienda */
+                          <div className="relative">
+                            <input
+                              className="peer hidden"
+                              id="radio_retiroTienda"
+                              type="radio"
+                              name="radio"
+                              value={DELIVERY_TYPES.WITHDRAWAL}
+                              checked={deliveryType === DELIVERY_TYPES.WITHDRAWAL}
+                              onChange={() => handleChangeDeliveryType(DELIVERY_TYPES.WITHDRAWAL)}
                             />
-                          </svg>
-                          <div className="ml-4">
-                            <span className="font-semibold block">Delivery</span>
+                            <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                            <label
+                              className="bg-white peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                              htmlFor="radio_retiroTienda"
+                            >
+                              {/* Icono y texto para retiro en tienda */}
+                              <div className="flex items-center w-full">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="w-8 h-8 flex-shrink-0"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={1.5}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                                  />
+                                </svg>
+                                <div className="ml-4">
+                                  <span className="font-semibold block">
+                                    Retiro en Tienda
+                                  </span>
+                                </div>
+                              </div>
+                            </label>
                           </div>
-                        </div>
-                      </label>
-                    </div>
+                        )}
+                        {getAvailableDeliveryTypes().hasDeliveryAvailable && (
+                          /* Botón para delivery */
+                          <div className="relative">
+                            <input
+                              className="peer hidden"
+                              id="radio_delivery"
+                              type="radio"
+                              name="radio"
+                              value={DELIVERY_TYPES.DELIVERY}
+                              checked={deliveryType === DELIVERY_TYPES.DELIVERY}
+                              onChange={() => handleChangeDeliveryType(DELIVERY_TYPES.DELIVERY)}
+                            />
+                            <span className="peer-checked:border-gray-700 absolute right-4 top-1/2 box-content block h-3 w-3 -translate-y-1/2 rounded-full border-8 border-gray-300 bg-white" />
+                            <label
+                              className="bg-white peer-checked:border-2 peer-checked:border-gray-700 peer-checked:bg-gray-50 flex cursor-pointer select-none rounded-lg border border-gray-300 p-4"
+                              htmlFor="radio_delivery"
+                            >
+                              {/* Icono y texto para delivery */}
+                              <div className="flex items-center w-full">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="w-8 h-8 flex-shrink-0"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={1.5}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+                                  />
+                                </svg>
+                                <div className="ml-4">
+                                  <span className="font-semibold block">Delivery</span>
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </form>
 
                   {/* Campos de dirección, región y comuna */}
@@ -915,121 +1059,7 @@ const Checkout: React.FC = () => {
                   )}
                 </div>
 
-                {/* Datos personales */}
-                <div className="bg-gray-100 rounded-lg shadow-sm p-6">
-                  <p className="text-xl font-medium">Datos Personales</p>
-                  <p className="text-gray-400">Completa tus datos personales</p>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <label htmlFor="firstname" className="block mt-4">
-                      Nombre <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="firstname"
-                        name="firstname"
-                        value={customer.customer?.firstname || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              firstname: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                    <label htmlFor="lastname" className="block mt-4">
-                      Apellido <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="lastname"
-                        name="lastname"
-                        value={customer.customer?.lastname || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              lastname: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label htmlFor="phoneNumber" className="block mt-4">
-                      Teléfono <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={customer.customer?.phoneNumber || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              phoneNumber: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                    <label htmlFor="email" className="block mt-4">
-                      Email <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="email"
-                        name="email"
-                        value={customer.customer?.email || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              email: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                  </div>
-                  <label htmlFor="addressLine2" className="block mt-4">
-                    Indicaciones extra
-                    <input
-                      type="text"
-                      id="addressLine2"
-                      value={customer.customer?.addressLine2 || ""}
-                      onChange={(e) =>
-                        setCustomer({
-                          ...customer,
-                          customer: {
-                            ...customer.customer,
-                            addressLine2: e.target.value,
-                          },
-                        })
-                      }
-                      className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                    />
-                  </label>
-                </div>
+
               </div>
               <button
                 onClick={handleSubmitOrder}
