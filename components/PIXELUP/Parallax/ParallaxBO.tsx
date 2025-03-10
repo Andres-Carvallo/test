@@ -141,15 +141,15 @@ const ParallaxBO: React.FC = () => {
     }
   };
 
-  const fetchBannerHome = async () => {
+  const fetchParallaxHome = async () => {
     try {
       setLoading(true);
       setSkeletonLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
+      const parallaxId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
 
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -192,7 +192,7 @@ const ParallaxBO: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchBannerHome();
+    fetchParallaxHome();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -305,8 +305,8 @@ const ParallaxBO: React.FC = () => {
         return;
       }
 
-      const bannerId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
-      if (!bannerId) {
+      const parallaxId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
+      if (!parallaxId) {
         toast.error("No se encontró el ID del banner");
         return;
       }
@@ -347,8 +347,8 @@ const ParallaxBO: React.FC = () => {
       console.log("Datos a enviar:", dataToSend);
 
       const url = isAddingImage
-        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+        ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       const response = await axios({
         method: isAddingImage ? "POST" : "PUT",
@@ -366,7 +366,7 @@ const ParallaxBO: React.FC = () => {
             ? "Banner creado exitosamente"
             : "Banner actualizado exitosamente"
         );
-        await fetchBannerHome();
+        await fetchParallaxHome();
         if (isAddingImage) {
           setIsAddingImage(false);
         }
@@ -406,9 +406,9 @@ const ParallaxBO: React.FC = () => {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
 
-      const bannerId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
+      const parallaxId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -419,7 +419,7 @@ const ParallaxBO: React.FC = () => {
 
       toast.success("Banner eliminado exitosamente");
       setIsDeleteModalOpen(false);
-      fetchBannerHome();
+      fetchParallaxHome();
     } catch (error) {
       console.error("Error al borrar la imagen del banner:", error);
       toast.error(

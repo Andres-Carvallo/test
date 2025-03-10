@@ -48,7 +48,7 @@ export default function BannerHome() {
       <title>Content block - Home</title>
       {[
         { id: "marqueeTOP", title: "Barra Superior", component: <MarqueeTOP /> },
-        { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
+         { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
         { id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO /> },
         { id: "bannerPrincipal04", title: "Barra Superior", component: <BannerPrincipal04BO /> },
         { id: "cardsPage", title: "Hero 03", component: <CardsPage /> },
@@ -64,7 +64,7 @@ export default function BannerHome() {
         { id: "logosCarrusel", title: "Barra Superior", component: <LogosCarruselBO /> },
         { id: "bannerMobile", title: "Banner Mobile", component: <BannerPrincipal02BOMobile /> },
         { id: "sobreMi", title: "Sobre Mí", component: <Hero02BO /> },
-        { id: "frases", title: "Frases", component: <FrasesBO /> },
+        { id: "frases", title: "Frases", component: <FrasesBO /> }, 
       ].map(section => (
         <div
           key={section.id}

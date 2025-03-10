@@ -48,9 +48,7 @@ function CartList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems, fetchProductDetails]);
 
-  const sortedCartItems = [...cartItems].sort((a, b) =>
-    a.sku.product.name.localeCompare(b.sku.product.name)
-  );
+  const sortedCartItems = [...cartItems].sort((a, b) => b.id.localeCompare(a.id));
   return (
     <>
       {sortedCartItems.map((item: any) => (
