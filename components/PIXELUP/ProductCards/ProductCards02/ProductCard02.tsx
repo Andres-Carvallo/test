@@ -141,7 +141,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
               .map((productType: any, index: any) => (
                 <span
                   key={index}
-                  className="text-gray-400 mr-3 uppercase text-sm text-primary rounded-lg"
+                  className="text-gray-400 mr-3 uppercase text-sm text-primary rounded-lg max-w-[14ch] md:max-w-[22ch] truncate"
                 >
                   {productType.name}
                 </span>

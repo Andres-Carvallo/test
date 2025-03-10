@@ -131,14 +131,14 @@ const ProductCard03: React.FC<ProductCardProps> = ({
         <img
           src={product.mainImageUrl}
           alt={product.name}
-          className="w-96 object-cover "
+          className="w-full sm:w-96 h-auto object-cover"
           style={{ borderRadius: "var(--radius)" }}
         />
-        <p className={`font-semibold mt-4 line-clamp-1 `}>{product.name}</p>
-        <div className={`font-bold text-xl mt-2 min-h-[48px]`}>{renderPrice()}</div>
+        <p className={`font-semibold mt-4 max-w-[8ch] md:max-w-[20ch] max- truncate`}>{product.name}</p>
+        <div className={`font-bold text-xl mt-2 min-h-[56px]  `}>{renderPrice()}</div>
         <button
           type="button"
-          className={`mt-4 uppercase w-full inline-flex items-center justify-center rounded-md border-2 border-transparent bg-primary md:hover:scale-105 duration-300 px-12 py-3 text-center text-base font-bold text-white transition-all ease-in-out focus:shadow`}
+          className={`mt-3 sm:mt-4 uppercase w-full inline-flex items-center justify-center rounded-md border-2 border-transparent bg-primary md:hover:scale-105 duration-300 px-4 sm:px-12 py-2 sm:py-3 text-center text-sm sm:text-base font-bold text-white transition-all ease-in-out focus:shadow`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

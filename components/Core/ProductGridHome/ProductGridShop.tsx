@@ -6,6 +6,9 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
 import Loader from "@/components/common/Loader-t";
+import ProductCard02 from "@/components/PIXELUP/ProductCards/ProductCards02/ProductCard02";
+import ProductCard03 from "@/components/PIXELUP/ProductCards/ProductCards03/ProductCard03";
+import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import ProductCard04 from "@/components/PIXELUP/ProductCards/ProductCards04/ProductCards04";
 
 interface ProductGridShopProps {
@@ -258,7 +261,7 @@ const ProductGridShop = ({
                   key={product.id}
                   className="flex justify-center"
                 >
-                  <ProductCard04
+                  <ProductCard03
                     key={product.id}
                     product={product}
                     addToCartHandler={addToCartHandler}

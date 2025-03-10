@@ -116,12 +116,12 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             <img
               src={product.mainImageUrl}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              className="md:min-w-[250px] md:min-h-[250px] w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />
           </Link>
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             {product.productTypes && product.productTypes.length > 0 && (
-              <span className="bg-[#81C4BA] px-3 py-1 rounded text-sm text-white font-medium">
+              <span className="bg-[#81C4BA] px-3 py-1 rounded text-sm text-white font-medium max-w-[14ch] md:max-w-[22ch] truncate">
                 {product.productTypes[0].name}
               </span>
             )}
@@ -132,9 +132,9 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             )}
           </div>
         </div>
-        <div className="p-4 min-h-[114px]">
+        <div className="p-4 min-h-[124px] md:min-h-[114px]">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
-            <h3 className="text-primary font-medium mb-2 max-w-[15ch] truncate">
+            <h3 className="text-primary font-medium mb-2 max-w-[8ch]  md:max-w-[15ch]  truncate">
               {product.name}
             </h3>
           </Link>

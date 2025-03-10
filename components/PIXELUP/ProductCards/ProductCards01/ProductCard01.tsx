@@ -155,7 +155,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
         )}
         <div className="max-w-[150px] md:max-w-[200px]">
-          <p className="text-primary text-base mt-4">{product.name}</p>
+          <p className="text-primary text-base mt-4 max-w-[20ch] truncate">{product.name}</p>
         </div>
         <div className="mt-2">
           <div className="mt-1 text-sm">{getDisplayPrice()}</div>
