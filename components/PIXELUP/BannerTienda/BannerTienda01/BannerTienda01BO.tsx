@@ -643,9 +643,17 @@ const BannerTienda01BO: React.FC<any> = () => {
   const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setOriginalFileName(file.name); // Asegurar que el nombre del archivo se guarde
       const reader = new FileReader();
       reader.onload = () => {
         setMainImageHero(reader.result as string);
+        setFormDataHero((prevFormDataHero: any) => ({
+          ...prevFormDataHero,
+          mainImage: {
+            ...prevFormDataHero.mainImage,
+            name: file.name, // Asignar el nombre del archivo
+          },
+        }));
         setIsModalOpen(true);
       };
       reader.readAsDataURL(file);
@@ -1226,7 +1234,7 @@ const BannerTienda01BO: React.FC<any> = () => {
                     </label>
                   </div>
 
-                  {/* Mostrar mensaje en lugar de vista previa */}
+                  {/* Mostrar mensaje y botón rojo si la imagen está cargada */}
                   {(activeView === "desktop" && mainImageHero) ||
                   (activeView === "mobile" && mobileImageHero) ? (
                     <div className="text-center">
@@ -1262,87 +1270,58 @@ const BannerTienda01BO: React.FC<any> = () => {
                       </button>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="mx-auto h-12 w-12 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <p className="mt-2 text-sm text-gray-500">
-                        No hay imagen cargada
-                      </p>
-                      <p className="mt-1 text-xs text-gray-400">
-                        Recomendación:{" "}
-                        {activeView === "desktop"
-                          ? "1920x600 píxeles"
-                          : "1080x600 píxeles"}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Selector de archivo */}
-                  <div className="flex flex-col gap-3">
-                    <label
-                      htmlFor={
-                        activeView === "desktop"
-                          ? "desktop-image-upload"
-                          : "mobile-image-upload"
-                      }
-                      className="flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
-                    >
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-8 h-8 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                          />
-                        </svg>
-                        <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
-                          {(activeView === "desktop" && mainImageHero) ||
-                          (activeView === "mobile" && mobileImageHero)
-                            ? "Cambiar imagen"
-                            : "Seleccionar imagen"}
-                        </p>
-                      </div>
-                      <input
-                        id={
+                    // Mostrar solo el botón de seleccionar imagen si no hay imagen cargada
+                    <div className="flex flex-col gap-3">
+                      <label
+                        htmlFor={
                           activeView === "desktop"
                             ? "desktop-image-upload"
                             : "mobile-image-upload"
                         }
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          if (activeView === "desktop") {
-                            handleMainImageChange(e);
-                          } else {
-                            handleMobileImageChange(e);
+                        className="flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-8 h-8 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                            />
+                          </svg>
+                          <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
+                            Seleccionar imagen
+                          </p>
+                        </div>
+                        <input
+                          id={
+                            activeView === "desktop"
+                              ? "desktop-image-upload"
+                              : "mobile-image-upload"
                           }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="text-sm text-gray-500 text-center">
-                      Haz clic para seleccionar una imagen o arrástrala aquí
-                    </p>
-                  </div>
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (activeView === "desktop") {
+                              handleMainImageChange(e);
+                            } else {
+                              handleMobileImageChange(e);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-sm text-gray-500 text-center">
+                        Haz clic para seleccionar una imagen o arrástrala aquí
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
