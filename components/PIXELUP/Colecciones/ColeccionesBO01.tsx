@@ -319,6 +319,7 @@ function Colecciones() {
       setError(error as Error);
     } finally {
       setLoading(false);
+      
     }
   };
 
@@ -367,6 +368,52 @@ function Colecciones() {
       toast.error(
         "Debes seleccionar al menos un producto para crear la colección."
       );
+      return;
+    }
+
+    // Validar productos variables
+    try {
+      const token = getCookie("AdminTokenAuth");
+      let hasInvalidProducts = false;
+      
+      // Verificar cada producto seleccionado
+      for (const product of selectedProducts) {
+        const productInfo = productos.find(p => p.id === product.value);
+        
+        if (productInfo?.hasVariations) {
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productInfo.id}/skus?statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (response.data.code === 0) {
+            // Filtrar solo las variaciones (excluir el SKU base)
+            const variationSkus = response.data.skus.filter((sku: any) => !sku.isBaseSku);
+
+            if (variationSkus.length === 0) {
+              toast.error(`El producto "${productInfo.name}" no tiene variaciones creadas. Por favor, crea las variaciones antes de continuar.`);
+              hasInvalidProducts = true;
+              break;
+            }
+          } else {
+            console.error("Error al verificar SKUs:", response.data.message);
+            toast.error("Error al verificar las variaciones del producto");
+            return;
+          }
+        }
+      }
+
+      if (hasInvalidProducts) {
+        return;
+      }
+    } catch (error) {
+      console.error("Error al verificar SKUs:", error);
+      toast.error("Error al verificar las variaciones de los productos");
       return;
     }
 
