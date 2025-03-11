@@ -111,6 +111,8 @@ const PostDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+
+    
     const fetchPost = async () => {
       try {
         const response = await fetch(`/api/posts/${id}`);

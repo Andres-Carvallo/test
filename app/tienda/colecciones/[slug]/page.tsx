@@ -96,7 +96,6 @@ export default async function DetalleColeccion({
 
     // Obtener el detalle de la colección
     const { collection } = await getCollectionById(collectionFound.id);
-
     // Filtrar productos activos y obtener precios y stock
     const activeProducts = collection.products.filter(
       (product: any) => product.statusCode === "ACTIVE"

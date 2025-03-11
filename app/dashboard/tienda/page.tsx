@@ -18,13 +18,7 @@ export default function BannerTienda() {
         <h4 className="uppercase font-bold mb-4">Banner Tienda</h4>
         <BannerTienda01BO />
       </div>
-      <div
-        className="shadow-md border-primary mt-6 p-4 bg-white "
-        style={{ borderRadius: "var(--radius)" }}
-      >
-        <h4 className="uppercase font-bold mb-4">Banner Tienda Mobile</h4>
-        <BannerTienda01BOMobile />
-      </div>
+
     </section>
   );
 }

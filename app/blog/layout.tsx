@@ -5,8 +5,8 @@ import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
 import WhatsAppButton from "@/components/Core/WhatsAppButton/WhatsAppButton";
 import { DynamicFooter, DynamicNavbar } from "../components/LayoutComponents";
 export const metadata: Metadata = {
-  title: "Contacto",
-  description: "Contacto",
+  title: "Blog",
+  description: "Blog",
 };
 export default function RootLayout({
   children,

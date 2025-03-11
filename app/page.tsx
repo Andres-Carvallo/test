@@ -20,7 +20,8 @@ import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrinci
 import Banner from "@/components/PIXELUP/Skeleton/Banner";
 import Destacados from "@/components/PIXELUP/Skeleton/Destacados";
 import Parallax from "@/components/PIXELUP/Parallax/Parallax";
-
+import Colecciones02 from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02";
+import WhatsAppButton from "@/components/Core/WhatsAppButton/WhatsAppButton";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -92,16 +93,22 @@ export default async function Page() {
     return (
       <>
         <DynamicNavbar />
-
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
         </Suspense>
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Destacados01 text="Destacados" />
         </Suspense>
+          <Suspense fallback={<Banner />}>
+            <Parallax />
+          </Suspense>
         <Suspense fallback={<Banner />}>
-          <Parallax />
+          <Colecciones02/>
         </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Categoria02 />
+        </Suspense>
+
 {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
@@ -127,20 +134,7 @@ export default async function Page() {
         <DynamicFooter />
 
         {/* <DiscountModal /> */}
-        <a
-          href={process.env.NEXT_PUBLIC_WHATSAPP_LINK || ""}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed right-6 bottom-[30px] z-50 bg-green-500 rounded-full p-3 hover:bg-green-600 transition-colors animate-pulse-whatsapp"
-          style={{ zIndex: 999 }}
-        >
-          <img
-            src="/whatsapp.svg"
-            alt="WhatsApp"
-            className="w-8 h-8 hover:scale-110 transition-transform duration-200"
-            loading="lazy"
-          />
-        </a>
+        <WhatsAppButton />
       </>
     );
   } catch (error) {

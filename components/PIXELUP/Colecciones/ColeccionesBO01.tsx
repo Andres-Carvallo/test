@@ -358,7 +358,7 @@ function Colecciones() {
     (product) =>
       !selectedProducts.some((selected) => selected.value === product.id)
   );
-
+  console.log("Productos disponibles:", availableProducts);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

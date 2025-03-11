@@ -18,6 +18,8 @@ import Hero04BO from "@/components/PIXELUP/Hero/Hero04/Hero04BO";
 import CardsPage from "@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03BO";
 import BannerPrincipal04BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal04/BannerPrincipal04BO";
 import ParallaxBO from "@/components/PIXELUP/Parallax/ParallaxBO";
+import Categoria05BO from "@/components/PIXELUP/Categorias/Categoria05/CategoriaBO05";
+import Colecciones02BO from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02BO";
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -48,6 +50,8 @@ export default function BannerHome() {
       <title>Content block - Home</title>
       {[
         { id: "marqueeTOP", title: "Barra Superior", component: <MarqueeTOP /> },
+        { id: "colecciones02", title: "Colecciones 02", component: <Colecciones02BO /> },
+        { id: "categoria06", title: "Categoria 06", component: <Categoria05BO /> },
          { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
         { id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO /> },
         { id: "bannerPrincipal04", title: "Barra Superior", component: <BannerPrincipal04BO /> },

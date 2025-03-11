@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import BlogBanner from "@/components/PIXELUP/Blog/BlogBanner";
 
 interface Category {
   id: string;
@@ -73,6 +74,10 @@ const PostsList: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handlePostClick = () => {
+    window.scrollTo(0, 0);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -87,7 +92,7 @@ const PostsList: React.FC = () => {
 
   return (
     <div className="w-full">
-      <div className="relative h-[300px] w-full mb-12">
+{/*       <div className="relative h-[300px] w-full mb-12">
         <img
           src="https://picsum.photos/1920/300"
           alt="Blog banner"
@@ -96,23 +101,42 @@ const PostsList: React.FC = () => {
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
           <h1 className="text-5xl font-bold text-white">Nuestro Blog</h1>
         </div>
-      </div>
-
+      </div> */}
+       <div className="relative w-full mb-12">
+    <BlogBanner/></div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="mb-12">
-          <div className="flex justify-center">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full max-w-md px-4 py-3 border text-lg rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Todas las categorías</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-col items-center space-y-4">
+            <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
+              Explorar por categoría
+            </h2>
+            <div className="relative w-full max-w-md">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-3 appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
+                rounded-lg shadow-sm text-lg text-gray-700 dark:text-gray-200 cursor-pointer
+                hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
+                transition-all duration-300"
+              >
+                <option value="">Todas las categorías</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                <svg 
+                  className="w-5 h-5 text-gray-400" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -122,7 +146,7 @@ const PostsList: React.FC = () => {
               key={post.id}
               className="group bg-white dark:bg-gray-800 rounded overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
             >
-              <Link href={`/blog/post/${post.id}`} className="block">
+              <Link href={`/blog/post/${post.id}`} className="block" onClick={handlePostClick}>
                 <div className="relative h-56 overflow-hidden">
                   <img
                     src={post.previewImage.url}
@@ -147,7 +171,8 @@ const PostsList: React.FC = () => {
                 <h2 className="text-2xl font-bold mb-4">
                   <Link
                     href={`/blog/post/${post.id}`}
-                    className="text-gray-900 hover:text-indigo-600 dark:text-white dark:hover:text-indigo-400"
+                    className="text-gray-900 hover:text-[#92400E]"
+                    onClick={handlePostClick}
                   >
                     {post.title}
                   </Link>
@@ -166,11 +191,13 @@ const PostsList: React.FC = () => {
                   </span>
                   <Link
                     href={`/blog/post/${post.id}`}
-                    className="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium"
+                    className="text-[#92400E] hover:text-primary text-sm font-medium"
+                    onClick={handlePostClick}
                   >
                     Leer más →
                   </Link>
                 </div>
+
               </div>
             </div>
           ))}

@@ -49,12 +49,8 @@ export default async function Tienda({
     <RevalidationProvider>
       <title>Tienda</title>
       <div className="w-full">
-        <div className="hidden lg:block w-full">
           <BannerTienda01 />
-        </div>
-        <div className="block lg:hidden w-full">
-          <BannerTienda01Mobile />
-        </div>
+
         <ProductGridShop
           initialProducts={initialData.products}
           initialProductTypes={initialData.productTypes}

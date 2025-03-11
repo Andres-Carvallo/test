@@ -70,6 +70,8 @@ const CreateOrEditPost: React.FC = () => {
   const [tempImage, setTempImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
+  const [selectedPostId, setSelectedPostId] = useState<string>("");
+
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     type: "preview" | "detail"
@@ -220,6 +222,7 @@ const CreateOrEditPost: React.FC = () => {
     setDetailImage(null);
     setEditingPostId(null);
     setSelectedCategories([]);
+    setSelectedPostId("");
   };
 
   const handleEdit = (post: Post) => {
@@ -376,17 +379,17 @@ const CreateOrEditPost: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Panel de Posts Existentes */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+        <div className="bg-white  rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-3xl font-bold text-gray-900  mb-6">
             Administrar Posts
           </h2>
 
           {loading ? (
             <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : error ? (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -396,15 +399,18 @@ const CreateOrEditPost: React.FC = () => {
             <div className="space-y-4">
               <div className="relative">
                 <select
+                  value={selectedPostId}
                   onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedPostId(value);
                     const selectedPost = posts.find(
-                      (post) => post.id === e.target.value
+                      (post) => post.id === value
                     );
                     if (selectedPost) handleEdit(selectedPost);
                   }}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
-                             focus:ring-2 focus:ring-pink-500 focus:border-pink-500
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300  
+                             bg-white  text-gray-900 
+                             focus:ring-2 focus:ring-primary focus:border-primary
                              appearance-none cursor-pointer"
                 >
                   <option value="">Seleccionar un post para editar</option>
@@ -470,8 +476,8 @@ const CreateOrEditPost: React.FC = () => {
         </div>
 
         {/* Formulario de Creación/Edición */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        <div className="bg-white  rounded-lg shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900  mb-6">
             {editingPostId ? "Editar Post" : "Crear Nuevo Post"}
           </h2>
 
@@ -483,14 +489,14 @@ const CreateOrEditPost: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Título - ocupa todo el ancho en móvil, 1/3 en desktop */}
               <div className="lg:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700  mb-2">
                   Título
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-pink-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300  focus:ring-2 focus:ring-pink-500 "
                   placeholder="Ingresa el título del post"
                 />
               </div>
@@ -498,20 +504,20 @@ const CreateOrEditPost: React.FC = () => {
               {/* Categorías */}
               <div className="lg:col-span-3">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-sm font-medium text-gray-700 ">
                     Categorías
                   </label>
                   <button
                     type="button"
                     onClick={() => setIsCategoryModalOpen(true)}
-                    className="px-3 py-1 text-sm bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors"
+                    className="px-3 py-1 text-sm bg-primary text-white rounded-md hover:bg-secondary hover:text-primary transition-colors"
                   >
                     + Nueva Categoría
                   </button>
                 </div>
 
                 {/* Pills de categorías */}
-                <div className="bg-white dark:bg-gray-700 overflow-x-auto">
+                <div className="bg-white  overflow-x-auto">
                   <CategoryPills
                     categories={categories as any}
                     selectedCategories={selectedCategories}
@@ -535,7 +541,7 @@ const CreateOrEditPost: React.FC = () => {
               <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Preview Image */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Imagen de Vista Previa
                   </label>
                   {previewImage ? (
@@ -556,7 +562,7 @@ const CreateOrEditPost: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-pink-500 transition-colors">
+                    <div className="border-2 border-dashed border-gray-300  rounded-lg p-4 text-center hover:border-primary transition-colors">
                       <label className="cursor-pointer block">
                         <div className="space-y-2">
                           <div className="mx-auto h-12 w-12 text-gray-400">
@@ -574,8 +580,8 @@ const CreateOrEditPost: React.FC = () => {
                               />
                             </svg>
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            <span className="text-pink-600 dark:text-pink-400 font-medium">
+                          <div className="text-sm text-gray-600">
+                            <span className="text-primary  font-medium">
                               Haz clic para subir
                             </span>
                           </div>
@@ -596,7 +602,7 @@ const CreateOrEditPost: React.FC = () => {
 
                 {/* Detail Image */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Imagen de Detalle
                   </label>
                   {detailImage ? (
@@ -617,7 +623,7 @@ const CreateOrEditPost: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-pink-500 transition-colors">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary transition-colors">
                       <label className="cursor-pointer block">
                         <div className="space-y-2">
                           <div className="mx-auto h-12 w-12 text-gray-400">
@@ -635,8 +641,8 @@ const CreateOrEditPost: React.FC = () => {
                               />
                             </svg>
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            <span className="text-pink-600 dark:text-pink-400 font-medium">
+                          <div className="text-sm text-gray-600">
+                            <span className="text-primary font-medium">
                               Haz clic para subir
                             </span>
                           </div>
@@ -661,7 +667,7 @@ const CreateOrEditPost: React.FC = () => {
             <div className="mt-6 grid grid-cols-1 gap-12">
               {/* Editor de Vista Previa */}
               <div className="preview-editor">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                <h3 className="text-lg font-medium text-gray-900  mb-4">
                   Vista Previa (máx. 500 caracteres)
                 </h3>
                 <ReactQuill
@@ -691,7 +697,7 @@ const CreateOrEditPost: React.FC = () => {
 
               {/* Editor de Contenido Detallado */}
               <div className="detail-editor">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                <h3 className="text-lg font-medium text-gray-900  mb-4">
                   Contenido Detallado
                 </h3>
                 <ReactQuill
@@ -710,14 +716,14 @@ const CreateOrEditPost: React.FC = () => {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="bg-red-800 hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
                 >
                   Cancelar
                 </button>
               )}
               <button
                 type="submit"
-                className="px-6 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors"
+                className="px-6 py-2 bg-primary text-white rounded-md hover:bg-secondary hover:text-primary transition-colors"
               >
                 {editingPostId ? "Actualizar Post" : "Crear Post"}
               </button>
@@ -740,11 +746,11 @@ const CreateOrEditPost: React.FC = () => {
 
           {/* Modal */}
           <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+            <div className="relative transform overflow-hidden rounded-lg bg-white  px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
               {/* Ícono de advertencia */}
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 ">
                 <svg
-                  className="h-6 w-6 text-red-600 dark:text-red-200"
+                  className="h-6 w-6 text-red-600 "
                   fill="none"
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
@@ -760,11 +766,11 @@ const CreateOrEditPost: React.FC = () => {
 
               {/* Contenido del modal */}
               <div className="mt-3 text-center sm:mt-5">
-                <h3 className="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold leading-6 text-gray-900 ">
                   Confirmar eliminación
                 </h3>
                 <div className="mt-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 ">
                     ¿Estás seguro de que deseas eliminar este post? Esta acción
                     no se puede deshacer.
                   </p>
@@ -775,7 +781,7 @@ const CreateOrEditPost: React.FC = () => {
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                 <button
                   type="button"
-                  className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-2"
+                  className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:col-start-2"
                   onClick={executeDelete}
                 >
                   Eliminar

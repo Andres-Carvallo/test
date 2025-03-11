@@ -2,9 +2,10 @@
 import React from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import ProductCard01 from "../PIXELUP/ProductCards/ProductCards01/ProductCard01";
-import BannerColeccion01BO from "../PIXELUP/BannerColeccion/BannerColeccion01/BannerColeccion01";
+import BannerColeccion01 from "../PIXELUP/BannerColeccion/BannerColeccion01/BannerColeccion01";
 import { Collection } from "@/types/collection";
 import Link from "next/link";
+import { getActiveComponents } from "@/app/config/GlobalConfig";
 
 interface ColeccionesProps {
   collections?: Collection[];
@@ -17,8 +18,9 @@ const Colecciones: React.FC<ColeccionesProps> = ({
   collection,
   collectionProducts,
 }) => {
+  console.log('Datos de collection:', collection);
   const { addToCartHandler } = useAPI();
-
+  const { ProductCard } = getActiveComponents();
   if (!collection && !collections) {
     return <p>No se encontraron datos.</p>;
   }
@@ -33,7 +35,7 @@ const Colecciones: React.FC<ColeccionesProps> = ({
           content={collection.bannerText}
         />
         <div className="z-10">
-          <BannerColeccion01BO
+          <BannerColeccion01
             title={collection.bannerTitle}
             text={collection.bannerText}
             imageUrl={collection.mainImageUrl}
@@ -43,7 +45,7 @@ const Colecciones: React.FC<ColeccionesProps> = ({
           <div className="flex justify-center mx-auto px-4 mt-10 mb-20">
             <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px] max-w-[1100px]">
               {collectionProducts.map((product: any) => (
-                <ProductCard01
+                <ProductCard
                   key={product.id}
                   product={product}
                   addToCartHandler={addToCartHandler}

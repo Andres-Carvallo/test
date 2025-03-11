@@ -18,7 +18,7 @@ interface BannerColeccion01BOProps {
   showTexts?: boolean;
 }
 
-const BannerColeccion01BO: React.FC<BannerColeccion01BOProps> = ({
+const BannerColeccion01: React.FC<BannerColeccion01BOProps> = ({
   title,
   text,
   imageUrl,
@@ -49,4 +49,4 @@ const BannerColeccion01BO: React.FC<BannerColeccion01BOProps> = ({
   );
 };
 
-export default BannerColeccion01BO;
+export default BannerColeccion01;
