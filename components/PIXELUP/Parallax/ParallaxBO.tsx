@@ -16,7 +16,7 @@ import { Switch } from "@/components/Core/Switch";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 
-interface BannerImage {
+interface ParallaxBannerImage {
   id: string;
   title: string;
   landingText: string;
@@ -27,14 +27,13 @@ interface BannerImage {
   mainImage?: any;
 }
 
-interface ButtonTextData {
+interface ParallaxButtonTextData {
   price: string;
   value: string;
   show: boolean;
 }
 
-// Agregar la interfaz DisplayConfig
-interface DisplayConfig {
+interface ParallaxDisplayConfig {
   text: string;
   showText: boolean;
   showPrice: boolean;
@@ -50,21 +49,20 @@ interface DisplayConfig {
   fullBannerLinkUrl: string;
 }
 
-// Modificar la interfaz BannerData
-interface BannerData {
-  images: BannerImage[];
+interface ParallaxBannerData {
+  images: ParallaxBannerImage[];
 }
 
 const ParallaxBO: React.FC = () => {
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [parallaxFileName, setParallaxFileName] = useState<string | null>(null);
 
-  const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
-  const [isAddingImage, setIsAddingImage] = useState<boolean>(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
-  const [bannerData, setBannerData] = useState<BannerImage[]>([]);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [formData, setFormData] = useState<BannerImage>({
+  const [isParallaxMainImageUploaded, setIsParallaxMainImageUploaded] = useState(false);
+  const [isParallaxAddingImage, setIsParallaxAddingImage] = useState<boolean>(false);
+  const parallaxFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isParallaxPreviewImageUploaded, setIsParallaxPreviewImageUploaded] = useState(false);
+  const [parallaxBannerData, setParallaxBannerData] = useState<ParallaxBannerImage[]>([]);
+  const [parallaxCurrentIndex, setParallaxCurrentIndex] = useState<number>(0);
+  const [parallaxFormData, setParallaxFormData] = useState<ParallaxBannerImage>({
     id: "",
     title: "Banner",
     landingText: "",
@@ -80,27 +78,25 @@ const ParallaxBO: React.FC = () => {
       data: "",
     },
   });
-  const [loading, setLoading] = useState<boolean>(true);
-  const [skeletonLoading, setSkeletonLoading] = useState<boolean>(true);
-  const [mainImage, setMainImage] = useState<string | null>(null);
+  const [parallaxLoading, setParallaxLoading] = useState<boolean>(true);
+  const [parallaxSkeletonLoading, setParallaxSkeletonLoading] = useState<boolean>(true);
+  const [parallaxMainImage, setParallaxMainImage] = useState<string | null>(null);
 
-  // States for image cropping
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [parallaxCrop, setParallaxCrop] = useState({ x: 0, y: 0 });
+  const [parallaxZoom, setParallaxZoom] = useState(1);
+  const [parallaxCroppedAreaPixels, setParallaxCroppedAreaPixels] = useState<any>(null);
+  const [isParallaxModalOpen, setIsParallaxModalOpen] = useState(false);
+  const [isParallaxDeleteModalOpen, setIsParallaxDeleteModalOpen] = useState(false);
 
-  const [buttonTextData, setButtonTextData] = useState<ButtonTextData>({
+  const [parallaxButtonTextData, setParallaxButtonTextData] = useState<ParallaxButtonTextData>({
     price: "",
     value: "",
     show: false,
   });
 
-  const [showControlPanel, setShowControlPanel] = useState(true);
+  const [showParallaxControlPanel, setShowParallaxControlPanel] = useState(true);
 
-  // Agregar estado para la configuración de visualización
-  const [displayConfig, setDisplayConfig] = useState<DisplayConfig>({
+  const [parallaxDisplayConfig, setParallaxDisplayConfig] = useState<ParallaxDisplayConfig>({
     text: "",
     showText: false,
     showPrice: false,
@@ -116,16 +112,15 @@ const ParallaxBO: React.FC = () => {
     fullBannerLinkUrl: "",
   });
 
-  // Agregar constantes para valores por defecto
-  const DEFAULT_TITLE = "Banner";
-  const DEFAULT_BUTTON_LINK = "#";
+  const PARALLAX_DEFAULT_TITLE = "Banner";
+  const PARALLAX_DEFAULT_BUTTON_LINK = "#";
 
-  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
-  const [isPreviewVisible, setIsPreviewVisible] = useState(true);
+  const [isParallaxPreviewExpanded, setIsParallaxPreviewExpanded] = useState(false);
+  const [isParallaxPreviewVisible, setIsParallaxPreviewVisible] = useState(true);
 
-  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const [isParallaxAlertModalOpen, setIsParallaxAlertModalOpen] = useState(false);
 
-  const parseButtonTextData = (buttonText: string): ButtonTextData => {
+  const parseParallaxButtonTextData = (buttonText: string): ParallaxButtonTextData => {
     try {
       const parsed = JSON.parse(buttonText);
       // Asegurar que show solo sea true si hay valores y está explícitamente activado
@@ -143,8 +138,8 @@ const ParallaxBO: React.FC = () => {
 
   const fetchParallaxHome = async () => {
     try {
-      setLoading(true);
-      setSkeletonLoading(true);
+      setParallaxLoading(true);
+      setParallaxSkeletonLoading(true);
       const token = getCookie("AdminTokenAuth");
       const parallaxId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
 
@@ -160,34 +155,34 @@ const ParallaxBO: React.FC = () => {
 
       // Asegurar que cada imagen tenga los valores por defecto si están vacíos
       const imagesWithDefaults = response.data.bannerImages.map(
-        (image: BannerImage) => ({
+        (image: ParallaxBannerImage) => ({
           ...image,
-          title: image.title || DEFAULT_TITLE,
-          buttonLink: image.buttonLink || DEFAULT_BUTTON_LINK,
+          title: image.title || PARALLAX_DEFAULT_TITLE,
+          buttonLink: image.buttonLink || PARALLAX_DEFAULT_BUTTON_LINK,
           mainImageLink: image.mainImageLink || "#",
         })
       );
 
-      setBannerData(imagesWithDefaults);
+      setParallaxBannerData(imagesWithDefaults);
       if (imagesWithDefaults.length > 0) {
         const initialImage = imagesWithDefaults[0];
-        const parsedButtonText = parseButtonTextData(initialImage.buttonText);
-        setButtonTextData(parsedButtonText);
-        const parsedLandingText = parseDisplayConfig(initialImage.landingText);
-        setDisplayConfig(parsedLandingText);
-        setFormData({
+        const parsedButtonText = parseParallaxButtonTextData(initialImage.buttonText);
+        setParallaxButtonTextData(parsedButtonText);
+        const parsedLandingText = parseParallaxDisplayConfig(initialImage.landingText);
+        setParallaxDisplayConfig(parsedLandingText);
+        setParallaxFormData({
           ...initialImage,
-          title: initialImage.title || DEFAULT_TITLE,
-          buttonLink: initialImage.buttonLink || DEFAULT_BUTTON_LINK,
+          title: initialImage.title || PARALLAX_DEFAULT_TITLE,
+          buttonLink: initialImage.buttonLink || PARALLAX_DEFAULT_BUTTON_LINK,
           mainImageLink: initialImage.mainImageLink || "#",
         });
-        setMainImage(initialImage.mainImage.url || initialImage.mainImage.data);
+        setParallaxMainImage(initialImage.mainImage.url || initialImage.mainImage.data);
       }
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
     } finally {
-      setLoading(false);
-      setSkeletonLoading(false);
+      setParallaxLoading(false);
+      setParallaxSkeletonLoading(false);
     }
   };
 
@@ -196,39 +191,40 @@ const ParallaxBO: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleParallaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setParallaxFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleParallaxImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFileName(file.name); // Almacena el nombre del archivo
+      setParallaxFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        setMainImage(result);
-        setIsModalOpen(true); // Abre el modal para recortar
+        setParallaxMainImage(result);
+        setIsParallaxModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleCropComplete = useCallback(
+  const handleParallaxCropComplete = useCallback(
     (croppedArea: any, croppedAreaPixels: any) => {
-      setCroppedAreaPixels(croppedAreaPixels);
+      setParallaxCroppedAreaPixels(croppedAreaPixels);
     },
     []
   );
-  const handleCrop = async () => {
-    if (!mainImage) return;
+
+  const handleParallaxCrop = async () => {
+    if (!parallaxMainImage) return;
 
     try {
-      const croppedImage = await getCroppedImg(mainImage, croppedAreaPixels);
+      const croppedImage = await getCroppedImg(parallaxMainImage, parallaxCroppedAreaPixels);
       if (!croppedImage) {
         console.error("Error al recortar la imagen: croppedImage es null");
         return;
@@ -248,20 +244,20 @@ const ParallaxBO: React.FC = () => {
       const base64 = await convertToBase64(compressedFile);
 
       const imageInfo = {
-        name: fileName || "banner-image.jpg",
+        name: parallaxFileName || "banner-image.jpg",
         type: compressedFile.type,
         size: compressedFile.size,
         data: base64,
       };
 
-      setFormData((prevFormData) => ({
+      setParallaxFormData((prevFormData) => ({
         ...prevFormData,
         mainImage: imageInfo,
       }));
 
-      setMainImage(base64);
-      setIsModalOpen(false);
-      setIsMainImageUploaded(true);
+      setParallaxMainImage(base64);
+      setIsParallaxModalOpen(false);
+      setIsParallaxMainImageUploaded(true);
     } catch (error) {
       console.error("Error al recortar/comprimir la imagen:", error);
     }
@@ -276,10 +272,10 @@ const ParallaxBO: React.FC = () => {
     });
   };
 
-  const handleClearImage = () => {
-    setMainImage(null);
-    setIsMainImageUploaded(false);
-    setFormData((prev) => ({
+  const handleParallaxClearImage = () => {
+    setParallaxMainImage(null);
+    setIsParallaxMainImageUploaded(false);
+    setParallaxFormData((prev) => ({
       ...prev,
       mainImage: {
         url: "",
@@ -289,16 +285,16 @@ const ParallaxBO: React.FC = () => {
         data: "",
       },
     }));
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    if (parallaxFileInputRef.current) {
+      parallaxFileInputRef.current.value = "";
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleParallaxSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("handleSubmit llamado");
+    console.log("handleParallaxSubmit llamado");
     try {
-      setLoading(true);
+      setParallaxLoading(true);
       const token = getCookie("AdminTokenAuth");
       if (!token) {
         toast.error("No se encontró el token de autenticación");
@@ -312,46 +308,46 @@ const ParallaxBO: React.FC = () => {
       }
 
       // Asegurarse de que la URL del banner clickeable esté formateada
-      const formattedFullBannerLinkUrl = displayConfig.fullBannerLink
-        ? formatURL(displayConfig.fullBannerLinkUrl)
+      const formattedFullBannerLinkUrl = parallaxDisplayConfig.fullBannerLink
+        ? formatURL(parallaxDisplayConfig.fullBannerLinkUrl)
         : "";
 
       // Preparar los datos base a enviar
       const baseData = {
         title:
-          formData.title === DEFAULT_TITLE || !formData.title
-            ? DEFAULT_TITLE
-            : formData.title,
+          parallaxFormData.title === PARALLAX_DEFAULT_TITLE || !parallaxFormData.title
+            ? PARALLAX_DEFAULT_TITLE
+            : parallaxFormData.title,
         landingText: JSON.stringify({
-          ...displayConfig,
+          ...parallaxDisplayConfig,
           fullBannerLinkUrl: formattedFullBannerLinkUrl,
         }),
         buttonText: JSON.stringify({
-          price: buttonTextData.price || "",
-          value: buttonTextData.value || "",
-          show: buttonTextData.show,
+          price: parallaxButtonTextData.price || "",
+          value: parallaxButtonTextData.value || "",
+          show: parallaxButtonTextData.show,
         }),
         buttonLink:
-          formData.buttonLink === DEFAULT_BUTTON_LINK || !formData.buttonLink
-            ? DEFAULT_BUTTON_LINK
-            : formData.buttonLink,
-        mainImageLink: formData.mainImageLink || "#",
-        orderNumber: formData.orderNumber,
+          parallaxFormData.buttonLink === PARALLAX_DEFAULT_BUTTON_LINK || !parallaxFormData.buttonLink
+            ? PARALLAX_DEFAULT_BUTTON_LINK
+            : parallaxFormData.buttonLink,
+        mainImageLink: parallaxFormData.mainImageLink || "#",
+        orderNumber: parallaxFormData.orderNumber,
       };
 
       // Solo incluir la imagen si ha sido modificada
-      const dataToSend = isMainImageUploaded
-        ? { ...baseData, mainImage: formData.mainImage }
+      const dataToSend = isParallaxMainImageUploaded
+        ? { ...baseData, mainImage: parallaxFormData.mainImage }
         : baseData;
 
       console.log("Datos a enviar:", dataToSend);
 
-      const url = isAddingImage
+      const url = isParallaxAddingImage
         ? `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+        : `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images/${parallaxFormData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
       const response = await axios({
-        method: isAddingImage ? "POST" : "PUT",
+        method: isParallaxAddingImage ? "POST" : "PUT",
         url,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -362,16 +358,16 @@ const ParallaxBO: React.FC = () => {
 
       if (response.status === 200 || response.status === 201) {
         toast.success(
-          isAddingImage
+          isParallaxAddingImage
             ? "Banner creado exitosamente"
             : "Banner actualizado exitosamente"
         );
         await fetchParallaxHome();
-        if (isAddingImage) {
-          setIsAddingImage(false);
+        if (isParallaxAddingImage) {
+          setIsParallaxAddingImage(false);
         }
         // Resetear el estado de la imagen después de un guardado exitoso
-        setIsMainImageUploaded(false);
+        setIsParallaxMainImageUploaded(false);
       } else {
         throw new Error(`Error en la respuesta: ${response.status}`);
       }
@@ -385,30 +381,30 @@ const ParallaxBO: React.FC = () => {
         });
         toast.error(
           error.response?.data?.message ||
-            (isAddingImage
+            (isParallaxAddingImage
               ? "Error al crear el banner. Por favor, intente nuevamente."
               : "Error al actualizar el banner. Por favor, intente nuevamente.")
         );
       } else {
         toast.error(
-          isAddingImage
+          isParallaxAddingImage
             ? "Error al crear el banner. Por favor, intente nuevamente."
             : "Error al actualizar el banner. Por favor, intente nuevamente."
         );
       }
     } finally {
-      setLoading(false);
+      setParallaxLoading(false);
     }
   };
 
-  const handleDeleteImage = async () => {
+  const handleParallaxDeleteImage = async () => {
     try {
-      setLoading(true);
+      setParallaxLoading(true);
       const token = getCookie("AdminTokenAuth");
 
       const parallaxId = `${process.env.NEXT_PUBLIC_PARALLAX_ID}`;
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images/${formData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${parallaxId}/images/${parallaxFormData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -418,7 +414,7 @@ const ParallaxBO: React.FC = () => {
       );
 
       toast.success("Banner eliminado exitosamente");
-      setIsDeleteModalOpen(false);
+      setIsParallaxDeleteModalOpen(false);
       fetchParallaxHome();
     } catch (error) {
       console.error("Error al borrar la imagen del banner:", error);
@@ -426,72 +422,72 @@ const ParallaxBO: React.FC = () => {
         "Error al eliminar el banner. Por favor, intente nuevamente."
       );
     } finally {
-      setLoading(false);
+      setParallaxLoading(false);
     }
   };
 
-  const handleNextImage = async () => {
-    setSkeletonLoading(true);
+  const handleParallaxNextImage = async () => {
+    setParallaxSkeletonLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
-    const nextIndex = (currentIndex + 1) % bannerData.length;
-    const nextImage = bannerData[nextIndex];
+    const nextIndex = (parallaxCurrentIndex + 1) % parallaxBannerData.length;
+    const nextImage = parallaxBannerData[nextIndex];
 
-    const nextConfig = parseDisplayConfig(nextImage.landingText);
-    setDisplayConfig(nextConfig);
+    const nextConfig = parseParallaxDisplayConfig(nextImage.landingText);
+    setParallaxDisplayConfig(nextConfig);
 
     // Parsear y validar el buttonText
-    const parsedButtonText = parseButtonTextData(nextImage.buttonText);
-    setButtonTextData(parsedButtonText);
+    const parsedButtonText = parseParallaxButtonTextData(nextImage.buttonText);
+    setParallaxButtonTextData(parsedButtonText);
 
-    setCurrentIndex(nextIndex);
-    setFormData({
+    setParallaxCurrentIndex(nextIndex);
+    setParallaxFormData({
       ...nextImage,
-      title: nextImage.title || DEFAULT_TITLE,
-      buttonLink: nextImage.buttonLink || DEFAULT_BUTTON_LINK,
+      title: nextImage.title || PARALLAX_DEFAULT_TITLE,
+      buttonLink: nextImage.buttonLink || PARALLAX_DEFAULT_BUTTON_LINK,
       mainImageLink: nextImage.mainImageLink || "#",
     });
-    setMainImage(nextImage.mainImage.url || nextImage.mainImage.data);
-    setIsMainImageUploaded(false);
-    setSkeletonLoading(false);
+    setParallaxMainImage(nextImage.mainImage.url || nextImage.mainImage.data);
+    setIsParallaxMainImageUploaded(false);
+    setParallaxSkeletonLoading(false);
   };
 
-  const handlePrevImage = async () => {
-    setSkeletonLoading(true);
+  const handleParallaxPrevImage = async () => {
+    setParallaxSkeletonLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
     const prevIndex =
-      (currentIndex - 1 + bannerData.length) % bannerData.length;
-    const prevImage = bannerData[prevIndex];
+      (parallaxCurrentIndex - 1 + parallaxBannerData.length) % parallaxBannerData.length;
+    const prevImage = parallaxBannerData[prevIndex];
 
-    const prevConfig = parseDisplayConfig(prevImage.landingText);
-    setDisplayConfig(prevConfig);
+    const prevConfig = parseParallaxDisplayConfig(prevImage.landingText);
+    setParallaxDisplayConfig(prevConfig);
 
     // Parsear y validar el buttonText
-    const parsedButtonText = parseButtonTextData(prevImage.buttonText);
-    setButtonTextData(parsedButtonText);
+    const parsedButtonText = parseParallaxButtonTextData(prevImage.buttonText);
+    setParallaxButtonTextData(parsedButtonText);
 
-    setCurrentIndex(prevIndex);
-    setFormData({
+    setParallaxCurrentIndex(prevIndex);
+    setParallaxFormData({
       ...prevImage,
-      title: prevImage.title || DEFAULT_TITLE,
-      buttonLink: prevImage.buttonLink || DEFAULT_BUTTON_LINK,
+      title: prevImage.title || PARALLAX_DEFAULT_TITLE,
+      buttonLink: prevImage.buttonLink || PARALLAX_DEFAULT_BUTTON_LINK,
       mainImageLink: prevImage.mainImageLink || "#",
     });
-    setMainImage(prevImage.mainImage.url || prevImage.mainImage.data);
-    setIsMainImageUploaded(false);
-    setSkeletonLoading(false);
+    setParallaxMainImage(prevImage.mainImage.url || prevImage.mainImage.data);
+    setIsParallaxMainImageUploaded(false);
+    setParallaxSkeletonLoading(false);
   };
-  const handleAddImageClick = () => {
-    if (isAddingImage) {
+  const handleParallaxAddImageClick = () => {
+    if (isParallaxAddingImage) {
       // Si ya estamos en el estado de agregar, esto cancela la operación
-      setFormData({
-        id: bannerData[currentIndex]?.id || "",
-        title: bannerData[currentIndex]?.title || DEFAULT_TITLE,
-        landingText: bannerData[currentIndex]?.landingText || "",
-        buttonLink: bannerData[currentIndex]?.buttonLink || DEFAULT_BUTTON_LINK,
-        buttonText: bannerData[currentIndex]?.buttonText || "",
-        mainImageLink: bannerData[currentIndex]?.mainImageLink || "#",
-        orderNumber: bannerData[currentIndex]?.orderNumber || 1,
-        mainImage: bannerData[currentIndex]?.mainImage || {
+      setParallaxFormData({
+        id: parallaxBannerData[parallaxCurrentIndex]?.id || "",
+        title: parallaxBannerData[parallaxCurrentIndex]?.title || PARALLAX_DEFAULT_TITLE,
+        landingText: parallaxBannerData[parallaxCurrentIndex]?.landingText || "",
+        buttonLink: parallaxBannerData[parallaxCurrentIndex]?.buttonLink || PARALLAX_DEFAULT_BUTTON_LINK,
+        buttonText: parallaxBannerData[parallaxCurrentIndex]?.buttonText || "",
+        mainImageLink: parallaxBannerData[parallaxCurrentIndex]?.mainImageLink || "#",
+        orderNumber: parallaxBannerData[parallaxCurrentIndex]?.orderNumber || 1,
+        mainImage: parallaxBannerData[parallaxCurrentIndex]?.mainImage || {
           url: "",
           name: "",
           type: "",
@@ -499,13 +495,13 @@ const ParallaxBO: React.FC = () => {
           data: "",
         },
       });
-      setMainImage(
-        bannerData[currentIndex]?.mainImage?.url ||
-          bannerData[currentIndex]?.mainImage?.data ||
+      setParallaxMainImage(
+        parallaxBannerData[parallaxCurrentIndex]?.mainImage?.url ||
+          parallaxBannerData[parallaxCurrentIndex]?.mainImage?.data ||
           null
       );
-      setIsAddingImage(false);
-      setIsMainImageUploaded(false);
+      setIsParallaxAddingImage(false);
+      setIsParallaxMainImageUploaded(false);
     } else {
       // Inicializar con valores por defecto para el nuevo banner
       const initialLandingText = JSON.stringify({
@@ -530,11 +526,11 @@ const ParallaxBO: React.FC = () => {
         show: false,
       });
 
-      setFormData({
+      setParallaxFormData({
         id: "",
-        title: DEFAULT_TITLE,
+        title: PARALLAX_DEFAULT_TITLE,
         landingText: initialLandingText,
-        buttonLink: DEFAULT_BUTTON_LINK,
+        buttonLink: PARALLAX_DEFAULT_BUTTON_LINK,
         buttonText: initialButtonText,
         mainImageLink: "#",
         orderNumber: 1,
@@ -548,7 +544,7 @@ const ParallaxBO: React.FC = () => {
       });
 
       // Establecer la configuración inicial de visualización
-      setDisplayConfig({
+      setParallaxDisplayConfig({
         text: "",
         showText: false,
         showPrice: false,
@@ -565,22 +561,22 @@ const ParallaxBO: React.FC = () => {
       });
 
       // Establecer la configuración inicial del botón
-      setButtonTextData({
+      setParallaxButtonTextData({
         price: "",
         value: "",
         show: false,
       });
 
-      setMainImage(null);
-      setIsAddingImage(true);
-      fileInputRef.current?.click();
-      setIsMainImageUploaded(false);
+      setParallaxMainImage(null);
+      setIsParallaxAddingImage(true);
+      parallaxFileInputRef.current?.click();
+      setIsParallaxMainImageUploaded(false);
     }
   };
 
-  const handleButtonTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleParallaxButtonTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setButtonTextData((prev) => {
+    setParallaxButtonTextData((prev) => {
       const newData = {
         ...prev,
         [name]: value,
@@ -589,7 +585,7 @@ const ParallaxBO: React.FC = () => {
       };
 
       // Actualizar formData.buttonText con el nuevo JSON
-      setFormData((prevForm) => ({
+      setParallaxFormData((prevForm) => ({
         ...prevForm,
         buttonText: JSON.stringify(newData),
       }));
@@ -608,8 +604,8 @@ const ParallaxBO: React.FC = () => {
     </div>
   );
 
-  // Modificar la función parseDisplayConfig
-  const parseDisplayConfig = (landingText: string): DisplayConfig => {
+  // Modificar la función parseParallaxDisplayConfig
+  const parseParallaxDisplayConfig = (landingText: string): ParallaxDisplayConfig => {
     try {
       if (typeof landingText === "string") {
         let parsed = JSON.parse(landingText);
@@ -677,31 +673,31 @@ const ParallaxBO: React.FC = () => {
     }
   };
 
-  // Modificar la función updateDisplayConfig para que solo actualice el estado local
-  const updateDisplayConfig = (updates: Partial<DisplayConfig>) => {
-    const newDisplayConfig = { ...displayConfig, ...updates };
-    setDisplayConfig(newDisplayConfig);
+  // Modificar la función updateParallaxDisplayConfig para que solo actualice el estado local
+  const updateParallaxDisplayConfig = (updates: Partial<ParallaxDisplayConfig>) => {
+    const newParallaxDisplayConfig = { ...parallaxDisplayConfig, ...updates };
+    setParallaxDisplayConfig(newParallaxDisplayConfig);
 
     // Actualizar el formData.landingText con la nueva configuración
-    setFormData((prev) => ({
+    setParallaxFormData((prev) => ({
       ...prev,
-      landingText: JSON.stringify(newDisplayConfig),
+      landingText: JSON.stringify(newParallaxDisplayConfig),
     }));
   };
 
   // Modificar el manejo del checkbox para el título
-  const handleTitleToggle = (checked: boolean) => {
-    setFormData((prev) => ({
+  const handleParallaxTitleToggle = (checked: boolean) => {
+    setParallaxFormData((prev) => ({
       ...prev,
-      title: checked ? "" : DEFAULT_TITLE,
+      title: checked ? "" : PARALLAX_DEFAULT_TITLE,
     }));
   };
 
   // Modificar el manejo del checkbox para el buttonLink
-  const handleButtonLinkToggle = (checked: boolean) => {
-    setFormData((prev) => ({
+  const handleParallaxButtonLinkToggle = (checked: boolean) => {
+    setParallaxFormData((prev) => ({
       ...prev,
-      buttonLink: checked ? "" : DEFAULT_BUTTON_LINK,
+      buttonLink: checked ? "" : PARALLAX_DEFAULT_BUTTON_LINK,
     }));
   };
 
@@ -746,31 +742,31 @@ const ParallaxBO: React.FC = () => {
     return formattedURL;
   };
 
-  const handleFullBannerLinkToggle = (checked: boolean) => {
-    if (checked && (displayConfig.showButton1 || displayConfig.showButton2)) {
-      setIsAlertModalOpen(true);
+  const handleParallaxFullBannerLinkToggle = (checked: boolean) => {
+    if (checked && (parallaxDisplayConfig.showButton1 || parallaxDisplayConfig.showButton2)) {
+      setIsParallaxAlertModalOpen(true);
       return;
     }
-    updateDisplayConfig({ fullBannerLink: checked });
+    updateParallaxDisplayConfig({ fullBannerLink: checked });
   };
 
-  const handleButton1Toggle = (checked: boolean) => {
-    if (checked && displayConfig.fullBannerLink) {
-      setIsAlertModalOpen(true);
+  const handleParallaxButton1Toggle = (checked: boolean) => {
+    if (checked && parallaxDisplayConfig.fullBannerLink) {
+      setIsParallaxAlertModalOpen(true);
       return;
     }
-    updateDisplayConfig({ showButton1: checked });
+    updateParallaxDisplayConfig({ showButton1: checked });
   };
 
-  const handleButton2Toggle = (checked: boolean) => {
-    if (checked && displayConfig.fullBannerLink) {
-      setIsAlertModalOpen(true);
+  const handleParallaxButton2Toggle = (checked: boolean) => {
+    if (checked && parallaxDisplayConfig.fullBannerLink) {
+      setIsParallaxAlertModalOpen(true);
       return;
     }
-    updateDisplayConfig({ showButton2: checked });
+    updateParallaxDisplayConfig({ showButton2: checked });
   };
 
-  if (loading) {
+  if (parallaxLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div role="status">
@@ -803,10 +799,10 @@ const ParallaxBO: React.FC = () => {
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <h3 className="text-lg font-medium text-gray-900">Vista Previa</h3>
           <button
-            onClick={() => setIsPreviewVisible(!isPreviewVisible)}
+            onClick={() => setIsParallaxPreviewVisible(!isParallaxPreviewVisible)}
             className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
           >
-            {isPreviewVisible ? (
+            {isParallaxPreviewVisible ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -835,17 +831,17 @@ const ParallaxBO: React.FC = () => {
             )}
           </button>
         </div>
-        {isPreviewVisible && (
+        {isParallaxPreviewVisible && (
           <div>
             <div className="h-[450px] transition-all duration-300 ease-in-out">
-              {skeletonLoading ? (
+              {parallaxSkeletonLoading ? (
                 <SkeletonLoader />
               ) : (
                 <div className="relative h-[450px] overflow-hidden">
-                  {displayConfig.fullBannerLink &&
-                    displayConfig.fullBannerLinkUrl && (
+                  {parallaxDisplayConfig.fullBannerLink &&
+                    parallaxDisplayConfig.fullBannerLinkUrl && (
                       <Link
-                        href={displayConfig.fullBannerLinkUrl}
+                        href={parallaxDisplayConfig.fullBannerLinkUrl}
                         className="absolute inset-0 z-30 cursor-pointer"
                         target="_blank"
                       />
@@ -853,23 +849,23 @@ const ParallaxBO: React.FC = () => {
                   <div 
                     className="absolute inset-0 bg-cover bg-center bg-fixed bg-no-repeat"
                     style={{ 
-                      backgroundImage: `url(${mainImage || formData.mainImage.url})`,
+                      backgroundImage: `url(${parallaxMainImage || parallaxFormData.mainImage.url})`,
                     }}
                   />
-                  {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
-                    formData.title !== DEFAULT_TITLE ||
-                    displayConfig.text ||
-                    (buttonTextData.show &&
-                      (displayConfig.showPrice || displayConfig.showValue)) ||
-                    displayConfig.showButton1 ||
-                    displayConfig.showButton2) && (
+                  {(parallaxFormData.buttonLink !== PARALLAX_DEFAULT_BUTTON_LINK ||
+                    parallaxFormData.title !== PARALLAX_DEFAULT_TITLE ||
+                    parallaxDisplayConfig.text ||
+                    (parallaxButtonTextData.show &&
+                      (parallaxDisplayConfig.showPrice || parallaxDisplayConfig.showValue)) ||
+                    parallaxDisplayConfig.showButton1 ||
+                    parallaxDisplayConfig.showButton2) && (
                     <div className="absolute inset-0 bg-black/50" />
                   )}
 
                   <div className="relative h-full  mx-auto px-20 md:px-24 ">
                     <div
                       className={`flex flex-col justify-center h-full ${(() => {
-                        switch (displayConfig.contentAlignment) {
+                        switch (parallaxDisplayConfig.contentAlignment) {
                           case "center":
                             return "items-center text-center mx-auto";
                           case "right":
@@ -879,54 +875,54 @@ const ParallaxBO: React.FC = () => {
                         }
                       })()} max-w-2xl`}
                     >
-                      {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
+                      {parallaxFormData.buttonLink !== PARALLAX_DEFAULT_BUTTON_LINK && (
                         <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
-                          {formData.buttonLink}
+                          {parallaxFormData.buttonLink}
                         </span>
                       )}
 
-                      {formData.title !== DEFAULT_TITLE && (
+                      {parallaxFormData.title !== PARALLAX_DEFAULT_TITLE && (
                         <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
-                          {formData.title}
+                          {parallaxFormData.title}
                         </h2>
                       )}
 
-                      {displayConfig.showText && displayConfig.text && (
+                      {parallaxDisplayConfig.showText && parallaxDisplayConfig.text && (
                         <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
-                          {displayConfig.text}
+                          {parallaxDisplayConfig.text}
                         </p>
                       )}
 
                       {/* Mostrar precio y valor según la configuración */}
                       <div className="flex items-center gap-4 mb-8">
-                        {displayConfig.showPrice && buttonTextData.price && (
+                        {parallaxDisplayConfig.showPrice && parallaxButtonTextData.price && (
                           <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                            {buttonTextData.price}
+                            {parallaxButtonTextData.price}
                           </span>
                         )}
-                        {displayConfig.showValue && buttonTextData.value && (
+                        {parallaxDisplayConfig.showValue && parallaxButtonTextData.value && (
                           <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                            {buttonTextData.value}
+                            {parallaxButtonTextData.value}
                           </span>
                         )}
                       </div>
 
                       {/* Mostrar botones según la configuración */}
                       <div className="flex flex-wrap gap-4">
-                        {displayConfig.showButton1 && (
+                        {parallaxDisplayConfig.showButton1 && (
                           <a
-                            href={displayConfig.button1Link}
+                            href={parallaxDisplayConfig.button1Link}
                             className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
                           >
-                            {displayConfig.button1Text}
+                            {parallaxDisplayConfig.button1Text}
                           </a>
                         )}
-                        {displayConfig.showButton2 && (
+                        {parallaxDisplayConfig.showButton2 && (
                           <a
-                            href={displayConfig.button2Link}
+                            href={parallaxDisplayConfig.button2Link}
                             className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
                           >
-                            {displayConfig.button2Text}
+                            {parallaxDisplayConfig.button2Text}
                           </a>
                         )}
                       </div>
@@ -936,12 +932,12 @@ const ParallaxBO: React.FC = () => {
               )}
             </div>
             {/* Controles de Navegación */}
-            {bannerData.length > 1 && !isAddingImage && (
+            {parallaxBannerData.length > 1 && !isParallaxAddingImage && (
               <div className="flex items-center justify-between p-4 border-t border-gray-100">
                 <button
-                  onClick={handlePrevImage}
+                  onClick={handleParallaxPrevImage}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
-                  disabled={loading}
+                  disabled={parallaxLoading}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -958,12 +954,12 @@ const ParallaxBO: React.FC = () => {
                   Banner Anterior
                 </button>
                 <span className="text-sm text-gray-500">
-                  {currentIndex + 1} de {bannerData.length}
+                  {parallaxCurrentIndex + 1} de {parallaxBannerData.length}
                 </span>
                 <button
-                  onClick={handleNextImage}
+                  onClick={handleParallaxNextImage}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
-                  disabled={loading}
+                  disabled={parallaxLoading}
                 >
                   Banner Siguiente
                   <svg
@@ -988,10 +984,10 @@ const ParallaxBO: React.FC = () => {
       {/* Botones de acción principales */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
         <div className="grid grid-cols-1 gap-2">
-          {bannerData.length > 1 && (
+          {parallaxBannerData.length > 1 && (
             <button
               type="button"
-              onClick={() => setIsDeleteModalOpen(true)}
+              onClick={() => setIsParallaxDeleteModalOpen(true)}
               className="py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-medium text-sm"
             >
               Borrar Banner
@@ -1000,11 +996,11 @@ const ParallaxBO: React.FC = () => {
 
           <button
             type="submit"
-            form="bannerForm"
-            disabled={loading}
+            form="parallaxForm"
+            disabled={parallaxLoading}
             className="py-2 px-4 rounded bg-primary hover:bg-secondary text-white font-medium text-sm flex items-center justify-center"
           >
-            {loading && (
+            {parallaxLoading && (
               <svg
                 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                 xmlns="http://www.w3.org/2000/svg"
@@ -1026,9 +1022,9 @@ const ParallaxBO: React.FC = () => {
                 ></path>
               </svg>
             )}
-            {loading
+            {parallaxLoading
               ? "Guardando..."
-              : isAddingImage
+              : isParallaxAddingImage
               ? "Crear Banner"
               : "Actualizar"}
           </button>
@@ -1037,8 +1033,8 @@ const ParallaxBO: React.FC = () => {
 
       {/* Panel de Control */}
       <form
-        id="bannerForm"
-        onSubmit={handleSubmit}
+        id="parallaxForm"
+        onSubmit={handleParallaxSubmit}
         className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 space-y-4"
       >
         {/* Grid de 3 columnas para los controles */}
@@ -1058,10 +1054,10 @@ const ParallaxBO: React.FC = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      updateDisplayConfig({ contentAlignment: "left" })
+                      updateParallaxDisplayConfig({ contentAlignment: "left" })
                     }
                     className={`flex-1 p-2 border rounded-md ${
-                      displayConfig.contentAlignment === "left"
+                      parallaxDisplayConfig.contentAlignment === "left"
                         ? "bg-primary text-white border-primary"
                         : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                     }`}
@@ -1105,10 +1101,10 @@ const ParallaxBO: React.FC = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      updateDisplayConfig({ contentAlignment: "center" })
+                      updateParallaxDisplayConfig({ contentAlignment: "center" })
                     }
                     className={`flex-1 p-2 border rounded-md ${
-                      displayConfig.contentAlignment === "center"
+                      parallaxDisplayConfig.contentAlignment === "center"
                         ? "bg-primary text-white border-primary"
                         : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                     }`}
@@ -1152,10 +1148,10 @@ const ParallaxBO: React.FC = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      updateDisplayConfig({ contentAlignment: "right" })
+                      updateParallaxDisplayConfig({ contentAlignment: "right" })
                     }
                     className={`flex-1 p-2 border rounded-md ${
-                      displayConfig.contentAlignment === "right"
+                      parallaxDisplayConfig.contentAlignment === "right"
                         ? "bg-primary text-white border-primary"
                         : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                     }`}
@@ -1205,8 +1201,8 @@ const ParallaxBO: React.FC = () => {
                   <div className="flex items-center">
                     <span className="text-xs text-gray-500 mr-1">Mostrar</span>
                     <Switch
-                      checked={formData.buttonLink !== DEFAULT_BUTTON_LINK}
-                      onChange={handleButtonLinkToggle}
+                      checked={parallaxFormData.buttonLink !== PARALLAX_DEFAULT_BUTTON_LINK}
+                      onChange={handleParallaxButtonLinkToggle}
                     />
                   </div>
                 </div>
@@ -1214,14 +1210,14 @@ const ParallaxBO: React.FC = () => {
                   type="text"
                   name="buttonLink"
                   value={
-                    formData.buttonLink === DEFAULT_BUTTON_LINK
+                    parallaxFormData.buttonLink === PARALLAX_DEFAULT_BUTTON_LINK
                       ? ""
-                      : formData.buttonLink
+                      : parallaxFormData.buttonLink
                   }
-                  onChange={handleChange}
+                  onChange={handleParallaxChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ingresa el epígrafe"
-                  disabled={formData.buttonLink === DEFAULT_BUTTON_LINK}
+                  disabled={parallaxFormData.buttonLink === PARALLAX_DEFAULT_BUTTON_LINK}
                 />
               </div>
 
@@ -1231,19 +1227,19 @@ const ParallaxBO: React.FC = () => {
                   <div className="flex items-center">
                     <span className="text-xs text-gray-500 mr-1">Mostrar</span>
                     <Switch
-                      checked={formData.title !== DEFAULT_TITLE}
-                      onChange={handleTitleToggle}
+                      checked={parallaxFormData.title !== PARALLAX_DEFAULT_TITLE}
+                      onChange={handleParallaxTitleToggle}
                     />
                   </div>
                 </div>
                 <input
                   type="text"
                   name="title"
-                  value={formData.title === DEFAULT_TITLE ? "" : formData.title}
-                  onChange={handleChange}
+                  value={parallaxFormData.title === PARALLAX_DEFAULT_TITLE ? "" : parallaxFormData.title}
+                  onChange={handleParallaxChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ingresa el título"
-                  disabled={formData.title === DEFAULT_TITLE}
+                  disabled={parallaxFormData.title === PARALLAX_DEFAULT_TITLE}
                 />
               </div>
 
@@ -1253,26 +1249,26 @@ const ParallaxBO: React.FC = () => {
                   <div className="flex items-center">
                     <span className="text-xs text-gray-500 mr-1">Mostrar</span>
                     <Switch
-                      checked={displayConfig.showText}
+                      checked={parallaxDisplayConfig.showText}
                       onChange={(checked) =>
-                        updateDisplayConfig({ showText: checked })
+                        updateParallaxDisplayConfig({ showText: checked })
                       }
                     />
                   </div>
                 </div>
                 <textarea
                   name="landingText"
-                  value={displayConfig.text}
+                  value={parallaxDisplayConfig.text}
                   onChange={(e) => {
                     const newText = e.target.value;
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       text: newText,
                     }));
-                    setFormData((prev) => ({
+                    setParallaxFormData((prev) => ({
                       ...prev,
                       landingText: JSON.stringify({
-                        ...displayConfig,
+                        ...parallaxDisplayConfig,
                         text: newText,
                       }),
                     }));
@@ -1280,7 +1276,7 @@ const ParallaxBO: React.FC = () => {
                   rows={3}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ingresa la descripción"
-                  disabled={!displayConfig.showText}
+                  disabled={!parallaxDisplayConfig.showText}
                 />
               </div> */}
             </div>
@@ -1297,12 +1293,12 @@ const ParallaxBO: React.FC = () => {
               </div>
 
               <div className="text-center">
-                {isMainImageUploaded ? (
+                {isParallaxMainImageUploaded ? (
                   <div className="flex flex-col items-center">
                     <p className="text-sm text-gray-600 mb-2">
                       Tu fotografía{" "}
                       <span className="font-bold">
-                        {fileName || "POST PIXELUP"}
+                        {parallaxFileName || "POST PIXELUP"}
                       </span>{" "}
                       ya ha sido cargada.
                     </p>
@@ -1312,8 +1308,8 @@ const ParallaxBO: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        if (fileInputRef.current) {
-                          fileInputRef.current.click();
+                        if (parallaxFileInputRef.current) {
+                          parallaxFileInputRef.current.click();
                         }
                       }}
                       className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
@@ -1335,7 +1331,7 @@ const ParallaxBO: React.FC = () => {
                   </div>
                 ) : (
                   <div
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => parallaxFileInputRef.current?.click()}
                     className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
                   >
                     <div className="flex flex-col items-center">
@@ -1362,8 +1358,8 @@ const ParallaxBO: React.FC = () => {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
+                  ref={parallaxFileInputRef}
+                  onChange={handleParallaxImageChange}
                 />
               </div>
             </div>
@@ -1380,40 +1376,40 @@ const ParallaxBO: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-700">Caja 1</label>
                   <Switch
-                    checked={displayConfig.showPrice}
+                    checked={parallaxDisplayConfig.showPrice}
                     onChange={(checked) =>
-                      updateDisplayConfig({ showPrice: checked })
+                      updateParallaxDisplayConfig({ showPrice: checked })
                     }
                   />
                 </div>
                 <input
                   type="text"
                   name="price"
-                  value={buttonTextData.price}
-                  onChange={handleButtonTextChange}
+                  value={parallaxButtonTextData.price}
+                  onChange={handleParallaxButtonTextChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ej: Desde $29.990 / Temporada 2024 / etc."
-                  disabled={!displayConfig.showPrice}
+                  disabled={!parallaxDisplayConfig.showPrice}
                 />
               </div>
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-700">Caja 2</label>
                   <Switch
-                    checked={displayConfig.showValue}
+                    checked={parallaxDisplayConfig.showValue}
                     onChange={(checked) =>
-                      updateDisplayConfig({ showValue: checked })
+                      updateParallaxDisplayConfig({ showValue: checked })
                     }
                   />
                 </div>
                 <input
                   type="text"
                   name="value"
-                  value={buttonTextData.value}
-                  onChange={handleButtonTextChange}
+                  value={parallaxButtonTextData.value}
+                  onChange={handleParallaxButtonTextChange}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ej: 60 min / Envío Gratis / etc."
-                  disabled={!displayConfig.showValue}
+                  disabled={!parallaxDisplayConfig.showValue}
                 />
               </div>
             </div> */}
@@ -1427,42 +1423,42 @@ const ParallaxBO: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-700">Botón 1</label>
                   <Switch
-                    checked={displayConfig.showButton1}
-                    onChange={handleButton1Toggle}
+                    checked={parallaxDisplayConfig.showButton1}
+                    onChange={handleParallaxButton1Toggle}
                   />
                 </div>
                 <input
                   type="text"
-                  value={displayConfig.button1Text}
+                  value={parallaxDisplayConfig.button1Text}
                   onChange={(e) => {
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       button1Text: e.target.value,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
                   placeholder="Texto del botón"
-                  disabled={!displayConfig.showButton1}
+                  disabled={!parallaxDisplayConfig.showButton1}
                 />
                 <input
                   type="text"
-                  value={displayConfig.button1Link}
+                  value={parallaxDisplayConfig.button1Link}
                   onChange={(e) => {
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       button1Link: e.target.value,
                     }));
                   }}
                   onBlur={(e) => {
                     const formattedLink = formatURL(e.target.value);
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       button1Link: formattedLink,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Link del botón"
-                  disabled={!displayConfig.showButton1}
+                  disabled={!parallaxDisplayConfig.showButton1}
                 />
               </div>
 
@@ -1470,42 +1466,42 @@ const ParallaxBO: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm text-gray-700">Botón 2</label>
                   <Switch
-                    checked={displayConfig.showButton2}
-                    onChange={handleButton2Toggle}
+                    checked={parallaxDisplayConfig.showButton2}
+                    onChange={handleParallaxButton2Toggle}
                   />
                 </div>
                 <input
                   type="text"
-                  value={displayConfig.button2Text}
+                  value={parallaxDisplayConfig.button2Text}
                   onChange={(e) => {
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       button2Text: e.target.value,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
                   placeholder="Texto del botón"
-                  disabled={!displayConfig.showButton2}
+                  disabled={!parallaxDisplayConfig.showButton2}
                 />
                 <input
                   type="text"
-                  value={displayConfig.button2Link}
+                  value={parallaxDisplayConfig.button2Link}
                   onChange={(e) => {
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       button2Link: e.target.value,
                     }));
                   }}
                   onBlur={(e) => {
                     const formattedLink = formatURL(e.target.value);
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       button2Link: formattedLink,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Link del botón"
-                  disabled={!displayConfig.showButton2}
+                  disabled={!parallaxDisplayConfig.showButton2}
                 />
               </div> */}
 {/* 
@@ -1520,29 +1516,29 @@ const ParallaxBO: React.FC = () => {
                     </p>
                   </div>
                   <Switch
-                    checked={displayConfig.fullBannerLink}
-                    onChange={handleFullBannerLinkToggle}
+                    checked={parallaxDisplayConfig.fullBannerLink}
+                    onChange={handleParallaxFullBannerLinkToggle}
                   />
                 </div>
                 <input
                   type="text"
-                  value={displayConfig.fullBannerLinkUrl}
+                  value={parallaxDisplayConfig.fullBannerLinkUrl}
                   onChange={(e) => {
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       fullBannerLinkUrl: e.target.value,
                     }));
                   }}
                   onBlur={(e) => {
                     const formattedLink = formatURL(e.target.value);
-                    setDisplayConfig((prev) => ({
+                    setParallaxDisplayConfig((prev) => ({
                       ...prev,
                       fullBannerLinkUrl: formattedLink,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Link del banner completo"
-                  disabled={!displayConfig.fullBannerLink}
+                  disabled={!parallaxDisplayConfig.fullBannerLink}
                 />
               </div> */}
             </div>
@@ -1551,7 +1547,7 @@ const ParallaxBO: React.FC = () => {
       </form>
 
       {/* Modal de Recorte */}
-      {isModalOpen && (
+      {isParallaxModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
@@ -1560,8 +1556,8 @@ const ParallaxBO: React.FC = () => {
               </div>
               <button
                 onClick={() => {
-                  setMainImage(null);
-                  setIsModalOpen(false);
+                  setParallaxMainImage(null);
+                  setIsParallaxModalOpen(false);
                 }}
                 className="text-gray-500 hover:text-gray-700 transition-colors"
               >
@@ -1584,13 +1580,13 @@ const ParallaxBO: React.FC = () => {
             <div className="p-6">
               <div className="relative h-96 w-full">
                 <Cropper
-                  image={mainImage || ""}
-                  crop={crop}
-                  zoom={zoom}
+                  image={parallaxMainImage || ""}
+                  crop={parallaxCrop}
+                  zoom={parallaxZoom}
                   aspect={4 / 3}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={handleCropComplete}
+                  onCropChange={setParallaxCrop}
+                  onZoomChange={setParallaxZoom}
+                  onCropComplete={handleParallaxCropComplete}
                 />
               </div>
               <div className="mt-6 space-y-4">
@@ -1600,28 +1596,28 @@ const ParallaxBO: React.FC = () => {
                   </label>
                   <input
                     type="range"
-                    value={zoom}
+                    value={parallaxZoom}
                     min={1}
                     max={3}
                     step={0.01}
                     aria-labelledby="Zoom"
                     onChange={(e) => {
-                      setZoom(parseFloat(e.target.value));
+                      setParallaxZoom(parseFloat(e.target.value));
                     }}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
                 <div className="flex justify-end gap-3">
                   <button
-                    onClick={handleCrop}
+                    onClick={handleParallaxCrop}
                     className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     Recortar y Continuar
                   </button>
                   <button
                     onClick={() => {
-                      setMainImage(null);
-                      setIsModalOpen(false);
+                      setParallaxMainImage(null);
+                      setIsParallaxModalOpen(false);
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
                   >
@@ -1635,10 +1631,10 @@ const ParallaxBO: React.FC = () => {
       )}
 
       {/* Modal de Confirmación de Borrado */}
-      {isDeleteModalOpen && (
+      {isParallaxDeleteModalOpen && (
         <Modal
-          showModal={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
+          showModal={isParallaxDeleteModalOpen}
+          onClose={() => setIsParallaxDeleteModalOpen(false)}
         >
           <div className="p-6">
             <div className="flex items-center mb-4">
@@ -1668,17 +1664,17 @@ const ParallaxBO: React.FC = () => {
               </p>
               <div className="flex justify-end gap-3">
                 <button
-                  onClick={() => setIsDeleteModalOpen(false)}
+                  onClick={() => setIsParallaxDeleteModalOpen(false)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                 >
                   Cancelar
                 </button>
                 <button
-                  onClick={handleDeleteImage}
-                  disabled={loading}
+                  onClick={handleParallaxDeleteImage}
+                  disabled={parallaxLoading}
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
                 >
-                  {loading ? (
+                  {parallaxLoading ? (
                     <>
                       <svg
                         className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
@@ -1713,10 +1709,10 @@ const ParallaxBO: React.FC = () => {
       )}
 
       {/* Modal de Alerta para Banner Clickeable */}
-      {isAlertModalOpen && (
+      {isParallaxAlertModalOpen && (
         <Modal
-          showModal={isAlertModalOpen}
-          onClose={() => setIsAlertModalOpen(false)}
+          showModal={isParallaxAlertModalOpen}
+          onClose={() => setIsParallaxAlertModalOpen(false)}
         >
           <div className="p-6">
             <div className="flex items-center mb-4">
@@ -1745,7 +1741,7 @@ const ParallaxBO: React.FC = () => {
                 botones individuales.
               </p>
               <button
-                onClick={() => setIsAlertModalOpen(false)}
+                onClick={() => setIsParallaxAlertModalOpen(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
               >
                 Entendido
