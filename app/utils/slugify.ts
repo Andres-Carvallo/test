@@ -1,4 +1,6 @@
-export function slugify(text: string) {
+export function slugify(text: string | undefined | null) {
+  if (!text) return '';
+  
   const slug = text
     .toString()
     .toLowerCase()
