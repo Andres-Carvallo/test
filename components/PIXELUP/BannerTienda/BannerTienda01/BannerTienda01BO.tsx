@@ -281,19 +281,19 @@ const BannerTienda01BO: React.FC<any> = () => {
     // Manejar rutas anidadas como "desktop.showTitle"
     if (name.includes(".")) {
       const [section, property] = name.split(".");
-      setConfigOptions({
-        ...configOptions,
+      setConfigOptions((prevConfigOptions) => ({
+        ...prevConfigOptions,
         [section]: {
-          ...configOptions[section as keyof typeof configOptions],
+          ...prevConfigOptions[section as keyof typeof prevConfigOptions],
           [property]: value,
         },
-      });
+      }));
     } else {
       // Para propiedades de nivel superior (si las hay)
-      setConfigOptions({
-        ...configOptions,
+      setConfigOptions((prevConfigOptions) => ({
+        ...prevConfigOptions,
         [name]: value,
-      });
+      }));
     }
   };
 
@@ -680,415 +680,837 @@ const BannerTienda01BO: React.FC<any> = () => {
 
   return (
     <div className="w-full">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-4 p-4 bg-white rounded-lg shadow">
-          <h2 className="text-xl font-bold">Banner Tienda 01</h2>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow">
+          <h2 className="text-2xl font-bold border-b pb-3">Banner Tienda 01</h2>
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-6"
           >
-            {/* Selector de vista (desktop/mobile) */}
-            <div className="flex gap-4 mb-4">
-              <button
-                type="button"
-                className={`px-4 py-2 rounded-md ${
-                  activeView === "desktop"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-                onClick={() => setActiveView("desktop")}
-              >
-                Vista Desktop
-              </button>
-              <button
-                type="button"
-                className={`px-4 py-2 rounded-md ${
-                  activeView === "mobile"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200"
-                }`}
-                onClick={() => setActiveView("mobile")}
-              >
-                Vista Mobile
-              </button>
-            </div>
-
-            {/* Campos para la vista activa */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="title"
-                    className="font-medium"
-                  >
-                    Título
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={
+            {/* Vista previa y selector de vista */}
+            <div className="bg-gray-50 p-5 rounded-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">Vista previa</h3>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    className={`px-5 py-2.5 rounded-md transition-all ${
                       activeView === "desktop"
-                        ? configOptions.desktop.title
-                        : configOptions.mobile.title
-                    }
-                    onChange={(e) => {
-                      if (activeView === "desktop") {
-                        handleConfigChange("desktop.title", e.target.value);
-                        if (formDataHero.title !== e.target.value) {
-                          setFormDataHero({
-                            ...formDataHero,
-                            title: e.target.value,
-                          });
-                        }
-                      } else {
-                        handleConfigChange("mobile.title", e.target.value);
-                      }
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="landingText"
-                    className="font-medium"
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                    onClick={() => setActiveView("desktop")}
                   >
-                    Texto
-                  </label>
-                  <textarea
-                    id="landingText"
-                    name="landingText"
-                    value={
-                      activeView === "desktop"
-                        ? configOptions.desktop.textContent
-                        : configOptions.mobile.textContent
-                    }
-                    onChange={(e) => {
-                      if (activeView === "desktop") {
-                        handleConfigChange(
-                          "desktop.textContent",
-                          e.target.value
-                        );
-                        if (formDataHero.landingText !== e.target.value) {
-                          setFormDataHero({
-                            ...formDataHero,
-                            landingText: e.target.value,
-                          });
-                        }
-                      } else {
-                        handleConfigChange(
-                          "mobile.textContent",
-                          e.target.value
-                        );
-                      }
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md"
-                    rows={4}
-                  />
-                  <p className="text-sm text-gray-500">
-                    {activeView === "desktop"
-                      ? `${configOptions.desktop.textContent.length}/${MAX_CHARACTERS} caracteres`
-                      : `${configOptions.mobile.textContent.length}/${MAX_CHARACTERS} caracteres`}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="buttonText"
-                    className="font-medium"
+                    Vista Desktop
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-5 py-2.5 rounded-md transition-all ${
+                      activeView === "mobile"
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "bg-gray-200 hover:bg-gray-300"
+                    }`}
+                    onClick={() => setActiveView("mobile")}
                   >
-                    Texto del botón
-                  </label>
-                  <input
-                    type="text"
-                    id="buttonText"
-                    name="buttonText"
-                    value={
-                      activeView === "desktop"
-                        ? configOptions.desktop.buttonText
-                        : configOptions.mobile.buttonText
-                    }
-                    onChange={(e) => {
-                      if (activeView === "desktop") {
-                        handleConfigChange(
-                          "desktop.buttonText",
-                          e.target.value
-                        );
-                        if (formDataHero.buttonText !== e.target.value) {
-                          setFormDataHero({
-                            ...formDataHero,
-                            buttonText: e.target.value,
-                          });
-                        }
-                      } else {
-                        handleConfigChange("mobile.buttonText", e.target.value);
-                      }
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="buttonLink"
-                    className="font-medium"
-                  >
-                    Enlace del botón
-                  </label>
-                  <input
-                    type="text"
-                    id="buttonLink"
-                    name="buttonLink"
-                    value={
-                      activeView === "desktop"
-                        ? configOptions.desktop.buttonLink
-                        : configOptions.mobile.buttonLink
-                    }
-                    onChange={(e) => {
-                      if (activeView === "desktop") {
-                        handleConfigChange(
-                          "desktop.buttonLink",
-                          e.target.value
-                        );
-                        if (formDataHero.buttonLink !== e.target.value) {
-                          setFormDataHero({
-                            ...formDataHero,
-                            buttonLink: e.target.value,
-                          });
-                        }
-                      } else {
-                        handleConfigChange("mobile.buttonLink", e.target.value);
-                      }
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">
-                    Opciones de visualización
-                  </label>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="showTitle"
-                        checked={
-                          activeView === "desktop"
-                            ? configOptions.desktop.showTitle
-                            : configOptions.mobile.showTitle
-                        }
-                        onChange={(e) =>
-                          handleConfigChange(
-                            `${activeView}.showTitle`,
-                            e.target.checked
-                          )
-                        }
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="showTitle">Mostrar título</label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="showLandingText"
-                        checked={
-                          activeView === "desktop"
-                            ? configOptions.desktop.showLandingText
-                            : configOptions.mobile.showLandingText
-                        }
-                        onChange={(e) =>
-                          handleConfigChange(
-                            `${activeView}.showLandingText`,
-                            e.target.checked
-                          )
-                        }
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="showLandingText">Mostrar texto</label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="showButton"
-                        checked={
-                          activeView === "desktop"
-                            ? configOptions.desktop.showButton
-                            : configOptions.mobile.showButton
-                        }
-                        onChange={(e) =>
-                          handleConfigChange(
-                            `${activeView}.showButton`,
-                            e.target.checked
-                          )
-                        }
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="showButton">Mostrar botón</label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Alineación del texto</label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={`px-3 py-1 border rounded-md ${
-                        (activeView === "desktop"
-                          ? configOptions.desktop.textAlignment
-                          : configOptions.mobile.textAlignment) === "left"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white"
-                      }`}
-                      onClick={() =>
-                        handleConfigChange(
-                          `${activeView}.textAlignment`,
-                          "left"
-                        )
-                      }
-                    >
-                      Izquierda
-                    </button>
-                    <button
-                      type="button"
-                      className={`px-3 py-1 border rounded-md ${
-                        (activeView === "desktop"
-                          ? configOptions.desktop.textAlignment
-                          : configOptions.mobile.textAlignment) === "center"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white"
-                      }`}
-                      onClick={() =>
-                        handleConfigChange(
-                          `${activeView}.textAlignment`,
-                          "center"
-                        )
-                      }
-                    >
-                      Centro
-                    </button>
-                    <button
-                      type="button"
-                      className={`px-3 py-1 border rounded-md ${
-                        (activeView === "desktop"
-                          ? configOptions.desktop.textAlignment
-                          : configOptions.mobile.textAlignment) === "right"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white"
-                      }`}
-                      onClick={() =>
-                        handleConfigChange(
-                          `${activeView}.textAlignment`,
-                          "right"
-                        )
-                      }
-                    >
-                      Derecha
-                    </button>
-                  </div>
+                    Vista Mobile
+                  </button>
                 </div>
               </div>
-
-              <div className="flex flex-col gap-4">
-                {/* Vista previa */}
-                <div className="flex flex-col gap-2">
-                  <h3 className="font-medium">Vista previa ({activeView})</h3>
-                  <div className="relative w-full h-64 overflow-hidden rounded-md">
-                    <Image
-                      src={
-                        activeView === "desktop"
-                          ? mainImageHero || "/placeholder.png"
-                          : mobileImageHero || "/placeholder.png"
-                      }
-                      alt="Banner preview"
-                      fill
-                      style={{ objectFit: "cover" }}
-                    />
-                    <div className="absolute inset-0 flex flex-col justify-center p-6 bg-black bg-opacity-30">
+              <div
+                className="relative w-full overflow-hidden rounded-lg shadow-lg border border-gray-200"
+                style={{
+                  aspectRatio: activeView === "desktop" ? "16/5" : "9/5",
+                  maxWidth: activeView === "mobile" ? "720px" : "100%",
+                  maxHeight: activeView === "mobile" ? "400px" : "400px",
+                  margin: activeView === "mobile" ? "0 auto" : "0",
+                }}
+              >
+                <Image
+                  src={
+                    activeView === "desktop"
+                      ? mainImageHero || "/placeholder.png"
+                      : mobileImageHero || "/placeholder.png"
+                  }
+                  alt="Banner preview"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                <div className="absolute inset-0 flex flex-col justify-center p-6 bg-black bg-opacity-40 w-full">
+                  <div
+                    className={`w-full text-${
+                      activeView === "desktop"
+                        ? configOptions.desktop.textAlignment
+                        : configOptions.mobile.textAlignment
+                    } max-w-full`}
+                  >
+                    {(activeView === "desktop"
+                      ? configOptions.desktop.showTitle
+                      : configOptions.mobile.showTitle) && (
+                      <h2
+                        className="text-2xl md:text-3xl font-bold text-white mb-3 drop-shadow-lg"
+                        style={shadowTextStyle}
+                      >
+                        {activeView === "desktop"
+                          ? configOptions.desktop.title
+                          : configOptions.mobile.title}
+                      </h2>
+                    )}
+                    {(activeView === "desktop"
+                      ? configOptions.desktop.showLandingText
+                      : configOptions.mobile.showLandingText) && (
+                      <p
+                        className="text-white mb-4 drop-shadow-lg"
+                        style={shadowTextStyle}
+                      >
+                        {activeView === "desktop"
+                          ? configOptions.desktop.textContent
+                          : configOptions.mobile.textContent}
+                      </p>
+                    )}
+                    {(activeView === "desktop"
+                      ? configOptions.desktop.showButton
+                      : configOptions.mobile.showButton) && (
                       <div
-                        className={`w-full text-${
+                        className={`text-${
                           activeView === "desktop"
                             ? configOptions.desktop.textAlignment
                             : configOptions.mobile.textAlignment
                         }`}
                       >
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showTitle
-                          : configOptions.mobile.showTitle) && (
-                          <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-md">
-                            {activeView === "desktop"
-                              ? configOptions.desktop.title
-                              : configOptions.mobile.title}
-                          </h2>
-                        )}
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showLandingText
-                          : configOptions.mobile.showLandingText) && (
-                          <p className="text-white mb-4 drop-shadow-md">
-                            {activeView === "desktop"
-                              ? configOptions.desktop.textContent
-                              : configOptions.mobile.textContent}
-                          </p>
-                        )}
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showButton
-                          : configOptions.mobile.showButton) && (
-                          <div
-                            className={`text-${
-                              activeView === "desktop"
-                                ? configOptions.desktop.textAlignment
-                                : configOptions.mobile.textAlignment
-                            }`}
-                          >
-                            <button className="inline-block px-4 py-2 bg-white text-black rounded-md">
-                              {activeView === "desktop"
-                                ? configOptions.desktop.buttonText
-                                : configOptions.mobile.buttonText}
-                            </button>
-                          </div>
-                        )}
+                        <button className="inline-block px-4 py-2 bg-white text-black rounded-md shadow-md">
+                          {activeView === "desktop"
+                            ? configOptions.desktop.buttonText
+                            : configOptions.mobile.buttonText}
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Carga de imágenes */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">
-                    Imagen {activeView === "desktop" ? "Desktop" : "Mobile"}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        if (activeView === "desktop") {
-                          handleMainImageChange(e);
-                        } else {
-                          handleMobileImageChange(e);
-                        }
-                      }}
-                      className="w-full"
-                    />
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end mt-4">
+            {/* Botones de alineación */}
+            <div className="flex justify-center gap-4 my-4">
+              <button
+                type="button"
+                className={`px-4 py-2 rounded-md transition-all ${
+                  configOptions[activeView].textAlignment === "left"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+                onClick={() =>
+                  handleConfigChange(`${activeView}.textAlignment`, "left")
+                }
+              >
+                Alinear a la izquierda
+              </button>
+              <button
+                type="button"
+                className={`px-4 py-2 rounded-md transition-all ${
+                  configOptions[activeView].textAlignment === "center"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+                onClick={() =>
+                  handleConfigChange(`${activeView}.textAlignment`, "center")
+                }
+              >
+                Centrar
+              </button>
+              <button
+                type="button"
+                className={`px-4 py-2 rounded-md transition-all ${
+                  configOptions[activeView].textAlignment === "right"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+                onClick={() =>
+                  handleConfigChange(`${activeView}.textAlignment`, "right")
+                }
+              >
+                Alinear a la derecha
+              </button>
+            </div>
+
+            {/* Contenido del banner */}
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Contenido del banner */}
+              <div className="flex-1 bg-gray-50 p-5 rounded-lg">
+                <h3 className="text-lg font-medium mb-4">
+                  Contenido del banner
+                </h3>
+                <div className="flex flex-col gap-4">
+                  {/* Título */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="title"
+                        className="font-medium text-gray-700"
+                      >
+                        Título
+                      </label>
+                      <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out">
+                        <input
+                          type="checkbox"
+                          id="showTitle"
+                          checked={
+                            activeView === "desktop"
+                              ? configOptions.desktop.showTitle
+                              : configOptions.mobile.showTitle
+                          }
+                          onChange={(e) =>
+                            handleConfigChange(
+                              `${activeView}.showTitle`,
+                              e.target.checked
+                            )
+                          }
+                          className="opacity-0 w-0 h-0"
+                        />
+                        <span
+                          className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300 ${
+                            (
+                              activeView === "desktop"
+                                ? configOptions.desktop.showTitle
+                                : configOptions.mobile.showTitle
+                            )
+                              ? "bg-blue-600"
+                              : "bg-gray-300"
+                          }`}
+                          onClick={() =>
+                            handleConfigChange(
+                              `${activeView}.showTitle`,
+                              !(activeView === "desktop"
+                                ? configOptions.desktop.showTitle
+                                : configOptions.mobile.showTitle)
+                            )
+                          }
+                        >
+                          <span
+                            className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full transition-all duration-300 ${
+                              (
+                                activeView === "desktop"
+                                  ? configOptions.desktop.showTitle
+                                  : configOptions.mobile.showTitle
+                              )
+                                ? "transform translate-x-6"
+                                : ""
+                            }`}
+                          ></span>
+                        </span>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      id="title"
+                      name="title"
+                      value={
+                        activeView === "desktop"
+                          ? configOptions.desktop.title
+                          : configOptions.mobile.title
+                      }
+                      onChange={(e) => {
+                        if (activeView === "desktop") {
+                          handleConfigChange("desktop.title", e.target.value);
+                          if (formDataHero.title !== e.target.value) {
+                            setFormDataHero({
+                              ...formDataHero,
+                              title: e.target.value,
+                            });
+                          }
+                        } else {
+                          handleConfigChange("mobile.title", e.target.value);
+                        }
+                      }}
+                      className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                        (
+                          activeView === "desktop"
+                            ? !configOptions.desktop.showTitle
+                            : !configOptions.mobile.showTitle
+                        )
+                          ? "opacity-50"
+                          : ""
+                      }`}
+                      placeholder="Ingresa el título del banner"
+                      disabled={
+                        activeView === "desktop"
+                          ? !configOptions.desktop.showTitle
+                          : !configOptions.mobile.showTitle
+                      }
+                    />
+                  </div>
+
+                  {/* Texto descriptivo */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="landingText"
+                        className="font-medium text-gray-700"
+                      >
+                        Texto descriptivo
+                      </label>
+                      <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out">
+                        <input
+                          type="checkbox"
+                          id="showLandingText"
+                          checked={
+                            activeView === "desktop"
+                              ? configOptions.desktop.showLandingText
+                              : configOptions.mobile.showLandingText
+                          }
+                          onChange={(e) =>
+                            handleConfigChange(
+                              `${activeView}.showLandingText`,
+                              e.target.checked
+                            )
+                          }
+                          className="opacity-0 w-0 h-0"
+                        />
+                        <span
+                          className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300 ${
+                            (
+                              activeView === "desktop"
+                                ? configOptions.desktop.showLandingText
+                                : configOptions.mobile.showLandingText
+                            )
+                              ? "bg-blue-600"
+                              : "bg-gray-300"
+                          }`}
+                          onClick={() =>
+                            handleConfigChange(
+                              `${activeView}.showLandingText`,
+                              !(activeView === "desktop"
+                                ? configOptions.desktop.showLandingText
+                                : configOptions.mobile.showLandingText)
+                            )
+                          }
+                        >
+                          <span
+                            className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full transition-all duration-300 ${
+                              (
+                                activeView === "desktop"
+                                  ? configOptions.desktop.showLandingText
+                                  : configOptions.mobile.showLandingText
+                              )
+                                ? "transform translate-x-6"
+                                : ""
+                            }`}
+                          ></span>
+                        </span>
+                      </div>
+                    </div>
+                    <textarea
+                      id="landingText"
+                      name="landingText"
+                      value={
+                        activeView === "desktop"
+                          ? configOptions.desktop.textContent
+                          : configOptions.mobile.textContent
+                      }
+                      onChange={(e) => {
+                        if (activeView === "desktop") {
+                          handleConfigChange(
+                            "desktop.textContent",
+                            e.target.value
+                          );
+                          if (formDataHero.landingText !== e.target.value) {
+                            setFormDataHero({
+                              ...formDataHero,
+                              landingText: e.target.value,
+                            });
+                          }
+                        } else {
+                          handleConfigChange(
+                            "mobile.textContent",
+                            e.target.value
+                          );
+                        }
+                      }}
+                      className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                        (
+                          activeView === "desktop"
+                            ? !configOptions.desktop.showLandingText
+                            : !configOptions.mobile.showLandingText
+                        )
+                          ? "opacity-50"
+                          : ""
+                      }`}
+                      rows={4}
+                      placeholder="Ingresa el texto descriptivo del banner"
+                      disabled={
+                        activeView === "desktop"
+                          ? !configOptions.desktop.showLandingText
+                          : !configOptions.mobile.showLandingText
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        (activeView === "desktop"
+                          ? configOptions.desktop.textContent.length
+                          : configOptions.mobile.textContent.length) >
+                        ALERT_CHARACTERS
+                          ? "text-red-500"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {activeView === "desktop"
+                        ? `${configOptions.desktop.textContent.length}/${MAX_CHARACTERS} caracteres`
+                        : `${configOptions.mobile.textContent.length}/${MAX_CHARACTERS} caracteres`}
+                    </p>
+                  </div>
+
+                  {/* Texto del botón */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="buttonText"
+                        className="font-medium text-gray-700"
+                      >
+                        Texto del botón
+                      </label>
+                      <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out">
+                        <input
+                          type="checkbox"
+                          id="showButton"
+                          checked={
+                            activeView === "desktop"
+                              ? configOptions.desktop.showButton
+                              : configOptions.mobile.showButton
+                          }
+                          onChange={(e) =>
+                            handleConfigChange(
+                              `${activeView}.showButton`,
+                              e.target.checked
+                            )
+                          }
+                          className="opacity-0 w-0 h-0"
+                        />
+                        <span
+                          className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300 ${
+                            (
+                              activeView === "desktop"
+                                ? configOptions.desktop.showButton
+                                : configOptions.mobile.showButton
+                            )
+                              ? "bg-blue-600"
+                              : "bg-gray-300"
+                          }`}
+                          onClick={() =>
+                            handleConfigChange(
+                              `${activeView}.showButton`,
+                              !(activeView === "desktop"
+                                ? configOptions.desktop.showButton
+                                : configOptions.mobile.showButton)
+                            )
+                          }
+                        >
+                          <span
+                            className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full transition-all duration-300 ${
+                              (
+                                activeView === "desktop"
+                                  ? configOptions.desktop.showButton
+                                  : configOptions.mobile.showButton
+                              )
+                                ? "transform translate-x-6"
+                                : ""
+                            }`}
+                          ></span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          id="buttonText"
+                          name="buttonText"
+                          value={
+                            activeView === "desktop"
+                              ? configOptions.desktop.buttonText
+                              : configOptions.mobile.buttonText
+                          }
+                          onChange={(e) => {
+                            if (activeView === "desktop") {
+                              handleConfigChange(
+                                "desktop.buttonText",
+                                e.target.value
+                              );
+                              if (formDataHero.buttonText !== e.target.value) {
+                                setFormDataHero({
+                                  ...formDataHero,
+                                  buttonText: e.target.value,
+                                });
+                              }
+                            } else {
+                              handleConfigChange(
+                                "mobile.buttonText",
+                                e.target.value
+                              );
+                            }
+                          }}
+                          className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                            (
+                              activeView === "desktop"
+                                ? !configOptions.desktop.showButton
+                                : !configOptions.mobile.showButton
+                            )
+                              ? "opacity-50"
+                              : ""
+                          }`}
+                          placeholder="Texto del botón"
+                          disabled={
+                            activeView === "desktop"
+                              ? !configOptions.desktop.showButton
+                              : !configOptions.mobile.showButton
+                          }
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          id="buttonLink"
+                          name="buttonLink"
+                          value={
+                            activeView === "desktop"
+                              ? configOptions.desktop.buttonLink
+                              : configOptions.mobile.buttonLink
+                          }
+                          onChange={(e) => {
+                            if (activeView === "desktop") {
+                              handleConfigChange(
+                                "desktop.buttonLink",
+                                e.target.value
+                              );
+                              if (formDataHero.buttonLink !== e.target.value) {
+                                setFormDataHero({
+                                  ...formDataHero,
+                                  buttonLink: e.target.value,
+                                });
+                              }
+                            } else {
+                              handleConfigChange(
+                                "mobile.buttonLink",
+                                e.target.value
+                              );
+                            }
+                          }}
+                          className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+                            (
+                              activeView === "desktop"
+                                ? !configOptions.desktop.showButton
+                                : !configOptions.mobile.showButton
+                            )
+                              ? "opacity-50"
+                              : ""
+                          }`}
+                          placeholder="Enlace del botón (ej: /productos)"
+                          disabled={
+                            activeView === "desktop"
+                              ? !configOptions.desktop.showButton
+                              : !configOptions.mobile.showButton
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Carga de imágenes */}
+              <div className="flex-1 bg-gray-50 p-5 rounded-lg">
+                <h3 className="text-lg font-medium mb-4">Imagen del banner</h3>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="font-medium text-gray-700">
+                      Imagen para{" "}
+                      {activeView === "desktop" ? "escritorio" : "móvil"}
+                    </label>
+                  </div>
+
+                  {/* Mostrar mensaje en lugar de vista previa */}
+                  {(activeView === "desktop" && mainImageHero) ||
+                  (activeView === "mobile" && mobileImageHero) ? (
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">
+                        Tu fotografía {originalFileName} ya ha sido cargada.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (activeView === "desktop") {
+                            handleClearImage(setMainImageHero);
+                          } else {
+                            handleClearMobileImage();
+                          }
+                        }}
+                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                        Cambiar/Eliminar Imagen
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-white">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p className="mt-2 text-sm text-gray-500">
+                        No hay imagen cargada
+                      </p>
+                      <p className="mt-1 text-xs text-gray-400">
+                        Recomendación:{" "}
+                        {activeView === "desktop"
+                          ? "1920x600 píxeles"
+                          : "1080x600 píxeles"}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Selector de archivo */}
+                  <div className="flex flex-col gap-3">
+                    <label
+                      htmlFor={
+                        activeView === "desktop"
+                          ? "desktop-image-upload"
+                          : "mobile-image-upload"
+                      }
+                      className="flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-8 h-8 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                        <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
+                          {(activeView === "desktop" && mainImageHero) ||
+                          (activeView === "mobile" && mobileImageHero)
+                            ? "Cambiar imagen"
+                            : "Seleccionar imagen"}
+                        </p>
+                      </div>
+                      <input
+                        id={
+                          activeView === "desktop"
+                            ? "desktop-image-upload"
+                            : "mobile-image-upload"
+                        }
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (activeView === "desktop") {
+                            handleMainImageChange(e);
+                          } else {
+                            handleMobileImageChange(e);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-sm text-gray-500 text-center">
+                      Haz clic para seleccionar una imagen o arrástrala aquí
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-6 border-t pt-6">
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-md flex items-center gap-2"
                 disabled={loading}
               >
-                {loading ? "Guardando..." : "Guardar cambios"}
+                {loading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Guardar cambios
+                  </>
+                )}
               </button>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Modal para recortar imagen */}
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Recortar imagen"
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImageHero || ""}
+              crop={crop}
+              zoom={zoom}
+              aspect={activeView === "desktop" ? 16 / 5 : 9 / 5}
+              onCropChange={setCrop}
+              onCropComplete={handleCropComplete}
+              onZoomChange={setZoom}
+            />
+          </div>
+          <div className="mt-4">
+            <label
+              htmlFor="zoom"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Zoom: {zoom.toFixed(1)}x
+            </label>
+            <input
+              type="range"
+              id="zoom"
+              min={1}
+              max={3}
+              step={0.1}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="w-full mt-1"
+            />
+          </div>
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleCrop}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Aplicar recorte
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal para recortar imagen móvil */}
+      {isMobileImageModalOpen && (
+        <Modal
+          showModal={isMobileImageModalOpen}
+          onClose={() => setIsMobileImageModalOpen(false)}
+          title="Recortar imagen móvil"
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mobileImageHero || ""}
+              crop={crop}
+              zoom={zoom}
+              aspect={9 / 5}
+              onCropChange={setCrop}
+              onCropComplete={handleCropComplete}
+              onZoomChange={setZoom}
+            />
+          </div>
+          <div className="mt-4">
+            <label
+              htmlFor="zoom-mobile"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Zoom: {zoom.toFixed(1)}x
+            </label>
+            <input
+              type="range"
+              id="zoom-mobile"
+              min={1}
+              max={3}
+              step={0.1}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="w-full mt-1"
+            />
+          </div>
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setIsMobileImageModalOpen(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleMobileCrop}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Aplicar recorte
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

@@ -1,10 +1,8 @@
 import React from "react";
-import BannerTienda01Mobile from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01Mobile";
-import BannerTienda01 from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01";
 import ProductDetail from "@/components/PIXELUP/ProductDetail/ProductDetail01/ProductDetail01";
 import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
-
+import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
 
@@ -168,12 +166,10 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
 
     return (
       <>
-        <div className="hidden lg:block">
+        <div>
           <BannerTienda01 />
         </div>
-        <div className="block lg:hidden">
-          <BannerTienda01Mobile />
-        </div>
+
         <div className="mx-auto">
           <ProductDetail product={productData} />
         </div>
