@@ -12,6 +12,12 @@ const SHOW_MAIN_MENU_IN_FOOTER = true;
 const SHOW_SOCIAL_IN_NAVBAR = false;
 const SHOW_SOCIAL_IN_FOOTER = true;
 
+// Configuración de colores del menú
+// Usa solo el nombre del color y la intensidad, sin el prefijo "text-" o "hover:"
+// Ejemplos: "red-500", "blue-600", "green-400", etc.
+const MENU_COLOR = "green-500";
+const MENU_ACTIVE_FONT_WEIGHT = "font-bold";
+
 // Interfaces
 export interface MenuLink {
   title: string;
@@ -32,6 +38,8 @@ export interface MenuConfig {
   showInNavbar: boolean;
   showInFooter: boolean;
   links: MenuLink[];
+  menuColor: string;
+  activeFontWeight: string;
 }
 
 export interface SocialConfig {
@@ -49,6 +57,8 @@ export interface LayoutConfig {
 export const mainMenuConfig: MenuConfig = {
   showInNavbar: SHOW_MAIN_MENU_IN_NAVBAR,
   showInFooter: SHOW_MAIN_MENU_IN_FOOTER,
+  menuColor: MENU_COLOR,
+  activeFontWeight: MENU_ACTIVE_FONT_WEIGHT,
   links: [
     {
       title: "Inicio",

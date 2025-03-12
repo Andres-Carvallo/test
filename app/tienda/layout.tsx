@@ -4,7 +4,7 @@ import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import Navbar from "@/components/PIXELUP/Navbar/Navbar02/cdgnavbar";
 import { DynamicNavbar, DynamicFooter } from "../components/LayoutComponents";
 import WhatsAppButton from "@/components/Core/WhatsAppButton/WhatsAppButton";
-
+import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 export default function RootLayout({
   children,
 }: {
@@ -13,7 +13,8 @@ export default function RootLayout({
   return (
     <RevalidationProvider>
       <div>
-      <DynamicNavbar />
+        <MarqueeTOP />
+        <DynamicNavbar />
         {children}
         <WhatsAppButton />
         <DynamicFooter />

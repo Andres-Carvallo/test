@@ -158,7 +158,6 @@ export default function RootLayout({
         />
         <AuthProvider>
           <RevalidationProvider>
-            <MarqueeTOP />
             <NavbarProvider>
               <APIContextProvider SiteId={SiteId}>
                 <Toaster />

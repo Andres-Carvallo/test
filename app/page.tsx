@@ -26,6 +26,7 @@ import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
 import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
 import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
+import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -96,30 +97,31 @@ export default async function Page() {
 
     return (
       <>
+        <MarqueeTOP />
         <DynamicNavbar />
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
         </Suspense>
         <Suspense fallback={<Banner />}>
-          <Hero01/>
+          <Hero01 />
         </Suspense>
         <Suspense fallback={<Banner />}>
-          <Hero02/>
+          <Hero02 />
         </Suspense>
         <Suspense fallback={<Banner />}>
-          <Hero03/>
+          <Hero03 />
         </Suspense>
         <Suspense fallback={<Banner />}>
-          <Hero04/>
+          <Hero04 />
         </Suspense>
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Destacados01 text="Destacados" />
         </Suspense>
-          <Suspense fallback={<Banner />}>
-            <Parallax />
-          </Suspense>
         <Suspense fallback={<Banner />}>
-          <Colecciones02/>
+          <Parallax />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Colecciones02 />
         </Suspense>
         <Suspense fallback={<Banner />}>
           <Categoria02 />
@@ -131,8 +133,7 @@ export default async function Page() {
           <FeedInstagram />
         </Suspense>
 
-
-{/* 
+        {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
         </Suspense>

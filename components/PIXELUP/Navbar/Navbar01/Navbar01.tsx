@@ -11,10 +11,15 @@ import DropdownUser from "@/components/Core/Dropdown/DropdownUser/DropdownUser";
 import DropdownUserMobile from "@/components/Core/Dropdown/DropdownUser/DropdownUserMobile";
 import DropdownAdminMobile from "@/components/Core/Dropdown/DropdownAdmin/DropdownAdminMobile";
 import { mainMenuConfig, layoutConfig } from "@/app/config/menulinks";
+import { slugify } from "@/app/utils/slugify";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+  const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
   const { theme, setTheme } = useTheme();
   const [productosIniciales, setProductosIniciales] = useState([]);
 
@@ -31,6 +36,14 @@ export default function Navbar() {
     ? mainMenuConfig.links.filter((link) => link.isVisible)
     : [];
 
+  // Obtener las configuraciones de colores del menú
+  const menuColor = mainMenuConfig.menuColor || "red-500";
+  const activeFontWeight = mainMenuConfig.activeFontWeight || "font-bold";
+
+  // Clases de color para el menú
+  const activeColorClass = `text-${menuColor}`;
+  const hoverColorClass = `hover:text-${menuColor}`;
+
   const excludedIds = `${process.env.NEXT_PUBLIC_BANNER_NAVBAR}`;
   const filteredCollections = collections
     .filter((collection) => !excludedIds.includes(collection.id))
@@ -41,6 +54,22 @@ export default function Navbar() {
       setPathname(window.location.pathname);
     }
   }, []);
+
+  // Función para verificar si una ruta está activa
+  const isActive = (path: string) => {
+    if (!pathname) return false;
+
+    // Verificar si es la ruta exacta
+    if (pathname === path) return true;
+
+    // Caso especial para la tienda
+    if (path === "/tienda" && pathname.startsWith("/tienda/")) return true;
+
+    // Verificar si es una subruta (para colecciones)
+    if (path !== "/" && pathname.startsWith(path)) return true;
+
+    return false;
+  };
 
   const fetchCollections = async () => {
     try {
@@ -81,12 +110,36 @@ export default function Navbar() {
     fetchCollections();
   }, []);
 
+  // Limpiar el timeout cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeout) {
+        clearTimeout(dropdownTimeout);
+      }
+    };
+  }, [dropdownTimeout]);
+
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
+  };
+
+  const handleDropdownEnter = (index: number) => {
+    if (dropdownTimeout) {
+      clearTimeout(dropdownTimeout);
+      setDropdownTimeout(null);
+    }
+    setActiveDropdown(index);
+  };
+
+  const handleDropdownLeave = () => {
+    const timeout = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 300); // 300ms de retraso antes de cerrar
+    setDropdownTimeout(timeout as NodeJS.Timeout);
   };
 
   return (
@@ -115,9 +168,17 @@ export default function Navbar() {
                   return (
                     <li
                       key={index}
-                      className="group relative"
+                      className="relative"
+                      onMouseEnter={() => handleDropdownEnter(index)}
+                      onMouseLeave={handleDropdownLeave}
                     >
-                      <p className="hover:text-primary cursor-pointer text-base font-medium flex items-center">
+                      <p
+                        className={`cursor-pointer text-base font-medium flex items-center ${hoverColorClass} ${
+                          pathname.includes("/tienda/colecciones")
+                            ? `${activeColorClass} ${activeFontWeight}`
+                            : ""
+                        }`}
+                      >
                         {item.title}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -133,36 +194,57 @@ export default function Navbar() {
                           />
                         </svg>
                       </p>
-                      <ul className="hidden absolute uppercase left-0 w-52 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg group-hover:block">
-                        {filteredCollections.map((collection) => (
-                          <li
-                            key={collection.id}
-                            className="flex w-auto pb-2 border-b pl-2 py-2 uppercase"
-                          >
-                            <span className="self-center">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="size-3"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                                />
-                              </svg>
-                            </span>
-                            <Link
-                              href={`/tienda/colecciones/${collection.id}`}
-                              className="hover:text-primary text-base text-[15px] block "
+                      {/* Área de padding invisible para facilitar la navegación al submenú */}
+                      <div className="absolute h-4 w-full left-0 top-full"></div>
+                      <ul
+                        className={`absolute uppercase left-0 w-64 z-50 bg-white dark:bg-gray-800  dark:border-gray-700 shadow-lg rounded-md py-2 mt-4 transition-all duration-300 ${
+                          activeDropdown === index
+                            ? "opacity-100 visible"
+                            : "opacity-0 invisible"
+                        }`}
+                      >
+                        {filteredCollections.map((collection) => {
+                          const collectionPath = `/tienda/colecciones/${slugify(
+                            collection.title
+                          )}`;
+                          return (
+                            <li
+                              key={collection.id}
+                              className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 ${
+                                pathname === collectionPath
+                                  ? "bg-gray-100 dark:bg-gray-600"
+                                  : ""
+                              }`}
                             >
-                              {collection.title}
-                            </Link>
-                          </li>
-                        ))}
+                              <Link
+                                href={collectionPath}
+                                className={`flex items-center px-4 py-2 text-sm ${hoverColorClass} ${
+                                  pathname === collectionPath
+                                    ? `${activeColorClass} font-medium`
+                                    : ""
+                                }`}
+                              >
+                                <span className="mr-2">
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="size-3"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                    />
+                                  </svg>
+                                </span>
+                                {collection.title}
+                              </Link>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </li>
                   );
@@ -171,11 +253,17 @@ export default function Navbar() {
                 return (
                   <li
                     key={index}
-                    className={pathname === item.path ? "text-primary" : ""}
+                    className={
+                      isActive(item.path)
+                        ? `${activeColorClass} ${activeFontWeight}`
+                        : ""
+                    }
                   >
                     <Link
                       href={item.path}
-                      className="text-base font-medium"
+                      className={`text-base font-medium ${hoverColorClass} ${
+                        isActive(item.path) ? activeColorClass : ""
+                      }`}
                     >
                       {item.title}
                     </Link>
@@ -333,53 +421,54 @@ export default function Navbar() {
                 return (
                   <li
                     key={index}
-                    className={`${pathname === "/" ? "text-primary" : ""}`}
+                    className={`${
+                      pathname.includes("/tienda/colecciones")
+                        ? `${activeColorClass} ${activeFontWeight}`
+                        : ""
+                    }`}
                   >
                     <button
-                      className="relative items-center justify-center hover:text-primary text-base font-medium"
+                      className={`relative flex items-center justify-center ${hoverColorClass} text-base font-medium w-full py-2 ${
+                        pathname.includes("/tienda/colecciones")
+                          ? activeColorClass
+                          : ""
+                      }`}
                       onClick={toggleVisibility}
                     >
                       {item.title}
-                      <div
-                        className="absolute"
-                        style={{ top: "3px", left: "121px" }}
-                      >
+                      <span className="ml-2">
                         {isVisible ? (
-                          <div>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              className="size-4"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                              />
-                            </svg>
-                          </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                            />
+                          </svg>
                         ) : (
-                          <div>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              className="size-4 "
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                              />
-                            </svg>
-                          </div>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                            />
+                          </svg>
                         )}
-                      </div>
+                      </span>
                     </button>
                   </li>
                 );
@@ -388,11 +477,17 @@ export default function Navbar() {
               return (
                 <li
                   key={index}
-                  className={pathname === item.path ? "text-primary" : ""}
+                  className={
+                    isActive(item.path)
+                      ? `${activeColorClass} ${activeFontWeight}`
+                      : ""
+                  }
                 >
                   <Link
                     href={item.path}
-                    className="hover:text-primary text-base font-medium"
+                    className={`${hoverColorClass} text-base font-medium ${
+                      isActive(item.path) ? activeColorClass : ""
+                    }`}
                     onClick={() => setIsOpen(false)}
                   >
                     {item.title.toUpperCase()}
@@ -402,25 +497,50 @@ export default function Navbar() {
             })}
 
             {isVisible && (
-              <div className="border-b border-t pb-2 mt-2">
+              <div className="border-t border-gray-200 dark:border-gray-700 py-3 mt-2 bg-gray-50 dark:bg-gray-700 rounded-md">
                 {collections.length > 0 && (
-                  <ul className="flex flex-col space-y-1 text-center ">
-                    {filteredCollections.map((collection) => (
-                      <li
-                        key={collection.id}
-                        className={`${
-                          pathname === "/tienda" ? "text-primary" : ""
-                        }`}
-                      >
-                        <Link
-                          href={`/tienda/colecciones/${collection.id}`}
-                          className="hover:text-primary text-base font-medium uppercase"
-                          onClick={() => setIsOpen(false)}
+                  <ul className="flex flex-col space-y-2 text-center px-4">
+                    {filteredCollections.map((collection) => {
+                      const collectionPath = `/tienda/colecciones/${collection.id}`;
+                      return (
+                        <li
+                          key={collection.id}
+                          className={`${
+                            pathname === collectionPath
+                              ? `${activeColorClass} ${activeFontWeight}`
+                              : ""
+                          } transition-colors duration-200`}
                         >
-                          {collection.title}
-                        </Link>
-                      </li>
-                    ))}
+                          <Link
+                            href={collectionPath}
+                            className={`flex items-center justify-center ${hoverColorClass} text-base font-medium uppercase py-1 ${
+                              pathname === collectionPath
+                                ? activeColorClass
+                                : ""
+                            }`}
+                            onClick={() => setIsOpen(false)}
+                          >
+                            <span className="mr-2">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-3"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                />
+                              </svg>
+                            </span>
+                            {collection.title}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -430,13 +550,18 @@ export default function Navbar() {
               className={
                 pathname ===
                 "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-                  ? "text-primary"
+                  ? `${activeColorClass} ${activeFontWeight}`
                   : ""
               }
             >
               <Link
                 href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-                className="hover:text-primary text-base font-medium uppercase"
+                className={`${hoverColorClass} text-base font-medium uppercase ${
+                  pathname ===
+                  "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
+                    ? activeColorClass
+                    : ""
+                }`}
               >
                 PROMOCIONES
               </Link>
