@@ -18,7 +18,7 @@ import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import Head from "next/head";
 import { NavbarProvider } from "./Context/NavbarContext";
 import { AuthProvider } from "./Context/AuthContext";
-import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
+import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import GoogleAnalytics from "@/components/Core/Google/Analytics";
 import { useRouter, usePathname } from "next/navigation";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
@@ -77,12 +77,15 @@ export default function RootLayout({
         setSiteStatus(siteResponse.data.site.statusCode);
 
         // Verificar estado de mantenimiento
-        const contentBlockId = process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
+        const contentBlockId =
+          process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
         const maintenanceResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${id}`
         );
-        
-        const maintenanceConfig = JSON.parse(maintenanceResponse.data.contentBlock.contentText);
+
+        const maintenanceConfig = JSON.parse(
+          maintenanceResponse.data.contentBlock.contentText
+        );
         setIsMaintenanceMode(maintenanceConfig.enabled || false);
 
         // Redireccionar según las condiciones
@@ -155,7 +158,7 @@ export default function RootLayout({
         />
         <AuthProvider>
           <RevalidationProvider>
-            {/*  <MarqueeTOP /> */}
+            <MarqueeTOP />
             <NavbarProvider>
               <APIContextProvider SiteId={SiteId}>
                 <Toaster />

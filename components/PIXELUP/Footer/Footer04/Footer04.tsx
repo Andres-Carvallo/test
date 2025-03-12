@@ -17,39 +17,13 @@ export default function Footer() {
 
   // Filtrar los enlaces del menú que son visibles
   const menuItems = mainMenuConfig.showInFooter
-    ? mainMenuConfig.links.filter((link) => link.isVisible && !link.isDropdown)
+    ? mainMenuConfig.links.filter((link) => link.isVisible)
     : [];
-
-  // Encontrar el enlace de colecciones
-  const collectionsLink = mainMenuConfig.links.find(
-    (link) => link.isDropdown && link.dropdownType === "collections"
-  );
 
   // Filtrar los enlaces de redes sociales que son visibles
   const socialItems = socialConfig.showInFooter
     ? socialConfig.links.filter((link) => link.isVisible)
     : [];
-
-  // Calcular el número de columnas activas para ajustar el grid
-  const getActiveColumns = () => {
-    let count = 1; // Siempre tenemos al menos la columna de enlaces
-    if (collections.length > 0 && collectionsLink) count++;
-    if (socialConfig.showInFooter && socialItems.length > 0) count++;
-    return count;
-  };
-
-  // Obtener la clase de grid basada en el número de columnas activas
-  const getGridClass = () => {
-    const columns = getActiveColumns();
-    switch (columns) {
-      case 1:
-        return "md:grid-cols-1";
-      case 2:
-        return "md:grid-cols-2";
-      default:
-        return "md:grid-cols-3";
-    }
-  };
 
   const fetchCollections = async () => {
     try {
@@ -72,28 +46,28 @@ export default function Footer() {
 
   return (
     <footer className="bg-primary flex items-center justify-center w-full">
-      <div className="max-w-7xl w-full mx-auto py-16 px-6 sm:px-8 lg:py-20 lg:px-12">
-        <div className="xl:grid xl:grid-cols-12 xl:gap-12">
-          {/* Logo */}
-          <div className="xl:col-span-3 space-y-8 flex flex-col items-center xl:items-start">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
+        <div className="xl:grid xl:grid-cols-12 xl:gap-8">
+          <div className="xl:col-span-2 space-y-8">
             <img
               alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-              className="h-40 object-cover"
+              className="h-40 object-cover mx-auto"
               src={process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
           </div>
-
-          {/* Enlaces del menú */}
-          <div className="text-center lg:text-left xl:col-span-9 mt-10 md:mt-0 grid grid-cols gap-8 xl:mt-0">
-            <div
-              className={`md:grid ${getGridClass()} md:gap-20 text-secondary`}
-            >
-              {/* Enlaces del menú principal - siempre visible */}
+          <div className="block md:hidden col-span-2 lg:col-span-3 ml-auto md:mt-10 lg:mt-0 mt-8 text-secondary">
+            <div className="max-w-md mx-auto w-full px-4 lg:px-0">
+              <h3 className="text-sm font-bold tracking-wider uppercase justify-center text-center">
+                Suscríbete al newsletter y entérate de novedades y descuentos
+                especiales
+              </h3>
+              <MailchimpForm />
+            </div>
+          </div>
+          <div className="text-center lg:text-left xl:col-span-6 mt-6 md:mt-12 grid grid-cols gap-8 xl:mt-0 mx-12">
+            <div className="md:grid md:grid-cols-3 md:gap-16 text-secondary">
               <div>
-                <h3 className="text-lg font-semibold mb-6 text-secondary">
-                  Enlaces
-                </h3>
-                <ul className="mt-4 space-y-3">
+                <ul className="mt-4 space-y-2">
                   {menuItems.map((item, index) => (
                     <li key={index}>
                       <Link
@@ -107,14 +81,10 @@ export default function Footer() {
                 </ul>
               </div>
 
-              {/* Colecciones - visible solo si hay colecciones */}
-              {collections.length > 0 && collectionsLink && (
+              {collections.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-6 text-secondary">
-                    {collectionsLink.title}
-                  </h3>
-                  <ul className="mt-4 space-y-3">
-                    {collections.slice(0, 3).map((collection) => (
+                  <ul className="mt-4 space-y-2">
+                    {collections.map((collection) => (
                       <li key={collection.id}>
                         <Link
                           href={`/tienda/colecciones/${collection.id}`}
@@ -124,63 +94,60 @@ export default function Footer() {
                         </Link>
                       </li>
                     ))}
-                    {collections.length > 3 && (
-                      <li>
-                        <Link
-                          href="/tienda/colecciones"
-                          className="text-base underline hover:no-underline uppercase "
-                        >
-                          Ver todas
-                        </Link>
-                      </li>
-                    )}
                   </ul>
                 </div>
               )}
-
-              {/* Redes sociales - visible solo si hay redes sociales y showInFooter es true */}
-              {socialConfig.showInFooter && socialItems.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-6 text-secondary">
-                    Síguenos
-                  </h3>
-                  <ul className="mt-4 space-y-4">
-                    {socialItems.map((social, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center"
-                      >
-                        <a
-                          href={social.url}
-                          rel="noreferrer"
-                          target="_blank"
-                          className="text-secondary hover:text-white transition-colors flex items-center"
-                        >
-                          <span className="mr-2">{social.icon}</span>
-                          <span className="text-base hover:underline uppercase">
-                            {social.platform}
-                          </span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <div>
+                <ul className="mt-4 space-y-2">
+                  <li>
+                    <button
+                      className="hover:underline text-base font-medium"
+                      onClick={() => setShowModal(true)}
+                    >
+                      TALLAS
+                    </button>
+                  </li>
+                  <li>
+                    <a
+                      className="text-base hover:underline "
+                      href="/"
+                    >
+                      NOSOTROS
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="text-base hover:underline "
+                      target="_blank"
+                      href={process.env.NEXT_PUBLIC_WHATSAPP_LINK}
+                    >
+                      CONTACTO
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="hidden md:block col-span-2 lg:col-span-3 lg:flex ml-auto md:mt-10 lg:mt-0 mt-8 text-secondary">
+            <div className="max-w-md mx-auto w-full px-4 lg:px-0">
+              <h3 className="text-sm font-bold tracking-wider uppercase justify-center text-center">
+                Suscríbete al newsletter y entérate de novedades y descuentos
+                especiales
+              </h3>
+              <MailchimpForm />
             </div>
           </div>
         </div>
-
-        {/* Pie de página con copyright */}
-        <div className="mt-12 border-t border-gray-100 pt-8">
-          <div className="sm:flex sm:justify-between items-center">
+        {/* Redes sociales y compañia registrada */}
+        <div className="mt-8 border-t border-gray-100 pt-8 md:ml-0 ml-4">
+          <div className="sm:flex sm:justify-between">
             <p className="text-xs text-gray-200">
               &copy; {new Date().getFullYear()}{" "}
               {process.env.NEXT_PUBLIC_NOMBRE_TIENDA} | All rights reserved.
             </p>
 
-            {/* Redes sociales en versión móvil */}
-            {socialConfig.showInFooter && socialItems.length > 0 && (
-              <ul className="col-span-2 flex justify-start gap-6 lg:col-span-5 lg:justify-end md:mt-0 mt-4 xl:hidden">
+            {socialConfig.showInFooter && (
+              <ul className="col-span-2 flex justify-start gap-6 lg:col-span-5 lg:justify-end md:mt-0 mt-4">
                 {socialItems.map((social, index) => (
                   <li key={index}>
                     <a
@@ -199,8 +166,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-
-      {/* Modal de tabla de tallas */}
+      {/* Modal de confirmación */}
       {showModal && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50"
