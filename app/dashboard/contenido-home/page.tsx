@@ -3,10 +3,9 @@ import React, { useEffect, useState, useRef } from "react";
 import Hero01BO from "@/components/PIXELUP/Hero/Hero01/Hero01BO";
 import Hero02BO from "@/components/PIXELUP/Hero/Hero02/Hero02BO";
 import FrasesBO from "@/components/PIXELUP/Frases/BackOffice/FrasesBO";
-import BannerPrincipal02BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02BO";
+import BannerPrincipal02BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import BannerPrincipal01BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01BO";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/BackOffice/MarqueeBO";
-import BannerPrincipal02BOMobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02BOMobile";
 import Categoria02BO from "@/components/PIXELUP/Categorias/Categoria02/CategoriaBO02";
 import FeedInstagramBO from "@/components/PIXELUP/FeedInstagram/FeedInstagramBO";
 import TestimoniosBO from "@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01BO";
@@ -16,15 +15,21 @@ import SinFoto02BO from "@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02BO";
 import Hero03BO from "@/components/PIXELUP/Hero/Hero03/Hero03BO";
 import Hero04BO from "@/components/PIXELUP/Hero/Hero04/Hero04BO";
 import CardsPage from "@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03BO";
-import BannerPrincipal04BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal04/BannerPrincipal04BO";
+import BannerPrincipal04BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02BO";
 import ParallaxBO from "@/components/PIXELUP/Parallax/ParallaxBO";
 import Categoria05BO from "@/components/PIXELUP/Categorias/Categoria05/CategoriaBO05";
 import Colecciones02BO from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02BO";
 import UbicacionBO from "@/components/PIXELUP/Ubicacion/UbicacionBO";
+import Hero05BO from "@/components/PIXELUP/Hero/Hero05/Hero05BO";
+import SinFoto03BO from "@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03BO";
+import Categoria01BO from "@/components/PIXELUP/Categorias/Categoria01/CategoriaBO01";
+import Categoria03BO from "@/components/PIXELUP/Categorias/Categoria03/CategoriaBO03";
+import Categoria04BO from "@/components/PIXELUP/Categorias/Categoria04/CategoriaBO04";
+import Categoria06BO from "@/components/PIXELUP/Categorias/Categoria06/CategoriaBO06";
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-
+  
   const toggleSection = (sectionId: string) => {
     setOpenSections(prev => {
       const newState = {
@@ -52,13 +57,22 @@ export default function BannerHome() {
       {[
         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
         { id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO /> },
-
+        { id: "bannerPrincipal02", title: "Banner Doble", component: <BannerPrincipal02BO /> },
         { id: "hero01", title: "Hero 01", component: <Hero01BO /> },
-        { id: "hero02", title: "Hero 02", component: <Hero02BO /> },
-        { id: "hero03", title: "Hero 03", component: <Hero03BO /> },
-        { id: "hero04", title: "Hero 04", component: <Hero04BO /> },
+        { id: "hero02", title: "About Me", component: <Hero02BO /> },
+        { id: "hero03", title: "Nuestros Servicios", component: <Hero03BO /> },
+        { id: "hero04", title: "Conóceme", component: <Hero04BO /> },
+        { id: "hero05", title: "Propuesta de valor", component: <Hero05BO /> },
+        { id: "sinFoto01", title: "About me sin foto", component: <SinFoto01BO /> },
+        { id: "sinFoto02", title: "Sin Foto 02 ARREGLAR", component: <SinFoto02BO /> },
+        { id: "sinFoto03", title: "4 Cajas", component: <SinFoto03BO /> },
         { id: "colecciones02", title: "Colecciones", component: <Colecciones02BO /> },
-        { id: "categoria02", title: "Categorías", component: <Categoria02BO /> },
+        { id: "categoria01", title: "Categoría 01", component: <Categoria01BO /> },
+        { id: "categoria02", title: "Categorías 02 (3 imagenes)", component: <Categoria02BO /> },
+        { id: "categoria03", title: "Categorías 03 (3 imagenes)", component: <Categoria03BO  /> },
+        { id: "categoria04", title: "Categorías 04 (3 imagenes)", component: <Categoria04BO /> },
+        { id: "categoria05", title: "Categorías 05 (4 imagenes)", component: <Categoria05BO /> },
+        { id: "categoria06", title: "Categorías 06 (4 imagenes)", component: <Categoria06BO /> },	
         { id: "ubicacion", title: "Ubicación", component: <UbicacionBO /> },
         { id: "feedInstagram", title: "Feed Instagram", component: <FeedInstagramBO /> },
 

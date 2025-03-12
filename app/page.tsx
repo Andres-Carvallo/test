@@ -8,7 +8,6 @@ import Frase01 from "@/components/PIXELUP/Frases/Frase01/Frase01";
 import Frase02 from "@/components/PIXELUP/Frases/Frase02/Frase02";
 import BannerPrincipal02 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import Destacados01 from "@/components/PIXELUP/Destacados/Destacado01";
-import BannerPrincipal02Mobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02Mobile";
 import {
   DynamicNavbar,
   DynamicFooter,
@@ -166,14 +165,3 @@ export default async function Page() {
     return <div>Ha ocurrido un error al cargar la página</div>;
   }
 }
-
-const BannerResponsive = () => (
-  <>
-    <div className="block lg:hidden">
-      <BannerPrincipal02Mobile />
-    </div>
-    <div className="hidden lg:block">
-      <BannerPrincipal02 />
-    </div>
-  </>
-);

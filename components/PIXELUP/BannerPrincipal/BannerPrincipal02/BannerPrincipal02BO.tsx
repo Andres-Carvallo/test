@@ -35,10 +35,10 @@ const BannerPrincipal02BO: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [formData, setFormData] = useState<BannerImage>({
     id: "",
-    title: "pixelup.cl",
-    landingText: "pixelup.cl",
+    title: "",
+    landingText: "",
     buttonLink: "",
-    buttonText: "pixelup.cl",
+    buttonText: "",
     mainImageLink: "pixelup.cl",
     orderNumber: 1,
     mainImage: {
@@ -58,6 +58,9 @@ const BannerPrincipal02BO: React.FC = () => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Agregar estado para el banner activo
+  const [activeBanner, setActiveBanner] = useState<"uno" | "dos">("uno");
 
   const fetchBannerHome = async () => {
     try {
@@ -105,34 +108,9 @@ const BannerPrincipal02BO: React.FC = () => {
     fetchBannerHome();
   }, []);
 
-  const formatUrl = (url: string): string => {
-    if (!url) return "";
-
-    try {
-      // Intenta crear un objeto URL para validar
-      new URL(url);
-      return url; // Si es una URL válida, la devuelve tal cual
-    } catch {
-      // Si no es una URL válida, aplicamos el formato
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        return url;
-      }
-      if (url.startsWith("www.")) {
-        return `https://${url}`;
-      }
-      return `https://www.${url}`;
-    }
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    if (name === "buttonLink") {
-      // Guardamos el valor tal cual el usuario lo escribe
-      setFormData({ ...formData, [name]: value });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -170,7 +148,7 @@ const BannerPrincipal02BO: React.FC = () => {
         maxSizeMB: 1,
         maxWidthOrHeight: 1900,
         useWebWorker: true,
-        initialQuality: 1,
+        initialQuality: 0.95,
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -218,15 +196,12 @@ const BannerPrincipal02BO: React.FC = () => {
       const token = getCookie("AdminTokenAuth");
       const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL02_ID}`;
 
-      // Formateamos la URL justo antes de enviar
-      const formattedButtonLink = formatUrl(formData.buttonLink);
-
       const dataToSend = {
-        title: "pixelup.cl",
-        landingText: "pixelup.cl",
-        buttonLink: formattedButtonLink, // Usamos la URL formateada
-        buttonText: "pixelup.cl",
-        mainImageLink: "pixelup.cl",
+        title: formData.title,
+        landingText: formData.landingText,
+        buttonLink: formData.buttonLink,
+        buttonText: formData.buttonText,
+        mainImageLink: "mainImageLink",
         orderNumber: formData.orderNumber,
         ...(isMainImageUploaded && { mainImage: formData.mainImage }),
       };
@@ -315,15 +290,20 @@ const BannerPrincipal02BO: React.FC = () => {
     setSkeletonLoading(false);
   };
   const handleAddImageClick = () => {
+    if (bannerData.length >= 2 && !isAddingImage) {
+      alert("Solo se permiten 2 imágenes en este banner");
+      return;
+    }
+
     if (isAddingImage) {
-      // Si ya estamos en el estado de agregar, esto cancela la operación
+      // Cancelar operación
       setFormData({
         id: bannerData[currentIndex]?.id || "",
         title: bannerData[currentIndex]?.title || "",
         landingText: bannerData[currentIndex]?.landingText || "",
         buttonLink: bannerData[currentIndex]?.buttonLink || "",
         buttonText: bannerData[currentIndex]?.buttonText || "",
-        mainImageLink: bannerData[currentIndex]?.mainImageLink || "",
+        mainImageLink: "",
         orderNumber: bannerData[currentIndex]?.orderNumber || 1,
         mainImage: bannerData[currentIndex]?.mainImage || {
           url: "",
@@ -341,7 +321,7 @@ const BannerPrincipal02BO: React.FC = () => {
       setIsAddingImage(false);
       setIsMainImageUploaded(false);
     } else {
-      // Si no estamos agregando, iniciar el proceso de agregar
+      // Iniciar proceso de agregar
       setFormData({
         id: "",
         title: "",
@@ -349,7 +329,7 @@ const BannerPrincipal02BO: React.FC = () => {
         buttonLink: "",
         buttonText: "",
         mainImageLink: "",
-        orderNumber: 1,
+        orderNumber: bannerData.length + 1,
         mainImage: {
           url: "",
           name: "",
@@ -406,76 +386,101 @@ const BannerPrincipal02BO: React.FC = () => {
       id="banner"
       className="w-full"
     >
-      {skeletonLoading ? (
-        <SkeletonLoader />
-      ) : (
-        <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-0 before:z-10">
-          <img
-            src={mainImage || formData.mainImage.url}
-            alt="Banner Image"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-
-          <div className="min-h-[300px] relative z-20 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
-            {/*             <h2 className="text-2xl font-semibold mb-2">{formData.title}</h2>
-            <p className="text-md text-center text-gray-200">
-              {formData.landingText}
-            </p> */}
-            {/* <a
-            href={formData.buttonLink}
-            className="mt-8 bg-dark bg-primary text-secondary hover:text-primary text-base font-semibold py-2.5 px-6 rounded hover:bg-secondary"
-          >
-            {formData.buttonText}
-          </a> */}
-          </div>
-        </div>
-      )}
-      <div className="flex justify-center mt-4">
-        {bannerData.map((_, index) => (
-          <span
-            key={index}
-            className={`h-2 w-2 mx-1 rounded-full ${
-              index === currentIndex ? "bg-dark" : "bg-gray-400"
-            }`}
-          />
-        ))}
+      {/* Selector de Banner */}
+      <div className="flex gap-4 mb-8">
+        <button
+          onClick={() => {
+            setActiveBanner("uno");
+            if (bannerData.length > 0) {
+              setCurrentIndex(0);
+              setFormData(bannerData[0]);
+              setMainImage(
+                bannerData[0].mainImage.url || bannerData[0].mainImage.data
+              );
+              setIsMainImageUploaded(false);
+            }
+          }}
+          className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+            activeBanner === "uno"
+              ? "bg-primary text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Imagen Uno
+        </button>
+        <button
+          onClick={() => {
+            setActiveBanner("dos");
+            if (bannerData.length > 1) {
+              setCurrentIndex(1);
+              setFormData(bannerData[1]);
+              setMainImage(
+                bannerData[1].mainImage.url || bannerData[1].mainImage.data
+              );
+              setIsMainImageUploaded(false);
+            }
+          }}
+          className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+            activeBanner === "dos"
+              ? "bg-primary text-white"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          Imagen Dos
+        </button>
       </div>
-      <div className="flex justify-center gap-4 items-center mt-4">
-        {bannerData.length > 1 && (
-          <>
-            <button
-              onClick={handlePrevImage}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Anterior
-            </button>
-            <button
-              onClick={handleNextImage}
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Siguiente
-            </button>
-          </>
+
+      {/* Eliminar la grid de imágenes y reemplazar con una vista previa de la imagen actual */}
+      <div className="mb-6">
+        {bannerData[currentIndex] && (
+          <div className="w-1/2 mx-auto">
+            <div className="relative h-[600px] overflow-hidden group">
+              <img
+                src={
+                  bannerData[currentIndex].mainImage.url ||
+                  bannerData[currentIndex].mainImage.data
+                }
+                alt={bannerData[currentIndex].title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
+                <span className="text-sm uppercase tracking-wider mb-2">
+                  {bannerData[currentIndex].title}
+                </span>
+                <h2 className="text-4xl font-bold mb-4">
+                  {bannerData[currentIndex].landingText}
+                </h2>
+                <button className="bg-white text-black px-8 py-3 uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-colors duration-300">
+                  {bannerData[currentIndex].buttonText}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
-      <div className="flex justify-between mt-6">
+
+      <div className="flex justify-between mb-6">
         <button
           type="button"
           onClick={handleAddImageClick}
-          className={`shadow w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap ${
+          className={`shadow w-full uppercase text-white font-bold py-2 px-4 rounded ${
             isAddingImage
               ? "bg-red-600 hover:bg-red-700"
+              : bannerData.length >= 2
+              ? "bg-gray-400 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700"
           }`}
+          disabled={bannerData.length >= 2 && !isAddingImage}
         >
           {isAddingImage ? "Cancelar" : "Agregar Banner"}
         </button>
 
-        {bannerData.length > 1 && (
+        {bannerData.length > 0 && !isAddingImage && (
           <button
             type="button"
             onClick={handleDeleteImage}
-            className="shadow bg-red-600 hover:bg-red-700 w-full uppercase text-white font-bold py-2 px-4 rounded flex-wrap ml-4"
+            className="shadow bg-red-600 hover:bg-red-700 w-full uppercase text-white font-bold py-2 px-4 rounded ml-4"
           >
             Borrar Imagen
           </button>
@@ -486,7 +491,7 @@ const BannerPrincipal02BO: React.FC = () => {
         onSubmit={handleSubmit}
         className="px-4 mx-auto mt-8"
       >
-        {/*         <h3 className="font-normal text-primary">
+        <h3 className="font-normal text-primary">
           Título <span className="text-primary">*</span>
         </h3>
         <input
@@ -496,8 +501,8 @@ const BannerPrincipal02BO: React.FC = () => {
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Title"
-        /> */}
-        {/*         <h3 className="font-normal text-primary">
+        />
+        <h3 className="font-normal text-primary">
           Texto <span className="text-primary">*</span>
         </h3>
         <input
@@ -507,7 +512,29 @@ const BannerPrincipal02BO: React.FC = () => {
           onChange={handleChange}
           className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Landing Text"
-        /> */}
+        />
+        <h3 className="font-normal text-primary">
+          Texto Botón <span className="text-primary">*</span>
+        </h3>
+        <input
+          type="text"
+          name="buttonText"
+          value={formData.buttonText}
+          onChange={handleChange}
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
+          placeholder="Landing Text"
+        />
+        <h3 className="font-normal text-primary">
+          Link Botón <span className="text-primary">*</span>
+        </h3>
+        <input
+          type="text"
+          name="buttonLink"
+          value={formData.buttonLink}
+          onChange={handleChange}
+          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
+          placeholder="Link Botón"
+        />
         {/*         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
           <div>
             <h3 className="font-normal text-primary">
@@ -521,21 +548,21 @@ const BannerPrincipal02BO: React.FC = () => {
               className="shadow block w-full px-4 py-3 mb-4 mt-2 border border-gray-300 rounded-md"
               placeholder="Button Text"
             />
-          </div>*/}
-        <div>
-          <h3 className="font-normal text-primary">
-            Link de destino <span className="text-primary">*</span>
-          </h3>
-          <input
-            type="text"
-            name="buttonLink"
-            value={formData.buttonLink}
-            onChange={handleChange}
-            className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-            placeholder="Ejemplo: pixelup.cl o https://www.pixelup.cl/"
-          />
-        </div>
-
+          </div>
+          <div>
+            <h3 className="font-normal text-primary">
+              Link de destino <span className="text-primary">*</span>
+            </h3>
+            <input
+              type="text"
+              name="buttonLink"
+              value={formData.buttonLink}
+              onChange={handleChange}
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
+              placeholder="Button Link"
+            />
+          </div>
+        </div> */}
         <div>
           <input
             type="file"
@@ -648,12 +675,11 @@ const BannerPrincipal02BO: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
         >
           <div className="relative h-96 w-full">
-            <p>modal</p>
             <Cropper
               image={mainImage || ""} // Asegurar que se pasa una cadena no nula
               crop={crop}
               zoom={zoom}
-              aspect={1920 / 400}
+              aspect={16 / 9}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}

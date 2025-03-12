@@ -16,7 +16,6 @@ export const revalidate = 60; // Revalida cada 60 segundos
 export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
 
 
-
 export default async function categorias() {
     return (
       <>
