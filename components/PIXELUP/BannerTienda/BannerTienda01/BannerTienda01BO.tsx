@@ -101,8 +101,9 @@ const BannerTienda01BO: React.FC<any> = () => {
 
   const [originalFileName, setOriginalFileName] = useState<string>("");
 
-  const MAX_CHARACTERS = 200;
-  const ALERT_CHARACTERS = 199;
+  const MAX_CHARACTERS = 150;
+  const ALERT_CHARACTERS = 150;
+  const MAX_TITLE_CHARACTERS = 45;
 
   // Agregar nuevos estados para la imagen móvil
   const [previewImageHero, setPreviewImageHero] = useState<string | null>(null);
@@ -727,55 +728,71 @@ const BannerTienda01BO: React.FC<any> = () => {
                   fill
                   style={{ objectFit: "cover" }}
                 />
-                <div className="absolute inset-0 flex flex-col justify-center p-6 bg-black bg-opacity-40 w-full">
-                  <div
-                    className={`w-full text-${
-                      activeView === "desktop"
-                        ? configOptions.desktop.textAlignment
-                        : configOptions.mobile.textAlignment
-                    } max-w-full`}
-                  >
-                    {(activeView === "desktop"
-                      ? configOptions.desktop.showTitle
-                      : configOptions.mobile.showTitle) && (
-                      <h2
-                        className="text-2xl md:text-3xl font-bold text-white mb-3 drop-shadow-lg"
-                        style={shadowTextStyle}
-                      >
-                        {activeView === "desktop"
-                          ? configOptions.desktop.title
-                          : configOptions.mobile.title}
-                      </h2>
-                    )}
-                    {(activeView === "desktop"
-                      ? configOptions.desktop.showLandingText
-                      : configOptions.mobile.showLandingText) && (
-                      <p
-                        className="text-white mb-4 drop-shadow-lg"
-                        style={shadowTextStyle}
-                      >
-                        {activeView === "desktop"
-                          ? configOptions.desktop.textContent
-                          : configOptions.mobile.textContent}
-                      </p>
-                    )}
-                    {(activeView === "desktop"
-                      ? configOptions.desktop.showButton
-                      : configOptions.mobile.showButton) && (
-                      <div
-                        className={`text-${
-                          activeView === "desktop"
-                            ? configOptions.desktop.textAlignment
-                            : configOptions.mobile.textAlignment
-                        }`}
-                      >
-                        <button className="inline-block px-4 py-2 bg-white text-black rounded-md shadow-md">
+                <div className="absolute inset-0 flex flex-col justify-center px-6 py-6 bg-black bg-opacity-40 w-full">
+                  <div className="w-full max-w-[95%] mx-auto px-4">
+                    <div
+                      className={`${
+                        activeView === "desktop"
+                          ? configOptions.desktop.textAlignment === "center"
+                            ? "text-center mx-auto max-w-3xl"
+                            : configOptions.desktop.textAlignment === "right"
+                            ? "text-right ml-auto max-w-2xl"
+                            : "text-left max-w-2xl"
+                          : configOptions.mobile.textAlignment === "center"
+                          ? "text-center mx-auto"
+                          : configOptions.mobile.textAlignment === "right"
+                          ? "text-right ml-auto max-w-xs"
+                          : "text-left max-w-xs"
+                      }`}
+                    >
+                      {(activeView === "desktop"
+                        ? configOptions.desktop.showTitle
+                        : configOptions.mobile.showTitle) && (
+                        <h2
+                          className={`${
+                            activeView === "desktop"
+                              ? "text-3xl md:text-4xl"
+                              : "text-2xl md:text-3xl"
+                          } font-bold text-white mb-3 drop-shadow-lg`}
+                          style={shadowTextStyle}
+                        >
                           {activeView === "desktop"
-                            ? configOptions.desktop.buttonText
-                            : configOptions.mobile.buttonText}
-                        </button>
-                      </div>
-                    )}
+                            ? configOptions.desktop.title
+                            : configOptions.mobile.title}
+                        </h2>
+                      )}
+                      {(activeView === "desktop"
+                        ? configOptions.desktop.showLandingText
+                        : configOptions.mobile.showLandingText) && (
+                        <p
+                          className={`${
+                            activeView === "desktop" ? "text-lg" : "text-base"
+                          } text-white mb-4 drop-shadow-lg`}
+                          style={shadowTextStyle}
+                        >
+                          {activeView === "desktop"
+                            ? configOptions.desktop.textContent
+                            : configOptions.mobile.textContent}
+                        </p>
+                      )}
+                      {(activeView === "desktop"
+                        ? configOptions.desktop.showButton
+                        : configOptions.mobile.showButton) && (
+                        <div>
+                          <button
+                            className={`inline-block px-${
+                              activeView === "desktop" ? "6" : "5"
+                            } py-${
+                              activeView === "desktop" ? "3" : "2.5"
+                            } bg-white text-black rounded-md shadow-md font-medium`}
+                          >
+                            {activeView === "desktop"
+                              ? configOptions.desktop.buttonText
+                              : configOptions.mobile.buttonText}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1056,16 +1073,19 @@ const BannerTienda01BO: React.FC<any> = () => {
                           : configOptions.mobile.title
                       }
                       onChange={(e) => {
-                        if (activeView === "desktop") {
-                          handleConfigChange("desktop.title", e.target.value);
-                          if (formDataHero.title !== e.target.value) {
-                            setFormDataHero({
-                              ...formDataHero,
-                              title: e.target.value,
-                            });
+                        const value = e.target.value;
+                        if (value.length <= MAX_TITLE_CHARACTERS) {
+                          if (activeView === "desktop") {
+                            handleConfigChange("desktop.title", value);
+                            if (formDataHero.title !== value) {
+                              setFormDataHero({
+                                ...formDataHero,
+                                title: value,
+                              });
+                            }
+                          } else {
+                            handleConfigChange("mobile.title", value);
                           }
-                        } else {
-                          handleConfigChange("mobile.title", e.target.value);
                         }
                       }}
                       className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
@@ -1083,7 +1103,22 @@ const BannerTienda01BO: React.FC<any> = () => {
                           ? !configOptions.desktop.showTitle
                           : !configOptions.mobile.showTitle
                       }
+                      maxLength={MAX_TITLE_CHARACTERS}
                     />
+                    <p
+                      className={`text-sm ${
+                        (activeView === "desktop"
+                          ? configOptions.desktop.title.length
+                          : configOptions.mobile.title.length) >
+                        MAX_TITLE_CHARACTERS
+                          ? "text-red-500"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {activeView === "desktop"
+                        ? `${configOptions.desktop.title.length}/${MAX_TITLE_CHARACTERS} caracteres`
+                        : `${configOptions.mobile.title.length}/${MAX_TITLE_CHARACTERS} caracteres`}
+                    </p>
                   </div>
 
                   {/* Texto descriptivo */}
