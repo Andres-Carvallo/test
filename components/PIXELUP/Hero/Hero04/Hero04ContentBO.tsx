@@ -55,6 +55,7 @@ const Hero04ContentBO: React.FC = () => {
       const textContent = temp.textContent || temp.innerText;
       return textContent.trim().length;
     } else {
+      // Fallback para entorno de servidor
       return htmlString.replace(/<[^>]*>/g, "").trim().length;
     }
   }, []);
