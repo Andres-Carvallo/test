@@ -232,9 +232,6 @@ export default function ProductPageBO() {
         setFilteredProducts(allData);
         initializeCategories(allData);
         setLoading(false);
-
-        // Cargar stock y precios después
-        loadStockAndPrices(allData);
       } catch (error) {
         console.error("Ocurrió un error:", error);
         toast.error("Error al cargar los productos");
@@ -358,7 +355,47 @@ export default function ProductPageBO() {
   useEffect(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    setPaginatedProducts(filteredProducts.slice(startIndex, endIndex)); // Actualiza los productos paginados
+    const currentPageProducts = filteredProducts.slice(startIndex, endIndex);
+    setPaginatedProducts(currentPageProducts);
+
+    // Cargar stock y precios solo para los productos de la página actual
+    const loadCurrentPageData = async () => {
+      const productsToUpdate = currentPageProducts.filter(p => !p.hasVariations && (p.stockQuantity === null || p.price === null));
+      
+      if (productsToUpdate.length === 0) return;
+
+      await Promise.all(
+        productsToUpdate.map(async (product) => {
+          try {
+            const [stock, price, skuData] = await Promise.all([
+              fetchStockSimple(product.id, product.skuId, true),
+              fetchPriceForProduct(product.id, product.skuId, true),
+              fetchSkuData(product.id, product.skuId),
+            ]);
+
+            setProducts((prevProducts) =>
+              prevProducts.map((p) =>
+                p.id === product.id
+                  ? {
+                      ...p,
+                      stockQuantity: stock,
+                      price: price,
+                      hasUnlimitedStock: skuData?.hasUnlimitedStock || false,
+                    }
+                  : p
+              )
+            );
+          } catch (error) {
+            console.error(
+              `Error loading data for product ${product.id}:`,
+              error
+            );
+          }
+        })
+      );
+    };
+
+    loadCurrentPageData();
   }, [filteredProducts, currentPage, pageSize]);
 
   // Manejo de Cambio de Página

@@ -10,6 +10,7 @@ import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
+import toast, { Toaster } from 'react-hot-toast';
 
 const Categorias07BO = () => {
   const [slidersData, setSlidersData] = useState<any[]>([]);
@@ -121,13 +122,13 @@ const Categorias07BO = () => {
 
     // Verificar si hay una imagen seleccionada
     if (!mainImageSlider || !updatedSliderCategory.mainImage.data) {
-      alert("Por favor, selecciona una imagen para el slider.");
+      toast.error("Por favor, selecciona una imagen para el slider.");
       return;
     }
 
     // Verificar si hay menos de 4 sliders antes de agregar uno nuevo
     if (slidersData.length >= 5) {
-      alert("No se pueden agregar más de 4 sliders.");
+      toast.error("No se pueden agregar más de 4 sliders.");
       return;
     }
 
@@ -136,7 +137,7 @@ const Categorias07BO = () => {
       (slider) => slider.title === updatedSliderCategory.title
     );
     if (categoryExists) {
-      alert("Esta categoría ya tiene un slider asociado.");
+      toast.error("Esta categoría ya tiene un slider asociado");
       return;
     }
 
@@ -145,7 +146,7 @@ const Categorias07BO = () => {
       (slider) => slider.orderNumber === updatedSliderCategory.orderNumber
     );
     if (orderExists) {
-      alert("Ya existe un slider con el mismo orden.");
+      toast.error("Ya existe un slider con el mismo orden.");
       return;
     }
 
@@ -162,10 +163,12 @@ const Categorias07BO = () => {
           },
         }
       );
+      toast.success("Slider agregado exitosamente");
       fetchBannerCategoryHome();
       handleClearImage(setMainImageSlider);
     } catch (error) {
       console.error("Error updating Slider:", error);
+      toast.error("Error al agregar el slider");
     }
   };
 
@@ -188,7 +191,7 @@ const Categorias07BO = () => {
   };
 
   const handleChangeSlider = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
 
@@ -203,17 +206,19 @@ const Categorias07BO = () => {
     if (name === "orderNumber") {
       switch (parseInt(value)) {
         case 1:
-          setAspect(1.2 / 2); // Aspecto para la primera imagen (alta y delgada)
+          setAspect(4 / 3); // Aspecto para la primera imagen (alta y delgada)
           break;
-        case 2:
+        case 2:         
+         setAspect(4 / 3); // Aspecto para la primera imagen (alta y delgada)
+        break;
         case 3:
-          setAspect(2 / 1); // Aspecto para las imágenes centrales (rectangulares horizontales)
+          setAspect(4 / 3); // Aspecto para las imágenes centrales (rectangulares horizontales)
           break;
         case 4:
-          setAspect(1.2 / 2); // Aspecto para la última imagen (alta y delgada)
+          setAspect(4 / 3); // Aspecto para la última imagen (alta y delgada)
           break;
         default:
-          setAspect(1 / 1); // Valor por defecto
+          setAspect(4 / 3); // Valor por defecto
           break;
       }
     }
@@ -347,15 +352,9 @@ const Categorias07BO = () => {
       id="banner"
       className="w-full"
     >
+      <Toaster position="top-right" />
       <div className="w-full">
-        <header className="text-center mb-8">
-          <h2 className="text-xl font-bold text-primary sm:text-3xl">
-            Vista Previa de Categorías
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-foreground">
-            Previsualización del diseño en el sitio web
-          </p>
-        </header>
+
 
         <div className="flex justify-center items-center">
           <div className="2xl:mx-auto 2xl:container py-12 px-4 sm:px-6 xl:px-20 2xl:px-0 w-full">
@@ -544,6 +543,29 @@ const Categorias07BO = () => {
               </p>
             )}
           </div>
+          <div className="mb-4">
+            <label htmlFor="landingText">
+              <h3 className="font-normal text-primary">
+                Texto Descriptivo <span className="text-primary">*</span>
+              </h3>
+            </label>
+            <div className="relative">
+              <textarea
+                id="landingText"
+                name="landingText"
+                value={updatedSliderCategory.landingText}
+                onChange={handleChangeSlider}
+                placeholder="Ingresa una descripción para la categoría"
+                className="shadow block w-full px-4 py-2 mt-2 mb-1 border border-gray-300"
+                style={{ borderRadius: "var(--radius)" }}
+                rows={1}
+                maxLength={80}
+              />
+              <div className="text-right text-sm text-gray-500">
+                {updatedSliderCategory.landingText.length}/30 caracteres
+              </div>
+            </div>
+          </div>
           <div className="mb-4 hidden">
             <label
               htmlFor="title"
@@ -556,22 +578,6 @@ const Categorias07BO = () => {
               id="title"
               name="title"
               value={updatedSliderCategory.title}
-              onChange={handleChangeSlider}
-              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-4 hidden">
-            <label
-              htmlFor="landingText"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Texto de la Landing
-            </label>
-            <input
-              type="text"
-              id="landingText"
-              name="landingText"
-              value={updatedSliderCategory.landingText}
               onChange={handleChangeSlider}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
@@ -761,7 +767,7 @@ const Categorias07BO = () => {
                   image={mainImageSlider || ""}
                   crop={crop}
                   zoom={zoom}
-                  aspect={aspect}
+                  aspect={4/3}
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
                   onCropComplete={handleCropComplete}
