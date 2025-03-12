@@ -20,6 +20,7 @@ import BannerPrincipal04BO from "@/components/PIXELUP/BannerPrincipal/BannerPrin
 import ParallaxBO from "@/components/PIXELUP/Parallax/ParallaxBO";
 import Categoria05BO from "@/components/PIXELUP/Categorias/Categoria05/CategoriaBO05";
 import Colecciones02BO from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02BO";
+import UbicacionBO from "@/components/PIXELUP/Ubicacion/UbicacionBO";
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -49,11 +50,19 @@ export default function BannerHome() {
     <section className="gap-4 flex flex-col py-10 mx-4">
       <title>Content block - Home</title>
       {[
-        { id: "marqueeTOP", title: "Barra Superior", component: <MarqueeTOP /> },
-        { id: "colecciones02", title: "Colecciones 02", component: <Colecciones02BO /> },
-        { id: "categoria06", title: "Categoria 06", component: <Categoria05BO /> },
+        { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
         { id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO /> },
-         { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
+
+        { id: "hero01", title: "Hero 01", component: <Hero01BO /> },
+        { id: "hero02", title: "Hero 02", component: <Hero02BO /> },
+        { id: "hero03", title: "Hero 03", component: <Hero03BO /> },
+        { id: "hero04", title: "Hero 04", component: <Hero04BO /> },
+        { id: "colecciones02", title: "Colecciones", component: <Colecciones02BO /> },
+        { id: "categoria02", title: "Categorías", component: <Categoria02BO /> },
+        { id: "ubicacion", title: "Ubicación", component: <UbicacionBO /> },
+        { id: "feedInstagram", title: "Feed Instagram", component: <FeedInstagramBO /> },
+
+/*          { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
         { id: "bannerPrincipal04", title: "Barra Superior", component: <BannerPrincipal04BO /> },
         { id: "cardsPage", title: "Hero 03", component: <CardsPage /> },
         { id: "hero03", title: "Hero 03", component: <Hero03BO /> },
@@ -68,7 +77,7 @@ export default function BannerHome() {
         { id: "logosCarrusel", title: "Barra Superior", component: <LogosCarruselBO /> },
         { id: "bannerMobile", title: "Banner Mobile", component: <BannerPrincipal02BOMobile /> },
         { id: "sobreMi", title: "Sobre Mí", component: <Hero02BO /> },
-        { id: "frases", title: "Frases", component: <FrasesBO /> }, 
+        { id: "frases", title: "Frases", component: <FrasesBO /> },  */
       ].map(section => (
         <div
           key={section.id}

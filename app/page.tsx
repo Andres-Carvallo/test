@@ -14,7 +14,6 @@ import {
   DynamicFooter,
 } from "@/app/components/LayoutComponents";
 import DiscountModal from "@/components/PIXELUP/Modal/DiscountModal";
-import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01";
 import Banner from "@/components/PIXELUP/Skeleton/Banner";
@@ -22,6 +21,12 @@ import Destacados from "@/components/PIXELUP/Skeleton/Destacados";
 import Parallax from "@/components/PIXELUP/Parallax/Parallax";
 import Colecciones02 from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02";
 import WhatsAppButton from "@/components/Core/WhatsAppButton/WhatsAppButton";
+import FeedInstagram from "@/components/PIXELUP/FeedInstagram/FeedInstagram";
+import Ubicacion from "@/components/PIXELUP/Ubicacion/Ubicacion";
+import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
+import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
+import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
+import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -96,6 +101,18 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
         </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Hero01/>
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Hero02/>
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Hero03/>
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Hero04/>
+        </Suspense>
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Destacados01 text="Destacados" />
         </Suspense>
@@ -108,6 +125,13 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <Categoria02 />
         </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Ubicacion />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <FeedInstagram />
+        </Suspense>
+
 
 {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>

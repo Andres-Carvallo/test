@@ -15,7 +15,14 @@ function Colecciones02() {
         const siteid = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         const contentBlockId = process.env.NEXT_PUBLIC_COLECCIONES02_CONTENTBLOCK;
 
-        // Primero, obtener las colecciones seleccionadas del content block
+        // Primero, obtener todas las colecciones disponibles
+        const collectionsResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`
+        );
+
+        const allCollections = collectionsResponse.data.collections;
+
+        // Luego, obtener las colecciones seleccionadas del content block
         const contentBlockResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${siteid}`
         );
@@ -24,23 +31,21 @@ function Colecciones02() {
           ? JSON.parse(contentBlockResponse.data.contentBlock.contentText)
           : [];
 
-        // Obtener todas las colecciones
-        const collectionsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`
-        );
+        // Filtrar y mapear solo las colecciones que existen
+        const validCollections = selectedCollectionIds
+          .map((collectionId: string) => {
+            const collection = allCollections.find((c: any) => c.id === collectionId);
+            if (collection) {
+              return {
+                ...collection,
+                buttonText: "Ver Colección"
+              };
+            }
+            return null;
+          })
+          .filter(Boolean); // Eliminar las colecciones que no existen (null)
 
-        // Mapear las colecciones seleccionadas en el orden correcto
-        const orderedCollections = selectedCollectionIds.map((collectionId: string) => {
-          const collection = collectionsResponse.data.collections.find(
-            (c: any) => c.id === collectionId
-          );
-          return {
-            ...collection,
-            buttonText: "Ver Colección"
-          };
-        }).filter(Boolean); // Eliminar cualquier colección undefined
-
-        setCollections(orderedCollections);
+        setCollections(validCollections);
       } catch (error) {
         console.error("Error fetching collections:", error);
         setError(error as Error);
@@ -54,7 +59,24 @@ function Colecciones02() {
 
   if (loading) return <div>Cargando colecciones...</div>;
   if (error) return <div>Error al cargar las colecciones</div>;
-  if (collections.length === 0) return null;
+
+  // Crear colecciones por defecto si no hay ninguna
+  const defaultCollections = collections.length === 0 ? [
+    {
+      id: 'default-1',
+      title: 'Próximamente',
+      previewImageUrl: '/img/placeholder.webp',
+      bannerText: 'Nuevas colecciones en camino',
+      buttonText: 'Próximamente'
+    },
+    {
+      id: 'default-2',
+      title: 'Próximamente',
+      previewImageUrl: '/img/placeholder.webp',
+      bannerText: 'Nuevas colecciones en camino',
+      buttonText: 'Próximamente'
+    }
+  ] : collections;
 
   return (
     <div className="py-16 px-4">
@@ -68,7 +90,7 @@ function Colecciones02() {
           </h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {collections.map((coleccion) => (
+          {defaultCollections.map((coleccion) => (
             <div
               key={coleccion.id}
               className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300"
@@ -88,27 +110,31 @@ function Colecciones02() {
                   <p className="text-gray-600 text-sm mb-6">
                     {coleccion.bannerText || "Descubre nuestra exclusiva colección"}
                   </p>
-                  <Link 
-                    href={`/tienda/colecciones/${slugify(coleccion.title)}`}
-                    className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
-                  >
-                    {coleccion.buttonText}
-                  </Link>
+                  {coleccion.id.startsWith('default-') ? (
+                    <span className="bg-gray-200 text-gray-600 px-6 py-2 rounded text-sm font-bold cursor-not-allowed">
+                      {coleccion.buttonText}
+                    </span>
+                  ) : (
+                    <Link 
+                      href={`/tienda/colecciones/${slugify(coleccion.title)}`}
+                      className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
+                    >
+                      {coleccion.buttonText}
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
           ))}
         </div>
-        {collections.length > 0 && (
-          <div className="text-center mt-12">
-            <Link 
-              href="/tienda/colecciones"
-              className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
-            >
-              Ver Todas las Colecciones
-            </Link>
-          </div>
-        )}
+        <div className="text-center mt-12">
+          <Link 
+            href="/tienda/colecciones"
+            className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
+          >
+            Ver Todas las Colecciones
+          </Link>
+        </div>
       </div>
     </div>
   );

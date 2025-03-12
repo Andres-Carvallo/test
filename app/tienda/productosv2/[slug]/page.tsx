@@ -3,7 +3,6 @@ import ProductDetail from "@/components/PIXELUP/ProductDetail/ProductDetail03/Pr
 import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
-
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
 
@@ -99,7 +98,10 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
     const productsRes = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?siteId=${siteId}&pageNumber=1&pageSize=1000`,
       {
-        next: { revalidate: 60 },
+        next: {
+          tags: ["products"],
+          revalidate: 0,
+        },
       }
     );
 
@@ -123,8 +125,8 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${product.id}/skus?siteId=${siteId}`,
       {
         next: {
-          revalidate: 60,
-          tags: [`product-${product.id}`],
+          tags: ["products", `product-${product.id}`],
+          revalidate: 0,
         },
       }
     ).then((res) => res.json());

@@ -43,7 +43,7 @@ const Hero04ContentBO: React.FC = () => {
     title: "",
     landingText: "",
     buttonLink: "",
-    buttonText: "healthcoach",
+    buttonText: "Pixel Up",
   });
   const [misionCharCount, setMisionCharCount] = useState(0);
   const MAX_MISION_CHARS = 200;
@@ -217,7 +217,7 @@ const Hero04ContentBO: React.FC = () => {
             value={content.title}
             onChange={(e) => setContent({ ...content, title: e.target.value })}
             className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
-            placeholder="Ej: Hola, soy María José"
+            placeholder="Ej: Hola, soy Pixel Up"
           />
         </div>
 

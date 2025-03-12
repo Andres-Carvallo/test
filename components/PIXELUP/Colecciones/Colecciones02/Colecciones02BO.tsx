@@ -27,8 +27,15 @@ const Colecciones02BO = () => {
     try {
       setLoading(true);
       const siteid = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const token = getCookie("AdminTokenAuth");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       // Filtrar colecciones excluyendo IDs específicos
@@ -39,7 +46,7 @@ const Colecciones02BO = () => {
       setCollections(filteredCollections);
 
       // Cargar las colecciones seleccionadas guardadas
-      const savedCollections = await fetchSavedCollections();
+      const savedCollections = await fetchSavedCollections(filteredCollections);
       setSelectedCollections(savedCollections);
     } catch (error) {
       console.error("Error fetching collections:", error);
@@ -49,7 +56,7 @@ const Colecciones02BO = () => {
     }
   };
 
-  const fetchSavedCollections = async () => {
+  const fetchSavedCollections = async (activeCollections: any[]) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -64,7 +71,33 @@ const Colecciones02BO = () => {
         }
       );
 
-      return response.data.contentBlock.contentText ? JSON.parse(response.data.contentBlock.contentText) : [];
+      const savedCollectionIds = response.data.contentBlock.contentText ? JSON.parse(response.data.contentBlock.contentText) : [];
+      
+      // Filtrar solo las colecciones que aún existen
+      const validCollections = savedCollectionIds.filter((id: string) => 
+        activeCollections.some(collection => collection.id === id)
+      );
+
+      // Si hay diferencias entre las colecciones guardadas y las válidas, actualizar el content block
+      if (validCollections.length !== savedCollectionIds.length) {
+        console.log('Se encontraron colecciones inválidas, actualizando...');
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${siteId}`,
+          {
+            title: "colecciones02",
+            contentText: JSON.stringify(validCollections),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        toast.success("Se han actualizado las colecciones seleccionadas");
+      }
+
+      return validCollections;
     } catch (error) {
       console.error("Error fetching saved collections:", error);
       return [];
