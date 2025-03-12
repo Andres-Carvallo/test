@@ -122,6 +122,8 @@ const BannerTienda01BO: React.FC<any> = () => {
   // Estado para controlar qué vista se está editando (desktop o mobile)
   const [activeView, setActiveView] = useState<"desktop" | "mobile">("desktop");
 
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
@@ -299,6 +301,15 @@ const BannerTienda01BO: React.FC<any> = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validar si el texto descriptivo supera el límite de caracteres
+    const textContentLength =
+      activeView === "desktop"
+        ? configOptions.desktop.textContent.length
+        : configOptions.mobile.textContent.length;
+    if (textContentLength > MAX_CHARACTERS) {
+      setIsAlertModalOpen(true); // Mostrar el modal de alerta
+      return; // Evitar el envío del formulario
+    }
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
@@ -697,33 +708,6 @@ const BannerTienda01BO: React.FC<any> = () => {
           >
             {/* Vista previa y selector de vista */}
             <div className="bg-gray-50 p-5 rounded-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium">Vista previa</h3>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    className={`px-5 py-2.5 rounded-md transition-all ${
-                      activeView === "desktop"
-                        ? "bg-blue-600 text-white shadow-md"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                    onClick={() => setActiveView("desktop")}
-                  >
-                    Vista Desktop
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-5 py-2.5 rounded-md transition-all ${
-                      activeView === "mobile"
-                        ? "bg-blue-600 text-white shadow-md"
-                        : "bg-gray-200 hover:bg-gray-300"
-                    }`}
-                    onClick={() => setActiveView("mobile")}
-                  >
-                    Vista Mobile
-                  </button>
-                </div>
-              </div>
               <div
                 className="relative w-full overflow-hidden rounded-lg shadow-lg border border-gray-200"
                 style={{
@@ -796,47 +780,205 @@ const BannerTienda01BO: React.FC<any> = () => {
                 </div>
               </div>
             </div>
-
+            {/* Botones de vista */}
+            <div className="flex justify-center gap-4">
+              <button
+                className={`px-4 py-2 rounded-full flex items-center gap-2 ${
+                  activeView === "desktop"
+                    ? "bg-primary text-secondary"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveView("desktop");
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25"
+                  />
+                </svg>
+                Desktop
+              </button>
+              <button
+                className={`px-4 py-2 rounded-full flex items-center gap-2 ${
+                  activeView === "mobile"
+                    ? "bg-primary text-secondary"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveView("mobile");
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
+                  />
+                </svg>
+                Mobile
+              </button>
+            </div>
             {/* Botones de alineación */}
-            <div className="flex justify-center gap-4 my-4">
+            <div className="flex gap-2 my-4">
               <button
                 type="button"
-                className={`px-4 py-2 rounded-md transition-all ${
+                className={`flex-1 p-2 border rounded-md ${
                   configOptions[activeView].textAlignment === "left"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                 }`}
                 onClick={() =>
                   handleConfigChange(`${activeView}.textAlignment`, "left")
                 }
               >
-                Alinear a la izquierda
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 9.5H12"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 14.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 19.5H12"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
               <button
                 type="button"
-                className={`px-4 py-2 rounded-md transition-all ${
+                className={`flex-1 p-2 border rounded-md ${
                   configOptions[activeView].textAlignment === "center"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                 }`}
                 onClick={() =>
                   handleConfigChange(`${activeView}.textAlignment`, "center")
                 }
               >
-                Centrar
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 9.5H18"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 14.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 19.5H18"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
               <button
                 type="button"
-                className={`px-4 py-2 rounded-md transition-all ${
+                className={`flex-1 p-2 border rounded-md ${
                   configOptions[activeView].textAlignment === "right"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                 }`}
                 onClick={() =>
                   handleConfigChange(`${activeView}.textAlignment`, "right")
                 }
               >
-                Alinear a la derecha
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 9.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 14.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 19.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             </div>
 
@@ -844,9 +986,6 @@ const BannerTienda01BO: React.FC<any> = () => {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Contenido del banner */}
               <div className="flex-1 bg-gray-50 p-5 rounded-lg">
-                <h3 className="text-lg font-medium mb-4">
-                  Contenido del banner
-                </h3>
                 <div className="flex flex-col gap-4">
                   {/* Título */}
                   <div className="flex flex-col gap-2">
@@ -1065,7 +1204,12 @@ const BannerTienda01BO: React.FC<any> = () => {
                         : `${configOptions.mobile.textContent.length}/${MAX_CHARACTERS} caracteres`}
                     </p>
                   </div>
+                </div>
+              </div>
 
+              {/* Carga de imágenes */}
+              <div className="flex-1 bg-gray-50 p-5 rounded-lg">
+                <div className="flex flex-col gap-4">
                   {/* Texto del botón */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
@@ -1220,13 +1364,6 @@ const BannerTienda01BO: React.FC<any> = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Carga de imágenes */}
-              <div className="flex-1 bg-gray-50 p-5 rounded-lg">
-                <h3 className="text-lg font-medium mb-4">Imagen del banner</h3>
-                <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between mb-2">
                     <label className="font-medium text-gray-700">
                       Imagen para{" "}
@@ -1241,33 +1378,35 @@ const BannerTienda01BO: React.FC<any> = () => {
                       <p className="text-sm text-gray-500">
                         Tu fotografía {originalFileName} ya ha sido cargada.
                       </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (activeView === "desktop") {
-                            handleClearImage(setMainImageHero);
-                          } else {
-                            handleClearMobileImage();
-                          }
-                        }}
-                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+                      <div className="flex justify-center pt-6">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (activeView === "desktop") {
+                              handleClearImage(setMainImageHero);
+                            } else {
+                              handleClearMobileImage();
+                            }
+                          }}
+                          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                          />
-                        </svg>
-                        Cambiar/Eliminar Imagen
-                      </button>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                            />
+                          </svg>
+                          Cambiar/Eliminar Imagen
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     // Mostrar solo el botón de seleccionar imagen si no hay imagen cargada
@@ -1329,7 +1468,7 @@ const BannerTienda01BO: React.FC<any> = () => {
             <div className="flex justify-end mt-6 border-t pt-6">
               <button
                 type="submit"
-                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-md flex items-center gap-2"
+                className="px-6 py-3 bg-dark text-white rounded-md hover:bg-primary transition-colors shadow-md flex items-center gap-2"
                 disabled={loading}
               >
                 {loading ? (
@@ -1487,6 +1626,30 @@ const BannerTienda01BO: React.FC<any> = () => {
             >
               Aplicar recorte
             </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal de alerta para texto descriptivo */}
+      {isAlertModalOpen && (
+        <Modal
+          showModal={isAlertModalOpen}
+          onClose={() => setIsAlertModalOpen(false)}
+          title="Alerta de caracteres"
+        >
+          <div className="p-4">
+            <p className="text-gray-700">
+              El texto descriptivo supera el límite de caracteres permitido.
+            </p>
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsAlertModalOpen(false)}
+                className="px-4 py-2 bg-dark text-white rounded-md hover:bg-primary"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </Modal>
       )}
