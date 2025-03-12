@@ -2,21 +2,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import Hero01BO from "@/components/PIXELUP/Hero/Hero01/Hero01BO";
 import Hero02BO from "@/components/PIXELUP/Hero/Hero02/Hero02BO";
-import FrasesBO from "@/components/PIXELUP/Frases/BackOffice/FrasesBO";
 import BannerPrincipal02BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import BannerPrincipal01BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01BO";
 import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/BackOffice/MarqueeBO";
 import Categoria02BO from "@/components/PIXELUP/Categorias/Categoria02/CategoriaBO02";
 import FeedInstagramBO from "@/components/PIXELUP/FeedInstagram/FeedInstagramBO";
-import TestimoniosBO from "@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01BO";
-import LogosCarruselBO from "@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarruselBO";
 import SinFoto01BO from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01BO";
 import SinFoto02BO from "@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02BO";
 import Hero03BO from "@/components/PIXELUP/Hero/Hero03/Hero03BO";
 import Hero04BO from "@/components/PIXELUP/Hero/Hero04/Hero04BO";
-import CardsPage from "@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03BO";
-import BannerPrincipal04BO from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02BO";
-import ParallaxBO from "@/components/PIXELUP/Parallax/ParallaxBO";
 import Categoria05BO from "@/components/PIXELUP/Categorias/Categoria05/CategoriaBO05";
 import Colecciones02BO from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02BO";
 import UbicacionBO from "@/components/PIXELUP/Ubicacion/UbicacionBO";
@@ -26,6 +20,7 @@ import Categoria01BO from "@/components/PIXELUP/Categorias/Categoria01/Categoria
 import Categoria03BO from "@/components/PIXELUP/Categorias/Categoria03/CategoriaBO03";
 import Categoria04BO from "@/components/PIXELUP/Categorias/Categoria04/CategoriaBO04";
 import Categoria06BO from "@/components/PIXELUP/Categorias/Categoria06/CategoriaBO06";
+import Categoria07BO from "@/components/PIXELUP/Categorias/Categoria07/CategoriaBO07";
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -73,6 +68,7 @@ export default function BannerHome() {
         { id: "categoria04", title: "Categorías 04 (3 imagenes)", component: <Categoria04BO /> },
         { id: "categoria05", title: "Categorías 05 (4 imagenes)", component: <Categoria05BO /> },
         { id: "categoria06", title: "Categorías 06 (4 imagenes)", component: <Categoria06BO /> },	
+        { id: "categoria07", title: "Categorías 07 (5 imagenes)", component: <Categoria07BO /> },
         { id: "ubicacion", title: "Ubicación", component: <UbicacionBO /> },
         { id: "feedInstagram", title: "Feed Instagram", component: <FeedInstagramBO /> },
 

@@ -4,22 +4,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-interface Categoria05Props {
-  Categoria05Data: {
-    titulo: string;
-    categoria1: string;
-    img1: string;
-    categoria2: string;
-    img2: string;
-    categoria3: string;
-    img3: string;
-    categoria4: string;
-    img4: string;
-  };
-}
-
 const Categoria05 = () => {
-
 
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
