@@ -775,9 +775,6 @@ const Categorias07BO = () => {
               </div>
               <div className="mt-6 space-y-4">
                 <div className="w-full">
-                  <p className="text-sm text-gray-500 mb-2">
-                    Posición {updatedSliderCategory.orderNumber} - Relación de aspecto: {aspect.toFixed(2)}:1
-                  </p>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Zoom
                   </label>
