@@ -10,7 +10,7 @@ const Cuotas: React.FC = () => {
     contentText: string | null;
   } | null>(null);
   const [enableCuotas, setEnableCuotas] = useState<boolean>(true);
-  const [selectedValue, setSelectedValue] = useState<string>("3");
+  const [selectedValue, setSelectedValue] = useState<string>("");
 
   const token = getCookie("AdminTokenAuth");
 
@@ -57,7 +57,7 @@ const Cuotas: React.FC = () => {
     const value = e.target.value;
     setSelectedValue(value);
     
-    if (enableCuotas) {
+    if (enableCuotas && value !== "") {
       await updateCuotas(value, enableCuotas);
     }
   };
@@ -131,6 +131,7 @@ const Cuotas: React.FC = () => {
                     onChange={handleValueChange}
                     className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                   >
+                    <option value="">Seleccione cantidad de cuotas</option>
                     <option value="3">3 cuotas</option>
                     <option value="6">6 cuotas</option>
                     <option value="12">12 cuotas</option>

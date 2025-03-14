@@ -861,18 +861,25 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
       // Si tiene oferta, mostrar ambos precios
       if (offerPrice) {
         return (
-          <div className="flex items-center">
-            <div className="flex flex-col mr-2">
-              <span className="font-bold text-primary text-3xl line-through">
-                ${selectedVariationPrice?.toLocaleString("es-CL")}
-              </span>
-              <span className="font-bold text-red-700 text-3xl">
-                ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <div className="flex flex-col mr-2">
+                <span className="font-bold text-primary text-3xl line-through">
+                  ${selectedVariationPrice?.toLocaleString("es-CL")}
+                </span>
+                <span className="font-bold text-red-700 text-3xl">
+                  ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
+                </span>
+              </div>
+              <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
+                Dcto. {discountPercentage}%
               </span>
             </div>
-            <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
-              Dcto. {discountPercentage}%
-            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-sm text-green-500 mt-1 font-medium">
+                En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
@@ -885,17 +892,9 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
               ${normalPrice.toLocaleString("es-CL")}
             </span>
             {cuotasEnabled && numeroCuotas > 0 && (
-              <>
-                <span className="text-sm text-green-500 mt-1 font-medium">
-                  En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
-                </span>
-                <button 
-                  onClick={() => setShowPaymentModal(true)}
-                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                >
-                  Ver métodos de pago
-                </button>
-              </>
+              <span className="text-sm text-green-500 mt-1 font-medium">
+                En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
             )}
           </div>
         );
@@ -923,24 +922,31 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
         const precioPorCuota = minOfferPrice && cuotasEnabled ? Math.ceil(minOfferPrice / numeroCuotas) : 0;
 
         return (
-          <div className="flex items-center">
-            <div className="flex flex-col mr-2">
-              <span className="font-bold text-primary text-3xl line-through">
-                {minNormalPrice === maxNormalPrice
-                  ? `$${minNormalPrice.toLocaleString("es-CL")}`
-                  : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
-                }
-              </span>
-              <span className="font-bold text-red-700 text-3xl">
-                {minOfferPrice === maxOfferPrice
-                  ? `$${minOfferPrice.toLocaleString("es-CL")}`
-                  : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
-                }
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <div className="flex flex-col mr-2">
+                <span className="font-bold text-primary text-3xl line-through">
+                  {minNormalPrice === maxNormalPrice
+                    ? `$${minNormalPrice.toLocaleString("es-CL")}`
+                    : `$${minNormalPrice.toLocaleString("es-CL")} - $${maxNormalPrice.toLocaleString("es-CL")}`
+                  }
+                </span>
+                <span className="font-bold text-red-700 text-3xl">
+                  {minOfferPrice === maxOfferPrice
+                    ? `$${minOfferPrice.toLocaleString("es-CL")}`
+                    : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`
+                  }
+                </span>
+              </div>
+              <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
+                Dcto. {calculateDiscount(minNormalPrice, minOfferPrice)}%
               </span>
             </div>
-            <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
-              Dcto. {calculateDiscount(minNormalPrice, minOfferPrice)}%
-            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-sm text-green-500 mt-1 font-medium">
+                En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
@@ -953,16 +959,17 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
 
         return (
           <div className="flex flex-col">
-            <div className="rounded-lg flex py-2 px-3">
-              <div className="flex flex-col">
-                <span className="font-bold text-primary text-3xl">
-                  {minPrice === maxPrice
-                    ? `$${minPrice.toLocaleString("es-CL")}`
-                    : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
-                  }
-                </span>
-              </div>
-            </div>
+            <span className="font-bold text-primary text-3xl">
+              {minPrice === maxPrice
+                ? `$${minPrice.toLocaleString("es-CL")}`
+                : `$${minPrice.toLocaleString("es-CL")} - $${maxPrice.toLocaleString("es-CL")}`
+              }
+            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-sm text-green-500 mt-1 font-medium">
+                En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
@@ -1103,54 +1110,11 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
               </div>
 
               <div className="flex items-center space-x-4 my-4">
-                {selectedVariation && selectedVariation.offers && selectedVariation.offers.length > 0 ? (
-                  <div className="flex items-center">
-                    <div className="rounded-lg flex py-2 px-3">
-                      <div className="flex flex-col">
-                        {(() => {
-                          const precioBase = selectedVariation.offers[0].unitPrice;
-                          const precioPorCuota = cuotasEnabled ? Math.ceil(precioBase / numeroCuotas) : 0;
-                          return (
-                            <>
-                              <div className="flex items-center">
-                                <div className="flex flex-col mr-2">
-                                  <span className="font-bold text-primary text-3xl line-through">
-                                    ${selectedVariationPrice?.toLocaleString("es-CL")}
-                                  </span>
-                                  <span className="font-bold text-red-700 text-3xl">
-                                    ${selectedVariation.offers[0].unitPrice.toLocaleString("es-CL")}
-                                  </span>
-                                </div>
-                                <span className="text-white text-xl font-semibold bg-primary h-8 px-2 rounded self-start mt-1">
-                                  Dcto. {discountPercentage}%
-                                </span>
-                              </div>
-                              {cuotasEnabled && numeroCuotas > 0 && (
-                                <>
-                                  <span className="text-sm text-green-500 mt-1 font-medium">
-                                    En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
-                                  </span>
-                                  <button 
-                                    onClick={() => setShowPaymentModal(true)}
-                                    className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                                  >
-                                    Ver métodos de pago
-                                  </button>
-                                </>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    </div>
+                <div className="rounded-lg flex py-2 px-3">
+                  <div className="font-bold text-primary text-3xl">
+                    {renderPrice()}
                   </div>
-                ) : (
-                  <div className="rounded-lg flex py-2 pr-3">
-                    <div className="font-bold text-primary text-3xl">
-                      {renderPrice()}
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
 
               <div className="mt-4">
@@ -1203,12 +1167,6 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                         </div>
                       )
                     )}
-{/*                     <button
-                      className="text-[#78a4df] font-medium flex flex-wrap gap-2 py-2 items-center mt-4 underline"
-                      onClick={() => setShowModal(true)}
-                    >
-                      Guía de tallas
-                    </button> */}
                   </div>
                 </div>
               )}
@@ -1220,38 +1178,6 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                   </span>
                 ) : (
                   <>
-                    {/*                   <div className="flex flex-col items-center space-y-2">
-                    <div className="text-center text-[0.5rem] uppercase text-gray-400 tracking-wide font-semibold">
-                      Cantidad
-                    </div>
-                    <div className="relative w-[80px]">
-                      <select
-                        onChange={(e) => setQuantity(parseInt(e.target.value))}
-                        className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
-                      >
-                        {Array.from({ length: 10 }, (_, i) => (
-                          <option className="text-center" key={i}>
-                            {i + 1}
-                          </option>
-                        ))}
-                      </select>
-                      <svg
-                        className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                        />
-                      </svg>
-                    </div>
-                  </div> */}
-
                     <button
                       onClick={handleAddToCart}
                       style={{
@@ -1278,55 +1204,6 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
               </div>
 
               <div className="flex flex-wrap">
-                {/*                 <div>
-                  <p>
-                    {enabledForDelivery ? (
-                      <div className="flex">
-                        <span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-6"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                            />
-                          </svg>
-                        </span>
-                        <small className="px-2 text-primary self-center">
-                          Disponible para Delivery
-                        </small>
-                      </div>
-                    ) : (
-                      <div className="flex">
-                        <span>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-6"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                            />
-                          </svg>
-                        </span>
-                        <small className="px-2 text-red-800 self-center">
-                          Delivery No Disponible
-                        </small>
-                      </div>
-                    )}
-                  </p>
-                </div> */}
                 <div className="relative md:max-w-96 w-full mt-4 lg:mt-2 border border-1 border-gray-300 py-6 flex justify-center">
                   {/* Texto sobre el borde superior */}
                   <span className="absolute -top-2 bg-white px-2 text-sm font-semibold">
@@ -1343,21 +1220,6 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
           </div>
         )}
 
-{/*         <div className="py-12 md:py-20 grid grid-cols-2 items-center justify-center rounded-md bg-background sm:grid-cols-6 ">
-          {IconosData.map((icono, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-center pb-5"
-            >
-              <img
-                src={icono}
-                alt=""
-                className="max-w-[125px] sm:max-w-[80%]"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </div>
-          ))}
-        </div> */}
         <Destacados01 text="TE PUEDE GUSTAR" />
         <Stars
           reviewAverageScore={reviewAverageScore}

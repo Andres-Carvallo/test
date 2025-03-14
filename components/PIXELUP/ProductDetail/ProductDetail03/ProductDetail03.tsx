@@ -856,12 +856,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                     <span className="text-sm text-green-500 mt-1 font-medium">
                       En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                     </span>
-                    <button 
+{/*                     <button 
                       onClick={() => setShowPaymentModal(true)}
                       className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                     >
                       Ver métodos de pago
-                    </button>
+                    </button> */}
                   </>
                 )}
               </div>
@@ -883,12 +883,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
+{/*                 <button 
                   onClick={() => setShowPaymentModal(true)}
                   className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                 >
                   Ver métodos de pago
-                </button>
+                </button> */}
               </>
             )}
           </div>
@@ -945,12 +945,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés desde ${Math.ceil(minOfferPrice / numeroCuotas).toLocaleString("es-CL")}
                 </span>
-                <button 
+{/*                 <button 
                   onClick={() => setShowPaymentModal(true)}
                   className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                 >
                   Ver métodos de pago
-                </button>
+                </button> */}
               </>
             )}
           </div>
@@ -976,12 +976,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
+{/*                 <button 
                   onClick={() => setShowPaymentModal(true)}
                   className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                 >
                   Ver métodos de pago
-                </button>
+                </button> */}
               </>
             )}
           </div>
@@ -1008,12 +1008,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
               <span className="text-sm text-green-500 mt-1 font-medium">
                 En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
               </span>
-              <button 
+{/*               <button 
                 onClick={() => setShowPaymentModal(true)}
                 className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
               >
                 Ver métodos de pago
-              </button>
+              </button> */}
             </>
           )}
         </div>
