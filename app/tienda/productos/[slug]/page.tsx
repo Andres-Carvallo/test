@@ -1,8 +1,11 @@
+
 import React from "react";
-import ProductDetail from "@/components/PIXELUP/ProductDetail/ProductDetail01/ProductDetail01";
 import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
+import ProductDetailClient from "./ProductDetailClient";
+
+
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
 
@@ -92,7 +95,6 @@ export async function generateStaticParams() {
 
 async function DetalleProductos({ params }: { params: { slug: string } }) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-
   try {
     // Obtener todos los productos
     const productsRes = await fetch(
@@ -171,7 +173,7 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
         </div>
 
         <div className="mx-auto">
-          <ProductDetail product={productData} />
+          <ProductDetailClient productData={productData} />
         </div>
       </>
     );

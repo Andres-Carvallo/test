@@ -49,7 +49,6 @@ export default async function Tienda({
       <title>Tienda</title>
       <div className="w-full">
         <BannerTienda01 />
-
         <ProductGridShop
           initialProducts={initialData.products}
           initialProductTypes={initialData.productTypes}

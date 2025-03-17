@@ -14,6 +14,7 @@ export const globalConfig: GlobalConfig = {
   activeFooter: "Footer01",
   activeNavbar: "Navbar01",
   activeProductCard: "ProductCard03",
+  activeProductDetail: "ProductDetail01",
   whatsappButton: {
     isActive: true,
     link: process.env.NEXT_PUBLIC_WHATSAPP_LINK || "",
@@ -31,6 +32,7 @@ type ProductCardType =
   | "ProductCard02"
   | "ProductCard03"
   | "ProductCard04";
+type ProductDetailType = "ProductDetail01" | "ProductDetail02" | "ProductDetail03";
 
 // **************************************************
 // ************** Componentes de Carga **************
@@ -111,6 +113,24 @@ const productCardComponents = {
   ),
 } as const;
 
+/**
+ * Configuración de los diferentes tipos de ProductDetail disponibles
+ */
+
+const productDetailComponents = {
+  ProductDetail01: dynamic(
+    () => import("@/components/PIXELUP/ProductDetail/ProductDetail01/ProductDetail01"),
+    { loading: LoadingComponent, ssr: true }
+  ),
+  ProductDetail02: dynamic(
+    () => import("@/components/PIXELUP/ProductDetail/ProductDetail02/ProductDetail02"),
+    { loading: LoadingComponent, ssr: true }
+  ),
+  ProductDetail03: dynamic(
+    () => import("@/components/PIXELUP/ProductDetail/ProductDetail03/ProductDetail03"),
+    { loading: LoadingComponent, ssr: true }
+  ),
+} as const;
 // **************************************************
 // ******* Interfaces y Configuración Global ********
 // **************************************************
@@ -120,6 +140,7 @@ export interface GlobalConfig {
   activeFooter: FooterType;
   activeNavbar: NavbarType;
   activeProductCard: ProductCardType;
+  activeProductDetail: ProductDetailType;
   whatsappButton: {
     isActive: boolean;
     link: string;
@@ -134,5 +155,6 @@ export function getActiveComponents() {
   const Footer = footerComponents[globalConfig.activeFooter];
   const Navbar = navbarComponents[globalConfig.activeNavbar];
   const ProductCard = productCardComponents[globalConfig.activeProductCard];
-  return { Footer, Navbar, ProductCard };
+  const ProductDetail = productDetailComponents[globalConfig.activeProductDetail];
+  return { Footer, Navbar, ProductCard, ProductDetail };
 }
