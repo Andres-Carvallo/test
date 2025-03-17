@@ -171,64 +171,107 @@ const Checkout: React.FC = () => {
       );
 
       const allRegions = regionsResponse.data.regions;
-
-      // Fetch communes for both delivery and pickup
-      const fetchCommunesForDelivery = async (regionId: string) => {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=true`
-        );
-        return response.data.communes.map((commune: any) => ({
-          id: commune.id,
-          name: commune.name,
-          regionId: regionId,
-        }));
-      };
-
-      const fetchCommunesForPickup = async (regionId: string) => {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=false`
-        );
-        return response.data.communes.map((commune: any) => ({
-          id: commune.id,
-          name: commune.name,
-          regionId: regionId,
-        }));
-      };
-
-      const regionsForDelivery = [];
-      const regionsForPickup = [];
-      const allCommunesForDelivery = [];
-      const allCommunesForPickup = [];
-
-      for (const region of allRegions) {
-        const communesForDelivery = await fetchCommunesForDelivery(region.id);
-        const communesForPickup = await fetchCommunesForPickup(region.id);
-
-        if (communesForDelivery.length > 0) {
-          regionsForDelivery.push({ id: region.id, name: region.name });
-          allCommunesForDelivery.push(...communesForDelivery);
-        }
-
-        if (communesForPickup.length > 0) {
-          regionsForPickup.push({ id: region.id, name: region.name });
-          allCommunesForPickup.push(...communesForPickup);
-        }
-      }
-
-      setRegionsDelivery(regionsForDelivery);
-      setCommunesDelivery(allCommunesForDelivery);
-      setRegionsPickup(regionsForPickup);
-      setCommunesPickup(allCommunesForPickup);
-
-      // Guardar las comunas habilitadas para delivery
-      setEnabledCommunes(
-        allCommunesForDelivery.map((commune: any) => commune.id)
-      );
+      setRegionsDelivery(allRegions);
+      setRegionsPickup(allRegions);
     } catch (error) {
-      console.error("Error fetching regions and communes:", error);
+      console.error("Error fetching regions:", error);
+      toast.error("Error al cargar las regiones");
     } finally {
       setLoading(false);
       setLoadingRegions(false);
+    }
+  };
+
+  const fetchAvailableRegions = async (deliveryType: string) => {
+    setLoadingRegions(true);
+    try {
+      const Pais = "CL";
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      
+      // Determinar el endpoint según el tipo de entrega
+      const endpoint = deliveryType === "WITHDRAWAL_FROM_STORE"
+        ? `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}&hasDeliveryAvailable=false`
+        : `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}&hasDeliveryAvailable=true`;
+
+      const response = await axios.get(endpoint);
+      const availableRegions = response.data.regions;
+
+      if (deliveryType === "WITHDRAWAL_FROM_STORE") {
+        setRegionsPickup(availableRegions);
+      } else {
+        setRegionsDelivery(availableRegions);
+      }
+    } catch (error) {
+      console.error("Error fetching available regions:", error);
+      toast.error("Error al cargar las regiones disponibles");
+    } finally {
+      setLoadingRegions(false);
+    }
+  };
+
+  const fetchCommunesForRegion = async (regionId: string) => {
+    setLoadingCommunes(true);
+    try {
+      const Pais = "CL";
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      
+      // Determinar qué endpoint usar basado en el tipo de entrega
+      const endpoint = deliveryType === "WITHDRAWAL_FROM_STORE"
+        ? `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=false`
+        : `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=true`;
+
+      const response = await axios.get(endpoint);
+      const communes = response.data.communes.map((commune: any) => ({
+        id: commune.id,
+        name: commune.name,
+        regionId: regionId,
+      }));
+
+      if (deliveryType === "WITHDRAWAL_FROM_STORE") {
+        setCommunesPickup(communes);
+      } else {
+        setCommunesDelivery(communes);
+      }
+
+      // Guardar las comunas habilitadas para delivery
+      if (deliveryType !== "WITHDRAWAL_FROM_STORE") {
+        setEnabledCommunes(communes.map((commune: any) => commune.id));
+      }
+    } catch (error) {
+      console.error("Error fetching communes:", error);
+      toast.error("Error al cargar las comunas");
+    } finally {
+      setLoadingCommunes(false);
+    }
+  };
+
+  const handleRegionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const regionId = e.target.value;
+    setSelectedRegion(regionId);
+    setSelectedCommune(""); // Reset selected commune
+    setCustomer((prevState) => ({
+      ...prevState,
+      customer: {
+        ...prevState.customer,
+        communeId: "",
+      },
+    }));
+
+    // Limpiar las comunas anteriores
+    if (deliveryType === "WITHDRAWAL_FROM_STORE") {
+      setCommunesPickup([]);
+    } else {
+      setCommunesDelivery([]);
+    }
+
+    if (regionId) {
+      try {
+        await fetchCommunesForRegion(regionId);
+      } catch (error) {
+        console.error("Error al cargar las comunas:", error);
+        toast.error("Error al cargar las comunas disponibles");
+        setSelectedRegion(""); // Reset region selection on error
+      }
     }
   };
 
@@ -478,18 +521,6 @@ const Checkout: React.FC = () => {
       : communesDelivery;
   }, [deliveryType, communesPickup, communesDelivery]);
 
-  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRegion(e.target.value);
-    setSelectedCommune(""); // Reset selected commune
-    setCustomer((prevState) => ({
-      ...prevState,
-      customer: {
-        ...prevState.customer,
-        communeId: "",
-      },
-    }));
-  };
-
   const handleCommuneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const communeId = e.target.value;
     setSelectedCommune(communeId);
@@ -544,15 +575,19 @@ const Checkout: React.FC = () => {
       toast.error("Error al seleccionar el tipo de entrega");
     }
 
-    // Si las regiones y comunas ya están cargadas, no hacer fetch
-    if (regionsDelivery.length === 0 || regionsPickup.length === 0) {
-      // Si el usuario no está logueado y selecciona retiro, mostrar todas las comunas
-      if (!isLoggedIn && newValue === DELIVERY_TYPES.WITHDRAWAL) {
-        await fetchRegionsAndCommunes(false); // false para no aplicar el filtro
-      } else {
-        await fetchRegionsAndCommunes(true); // true para aplicar el filtro de shipping zones
-      }
-    }
+    // Limpiar selecciones anteriores
+    setSelectedRegion("");
+    setSelectedCommune("");
+    setCustomer((prevState) => ({
+      ...prevState,
+      customer: {
+        ...prevState.customer,
+        communeId: "",
+      },
+    }));
+
+    // Cargar las regiones disponibles según el tipo de entrega
+    await fetchAvailableRegions(newValue);
   };
 
   const loggedInRegion = isLoggedIn ? customer.customer?.regionName : "";
@@ -1040,16 +1075,22 @@ const Checkout: React.FC = () => {
                                 className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
                                 disabled={!selectedRegion || loadingCommunes}
                               >
-                                <option value="">Selecciona Comuna</option>
-                                {displayedCommunes
-                                  .filter(
-                                    (commune) => commune.regionId === selectedRegion
-                                  )
-                                  .map((commune) => (
-                                    <option key={commune.id} value={commune.id}>
-                                      {commune.name}
-                                    </option>
-                                  ))}
+                                {loadingCommunes ? (
+                                  <option>Cargando Comunas...</option>
+                                ) : (
+                                  <>
+                                    <option value="">Selecciona Comuna</option>
+                                    {displayedCommunes
+                                      .filter(
+                                        (commune) => commune.regionId === selectedRegion
+                                      )
+                                      .map((commune) => (
+                                        <option key={commune.id} value={commune.id}>
+                                          {commune.name}
+                                        </option>
+                                      ))}
+                                  </>
+                                )}
                               </select>
                             </label>
                           </div>
