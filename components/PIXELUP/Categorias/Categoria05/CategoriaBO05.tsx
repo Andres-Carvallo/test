@@ -10,6 +10,7 @@ import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
+import { toast } from "react-hot-toast";
 
 const Categorias05BO = () => {
   const [slidersData, setSlidersData] = useState<any[]>([]);
@@ -42,6 +43,14 @@ const Categorias05BO = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const defaultImage = "/img/placeholder.webp";
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    action: () => {},
+    type: ''
+  });
 
   const getDefaultBanner = (order: number) => ({
     id: `default-${order}`,
@@ -96,6 +105,16 @@ const Categorias05BO = () => {
     }
   };
 
+  const handleDeleteSlider = (id: any) => {
+    setModalConfig({
+      title: 'Eliminar Categoría',
+      message: '¿Estás seguro que deseas eliminar esta categoría?',
+      action: () => deleteSlider(id),
+      type: 'delete'
+    });
+    setShowConfirmModal(true);
+  };
+
   const deleteSlider = async (id: any) => {
     const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
     try {
@@ -109,10 +128,17 @@ const Categorias05BO = () => {
           },
         }
       );
+      toast.success('Categoría eliminada exitosamente');
       fetchBannerCategoryHome();
     } catch (error) {
+      toast.error('Error al eliminar la categoría');
       console.error("Error deleting Slider:", error);
     }
+    setShowConfirmModal(false);
+  };
+
+  const handleSliderSubmit = (e: React.FormEvent) => {
+    SliderSubmit(e);
   };
 
   const SliderSubmit = async (e: React.FormEvent) => {
@@ -121,13 +147,13 @@ const Categorias05BO = () => {
 
     // Verificar si hay una imagen seleccionada
     if (!mainImageSlider || !updatedSliderCategory.mainImage.data) {
-      alert("Por favor, selecciona una imagen para el slider.");
+      toast.error("Por favor, selecciona una imagen para el slider.");
       return;
     }
 
     // Verificar si hay menos de 4 sliders antes de agregar uno nuevo
     if (slidersData.length >= 4) {
-      alert("No se pueden agregar más de 4 sliders.");
+      toast.error("No se pueden agregar más de 4 sliders.");
       return;
     }
 
@@ -136,7 +162,7 @@ const Categorias05BO = () => {
       (slider) => slider.title === updatedSliderCategory.title
     );
     if (categoryExists) {
-      alert("Esta categoría ya tiene un slider asociado.");
+      toast.error("Esta categoría ya tiene un slider asociado.");
       return;
     }
 
@@ -145,7 +171,7 @@ const Categorias05BO = () => {
       (slider) => slider.orderNumber === updatedSliderCategory.orderNumber
     );
     if (orderExists) {
-      alert("Ya existe un slider con el mismo orden.");
+      toast.error("Ya existe un slider con el mismo orden.");
       return;
     }
 
@@ -162,9 +188,12 @@ const Categorias05BO = () => {
           },
         }
       );
+      toast.success('Categoría agregada exitosamente');
       fetchBannerCategoryHome();
       handleClearImage(setMainImageSlider);
+      setSelectedCategoryId(null);
     } catch (error) {
+      toast.error('Error al agregar la categoría');
       console.error("Error updating Slider:", error);
     }
   };
@@ -181,6 +210,27 @@ const Categorias05BO = () => {
       reader.onload = () => {
         const result = reader.result as string;
         setImage(result);
+        
+        // Establecer el aspecto según el orderNumber actual
+        const currentOrder = updatedSliderCategory.orderNumber;
+        switch (currentOrder) {
+          case 1:
+            setAspect(1 / 1); // Aspecto cuadrado para la primera posición
+            break;
+          case 2:
+            setAspect(1.5 / 1); // Aspecto rectangular horizontal para la segunda posición
+            break;
+          case 3:
+            setAspect(2.38 / 1); // Aspecto más ancho para la tercera posición
+            break;
+          case 4:
+            setAspect(1.53 / 1); // Aspecto rectangular horizontal para la cuarta posición
+            break;
+          default:
+            setAspect(1 / 1); // Valor por defecto
+            break;
+        }
+        
         setIsModalOpen(true);
       };
       reader.readAsDataURL(file);
@@ -232,7 +282,7 @@ const Categorias05BO = () => {
 
     if (selectedCategory) {
       const categorySlug = slugify(selectedCategory.name);
-      const buttonLink = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/${categorySlug}`;
+      const buttonLink = `/tienda?categoria=${categorySlug}`;
 
       setUpdatedSliderCategory((prevData) => ({
         ...prevData,
@@ -382,7 +432,7 @@ const Categorias05BO = () => {
                       </div>
                       {!getOrderedBanners()[0].isDefault && (
                         <button
-                          onClick={() => deleteSlider(getOrderedBanners()[0].id)}
+                          onClick={() => handleDeleteSlider(getOrderedBanners()[0].id)}
                           className="absolute top-4 right-4 bg-red-500 hover:bg-red-700 text-white rounded-full p-2"
                         >
                           <svg
@@ -426,7 +476,7 @@ const Categorias05BO = () => {
                       </div>
                       {!getOrderedBanners()[1].isDefault && (
                         <button
-                          onClick={() => deleteSlider(getOrderedBanners()[1].id)}
+                          onClick={() => handleDeleteSlider(getOrderedBanners()[1].id)}
                           className="absolute top-4 right-4 bg-red-500 hover:bg-red-700 text-white rounded-full p-2"
                         >
                           <svg
@@ -470,7 +520,7 @@ const Categorias05BO = () => {
                       </div>
                       {!getOrderedBanners()[2].isDefault && (
                         <button
-                          onClick={() => deleteSlider(getOrderedBanners()[2].id)}
+                          onClick={() => handleDeleteSlider(getOrderedBanners()[2].id)}
                           className="absolute top-4 right-4 bg-red-500 hover:bg-red-700 text-white rounded-full p-2"
                         >
                           <svg
@@ -514,7 +564,7 @@ const Categorias05BO = () => {
                       </div>
                       {!getOrderedBanners()[3].isDefault && (
                         <button
-                          onClick={() => deleteSlider(getOrderedBanners()[3].id)}
+                          onClick={() => handleDeleteSlider(getOrderedBanners()[3].id)}
                           className="absolute top-4 right-4 bg-red-500 hover:bg-red-700 text-white rounded-full p-2"
                         >
                           <svg
@@ -547,7 +597,7 @@ const Categorias05BO = () => {
           Agregar Nuevo Slider
         </h2>
         <form
-          onSubmit={SliderSubmit}
+          onSubmit={handleSliderSubmit}
           className=" mx-auto"
         >
           <div>
@@ -789,59 +839,134 @@ const Categorias05BO = () => {
       </div>
 
       {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        >
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={mainImageSlider || ""}
-              crop={crop}
-              zoom={zoom}
-              aspect={aspect}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={handleCropComplete}
-            />
-          </div>
-          <div className="flex flex-col justify-end">
-            <div className="w-full py-6">
-              <p className="text-sm text-gray-500 mb-2">
-                Posición {updatedSliderCategory.orderNumber} - Relación de aspecto: {aspect.toFixed(2)}:1
-              </p>
-              <input
-                type="range"
-                value={zoom}
-                min={1}
-                max={3}
-                step={0.1}
-                aria-labelledby="Zoom"
-                onChange={(e) => {
-                  setZoom(parseFloat(e.target.value));
-                }}
-                className="zoom-range w-full custom-range"
-              />
-            </div>
-
-            <div className="flex justify-between w-full gap-2">
-              <button
-                onClick={handleCrop}
-                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Recortar y Subir
-              </button>
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+              </div>
               <button
                 onClick={() => {
                   setMainImageSlider(null);
                   setIsModalOpen(false);
                 }}
-                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mainImageSlider || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={aspect}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMainImageSlider(null);
+                      setIsModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm z-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {modalConfig.title}
+              </h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  {modalConfig.message}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-center gap-4">
+              <button
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                onClick={() => modalConfig.action()}
+              >
+                Eliminar
+              </button>
+              <button
+                className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                onClick={() => setShowConfirmModal(false)}
               >
                 Cancelar
               </button>
             </div>
           </div>
-        </Modal>
+        </div>
       )}
     </section>
   );

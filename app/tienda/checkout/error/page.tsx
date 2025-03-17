@@ -3,8 +3,8 @@ import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pago Fail",
-  description: "This is About Page for Startup Nextjs Template",
+  title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA + "Pago Fail",
+  description: "Checkout Pago Fail",
   // other metadata
 };
 
