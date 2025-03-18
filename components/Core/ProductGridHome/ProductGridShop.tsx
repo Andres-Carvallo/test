@@ -144,34 +144,41 @@ const ProductGridShop = ({
   // Ordenar productos filtrados
   const sortedProducts = useMemo(() => {
     return filteredProducts.slice().sort((a, b) => {
-      const getPrice = (product: any) => {
-        let priceRange = {
-          min: Infinity,
-          max: -Infinity,
+      if (sortBy === "asc" || sortBy === "desc") {
+        const getPrice = (product: any) => {
+          let priceRange = {
+            min: Infinity,
+            max: -Infinity,
+          };
+
+          if (
+            !product.hasVariations &&
+            product.offers &&
+            product.offers.length > 0
+          ) {
+            priceRange.min = product.offers[0].amount;
+            priceRange.max = product.offers[0].amount;
+          } else if (product.hasVariations && product.pricingRanges) {
+            priceRange.min = product.pricingRanges[0].minimumAmount;
+            priceRange.max = product.pricingRanges[0].maximumAmount;
+          } else if (product.pricings) {
+            priceRange.min = product.pricings[0].amount;
+            priceRange.max = product.pricings[0].amount;
+          }
+
+          return sortBy === "asc" ? priceRange.min : priceRange.max;
         };
 
-        if (
-          !product.hasVariations &&
-          product.offers &&
-          product.offers.length > 0
-        ) {
-          priceRange.min = product.offers[0].amount;
-          priceRange.max = product.offers[0].amount;
-        } else if (product.hasVariations && product.pricingRanges) {
-          priceRange.min = product.pricingRanges[0].minimumAmount;
-          priceRange.max = product.pricingRanges[0].maximumAmount;
-        } else if (product.pricings) {
-          priceRange.min = product.pricings[0].amount;
-          priceRange.max = product.pricings[0].amount;
-        }
+        const priceA = getPrice(a);
+        const priceB = getPrice(b);
 
-        return sortBy === "asc" ? priceRange.min : priceRange.max;
-      };
-
-      const priceA = getPrice(a);
-      const priceB = getPrice(b);
-
-      return sortBy === "asc" ? priceA - priceB : priceB - priceA;
+        return sortBy === "asc" ? priceA - priceB : priceB - priceA;
+      } else {
+        // Ordenamiento alfabético
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        return sortBy === "nameAsc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      }
     });
   }, [filteredProducts, sortBy]);
 
@@ -245,6 +252,8 @@ const ProductGridShop = ({
               <option value="asc">Ordenar por...</option>
               <option value="asc">Precio: Menor a Mayor</option>
               <option value="desc">Precio: Mayor a Menor</option>
+              <option value="nameAsc">Nombre: A a Z</option>
+              <option value="nameDesc">Nombre: Z a A</option>
             </select>
           </div>
         </div>

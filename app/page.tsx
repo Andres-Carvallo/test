@@ -44,7 +44,7 @@ async function fetchBannerData() {
 
 export const metadata = async () => {
   const defaultSeoData = {
-    title: "PixelUP Title",
+    title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
     description: "Una nueva plataforma para emprendedores y Pymes!",
     ogImage: "http://pixelup.cl/img/avatardefault.jpg",
     keywords: "pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl",

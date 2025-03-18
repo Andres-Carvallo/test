@@ -129,6 +129,15 @@ const config: Config = {
         xl: "16px",
         "2xl:": "24px",
       },
+      keyframes: {
+        'loading-bar': {
+          '0%': { width: '0%' },
+          '100%': { width: '100%' }
+        }
+      },
+      animation: {
+        'loading-bar': 'loading-bar 1.5s ease-in-out infinite'
+      },
     },
   },
   plugins: [],
