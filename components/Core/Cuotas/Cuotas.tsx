@@ -11,6 +11,10 @@ const Cuotas: React.FC = () => {
   } | null>(null);
   const [enableCuotas, setEnableCuotas] = useState<boolean>(true);
   const [selectedValue, setSelectedValue] = useState<string>("");
+  const [pendingChanges, setPendingChanges] = useState<{
+    enabled: boolean;
+    installments: string;
+  } | null>(null);
 
   const token = getCookie("AdminTokenAuth");
 
@@ -50,16 +54,35 @@ const Cuotas: React.FC = () => {
 
   const handleToggleChange = async (checked: boolean) => {
     setEnableCuotas(checked);
-    await updateCuotas(checked ? selectedValue : "0", checked);
+    if (!checked) {
+      // Si se desactiva, actualizar automáticamente
+      await updateCuotas("0", false);
+    } else {
+      // Si se activa, mostrar el botón de actualizar
+      setPendingChanges({
+        enabled: true,
+        installments: selectedValue
+      });
+    }
   };
 
-  const handleValueChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleValueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setSelectedValue(value);
     
     if (enableCuotas && value !== "") {
-      await updateCuotas(value, enableCuotas);
+      setPendingChanges({
+        enabled: true,
+        installments: value
+      });
     }
+  };
+
+  const handleUpdate = async () => {
+    if (!pendingChanges) return;
+    
+    await updateCuotas(pendingChanges.installments, pendingChanges.enabled);
+    setPendingChanges(null);
   };
 
   const updateCuotas = async (value: string, enabled: boolean) => {
@@ -136,6 +159,17 @@ const Cuotas: React.FC = () => {
                     <option value="6">6 cuotas</option>
                     <option value="12">12 cuotas</option>
                   </select>
+                </div>
+              )}
+
+              {pendingChanges && enableCuotas && (
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={handleUpdate}
+                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Actualizar
+                  </button>
                 </div>
               )}
             </div>

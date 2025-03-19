@@ -6,6 +6,7 @@ export interface SidebarLink {
   icon: JSX.Element;
   submenu?: SidebarLink[];
   isVisible?: boolean;
+  onClick?: () => void;
 }
 
 export const sidebarLinks: SidebarLink[] = [
@@ -243,6 +244,9 @@ export const sidebarLinks: SidebarLink[] = [
 </svg>
 
         ),
+        onClick: () => {
+          window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/productos/crear/producto-simple`;
+        }
       },
       {
         title: "Producto Variable",
@@ -254,6 +258,9 @@ export const sidebarLinks: SidebarLink[] = [
 </svg>
 
         ),
+        onClick: () => {
+          window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/productos/crear/producto-variable`;
+        }
       },
       {
         title: "Colecciones",

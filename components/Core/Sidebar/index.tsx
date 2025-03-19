@@ -28,6 +28,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const token = getCookie("AdminTokenAuth")?.toString();
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [menuEnabled, setMenuEnabled] = useState<boolean>(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -61,6 +62,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   useEffect(() => {
     const fetchMenuOption = async () => {
+      if (isInitialized) return;
+      
       try {
         const contentBlockId = process.env.NEXT_PUBLIC_MENUOPTION_CONTENTBLOCK;
         const response = await axios.get(
@@ -77,6 +80,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         if (!isEnabled) {
           setIsExpanded(true);
         }
+        setIsInitialized(true);
       } catch (error) {
         console.error("Error al obtener la configuración del menú:", error);
       }
@@ -85,7 +89,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     if (token) {
       fetchMenuOption();
     }
-  }, [token]);
+  }, [token, isInitialized]);
 
   useEffect(() => {
     if (sidebarOpen || !menuEnabled) {
@@ -104,9 +108,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const handleLinkClick = (href: string) => {
     // Cerrar el menú en móvil
     setSidebarOpen(false);
-
-    // Permitir navegación directa
-    window.location.href = href;
+    
+    // Usar la navegación de Next.js
+    router.push(href);
   };
 
   useEffect(() => {
@@ -272,8 +276,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         className={`group relative flex items-center gap-3 rounded-lg py-2 px-3 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                           isRouteActive(sublink.path, true) && "bg-black/10"
                         }`}
-                        onClick={() => {
-                          handleLinkClick(sublink.path);
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (sublink.onClick) {
+                            sublink.onClick();
+                          } else {
+                            handleLinkClick(sublink.path);
+                          }
                           setOpenMenuIndex(null);
                         }}
                       >
