@@ -43,69 +43,94 @@ async function getProducts(): Promise<Product[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Obtener colecciones y productos
-  const collections = await getCollections();
-  const products = await getProducts();
+  try {
+    // Obtener colecciones y productos
+    const collections = await getCollections();
+    const products = await getProducts();
 
-  // Rutas base del menú
-  const menuRoutes = mainMenuConfig.links
-    .filter(link => link.isVisible)
-    .map(link => ({
-      url: `${siteUrl}${link.path}`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: link.path === "/" ? 1 : 0.8,
+    // Rutas base del menú
+    const menuRoutes = mainMenuConfig.links
+      .filter(link => link.isVisible)
+      .map(link => ({
+        url: `${siteUrl}${link.path}`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: link.path === "/" ? 1 : 0.8,
+      }));
+
+    // Rutas de colecciones
+    const collectionRoutes = collections.map(collection => ({
+      url: `${siteUrl}/tienda/colecciones/${collection.slug}`,
+      lastModified: collection.updatedAt || collection.createdAt ? new Date(collection.updatedAt || collection.createdAt!) : new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
     }));
 
-  // Rutas de colecciones
-  const collectionRoutes = collections.map(collection => ({
-    url: `${siteUrl}/tienda/colecciones/${collection.slug}`,
-    lastModified: collection.updatedAt || collection.createdAt ? new Date(collection.updatedAt || collection.createdAt!) : new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
-
-  // Rutas de productos
-  const productRoutes = products.map(product => ({
-    url: `${siteUrl}/tienda/productos/${product.slug}`,
-    lastModified: product.updatedAt || product.createdAt ? new Date(product.updatedAt || product.createdAt!) : new Date(),
-    changeFrequency: "daily" as const,
-    priority: 0.8,
-  }));
-
-  // Rutas adicionales de la tienda
-  const additionalStoreRoutes = [
-    {
-      url: `${siteUrl}/tienda/categorias`,
-      lastModified: new Date(),
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/tienda/ofertas`,
-      lastModified: new Date(),
+    // Rutas de productos
+    const productRoutes = products.map(product => ({
+      url: `${siteUrl}/tienda/productos/${product.slug}`,
+      lastModified: product.updatedAt || product.createdAt ? new Date(product.updatedAt || product.createdAt!) : new Date(),
       changeFrequency: "daily" as const,
       priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/tienda/nuevos`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    },
-    {
-      url: `${siteUrl}/tienda/mas-vendidos`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    },
-  ];
+    }));
 
-  // Combinar todas las rutas
-  return [
-    ...menuRoutes,
-    ...collectionRoutes,
-    ...productRoutes,
-    ...additionalStoreRoutes,
-  ];
+    // Rutas adicionales de la tienda
+    const additionalStoreRoutes = [
+      {
+        url: `${siteUrl}/tienda/categorias`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      },
+      {
+        url: `${siteUrl}/tienda/ofertas`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 0.8,
+      },
+      {
+        url: `${siteUrl}/tienda/nuevos`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 0.8,
+      },
+      {
+        url: `${siteUrl}/tienda/mas-vendidos`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 0.8,
+      },
+    ];
+
+    // Combinar todas las rutas
+    const allRoutes = [
+      ...menuRoutes,
+      ...collectionRoutes,
+      ...productRoutes,
+      ...additionalStoreRoutes,
+    ];
+
+    // Asegurarnos de que no haya URLs duplicadas
+    const uniqueRoutes = Array.from(new Set(allRoutes.map(route => route.url)))
+      .map(url => allRoutes.find(route => route.url === url)!);
+
+    return uniqueRoutes;
+  } catch (error) {
+    console.error("Error generating sitemap:", error);
+    // En caso de error, retornar al menos las rutas básicas
+    return [
+      {
+        url: siteUrl,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 1,
+      },
+      {
+        url: `${siteUrl}/tienda`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 0.8,
+      },
+    ];
+  }
 }
