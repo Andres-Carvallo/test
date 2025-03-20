@@ -13,6 +13,7 @@ User-agent: *
 Disallow: /dashboard
 Disallow: /tienda/mi-cuenta
 Disallow: /admin
+Disallow: /sitemap
 Disallow: /api
 Disallow: /_next
 Disallow: /static
