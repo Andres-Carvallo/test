@@ -1,20 +1,111 @@
 import { MetadataRoute } from "next";
+import { mainMenuConfig } from "./app/config/menulinks";
+import axios from "axios";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://pixelup.cl";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: `${siteUrl}`,
+interface Collection {
+  slug: string;
+  updatedAt?: string;
+  createdAt?: string;
+}
+
+interface Product {
+  slug: string;
+  updatedAt?: string;
+  createdAt?: string;
+}
+
+async function getCollections(): Promise<Collection[]> {
+  try {
+    const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteId}`
+    );
+    return response.data.collections || [];
+  } catch (error) {
+    console.error("Error fetching collections:", error);
+    return [];
+  }
+}
+
+async function getProducts(): Promise<Product[]> {
+  try {
+    const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=1&pageSize=50&siteId=${siteId}`
+    );
+    return response.data.products || [];
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Obtener colecciones y productos
+  const collections = await getCollections();
+  const products = await getProducts();
+
+  // Rutas base del menú
+  const menuRoutes = mainMenuConfig.links
+    .filter(link => link.isVisible)
+    .map(link => ({
+      url: `${siteUrl}${link.path}`,
       lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 1,
-    },
+      changeFrequency: "daily" as const,
+      priority: link.path === "/" ? 1 : 0.8,
+    }));
+
+  // Rutas de colecciones
+  const collectionRoutes = collections.map(collection => ({
+    url: `${siteUrl}/tienda/colecciones/${collection.slug}`,
+    lastModified: collection.updatedAt || collection.createdAt ? new Date(collection.updatedAt || collection.createdAt!) : new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
+  // Rutas de productos
+  const productRoutes = products.map(product => ({
+    url: `${siteUrl}/tienda/productos/${product.slug}`,
+    lastModified: product.updatedAt || product.createdAt ? new Date(product.updatedAt || product.createdAt!) : new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }));
+
+  // Rutas adicionales de la tienda
+  const additionalStoreRoutes = [
     {
-      url: `${siteUrl}/tienda`,
+      url: `${siteUrl}/tienda/categorias`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
+      changeFrequency: "weekly" as const,
       priority: 0.8,
     },
+    {
+      url: `${siteUrl}/tienda/ofertas`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/tienda/nuevos`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    },
+    {
+      url: `${siteUrl}/tienda/mas-vendidos`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    },
+  ];
+
+  // Combinar todas las rutas
+  return [
+    ...menuRoutes,
+    ...collectionRoutes,
+    ...productRoutes,
+    ...additionalStoreRoutes,
   ];
 }

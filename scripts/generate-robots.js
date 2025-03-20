@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://pixelup.cl';
 
 const robotsTxt = `# *
 User-agent: *
@@ -24,9 +24,11 @@ Disallow: /sitemap.xml
 # Host
 Host: ${baseUrl}
 
-# Sitemaps
+# Sitemap
 Sitemap: ${baseUrl}/sitemap.xml
 `;
 
 const robotsPath = path.join(process.cwd(), 'public', 'robots.txt');
 fs.writeFileSync(robotsPath, robotsTxt);
+
+console.log('robots.txt generado exitosamente');

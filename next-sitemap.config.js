@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 const config = {
-  siteUrl: process.env.NEXT_PUBLIC_BASE_URL,
+  siteUrl: process.env.NEXT_PUBLIC_BASE_URL || "http://pixelup.cl",
   generateRobotsTxt: true, // Generará un archivo robots.txt
   changefreq: "daily",
   priority: 0.7,
@@ -39,9 +39,6 @@ const config = {
           "/sitemap.xml"
         ],
       },
-    ],
-    additionalSitemaps: [
-      `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap.xml`,
     ],
   },
 };

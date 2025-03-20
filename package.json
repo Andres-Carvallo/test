@@ -9,7 +9,7 @@
     "lint": "next lint",
     "sitemap": "next-sitemap",
     "generate-robots": "node scripts/generate-robots.js",
-    "postbuild": "npm run generate-robots && npm run sitemap"
+    "postbuild": "npm run sitemap && npm run generate-robots"
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.22",
