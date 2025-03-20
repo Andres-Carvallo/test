@@ -6,9 +6,17 @@ Allow: /
 User-agent: *
 Disallow: /dashboard
 Disallow: /tienda/mi-cuenta
+Disallow: /admin
+Disallow: /api
+Disallow: /_next
+Disallow: /static
+Disallow: /images
+Disallow: /favicon.ico
+Disallow: /robots.txt
+Disallow: /sitemap.xml
 
 # Host
-Host: http://localhost:3000
+Host: ${NEXT_PUBLIC_BASE_URL}
 
 # Sitemaps
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: ${NEXT_PUBLIC_BASE_URL}/sitemap.xml

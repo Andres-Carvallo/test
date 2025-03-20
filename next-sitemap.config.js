@@ -1,12 +1,23 @@
 /** @type {import('next-sitemap').IConfig} */
 const config = {
-  siteUrl: process.env.NEXT_PUBLIC_BASE_URL || "http:/pixelup.cl",
+  siteUrl: process.env.NEXT_PUBLIC_BASE_URL,
   generateRobotsTxt: true, // Generará un archivo robots.txt
   changefreq: "daily",
   priority: 0.7,
   sitemapSize: 5000,
   outDir: "./public",
-  exclude: ["/dashboard/**", "/tienda/mi-cuenta/**"], // Excluir rutas privadas
+  exclude: [
+    "/dashboard/**",
+    "/tienda/mi-cuenta/**",
+    "/admin/**",
+    "/api/**",
+    "/_next/**",
+    "/static/**",
+    "/images/**",
+    "/favicon.ico",
+    "/robots.txt",
+    "/sitemap.xml"
+  ],
   robotsTxtOptions: {
     policies: [
       {
@@ -15,8 +26,22 @@ const config = {
       },
       {
         userAgent: "*",
-        disallow: ["/dashboard", "/tienda/mi-cuenta"],
+        disallow: [
+          "/dashboard",
+          "/tienda/mi-cuenta",
+          "/admin",
+          "/api",
+          "/_next",
+          "/static",
+          "/images",
+          "/favicon.ico",
+          "/robots.txt",
+          "/sitemap.xml"
+        ],
       },
+    ],
+    additionalSitemaps: [
+      `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap.xml`,
     ],
   },
 };

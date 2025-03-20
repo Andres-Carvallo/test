@@ -5,6 +5,7 @@ import Navbar from "@/components/PIXELUP/Navbar/Navbar02/cdgnavbar";
 import { DynamicNavbar, DynamicFooter } from "../components/LayoutComponents";
 import WhatsAppButton from "@/components/Core/WhatsAppButton/WhatsAppButton";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
+import NextTopLoader from "nextjs-toploader";
 export default function RootLayout({
   children,
 }: {
@@ -14,6 +15,7 @@ export default function RootLayout({
     <RevalidationProvider>
       <div>
         <MarqueeTOP />
+        <NextTopLoader showSpinner={false} />
         <DynamicNavbar />
         {children}
         <WhatsAppButton />

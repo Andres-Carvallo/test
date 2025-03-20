@@ -22,6 +22,7 @@ import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import GoogleAnalytics from "@/components/Core/Google/Analytics";
 import PopVisual from "@/components/Core/Popup/Popupvisual";
 import { useRouter, usePathname } from "next/navigation";
+import NextTopLoader from "nextjs-toploader";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -173,6 +174,7 @@ export default function RootLayout({
             <NavbarProvider>
               <APIContextProvider SiteId={SiteId}>
                 <Toaster />
+                <NextTopLoader showSpinner={false}/>
                 <div className="md:min-h-screen ">{children}</div>
                 {showPopup && <PopVisual />}
               </APIContextProvider>
