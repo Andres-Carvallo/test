@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '.env' });
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
