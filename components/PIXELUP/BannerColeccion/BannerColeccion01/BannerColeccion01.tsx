@@ -13,20 +13,20 @@ import Link from "next/link";
 interface ConfigOptions {
   desktop: {
     showTitle: boolean;
-    showLandingText: boolean;
+    showBannerText: boolean;
     showButton: boolean;
     textAlignment: string;
-    textContent: string;
+    bannerText: string;
     title: string;
     buttonText: string;
     buttonLink: string;
   };
   mobile: {
     showTitle: boolean;
-    showLandingText: boolean;
+    showBannerText: boolean;
     showButton: boolean;
     textAlignment: string;
-    textContent: string;
+    bannerText: string;
     title: string;
     buttonText: string;
     buttonLink: string;
@@ -64,7 +64,7 @@ const BannerColeccion01: React.FC<BannerColeccion01BOProps> = ({
   text,
   imageUrl,
   previewImageUrl,
-  config,
+  config: propConfig,
   isMobile = false,
 }) => {
   // Estilos para la sombra del texto
@@ -74,6 +74,10 @@ const BannerColeccion01: React.FC<BannerColeccion01BOProps> = ({
 
   // Detectar si estamos en vista móvil
   const isMobileView = useMediaQuery("(max-width: 768px)");
+
+  // Parsear la configuración si viene como string
+  const config =
+    typeof propConfig === "string" ? JSON.parse(propConfig) : propConfig;
   const currentConfig = isMobileView ? config?.mobile : config?.desktop;
 
   return (
@@ -88,58 +92,61 @@ const BannerColeccion01: React.FC<BannerColeccion01BOProps> = ({
         alt={title || "Collection banner"}
         className="w-full h-full object-cover hidden md:block"
       />
-      {currentConfig && (
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center px-6 py-6 w-full">
-          <div className="w-full max-w-[95%] mx-auto px-4">
-            <div
-              className={`${
-                currentConfig.textAlignment === "center"
-                  ? "text-center mx-auto max-w-3xl"
-                  : currentConfig.textAlignment === "right"
-                  ? "text-right ml-auto max-w-2xl"
-                  : "text-left max-w-2xl"
-              }`}
-            >
-              {currentConfig.showTitle && (
-                <h1
-                  className={`${
-                    isMobileView
-                      ? "text-2xl md:text-3xl"
-                      : "text-3xl md:text-4xl"
-                  } font-bold text-white mb-3 drop-shadow-lg`}
-                  style={shadowTextStyle}
-                >
-                  {currentConfig.title || title}
-                </h1>
-              )}
-              {currentConfig.showLandingText && (
-                <p
-                  className={`${
-                    isMobileView ? "text-base" : "text-lg"
-                  } text-white mb-4 drop-shadow-lg`}
-                  style={shadowTextStyle}
-                >
-                  {currentConfig.textContent || text}
-                </p>
-              )}
-              {currentConfig.showButton && (
-                <div>
-                  <Link
-                    href={currentConfig.buttonLink}
-                    className={`inline-block px-${
-                      isMobileView ? "5" : "6"
-                    } py-${
-                      isMobileView ? "2.5" : "3"
-                    } bg-white text-black rounded-md shadow-md font-medium hover:bg-gray-100 transition-colors`}
+      {currentConfig &&
+        (currentConfig.showTitle ||
+          currentConfig.showBannerText ||
+          currentConfig.showButton) && (
+          <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center px-6 py-6 w-full">
+            <div className="w-full max-w-[95%] mx-auto px-4">
+              <div
+                className={`${
+                  currentConfig.textAlignment === "center"
+                    ? "text-center mx-auto max-w-3xl"
+                    : currentConfig.textAlignment === "right"
+                    ? "text-right ml-auto max-w-2xl"
+                    : "text-left max-w-2xl"
+                }`}
+              >
+                {currentConfig.showTitle && (
+                  <h1
+                    className={`${
+                      isMobileView
+                        ? "text-2xl md:text-3xl"
+                        : "text-3xl md:text-4xl"
+                    } font-bold text-white mb-3 drop-shadow-lg`}
+                    style={shadowTextStyle}
                   >
-                    {currentConfig.buttonText}
-                  </Link>
-                </div>
-              )}
+                    {currentConfig.title || title}
+                  </h1>
+                )}
+                {currentConfig.showBannerText && (
+                  <p
+                    className={`${
+                      isMobileView ? "text-base" : "text-lg"
+                    } text-white mb-4 drop-shadow-lg`}
+                    style={shadowTextStyle}
+                  >
+                    {currentConfig.bannerText || text}
+                  </p>
+                )}
+                {currentConfig.showButton && (
+                  <div>
+                    <Link
+                      href={currentConfig.buttonLink}
+                      className={`inline-block px-${
+                        isMobileView ? "5" : "6"
+                      } py-${
+                        isMobileView ? "2.5" : "3"
+                      } bg-white text-black rounded-md shadow-md font-medium hover:bg-gray-100 transition-colors`}
+                    >
+                      {currentConfig.buttonText}
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };
