@@ -216,20 +216,10 @@ const BannerTienda01BO: React.FC<any> = () => {
         ) {
           const parsedConfig = JSON.parse(bannerBaseData.banner.landingText);
           if (parsedConfig && typeof parsedConfig === "object") {
-            // Usar la configuración guardada y sincronizar mobile con desktop
+            // Usar la configuración guardada
             extractedConfig = {
               ...extractedConfig,
               ...parsedConfig,
-              mobile: {
-                ...parsedConfig.mobile,
-                title: parsedConfig.desktop.title,
-                textContent: parsedConfig.desktop.textContent,
-                buttonText: parsedConfig.desktop.buttonText,
-                buttonLink: parsedConfig.desktop.buttonLink,
-                showTitle: parsedConfig.desktop.showTitle,
-                showLandingText: parsedConfig.desktop.showLandingText,
-                showButton: parsedConfig.desktop.showButton,
-              },
             };
           }
         }
@@ -313,7 +303,10 @@ const BannerTienda01BO: React.FC<any> = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Validar si el texto descriptivo supera el límite de caracteres
-    const textContentLength = configOptions.desktop.textContent.length;
+    const textContentLength =
+      activeView === "desktop"
+        ? configOptions.desktop.textContent.length
+        : configOptions.mobile.textContent.length;
     if (textContentLength > MAX_CHARACTERS) {
       setIsAlertModalOpen(true); // Mostrar el modal de alerta
       return; // Evitar el envío del formulario
@@ -324,18 +317,15 @@ const BannerTienda01BO: React.FC<any> = () => {
       const bannerId = `${process.env.NEXT_PUBLIC_BANNER_TIENDA_ID}`;
       const bannerImageId = `${process.env.NEXT_PUBLIC_BANNER_TIENDA_IMGID}`;
 
-      // Sincronizar los valores de mobile con desktop
+      // Actualizar la configuración con los valores actuales del formulario
       const updatedConfig = {
         ...configOptions,
-        mobile: {
-          ...configOptions.mobile,
-          title: configOptions.desktop.title,
-          textContent: configOptions.desktop.textContent,
-          buttonText: configOptions.desktop.buttonText,
-          buttonLink: configOptions.desktop.buttonLink,
-          showTitle: configOptions.desktop.showTitle,
-          showLandingText: configOptions.desktop.showLandingText,
-          showButton: configOptions.desktop.showButton,
+        desktop: {
+          ...configOptions.desktop,
+          title: formDataHero.title,
+          buttonText: formDataHero.buttonText,
+          buttonLink: formDataHero.buttonLink,
+          textContent: formDataHero.landingText,
         },
       };
 
@@ -682,28 +672,6 @@ const BannerTienda01BO: React.FC<any> = () => {
     }
   };
 
-  const ImagePreview = ({
-    src,
-    alt = "Preview",
-  }: {
-    src: string;
-    alt?: string;
-  }) => {
-    return (
-      <div className="relative w-full h-40 bg-gray-100 rounded-lg overflow-hidden">
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            console.error("Error al cargar la imagen");
-            e.currentTarget.src = "/placeholder-image.jpg";
-          }}
-        />
-      </div>
-    );
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -1040,115 +1008,6 @@ const BannerTienda01BO: React.FC<any> = () => {
               </button>
             </div>
 
-            {/* Carga de imágenes */}
-            <div className="bg-gray-50 p-5 rounded-lg">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-row gap-4">
-                  {/* Imagen Desktop */}
-                  <div className="flex-1">
-                    <label className="font-medium text-gray-700 mb-2 block">
-                      Imagen para escritorio
-                    </label>
-                    {mainImageHero ? (
-                      <div className="flex flex-col gap-2">
-                        <p className="text-sm text-gray-600">Imagen cargada</p>
-                        <button
-                          type="button"
-                          onClick={() => handleClearImage(setMainImageHero)}
-                          className="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors w-fit"
-                        >
-                          Cambiar
-                        </button>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="desktop-image-upload"
-                        className="flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-8 h-8 text-gray-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                            />
-                          </svg>
-                          <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
-                            Seleccionar imagen
-                          </p>
-                        </div>
-                        <input
-                          id="desktop-image-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleMainImageChange}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Imagen Mobile */}
-                  <div className="flex-1">
-                    <label className="font-medium text-gray-700 mb-2 block">
-                      Imagen para móvil
-                    </label>
-                    {mobileImageHero ? (
-                      <div className="flex flex-col gap-2">
-                        <p className="text-sm text-gray-600">Imagen cargada</p>
-                        <button
-                          type="button"
-                          onClick={handleClearMobileImage}
-                          className="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors w-fit"
-                        >
-                          Cambiar
-                        </button>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="mobile-image-upload"
-                        className="flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
-                      >
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-8 h-8 text-gray-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                            />
-                          </svg>
-                          <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
-                            Seleccionar imagen
-                          </p>
-                        </div>
-                        <input
-                          id="mobile-image-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleMobileImageChange}
-                          className="hidden"
-                        />
-                      </label>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Contenido del banner */}
             <div className="flex flex-col md:flex-row gap-6">
               {/* Contenido del banner */}
@@ -1167,10 +1026,14 @@ const BannerTienda01BO: React.FC<any> = () => {
                         <input
                           type="checkbox"
                           id="showTitle"
-                          checked={configOptions.desktop.showTitle}
+                          checked={
+                            activeView === "desktop"
+                              ? configOptions.desktop.showTitle
+                              : configOptions.mobile.showTitle
+                          }
                           onChange={(e) =>
                             handleConfigChange(
-                              "desktop.showTitle",
+                              `${activeView}.showTitle`,
                               e.target.checked
                             )
                           }
@@ -1178,20 +1041,30 @@ const BannerTienda01BO: React.FC<any> = () => {
                         />
                         <span
                           className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300 ${
-                            configOptions.desktop.showTitle
+                            (
+                              activeView === "desktop"
+                                ? configOptions.desktop.showTitle
+                                : configOptions.mobile.showTitle
+                            )
                               ? "bg-blue-600"
                               : "bg-gray-300"
                           }`}
                           onClick={() =>
                             handleConfigChange(
-                              "desktop.showTitle",
-                              !configOptions.desktop.showTitle
+                              `${activeView}.showTitle`,
+                              !(activeView === "desktop"
+                                ? configOptions.desktop.showTitle
+                                : configOptions.mobile.showTitle)
                             )
                           }
                         >
                           <span
                             className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full transition-all duration-300 ${
-                              configOptions.desktop.showTitle
+                              (
+                                activeView === "desktop"
+                                  ? configOptions.desktop.showTitle
+                                  : configOptions.mobile.showTitle
+                              )
                                 ? "transform translate-x-6"
                                 : ""
                             }`}
@@ -1203,37 +1076,57 @@ const BannerTienda01BO: React.FC<any> = () => {
                       type="text"
                       id="title"
                       name="title"
-                      value={configOptions.desktop.title}
+                      value={
+                        activeView === "desktop"
+                          ? configOptions.desktop.title
+                          : configOptions.mobile.title
+                      }
                       onChange={(e) => {
                         const value = e.target.value;
                         if (value.length <= MAX_TITLE_CHARACTERS) {
-                          handleConfigChange("desktop.title", value);
-                          if (formDataHero.title !== value) {
-                            setFormDataHero({
-                              ...formDataHero,
-                              title: value,
-                            });
+                          if (activeView === "desktop") {
+                            handleConfigChange("desktop.title", value);
+                            if (formDataHero.title !== value) {
+                              setFormDataHero({
+                                ...formDataHero,
+                                title: value,
+                              });
+                            }
+                          } else {
+                            handleConfigChange("mobile.title", value);
                           }
                         }
                       }}
                       className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                        !configOptions.desktop.showTitle
+                        (
+                          activeView === "desktop"
+                            ? !configOptions.desktop.showTitle
+                            : !configOptions.mobile.showTitle
+                        )
                           ? "opacity-50"
                           : ""
                       }`}
                       placeholder="Ingresa el título del banner"
-                      disabled={!configOptions.desktop.showTitle}
+                      disabled={
+                        activeView === "desktop"
+                          ? !configOptions.desktop.showTitle
+                          : !configOptions.mobile.showTitle
+                      }
                       maxLength={MAX_TITLE_CHARACTERS}
                     />
                     <p
                       className={`text-sm ${
-                        configOptions.desktop.title.length >
+                        (activeView === "desktop"
+                          ? configOptions.desktop.title.length
+                          : configOptions.mobile.title.length) >
                         MAX_TITLE_CHARACTERS
                           ? "text-red-500"
                           : "text-gray-500"
                       }`}
                     >
-                      {`${configOptions.desktop.title.length}/${MAX_TITLE_CHARACTERS} caracteres`}
+                      {activeView === "desktop"
+                        ? `${configOptions.desktop.title.length}/${MAX_TITLE_CHARACTERS} caracteres`
+                        : `${configOptions.mobile.title.length}/${MAX_TITLE_CHARACTERS} caracteres`}
                     </p>
                   </div>
 
@@ -1250,10 +1143,14 @@ const BannerTienda01BO: React.FC<any> = () => {
                         <input
                           type="checkbox"
                           id="showLandingText"
-                          checked={configOptions.desktop.showLandingText}
+                          checked={
+                            activeView === "desktop"
+                              ? configOptions.desktop.showLandingText
+                              : configOptions.mobile.showLandingText
+                          }
                           onChange={(e) =>
                             handleConfigChange(
-                              "desktop.showLandingText",
+                              `${activeView}.showLandingText`,
                               e.target.checked
                             )
                           }
@@ -1261,20 +1158,30 @@ const BannerTienda01BO: React.FC<any> = () => {
                         />
                         <span
                           className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300 ${
-                            configOptions.desktop.showLandingText
+                            (
+                              activeView === "desktop"
+                                ? configOptions.desktop.showLandingText
+                                : configOptions.mobile.showLandingText
+                            )
                               ? "bg-blue-600"
                               : "bg-gray-300"
                           }`}
                           onClick={() =>
                             handleConfigChange(
-                              "desktop.showLandingText",
-                              !configOptions.desktop.showLandingText
+                              `${activeView}.showLandingText`,
+                              !(activeView === "desktop"
+                                ? configOptions.desktop.showLandingText
+                                : configOptions.mobile.showLandingText)
                             )
                           }
                         >
                           <span
                             className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full transition-all duration-300 ${
-                              configOptions.desktop.showLandingText
+                              (
+                                activeView === "desktop"
+                                  ? configOptions.desktop.showLandingText
+                                  : configOptions.mobile.showLandingText
+                              )
                                 ? "transform translate-x-6"
                                 : ""
                             }`}
@@ -1285,40 +1192,68 @@ const BannerTienda01BO: React.FC<any> = () => {
                     <textarea
                       id="landingText"
                       name="landingText"
-                      value={configOptions.desktop.textContent}
+                      value={
+                        activeView === "desktop"
+                          ? configOptions.desktop.textContent
+                          : configOptions.mobile.textContent
+                      }
                       onChange={(e) => {
-                        handleConfigChange(
-                          "desktop.textContent",
-                          e.target.value
-                        );
-                        if (formDataHero.landingText !== e.target.value) {
-                          setFormDataHero({
-                            ...formDataHero,
-                            landingText: e.target.value,
-                          });
+                        if (activeView === "desktop") {
+                          handleConfigChange(
+                            "desktop.textContent",
+                            e.target.value
+                          );
+                          if (formDataHero.landingText !== e.target.value) {
+                            setFormDataHero({
+                              ...formDataHero,
+                              landingText: e.target.value,
+                            });
+                          }
+                        } else {
+                          handleConfigChange(
+                            "mobile.textContent",
+                            e.target.value
+                          );
                         }
                       }}
                       className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                        !configOptions.desktop.showLandingText
+                        (
+                          activeView === "desktop"
+                            ? !configOptions.desktop.showLandingText
+                            : !configOptions.mobile.showLandingText
+                        )
                           ? "opacity-50"
                           : ""
                       }`}
                       rows={4}
                       placeholder="Ingresa el texto descriptivo del banner"
-                      disabled={!configOptions.desktop.showLandingText}
+                      disabled={
+                        activeView === "desktop"
+                          ? !configOptions.desktop.showLandingText
+                          : !configOptions.mobile.showLandingText
+                      }
                     />
                     <p
                       className={`text-sm ${
-                        configOptions.desktop.textContent.length >
+                        (activeView === "desktop"
+                          ? configOptions.desktop.textContent.length
+                          : configOptions.mobile.textContent.length) >
                         ALERT_CHARACTERS
                           ? "text-red-500"
                           : "text-gray-500"
                       }`}
                     >
-                      {`${configOptions.desktop.textContent.length}/${MAX_CHARACTERS} caracteres`}
+                      {activeView === "desktop"
+                        ? `${configOptions.desktop.textContent.length}/${MAX_CHARACTERS} caracteres`
+                        : `${configOptions.mobile.textContent.length}/${MAX_CHARACTERS} caracteres`}
                     </p>
                   </div>
+                </div>
+              </div>
 
+              {/* Carga de imágenes */}
+              <div className="flex-1 bg-gray-50 p-5 rounded-lg">
+                <div className="flex flex-col gap-4">
                   {/* Texto del botón */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
@@ -1332,10 +1267,14 @@ const BannerTienda01BO: React.FC<any> = () => {
                         <input
                           type="checkbox"
                           id="showButton"
-                          checked={configOptions.desktop.showButton}
+                          checked={
+                            activeView === "desktop"
+                              ? configOptions.desktop.showButton
+                              : configOptions.mobile.showButton
+                          }
                           onChange={(e) =>
                             handleConfigChange(
-                              "desktop.showButton",
+                              `${activeView}.showButton`,
                               e.target.checked
                             )
                           }
@@ -1343,20 +1282,30 @@ const BannerTienda01BO: React.FC<any> = () => {
                         />
                         <span
                           className={`absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300 ${
-                            configOptions.desktop.showButton
+                            (
+                              activeView === "desktop"
+                                ? configOptions.desktop.showButton
+                                : configOptions.mobile.showButton
+                            )
                               ? "bg-blue-600"
                               : "bg-gray-300"
                           }`}
                           onClick={() =>
                             handleConfigChange(
-                              "desktop.showButton",
-                              !configOptions.desktop.showButton
+                              `${activeView}.showButton`,
+                              !(activeView === "desktop"
+                                ? configOptions.desktop.showButton
+                                : configOptions.mobile.showButton)
                             )
                           }
                         >
                           <span
                             className={`absolute h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full transition-all duration-300 ${
-                              configOptions.desktop.showButton
+                              (
+                                activeView === "desktop"
+                                  ? configOptions.desktop.showButton
+                                  : configOptions.mobile.showButton
+                              )
                                 ? "transform translate-x-6"
                                 : ""
                             }`}
@@ -1370,26 +1319,45 @@ const BannerTienda01BO: React.FC<any> = () => {
                           type="text"
                           id="buttonText"
                           name="buttonText"
-                          value={configOptions.desktop.buttonText}
+                          value={
+                            activeView === "desktop"
+                              ? configOptions.desktop.buttonText
+                              : configOptions.mobile.buttonText
+                          }
                           onChange={(e) => {
-                            handleConfigChange(
-                              "desktop.buttonText",
-                              e.target.value
-                            );
-                            if (formDataHero.buttonText !== e.target.value) {
-                              setFormDataHero({
-                                ...formDataHero,
-                                buttonText: e.target.value,
-                              });
+                            if (activeView === "desktop") {
+                              handleConfigChange(
+                                "desktop.buttonText",
+                                e.target.value
+                              );
+                              if (formDataHero.buttonText !== e.target.value) {
+                                setFormDataHero({
+                                  ...formDataHero,
+                                  buttonText: e.target.value,
+                                });
+                              }
+                            } else {
+                              handleConfigChange(
+                                "mobile.buttonText",
+                                e.target.value
+                              );
                             }
                           }}
                           className={`w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                            !configOptions.desktop.showButton
+                            (
+                              activeView === "desktop"
+                                ? !configOptions.desktop.showButton
+                                : !configOptions.mobile.showButton
+                            )
                               ? "opacity-50"
                               : ""
                           }`}
                           placeholder="Texto del botón"
-                          disabled={!configOptions.desktop.showButton}
+                          disabled={
+                            activeView === "desktop"
+                              ? !configOptions.desktop.showButton
+                              : !configOptions.mobile.showButton
+                          }
                         />
                       </div>
                       <div className="w-full">
@@ -1397,30 +1365,146 @@ const BannerTienda01BO: React.FC<any> = () => {
                           type="text"
                           id="buttonLink"
                           name="buttonLink"
-                          value={configOptions.desktop.buttonLink}
+                          value={
+                            activeView === "desktop"
+                              ? configOptions.desktop.buttonLink
+                              : configOptions.mobile.buttonLink
+                          }
                           onChange={(e) => {
-                            handleConfigChange(
-                              "desktop.buttonLink",
-                              e.target.value
-                            );
-                            if (formDataHero.buttonLink !== e.target.value) {
-                              setFormDataHero({
-                                ...formDataHero,
-                                buttonLink: e.target.value,
-                              });
+                            if (activeView === "desktop") {
+                              handleConfigChange(
+                                "desktop.buttonLink",
+                                e.target.value
+                              );
+                              if (formDataHero.buttonLink !== e.target.value) {
+                                setFormDataHero({
+                                  ...formDataHero,
+                                  buttonLink: e.target.value,
+                                });
+                              }
+                            } else {
+                              handleConfigChange(
+                                "mobile.buttonLink",
+                                e.target.value
+                              );
                             }
                           }}
                           className={`w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                            !configOptions.desktop.showButton
+                            (
+                              activeView === "desktop"
+                                ? !configOptions.desktop.showButton
+                                : !configOptions.mobile.showButton
+                            )
                               ? "opacity-50"
                               : ""
                           }`}
                           placeholder="Enlace del botón (ej: /productos)"
-                          disabled={!configOptions.desktop.showButton}
+                          disabled={
+                            activeView === "desktop"
+                              ? !configOptions.desktop.showButton
+                              : !configOptions.mobile.showButton
+                          }
                         />
                       </div>
                     </div>
                   </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="font-medium text-gray-700">
+                      Imagen para{" "}
+                      {activeView === "desktop" ? "escritorio" : "móvil"}
+                    </label>
+                  </div>
+
+                  {/* Mostrar mensaje y botón rojo si la imagen está cargada */}
+                  {(activeView === "desktop" && mainImageHero) ||
+                  (activeView === "mobile" && mobileImageHero) ? (
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">
+                        Tu fotografía {originalFileName} ya ha sido cargada.
+                      </p>
+                      <div className="flex justify-center pt-6">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (activeView === "desktop") {
+                              handleClearImage(setMainImageHero);
+                            } else {
+                              handleClearMobileImage();
+                            }
+                          }}
+                          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                            />
+                          </svg>
+                          Cambiar/Eliminar Imagen
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Mostrar solo el botón de seleccionar imagen si no hay imagen cargada
+                    <div className="flex flex-col gap-3">
+                      <label
+                        htmlFor={
+                          activeView === "desktop"
+                            ? "desktop-image-upload"
+                            : "mobile-image-upload"
+                        }
+                        className="flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
+                      >
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-8 h-8 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                            />
+                          </svg>
+                          <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
+                            Seleccionar imagen
+                          </p>
+                        </div>
+                        <input
+                          id={
+                            activeView === "desktop"
+                              ? "desktop-image-upload"
+                              : "mobile-image-upload"
+                          }
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            if (activeView === "desktop") {
+                              handleMainImageChange(e);
+                            } else {
+                              handleMobileImageChange(e);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-sm text-gray-500 text-center">
+                        Haz clic para seleccionar una imagen o arrástrala aquí
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

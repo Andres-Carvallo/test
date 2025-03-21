@@ -228,8 +228,8 @@ function Colecciones() {
         textAlignment: "center",
         bannerText: "",
         title: "",
-        buttonText: "Ver más",
-        buttonLink: "#",
+        buttonText: "",
+        buttonLink: "",
       },
       mobile: {
         showTitle: false,
@@ -238,8 +238,8 @@ function Colecciones() {
         textAlignment: "center",
         bannerText: "",
         title: "",
-        buttonText: "Ver más",
-        buttonLink: "#",
+        buttonText: "",
+        buttonLink: "",
       },
     }),
     title: "",
@@ -248,14 +248,14 @@ function Colecciones() {
       type: "",
       size: null,
       data: "",
-      url: "", // Agregado para compatibilidad
+      url: "",
     },
     previewImage: {
       name: "",
       type: "",
       size: null,
       data: "",
-      url: "", // Agregado para compatibilidad
+      url: "",
     },
   });
 
@@ -923,8 +923,8 @@ function Colecciones() {
               textAlignment: "center",
               bannerText: "",
               title: "",
-              buttonText: "Ver más",
-              buttonLink: "#",
+              buttonText: "",
+              buttonLink: "",
             },
             mobile: {
               showTitle: false,
@@ -933,8 +933,8 @@ function Colecciones() {
               textAlignment: "center",
               bannerText: "",
               title: "",
-              buttonText: "Ver más",
-              buttonLink: "#",
+              buttonText: "",
+              buttonLink: "",
             },
           }),
           title: "",
@@ -1101,8 +1101,8 @@ function Colecciones() {
           textAlignment: "center",
           bannerText: "",
           title: "",
-          buttonText: "Ver más",
-          buttonLink: "#",
+          buttonText: "",
+          buttonLink: "",
         },
         mobile: {
           showTitle: false,
@@ -1111,8 +1111,8 @@ function Colecciones() {
           textAlignment: "center",
           bannerText: "",
           title: "",
-          buttonText: "Ver más",
-          buttonLink: "#",
+          buttonText: "",
+          buttonLink: "",
         },
       }),
       title: "",
@@ -1271,6 +1271,37 @@ function Colecciones() {
       return newState;
     });
   };
+
+  // Agregar después de las otras funciones
+  const handleConfigChange = (path: string, value: any) => {
+    const [section, property] = path.split(".");
+    setConfig(prevConfig => ({
+      ...prevConfig,
+      [section]: {
+        ...prevConfig[section as keyof typeof prevConfig],
+        [property]: value
+      }
+    }));
+  };
+
+  // Agregar después de los otros estados
+  const [activeView, setActiveView] = useState<"desktop" | "mobile">("desktop");
+  const [showPreview, setShowPreview] = useState(false);
+  const [config, setConfig] = useState({
+    desktop: {
+      textAlignment: "center",
+    },
+    mobile: {
+      textAlignment: "center",
+    }
+  });
+
+  // Agregar useEffect para controlar la visibilidad de la vista previa
+  useEffect(() => {
+    if (mainImageColeccion || mainPreviewColeccion) {
+      setShowPreview(true);
+    }
+  }, [mainImageColeccion, mainPreviewColeccion]);
 
   return (
     <section>
@@ -1522,732 +1553,469 @@ function Colecciones() {
               </div>
             </div>
 
-            {/* Sección 2: Configuración Desktop */}
-            <div
-              ref={(el) => (sectionRefs.current.desktopConfig = el)}
-              className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-4"
-              style={{ borderRadius: "var(--radius)" }}
-            >
-              <div
-                className="text-sm flex gap-2 font-medium border-b p-4 cursor-pointer hover:bg-gray-50"
-                onClick={() => toggleSection("desktopConfig")}
-              >
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex gap-2">
-                    <div>Configuración Desktop</div>
-                  </div>
-                  {openSections.desktopConfig ? (
+            {/* Vista previa */}
+            {(mainImageColeccion || mainPreviewColeccion) && (
+              <div className="bg-gray-50 p-5 rounded-lg">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Vista Previa</h3>
+                  <button
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="size-6"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
                     >
                       <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                        fillRule="evenodd"
+                        d={showPreview 
+                          ? "M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          : "M10 12a2 2 0 100-4 2 2 0 000 4zM.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                        }
+                        clipRule="evenodd"
                       />
                     </svg>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
-                  )}
+                  </button>
                 </div>
-              </div>
-              <div
-                className={`transition-all duration-300 overflow-hidden  ${
-                  openSections.desktopConfig ? "py-6 px-8" : "h-0 py-0 px-8"
-                }`}
-              >
-                <div className="space-y-6">
-                  {/* Vista Previa Desktop */}
-                  <PreviewBanner
-                    config={JSON.parse(formDataColeccion.bannerText)}
-                    image={mainImageColeccion || ""}
-                    isMobile={false}
-                  />
-
-                  {/* Grid de 2 columnas para Desktop */}
-                  <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6">
-                    {/* Columna 1: Alineación Desktop */}
-                    <div className="w-fit flex flex-col justify-center">
-                      <label className="block text-sm font-medium text-gray-700 mb-4">
-                        Alineación del Texto
-                      </label>
-                      <div className="flex space-x-3">
-                        {["left", "center", "right"].map((alignment) => (
-                          <button
-                            key={alignment}
-                            type="button"
-                            onClick={() => {
-                              const config = JSON.parse(
-                                formDataColeccion.bannerText
-                              );
-                              config.desktop.textAlignment = alignment;
-                              setFormDataColeccion(
-                                (prevData: typeof formDataColeccion) => ({
-                                  ...prevData,
-                                  bannerText: JSON.stringify(config),
-                                })
-                              );
-                            }}
-                            className={`p-4 rounded-lg ${
-                              JSON.parse(formDataColeccion.bannerText).desktop
-                                .textAlignment === alignment
-                                ? "bg-primary text-white"
-                                : "bg-gray-100 hover:bg-gray-200"
-                            }`}
-                          >
-                            {alignment === "left" ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 6h16M4 12h10M4 18h12"
-                                />
-                              </svg>
-                            ) : alignment === "center" ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 6h16M6 12h12M8 18h8"
-                                />
-                              </svg>
-                            ) : (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 6h16M10 12h10M8 18h12"
-                                />
-                              </svg>
-                            )}
-                          </button>
-                        ))}
+                {showPreview && (
+                  <div
+                    className="relative w-full overflow-hidden rounded-lg shadow-lg border border-gray-200"
+                    style={{
+                      aspectRatio: activeView === "desktop" ? "16/5" : "9/5",
+                      maxWidth: activeView === "mobile" ? "720px" : "100%",
+                      maxHeight: activeView === "mobile" ? "400px" : "400px",
+                      margin: activeView === "mobile" ? "0 auto" : "0",
+                    }}
+                  >
+                    <Image
+                      src={
+                        activeView === "desktop"
+                          ? mainImageColeccion || "/placeholder.png"
+                          : mainPreviewColeccion || "/placeholder.png"
+                      }
+                      alt="Banner preview"
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
+                    {JSON.parse(formDataColeccion.bannerText)[activeView].showTitle && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                        <div className="text-center text-white p-4">
+                          <h2 className="text-2xl font-bold mb-2">
+                            {JSON.parse(formDataColeccion.bannerText)[activeView].title}
+                          </h2>
+                          {JSON.parse(formDataColeccion.bannerText)[activeView].showBannerText && (
+                            <p className="mb-4">
+                              {JSON.parse(formDataColeccion.bannerText)[activeView].bannerText}
+                            </p>
+                          )}
+                          {JSON.parse(formDataColeccion.bannerText)[activeView].showButton && (
+                            <button className="bg-white text-black px-6 py-2 rounded-md">
+                              {JSON.parse(formDataColeccion.bannerText)[activeView].buttonText}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Columna 2: Imagen Desktop */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Imagen Desktop <span className="text-primary">*</span>
-                      </label>
-                      <div className="relative">
-                        {isMainImageUploaded ? (
-                          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <div className="flex flex-col space-y-4">
-                              <ImagePreview
-                                src={mainImageColeccion || ""}
-                                alt="Vista previa desktop"
-                              />
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <svg
-                                    className="w-6 h-6 text-green-500"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth="2"
-                                      d="M5 13l4 4L19 7"
-                                    />
-                                  </svg>
-                                  <span className="text-sm text-gray-600">
-                                    Imagen Desktop cargada correctamente
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={handleClearImage}
-                                  className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-secondary transition-colors"
-                                >
-                                  Cambiar Imagen
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <label
-                            htmlFor="mainImage"
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
-                          >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <svg
-                                className="w-8 h-8 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                />
-                              </svg>
-                              <p className="mb-2 text-sm text-gray-500">
-                                PNG, JPG o Webp (1920x200px)
-                              </p>
-                            </div>
-                            <input
-                              id="mainImage"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleImageChange}
-                            />
-                          </label>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
+                )}
+              </div>
+            )}
 
-                  {/* Campos de texto con sus switches */}
-                  <div className="space-y-4">
-                    {/* Título */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700">
-                          Título
-                        </label>
+            {/* Botones de vista previa Desktop/Mobile */}
+            <div className="flex justify-center gap-4 mb-4">
+              <button
+                type="button"
+                className={`px-4 py-2 rounded-full flex items-center gap-2 ${
+                  activeView === "desktop"
+                    ? "bg-primary text-secondary"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveView("desktop");
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25"
+                  />
+                </svg>
+                Desktop
+              </button>
+              <button
+                type="button"
+                className={`px-4 py-2 rounded-full flex items-center gap-2 ${
+                  activeView === "mobile"
+                    ? "bg-primary text-secondary"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveView("mobile");
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"
+                  />
+                </svg>
+                Mobile
+              </button>
+            </div>
+
+            {/* Botones de alineación de texto */}
+            <div className="flex gap-2 my-4">
+              <button
+                type="button"
+                className={`flex-1 p-2 border rounded-md ${
+                  config[activeView].textAlignment === "left"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }`}
+                onClick={() => handleConfigChange(`${activeView}.textAlignment`, "left")}
+              >
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 9.5H12"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 14.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 19.5H12"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className={`flex-1 p-2 border rounded-md ${
+                  config[activeView].textAlignment === "center"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }`}
+                onClick={() => handleConfigChange(`${activeView}.textAlignment`, "center")}
+              >
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 9.5H18"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 14.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 19.5H18"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className={`flex-1 p-2 border rounded-md ${
+                  config[activeView].textAlignment === "right"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }`}
+                onClick={() => handleConfigChange(`${activeView}.textAlignment`, "right")}
+              >
+                <svg
+                  className="w-5 h-5 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 4.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 9.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M3 14.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 19.5H21"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Grid de imágenes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Imagen Desktop */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-medium text-gray-700">
+                    Imagen para escritorio
+                    </label>
+                </div>
+                {mainImageColeccion ? (
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500">
+                      Imagen cargada
+                    </p>
+                    <div className="flex justify-center pt-4">
                         <button
                           type="button"
-                          onClick={() => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.desktop.showTitle =
-                              !config.desktop.showTitle;
-                            setFormDataColeccion({
-                              ...formDataColeccion,
-                              bannerText: JSON.stringify(config),
-                            });
-                          }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                            JSON.parse(formDataColeccion.bannerText).desktop
-                              .showTitle
-                              ? "bg-primary"
-                              : "bg-gray-200"
-                          }`}
+                        onClick={() => handleClearImage()}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                      >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                        Cambiar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <label
+                      htmlFor="desktop-image"
+                      className="flex flex-col items-center justify-center w-full h-24 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                          className="w-8 h-8 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                              />
+                            </svg>
+                        <p className="pt-1 text-sm tracking-wider text-gray-400">
+                          Seleccionar imagen
+                        </p>
+                    </div>
+                      <input
+                        id="desktop-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
+                  </div>
+
+              {/* Imagen Mobile */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-medium text-gray-700">
+                    Imagen para móvil
+                    </label>
+                </div>
+                {mainPreviewColeccion ? (
+                  <div className="text-center">
+                    <p className="text-sm text-gray-500">
+                      Imagen cargada
+                    </p>
+                    <div className="flex justify-center pt-4">
+                      <button
+                        type="button"
+                        onClick={() => handleClearImageMobile()}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              JSON.parse(formDataColeccion.bannerText).desktop
-                                .showTitle
-                                ? "translate-x-6"
-                                : "translate-x-1"
-                            }`}
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                           />
-                        </button>
+                        </svg>
+                        Cambiar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <label
+                      htmlFor="mobile-image"
+                      className="flex flex-col items-center justify-center w-full h-24 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-8 h-8 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                        <p className="pt-1 text-sm tracking-wider text-gray-400">
+                          Seleccionar imagen
+                        </p>
                       </div>
                       <input
-                        type="text"
-                        value={
-                          JSON.parse(formDataColeccion.bannerText).desktop.title
-                        }
-                        onChange={(e) => {
-                          const config = JSON.parse(
-                            formDataColeccion.bannerText
-                          );
-                          config.desktop.title = e.target.value;
-                          // Activar el switch si se escribe algo
-                          if (e.target.value && !config.desktop.showTitle) {
-                            config.desktop.showTitle = true;
-                          }
-                          setFormDataColeccion({
-                            ...formDataColeccion,
-                            bannerText: JSON.stringify(config),
-                          });
-                        }}
-                        placeholder="Título"
-                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        id="mobile-image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePreviewImageChange}
+                        className="hidden"
                       />
-                    </div>
-
-                    {/* Texto */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700">
-                          Texto
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.desktop.showBannerText =
-                              !config.desktop.showBannerText;
-                            setFormDataColeccion({
-                              ...formDataColeccion,
-                              bannerText: JSON.stringify(config),
-                            });
-                          }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                            JSON.parse(formDataColeccion.bannerText).desktop
-                              .showBannerText
-                              ? "bg-primary"
-                              : "bg-gray-200"
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              JSON.parse(formDataColeccion.bannerText).desktop
-                                .showBannerText
-                                ? "translate-x-6"
-                                : "translate-x-1"
-                            }`}
-                          />
-                        </button>
-                      </div>
-                      <textarea
-                        value={
-                          JSON.parse(formDataColeccion.bannerText).desktop
-                            .bannerText
-                        }
-                        onChange={(e) => {
-                          const config = JSON.parse(
-                            formDataColeccion.bannerText
-                          );
-                          config.desktop.bannerText = e.target.value;
-                          // Activar el switch si se escribe algo
-                          if (
-                            e.target.value &&
-                            !config.desktop.showBannerText
-                          ) {
-                            config.desktop.showBannerText = true;
-                          }
-                          setFormDataColeccion({
-                            ...formDataColeccion,
-                            bannerText: JSON.stringify(config),
-                          });
-                        }}
-                        placeholder="Contenido del texto"
-                        rows={2}
-                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
-                      />
-                    </div>
-
-                    {/* Botón */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700">
-                          Botón
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.desktop.showButton =
-                              !config.desktop.showButton;
-                            setFormDataColeccion({
-                              ...formDataColeccion,
-                              bannerText: JSON.stringify(config),
-                            });
-                          }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                            JSON.parse(formDataColeccion.bannerText).desktop
-                              .showButton
-                              ? "bg-primary"
-                              : "bg-gray-200"
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              JSON.parse(formDataColeccion.bannerText).desktop
-                                .showButton
-                                ? "translate-x-6"
-                                : "translate-x-1"
-                            }`}
-                          />
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          value={
-                            JSON.parse(formDataColeccion.bannerText).desktop
-                              .buttonText
-                          }
-                          onChange={(e) => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.desktop.buttonText = e.target.value;
-                            // Activar el switch si se escribe algo
-                            if (e.target.value && !config.desktop.showButton) {
-                              config.desktop.showButton = true;
-                            }
-                            setFormDataColeccion({
-                              ...formDataColeccion,
-                              bannerText: JSON.stringify(config),
-                            });
-                          }}
-                          placeholder="Texto del botón"
-                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
-                        />
-                        <input
-                          type="text"
-                          value={
-                            JSON.parse(formDataColeccion.bannerText).desktop
-                              .buttonLink
-                          }
-                          onChange={(e) => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.desktop.buttonLink = e.target.value;
-                            setFormDataColeccion({
-                              ...formDataColeccion,
-                              bannerText: JSON.stringify(config),
-                            });
-                          }}
-                          placeholder="Enlace del botón"
-                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Botón de acción Desktop */}
-                    <div className="mt-6 flex justify-end space-x-4">
-                      {isEditing && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={handleCancelEdit}
-                            className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors"
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleSubmit(e, "desktop")}
-                            disabled={selectedProducts.length === 0}
-                            className={`px-6 py-2 rounded-md transition-colors ${
-                              selectedProducts.length === 0
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-primary hover:bg-secondary text-white"
-                            }`}
-                          >
-                            Actualizar Desktop
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    </label>
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
-            {/* Sección 3: Configuración Mobile */}
-            <div
-              ref={(el) => (sectionRefs.current.mobileConfig = el)}
-              className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black"
-              style={{ borderRadius: "var(--radius)" }}
-            >
-              <div
-                className="text-sm flex gap-2 font-medium border-b p-4 cursor-pointer hover:bg-gray-50"
-                onClick={() => toggleSection("mobileConfig")}
-              >
-                <div className="flex justify-between items-center w-full">
-                  <div className="flex gap-2">
-                    <div>Configuración Mobile</div>
-                  </div>
-                  {openSections.mobileConfig ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="size-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
-                  )}
+            {/* Campos de texto con sus switches */}
+            <div className="space-y-4">
+              {/* Título */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    Título
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                  const config = JSON.parse(formDataColeccion.bannerText);
+                  const newShowTitle = !config.desktop.showTitle;
+                  config.desktop.showTitle = newShowTitle;
+                  config.mobile.showTitle = newShowTitle;
+                        setFormDataColeccion({
+                          ...formDataColeccion,
+                          bannerText: JSON.stringify(config),
+                        });
+                      }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                  JSON.parse(formDataColeccion.bannerText).desktop.showTitle
+                          ? "bg-primary"
+                          : "bg-gray-200"
+                      }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  JSON.parse(formDataColeccion.bannerText).desktop.showTitle
+                          ? "translate-x-6"
+                          : "translate-x-1"
+                      }`}
+                    />
+                  </button>
                 </div>
-              </div>
-              <div
-                className={`transition-all duration-300 overflow-hidden ${
-                  openSections.mobileConfig ? "py-6 px-8" : "h-0 py-0 px-8"
-                }`}
-              >
-                <div className="space-y-6">
-                  {/* Vista Previa Mobile */}
-                  <PreviewBanner
-                    config={JSON.parse(formDataColeccion.bannerText)}
-                    image={mainPreviewColeccion || ""}
-                    isMobile={true}
-                  />
-
-                  {/* Grid de 2 columnas para Mobile */}
-                  <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6">
-                    {/* Columna 1: Alineación Mobile */}
-                    <div className="w-fit flex flex-col justify-center">
-                      <label className="block text-sm font-medium text-gray-700 mb-4">
-                        Alineación del Texto
-                      </label>
-                      <div className="flex space-x-3">
-                        {["left", "center", "right"].map((alignment) => (
-                          <button
-                            key={alignment}
-                            type="button"
-                            onClick={() => {
-                              const config = JSON.parse(
-                                formDataColeccion.bannerText
-                              );
-                              config.mobile.textAlignment = alignment;
-                              setFormDataColeccion(
-                                (prevData: typeof formDataColeccion) => ({
-                                  ...prevData,
-                                  bannerText: JSON.stringify(config),
-                                })
-                              );
-                            }}
-                            className={`p-4 rounded-lg ${
-                              JSON.parse(formDataColeccion.bannerText).mobile
-                                .textAlignment === alignment
-                                ? "bg-primary text-white"
-                                : "bg-gray-100 hover:bg-gray-200"
-                            }`}
-                          >
-                            {alignment === "left" ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 6h16M4 12h10M4 18h12"
-                                />
-                              </svg>
-                            ) : alignment === "center" ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 6h16M6 12h12M8 18h8"
-                                />
-                              </svg>
-                            ) : (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M4 6h16M10 12h10M8 18h12"
-                                />
-                              </svg>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Columna 2: Imagen Mobile */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Imagen Mobile <span className="text-primary">*</span>
-                      </label>
-                      <div className="relative">
-                        {isPreviewImageUploaded ? (
-                          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <div className="flex flex-col space-y-4">
-                              <ImagePreview
-                                src={mainPreviewColeccion || ""}
-                                alt="Vista previa mobile"
-                              />
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <svg
-                                    className="w-6 h-6 text-green-500"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth="2"
-                                      d="M5 13l4 4L19 7"
-                                    />
-                                  </svg>
-                                  <span className="text-sm text-gray-600">
-                                    Imagen Mobile cargada correctamente
-                                  </span>
-                                </div>
-                                <button
-                                  onClick={handleClearImageMobile}
-                                  className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-secondary transition-colors"
-                                >
-                                  Cambiar Imagen
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <label
-                            htmlFor="previewImage"
-                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
-                          >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <svg
-                                className="w-8 h-8 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                />
-                              </svg>
-                              <p className="mb-2 text-sm text-gray-500">
-                                PNG, JPG o Webp (1080x300px)
-                              </p>
-                            </div>
-                            <input
-                              id="previewImage"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handlePreviewImageChange}
-                            />
-                          </label>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Campos de texto con sus switches */}
-                  <div className="space-y-4">
-                    {/* Título */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-700">
-                          Título
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.mobile.showTitle = !config.mobile.showTitle;
-                            setFormDataColeccion({
-                              ...formDataColeccion,
-                              bannerText: JSON.stringify(config),
-                            });
-                          }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                            JSON.parse(formDataColeccion.bannerText).mobile
-                              .showTitle
-                              ? "bg-primary"
-                              : "bg-gray-200"
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              JSON.parse(formDataColeccion.bannerText).mobile
-                                .showTitle
-                                ? "translate-x-6"
-                                : "translate-x-1"
-                            }`}
-                          />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={
-                          JSON.parse(formDataColeccion.bannerText).mobile.title
-                        }
-                        onChange={(e) => {
-                          const config = JSON.parse(
-                            formDataColeccion.bannerText
-                          );
+                <input
+                  type="text"
+                  value={JSON.parse(formDataColeccion.bannerText).desktop.title}
+                  onChange={(e) => {
+                    const config = JSON.parse(formDataColeccion.bannerText);
+                    config.desktop.title = e.target.value;
+                    config.mobile.title = e.target.value;
                           config.mobile.title = e.target.value;
-                          // Activar el switch si se escribe algo
-                          if (e.target.value && !config.mobile.showTitle) {
+                    if (e.target.value && !config.desktop.showTitle) {
+                      config.desktop.showTitle = true;
                             config.mobile.showTitle = true;
                           }
                           setFormDataColeccion({
@@ -2269,27 +2037,24 @@ function Colecciones() {
                         <button
                           type="button"
                           onClick={() => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.mobile.showBannerText =
-                              !config.mobile.showBannerText;
+                      const config = JSON.parse(formDataColeccion.bannerText);
+                      const newShowBannerText = !config.desktop.showBannerText;
+                      config.desktop.showBannerText = newShowBannerText;
+                      config.mobile.showBannerText = newShowBannerText;
                             setFormDataColeccion({
                               ...formDataColeccion,
                               bannerText: JSON.stringify(config),
                             });
                           }}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                            JSON.parse(formDataColeccion.bannerText).mobile
-                              .showBannerText
+                      JSON.parse(formDataColeccion.bannerText).desktop.showBannerText
                               ? "bg-primary"
                               : "bg-gray-200"
                           }`}
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              JSON.parse(formDataColeccion.bannerText).mobile
-                                .showBannerText
+                        JSON.parse(formDataColeccion.bannerText).desktop.showBannerText
                                 ? "translate-x-6"
                                 : "translate-x-1"
                             }`}
@@ -2297,17 +2062,13 @@ function Colecciones() {
                         </button>
                       </div>
                       <textarea
-                        value={
-                          JSON.parse(formDataColeccion.bannerText).mobile
-                            .bannerText
-                        }
+                  value={JSON.parse(formDataColeccion.bannerText).desktop.bannerText}
                         onChange={(e) => {
-                          const config = JSON.parse(
-                            formDataColeccion.bannerText
-                          );
+                    const config = JSON.parse(formDataColeccion.bannerText);
+                    config.desktop.bannerText = e.target.value;
                           config.mobile.bannerText = e.target.value;
-                          // Activar el switch si se escribe algo
-                          if (e.target.value && !config.mobile.showBannerText) {
+                    if (e.target.value && !config.desktop.showBannerText) {
+                      config.desktop.showBannerText = true;
                             config.mobile.showBannerText = true;
                           }
                           setFormDataColeccion({
@@ -2330,27 +2091,24 @@ function Colecciones() {
                         <button
                           type="button"
                           onClick={() => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
-                            config.mobile.showButton =
-                              !config.mobile.showButton;
+                      const config = JSON.parse(formDataColeccion.bannerText);
+                      const newShowButton = !config.desktop.showButton;
+                      config.desktop.showButton = newShowButton;
+                      config.mobile.showButton = newShowButton;
                             setFormDataColeccion({
                               ...formDataColeccion,
                               bannerText: JSON.stringify(config),
                             });
                           }}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                            JSON.parse(formDataColeccion.bannerText).mobile
-                              .showButton
+                      JSON.parse(formDataColeccion.bannerText).desktop.showButton
                               ? "bg-primary"
                               : "bg-gray-200"
                           }`}
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              JSON.parse(formDataColeccion.bannerText).mobile
-                                .showButton
+                        JSON.parse(formDataColeccion.bannerText).desktop.showButton
                                 ? "translate-x-6"
                                 : "translate-x-1"
                             }`}
@@ -2360,17 +2118,13 @@ function Colecciones() {
                       <div className="grid grid-cols-2 gap-2">
                         <input
                           type="text"
-                          value={
-                            JSON.parse(formDataColeccion.bannerText).mobile
-                              .buttonText
-                          }
+                    value={JSON.parse(formDataColeccion.bannerText).desktop.buttonText}
                           onChange={(e) => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
+                      const config = JSON.parse(formDataColeccion.bannerText);
+                      config.desktop.buttonText = e.target.value;
                             config.mobile.buttonText = e.target.value;
-                            // Activar el switch si se escribe algo
-                            if (e.target.value && !config.mobile.showButton) {
+                      if (e.target.value && !config.desktop.showButton) {
+                        config.desktop.showButton = true;
                               config.mobile.showButton = true;
                             }
                             setFormDataColeccion({
@@ -2383,14 +2137,10 @@ function Colecciones() {
                         />
                         <input
                           type="text"
-                          value={
-                            JSON.parse(formDataColeccion.bannerText).mobile
-                              .buttonLink
-                          }
+                    value={JSON.parse(formDataColeccion.bannerText).desktop.buttonLink}
                           onChange={(e) => {
-                            const config = JSON.parse(
-                              formDataColeccion.bannerText
-                            );
+                      const config = JSON.parse(formDataColeccion.bannerText);
+                      config.desktop.buttonLink = e.target.value;
                             config.mobile.buttonLink = e.target.value;
                             setFormDataColeccion({
                               ...formDataColeccion,
@@ -2403,89 +2153,44 @@ function Colecciones() {
                       </div>
                     </div>
 
-                    {/* Botón de acción Mobile */}
-                    <div className="mt-6 flex justify-end space-x-4">
-                      {isEditing && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={handleCancelEdit}
-                            className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors"
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(e) => handleSubmit(e, "mobile")}
-                            disabled={selectedProducts.length === 0}
-                            className={`px-6 py-2 rounded-md transition-colors ${
-                              selectedProducts.length === 0
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-primary hover:bg-secondary text-white"
-                            }`}
-                          >
-                            Actualizar Mobile
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              {/* Botones de acción */}
+              <div className="mt-6 grid grid-cols-1 gap-4">
+                {isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="w-full px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={selectedProducts.length === 0}
+                      className={`w-full px-6 py-2 rounded-md transition-colors ${
+                        selectedProducts.length === 0
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-primary hover:bg-secondary text-white"
+                      }`}
+                    >
+                      Actualizar Colección
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={selectedProducts.length === 0}
+                    className={`w-full px-6 py-2 rounded-md transition-colors ${
+                      selectedProducts.length === 0
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-primary hover:bg-secondary text-white"
+                    }`}
+                  >
+                    Crear Colección
+                  </button>
+                )}
               </div>
             </div>
-
-            {/* Eliminar el botón de acción principal */}
-            {!isEditing && (
-              <div className="mt-4 flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const missingFields = [];
-
-                    if (!formDataColeccion.title.trim()) {
-                      missingFields.push("nombre de la colección");
-                    }
-                    if (selectedProducts.length === 0) {
-                      missingFields.push("al menos un producto");
-                    }
-                    if (
-                      !isMainImageUploaded ||
-                      !formDataColeccion.mainImage?.data
-                    ) {
-                      missingFields.push("imagen desktop");
-                    }
-                    if (
-                      !isPreviewImageUploaded ||
-                      !formDataColeccion.previewImage?.data
-                    ) {
-                      missingFields.push("imagen mobile");
-                    }
-
-                    if (missingFields.length > 0) {
-                      toast.error(
-                        `Por favor, complete los siguientes campos obligatorios: ${missingFields.join(
-                          ", "
-                        )}`
-                      );
-                      return;
-                    }
-
-                    handleSubmit(e);
-                  }}
-                  className="px-6 py-2 rounded-md transition-colors bg-primary hover:bg-secondary text-white"
-                >
-                  Crear Colección
-                </button>
-              </div>
-            )}
           </form>
         </div>
       )}

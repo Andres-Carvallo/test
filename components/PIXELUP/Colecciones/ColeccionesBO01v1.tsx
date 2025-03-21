@@ -17,13 +17,185 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
+import Image from "next/image";
+
+interface ConfigOptions {
+  desktop: {
+    showTitle: boolean;
+    showBannerText: boolean;
+    showButton: boolean;
+    textAlignment: string;
+    bannerText: string;
+    title: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+  mobile: {
+    showTitle: boolean;
+    showBannerText: boolean;
+    showButton: boolean;
+    textAlignment: string;
+    bannerText: string;
+    title: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+}
+
+// Funciones de utilidad para el manejo de imágenes
+const validateImage = (file: File) => {
+  // Validar tipo de archivo
+  const validTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!validTypes.includes(file.type)) {
+    toast.error("Formato de imagen no válido. Use PNG, JPG o WebP");
+    return false;
+  }
+
+  // Validar tamaño (máximo 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    toast.error("La imagen es demasiado grande. Máximo 5MB");
+    return false;
+  }
+
+  return true;
+};
+
+const compressImage = async (file: File) => {
+  try {
+    console.log("🗜️ Iniciando compresión de imagen:", {
+      originalSize: file.size,
+      originalType: file.type,
+    });
+
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+      initialQuality: 0.8,
+    };
+
+    const compressedFile = await imageCompression(file, options);
+
+    console.log("✅ Imagen comprimida exitosamente:", {
+      finalSize: compressedFile.size,
+      finalType: compressedFile.type,
+      compressionRatio: (file.size / compressedFile.size).toFixed(2) + "x",
+    });
+
+    return compressedFile;
+  } catch (error) {
+    console.error("❌ Error al comprimir la imagen:", error);
+    throw new Error("Error al comprimir la imagen");
+  }
+};
+
+const ImagePreview = ({
+  src,
+  alt = "Preview",
+}: {
+  src: string;
+  alt?: string;
+}) => {
+  return (
+    <div className="relative w-full h-40 bg-gray-100 rounded-lg overflow-hidden">
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          console.error("Error al cargar la imagen");
+          e.currentTarget.src = "/placeholder-image.jpg";
+        }}
+      />
+    </div>
+  );
+};
+
+const PreviewBanner = ({ config, image, isMobile = false }: any) => {
+  const currentConfig = config[isMobile ? "mobile" : "desktop"];
+  const hasContent = image;
+  const hasElements =
+    currentConfig.showTitle ||
+    currentConfig.showBannerText ||
+    currentConfig.showButton;
+
+  if (!hasContent) {
+    return null;
+  }
+
+  const getAlignmentClasses = (alignment: string) => {
+    switch (alignment) {
+      case "left":
+        return "items-start text-left";
+      case "right":
+        return "items-end text-right";
+      default:
+        return "items-center text-center";
+    }
+  };
+
+  return (
+    <div className="relative w-full">
+      {image && (
+        <Image
+          src={image}
+          alt="Preview"
+          width={isMobile ? 375 : 1920}
+          height={isMobile ? 500 : 600}
+          className="w-full object-cover"
+        />
+      )}
+      {hasElements && (
+        <div className="absolute inset-0 bg-black bg-opacity-50">
+          <div
+            className={`flex h-full flex-col ${getAlignmentClasses(
+              currentConfig.textAlignment
+            )} justify-center p-4`}
+          >
+            <div className="max-w-[90%]">
+              {currentConfig.showTitle && (
+                <h2 className="mb-4 text-2xl font-bold text-white">
+                  {currentConfig.title}
+                </h2>
+              )}
+              {currentConfig.showBannerText && (
+                <p className="mb-4 text-white">{currentConfig.bannerText}</p>
+              )}
+              {currentConfig.showButton && (
+                <div
+                  className={`flex ${
+                    currentConfig.textAlignment === "center"
+                      ? "justify-center"
+                      : currentConfig.textAlignment === "right"
+                      ? "justify-end"
+                      : "justify-start"
+                  }`}
+                >
+                  <button className="inline-block rounded bg-white px-4 py-2 text-black">
+                    {currentConfig.buttonText}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 function Colecciones() {
   const { triggerRevalidation } = useRevalidation();
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [productos, setProductos] = useState<any[]>([]);
   const editFormRef = useRef<HTMLDivElement>(null);
-  // Nuevo estado para indicar qué imagen está siendo recortada
+  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
+    basicInfo: true,
+    desktopConfig: true,
+    mobileConfig: true,
+  });
+  const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [isPreviewImageModalOpen, setIsPreviewImageModalOpen] = useState(false);
 
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
@@ -48,20 +220,42 @@ function Colecciones() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [formDataColeccion, setFormDataColeccion] = useState<any>({
     bannerTitle: nombreTienda,
-    bannerText: nombreTienda,
+    bannerText: JSON.stringify({
+      desktop: {
+        showTitle: false,
+        showBannerText: false,
+        showButton: false,
+        textAlignment: "center",
+        bannerText: "",
+        title: "",
+        buttonText: "Ver más",
+        buttonLink: "#",
+      },
+      mobile: {
+        showTitle: false,
+        showBannerText: false,
+        showButton: false,
+        textAlignment: "center",
+        bannerText: "",
+        title: "",
+        buttonText: "Ver más",
+        buttonLink: "#",
+      },
+    }),
     title: "",
-    landingText: nombreTienda,
     mainImage: {
       name: "",
       type: "",
       size: null,
       data: "",
+      url: "", // Agregado para compatibilidad
     },
     previewImage: {
       name: "",
       type: "",
       size: null,
       data: "",
+      url: "", // Agregado para compatibilidad
     },
   });
 
@@ -119,18 +313,67 @@ function Colecciones() {
     }
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFileName(file.name); // Almacena el nombre del archivo
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+      console.log("🖼️ Iniciando carga de imagen principal:", {
+        fileName: file?.name,
+        fileSize: file?.size,
+        fileType: file?.type,
+      });
+
+      if (!file) {
+        console.log("❌ No se seleccionó ningún archivo");
+        return;
+      }
+
+      if (!validateImage(file)) {
+        console.log("❌ La imagen no pasó la validación");
+        return;
+      }
+
+      setFileName(file.name);
+      console.log("📝 Nombre de archivo guardado:", file.name);
+
       const reader = new FileReader();
+
       reader.onload = () => {
         const result = reader.result as string;
+        console.log("✅ Imagen principal cargada:", {
+          resultLength: result.length,
+          isBase64: result.startsWith("data:image"),
+        });
+
+        // Actualizar el estado de la imagen principal
+        setFormDataColeccion((prevState: any) => ({
+          ...prevState,
+          mainImage: {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: result,
+          },
+        }));
+
         setMainImageColeccion(result);
-        setIsMainImageUploaded(true); // Indicar que una nueva imagen ha sido cargada
-        setIsModalOpen(true); // Abrir el modal para recortar
+        setIsMainImageUploaded(true);
+        setIsModalOpen(true);
+        toast.success("Imagen cargada correctamente");
       };
+
+      reader.onerror = (error) => {
+        console.log("❌ Error al leer el archivo:", error);
+        toast.error(
+          "Error al cargar la imagen. Por favor, intente nuevamente."
+        );
+        setIsMainImageUploaded(false);
+      };
+
       reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("❌ Error en handleImageChange:", error);
+      toast.error("Error al procesar la imagen");
+      setIsMainImageUploaded(false);
     }
   };
 
@@ -142,106 +385,208 @@ function Colecciones() {
   );
 
   const handlePreviewCrop = async () => {
-    if (!mainPreviewColeccion) return;
-
     try {
+      console.log("✂️ Iniciando recorte de imagen mobile");
+
+      if (!mainPreviewColeccion) {
+        console.log("❌ No hay imagen mobile para recortar");
+        toast.error("No hay imagen mobile para recortar");
+        return;
+      }
+
+      console.log("📐 Área de recorte mobile:", croppedAreaPixels);
+
       const croppedImage = await getCroppedImg(
         mainPreviewColeccion,
         croppedAreaPixels
       );
+
       if (!croppedImage) {
-        console.error("Error al recortar la imagen: croppedImage es null");
+        console.log("❌ Error al recortar la imagen mobile");
+        toast.error("Error al recortar la imagen mobile");
         return;
       }
 
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1080, // Ajusta el tamaño según sea necesario
-        useWebWorker: true,
-        initialQuality: 1,
-      };
-      const compressedFile = await imageCompression(
-        croppedImage as File,
-        options
-      );
+      console.log("✂️ Imagen mobile recortada correctamente:", {
+        size: croppedImage.size,
+        type: croppedImage.type,
+      });
+
+      const compressedFile = await compressImage(croppedImage as File);
       const base64 = await convertToBase64(compressedFile);
 
+      console.log("🔄 Imagen mobile convertida a base64:", {
+        finalLength: base64.length,
+        isBase64: base64.startsWith("data:image"),
+      });
+
       const imageInfo = {
-        name: fileName, // Usa el nombre del archivo almacenado
+        name: fileName || "preview-image.jpg",
         type: compressedFile.type,
         size: compressedFile.size,
         data: base64,
       };
 
-      // Actualizamos el estado con la imagen recortada y comprimida
-      setFormDataColeccion((prevFormData: any) => ({
-        ...prevFormData,
-        previewImage: imageInfo, // Actualiza la imagen de vista previa en el formData
-      }));
+      console.log("📊 Estado final de la imagen mobile:", {
+        name: imageInfo.name,
+        type: imageInfo.type,
+        size: imageInfo.size,
+        hasData: !!imageInfo.data,
+      });
+
+      setFormDataColeccion((prevFormData: any) => {
+        console.log(
+          "🔄 Actualizando formDataColeccion con nueva imagen mobile"
+        );
+        return {
+          ...prevFormData,
+          previewImage: imageInfo,
+        };
+      });
+
       setPreviewImageColeccion(base64);
-      setIsPreviewImageModalOpen(false); // Cierra el modal después del recorte
+      setIsPreviewImageModalOpen(false);
       setIsPreviewImageUploaded(true);
+      toast.success("Imagen mobile recortada con éxito");
     } catch (error) {
-      console.error("Error al recortar/comprimir la imagen:", error);
+      console.error("❌ Error detallado en handlePreviewCrop:", error);
+      toast.error("Error al procesar la imagen mobile");
+      setIsPreviewImageUploaded(false);
     }
   };
 
-  const handlePreviewImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFileName(file.name); // Guarda el nombre del archivo
+  const handlePreviewImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    try {
+      const file = e.target.files?.[0];
+      console.log("🖼️ Iniciando carga de imagen mobile:", {
+        fileName: file?.name,
+        fileSize: file?.size,
+        fileType: file?.type,
+      });
+
+      if (!file) {
+        console.log("❌ No se seleccionó ningún archivo para mobile");
+        return;
+      }
+
+      if (!validateImage(file)) {
+        console.log("❌ La imagen mobile no pasó la validación");
+        return;
+      }
+
+      setFileName(file.name);
+      console.log("📝 Nombre de archivo mobile guardado:", file.name);
+
       const reader = new FileReader();
+
       reader.onload = () => {
         const result = reader.result as string;
+        console.log("✅ Imagen mobile cargada:", {
+          resultLength: result.length,
+          isBase64: result.startsWith("data:image"),
+        });
+
+        // Actualizar el estado de la imagen mobile
+        setFormDataColeccion((prevState: any) => ({
+          ...prevState,
+          previewImage: {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: result,
+          },
+        }));
+
         setPreviewImageColeccion(result);
-        setIsPreviewImageUploaded(true); // Indica que la imagen fue cargada
-        setIsPreviewImageModalOpen(true); // Abre el modal de recorte para preview
+        setIsPreviewImageUploaded(true);
+        setIsPreviewImageModalOpen(true);
+        toast.success("Imagen mobile cargada correctamente");
       };
+
+      reader.onerror = (error) => {
+        console.log("❌ Error al leer el archivo mobile:", error);
+        toast.error(
+          "Error al cargar la imagen mobile. Por favor, intente nuevamente."
+        );
+        setIsPreviewImageUploaded(false);
+      };
+
       reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("❌ Error en handlePreviewImageChange:", error);
+      toast.error("Error al procesar la imagen mobile");
+      setIsPreviewImageUploaded(false);
     }
   };
 
   const handleCrop = async () => {
-    if (!mainImageColeccion) return;
-
     try {
+      console.log("✂️ Iniciando recorte de imagen principal");
+
+      if (!mainImageColeccion) {
+        console.log("❌ No hay imagen principal para recortar");
+        toast.error("No hay imagen para recortar");
+        return;
+      }
+
+      console.log("📐 Área de recorte:", croppedAreaPixels);
+
       const croppedImage = await getCroppedImg(
         mainImageColeccion,
         croppedAreaPixels
       );
+
       if (!croppedImage) {
-        console.error("Error al recortar la imagen: croppedImage es null");
+        console.log("❌ Error al recortar la imagen principal");
+        toast.error("Error al recortar la imagen");
         return;
       }
 
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1900,
-        useWebWorker: true,
-        initialQuality: 1,
-      };
-      const compressedFile = await imageCompression(
-        croppedImage as File,
-        options
-      );
+      console.log("✂️ Imagen principal recortada correctamente:", {
+        size: croppedImage.size,
+        type: croppedImage.type,
+      });
+
+      const compressedFile = await compressImage(croppedImage as File);
       const base64 = await convertToBase64(compressedFile);
 
+      console.log("🔄 Imagen principal convertida a base64:", {
+        finalLength: base64.length,
+        isBase64: base64.startsWith("data:image"),
+      });
+
       const imageInfo = {
-        name: fileName, // Usa el nombre del archivo almacenado
+        name: fileName || "main-image.jpg",
         type: compressedFile.type,
         size: compressedFile.size,
         data: base64,
       };
 
-      setFormDataColeccion((prevFormData: any) => ({
-        ...prevFormData,
-        mainImage: imageInfo,
-      }));
+      console.log("📊 Estado final de la imagen principal:", {
+        name: imageInfo.name,
+        type: imageInfo.type,
+        size: imageInfo.size,
+        hasData: !!imageInfo.data,
+      });
+
+      setFormDataColeccion((prevFormData: any) => {
+        console.log(
+          "🔄 Actualizando formDataColeccion con nueva imagen principal"
+        );
+        return {
+          ...prevFormData,
+          mainImage: imageInfo,
+        };
+      });
+
       setMainImageColeccion(base64);
       setIsModalOpen(false);
       setIsMainImageUploaded(true);
+      toast.success("Imagen recortada con éxito");
     } catch (error) {
-      console.error("Error al recortar/comprimir la imagen:", error);
+      console.error("❌ Error detallado en handleCrop:", error);
+      toast.error("Error al procesar la imagen");
+      setIsMainImageUploaded(false);
     }
   };
 
@@ -335,7 +680,6 @@ function Colecciones() {
         }
       );
       setCollections(response.data.collections);
-      console.log("Colecciones:", response.data.collections);
     } catch (error) {
       console.error("Error fetching collections:", error);
     }
@@ -358,8 +702,10 @@ function Colecciones() {
     (product) =>
       !selectedProducts.some((selected) => selected.value === product.id)
   );
-  console.log("Productos disponibles:", availableProducts);
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent,
+    section?: "desktop" | "mobile"
+  ) => {
     e.preventDefault();
 
     // Validar que haya al menos un producto seleccionado
@@ -427,12 +773,37 @@ function Colecciones() {
 
     // Solo validar imágenes si es una nueva colección
     if (!isEditing) {
-      if (!isMainImageUploaded) {
+      console.log("Estado de las imágenes:", {
+        isMainImageUploaded,
+        isPreviewImageUploaded,
+        mainImage: formDataColeccion.mainImage,
+        previewImage: formDataColeccion.previewImage,
+      });
+
+      // Validación mejorada para la imagen principal
+      if (
+        !isMainImageUploaded ||
+        !formDataColeccion.mainImage?.data ||
+        formDataColeccion.mainImage.data === ""
+      ) {
+        console.log("Error en imagen principal:", {
+          isMainImageUploaded,
+          mainImageData: formDataColeccion.mainImage?.data,
+        });
         toast.error("Por favor, sube una imagen principal antes de continuar.");
         return;
       }
 
-      if (!isPreviewImageUploaded) {
+      // Validación mejorada para la imagen de preview
+      if (
+        !isPreviewImageUploaded ||
+        !formDataColeccion.previewImage?.data ||
+        formDataColeccion.previewImage.data === ""
+      ) {
+        console.log("Error en imagen preview:", {
+          isPreviewImageUploaded,
+          previewImageData: formDataColeccion.previewImage?.data,
+        });
         toast.error(
           "Por favor, sube una imagen para móvil antes de continuar."
         );
@@ -447,23 +818,53 @@ function Colecciones() {
 
     // Preparar los datos base
     let data: any = {
-      bannerTitle: formDataColeccion.bannerTitle,
-      bannerText: formDataColeccion.bannerText,
       title: formDataColeccion.title,
-      landingText: formDataColeccion.landingText,
+      landingText: nombreTienda,
+      bannerText: formDataColeccion.bannerText,
       products: selectedProducts.map((product) => ({
         id: product.value,
       })),
     };
 
-    // Solo incluir imágenes si han sido modificadas
-    if (isMainImageUploaded) {
-      data.mainImage = formDataColeccion.mainImage;
+    // Si se está actualizando una sección específica
+    if (section) {
+      // Mantener la configuración existente de la otra sección
+      const currentConfig = JSON.parse(formDataColeccion.bannerText);
+      if (section === "desktop") {
+        // Mantener la configuración mobile existente
+        data.bannerText = JSON.stringify({
+          ...currentConfig,
+          desktop: currentConfig.desktop,
+        });
+      } else {
+        // Mantener la configuración desktop existente
+        data.bannerText = JSON.stringify({
+          ...currentConfig,
+          mobile: currentConfig.mobile,
+        });
+      }
     }
 
-    if (isPreviewImageUploaded) {
-      data.previewImage = formDataColeccion.previewImage;
+    // Solo incluir imágenes si han sido modificadas y tienen el formato correcto
+    if (isMainImageUploaded && formDataColeccion.mainImage.data) {
+      data.mainImage = {
+        name: formDataColeccion.mainImage.name || "main-image.jpg",
+        type: formDataColeccion.mainImage.type || "image/jpeg",
+        size: formDataColeccion.mainImage.size,
+        data: formDataColeccion.mainImage.data,
+      };
     }
+
+    if (isPreviewImageUploaded && formDataColeccion.previewImage.data) {
+      data.previewImage = {
+        name: formDataColeccion.previewImage.name || "preview-image.jpg",
+        type: formDataColeccion.previewImage.type || "image/jpeg",
+        size: formDataColeccion.previewImage.size,
+        data: formDataColeccion.previewImage.data,
+      };
+    }
+
+    console.log("Datos a enviar:", data);
 
     const token = getCookie("AdminTokenAuth");
 
@@ -482,7 +883,11 @@ function Colecciones() {
         );
 
         await triggerRevalidation(["collections"]);
-        toast.success("Colección actualizada con éxito!");
+        toast.success(
+          section
+            ? `Configuración ${section} actualizada con éxito!`
+            : "Colección actualizada con éxito!"
+        );
       } else {
         // Para nueva colección, asegurarse de que ambas imágenes estén incluidas
         if (!data.mainImage || !data.previewImage) {
@@ -506,29 +911,51 @@ function Colecciones() {
         toast.success("Colección creada con éxito!");
       }
 
-      // Resetear el estado después de crear/actualizar
-      setFormDataColeccion({
-        bannerTitle: nombreTienda,
-        bannerText: nombreTienda,
-        title: "",
-        landingText: nombreTienda,
-        mainImage: {
-          name: "",
-          type: "",
-          size: null,
-          data: "",
-        },
-        previewImage: {
-          name: "",
-          type: "",
-          size: null,
-          data: "",
-        },
-      });
-      setMainImageColeccion(null);
-      setPreviewImageColeccion(null);
-      setSelectedProducts([]);
-      fetchCollections();
+      // Resetear el estado después de crear/actualizar solo si no es una actualización parcial
+      if (!section) {
+        setFormDataColeccion({
+          bannerTitle: nombreTienda,
+          bannerText: JSON.stringify({
+            desktop: {
+              showTitle: false,
+              showBannerText: false,
+              showButton: false,
+              textAlignment: "center",
+              bannerText: "",
+              title: "",
+              buttonText: "Ver más",
+              buttonLink: "#",
+            },
+            mobile: {
+              showTitle: false,
+              showBannerText: false,
+              showButton: false,
+              textAlignment: "center",
+              bannerText: "",
+              title: "",
+              buttonText: "Ver más",
+              buttonLink: "#",
+            },
+          }),
+          title: "",
+          mainImage: {
+            name: "",
+            type: "",
+            size: null,
+            data: "",
+          },
+          previewImage: {
+            name: "",
+            type: "",
+            size: null,
+            data: "",
+          },
+        });
+        setMainImageColeccion(null);
+        setPreviewImageColeccion(null);
+        setSelectedProducts([]);
+        fetchCollections();
+      }
     } catch (error) {
       console.error("Error al enviar datos:", error);
       toast.error("Error al procesar la solicitud");
@@ -581,14 +1008,44 @@ function Colecciones() {
       );
 
       const collection = response.data.collection;
-      console.log("Detalle:", response.data.collection);
+      console.log("Detalle:", collection);
 
-      // Convertir la URL de la imagen en base64 y obtener su tamaño
-      const { base64String: mainImageBase64, size } = await imageUrlToBase64(
-        collection.mainImageUrl
-      );
+      // Convertir las URLs de las imágenes en base64
+      const { base64String: mainImageBase64, size: mainImageSize } =
+        await imageUrlToBase64(collection.mainImageUrl);
+      const { base64String: previewImageBase64, size: previewImageSize } =
+        await imageUrlToBase64(collection.previewImageUrl);
 
-      // Filtrar los productos para incluir solo aquellos con statusCode: ACTIVE
+      // Intentar parsear el bannerText si existe, si no, usar la configuración por defecto
+      let bannerConfig;
+      try {
+        bannerConfig = JSON.parse(collection.bannerText);
+      } catch (e) {
+        bannerConfig = {
+          desktop: {
+            showTitle: true,
+            showBannerText: true,
+            showButton: true,
+            textAlignment: "center",
+            bannerText: "",
+            title: "",
+            buttonText: "Ver más",
+            buttonLink: "#",
+          },
+          mobile: {
+            showTitle: true,
+            showBannerText: true,
+            showButton: true,
+            textAlignment: "center",
+            bannerText: "",
+            title: "",
+            buttonText: "Ver más",
+            buttonLink: "#",
+          },
+        };
+      }
+
+      // Filtrar los productos activos
       const selectedProductsFromApi = collection.products
         .filter((product: any) => product.statusCode === "ACTIVE")
         .map((product: any) => ({
@@ -598,29 +1055,30 @@ function Colecciones() {
         }));
 
       setFormDataColeccion({
-        bannerTitle: collection.bannerTitle,
-        bannerText: collection.bannerText,
         title: collection.title,
-        landingText: "pixelup",
-        previewImage: {
-          name: collection.bannerTitle,
+        bannerText: JSON.stringify(bannerConfig),
+        mainImage: {
+          name: collection.title,
           type: "image/jpeg",
-          size,
+          size: mainImageSize,
           data: mainImageBase64,
         },
-        mainImage: {
-          name: collection.bannerTitle,
+        previewImage: {
+          name: collection.title,
           type: "image/jpeg",
-          size,
-          data: mainImageBase64,
+          size: previewImageSize,
+          data: previewImageBase64,
         },
       });
 
       setMainImageColeccion(mainImageBase64);
+      setPreviewImageColeccion(previewImageBase64);
       setSelectedProducts(selectedProductsFromApi);
       setEditingCollectionId(collectionID);
       setIsEditing(true);
       setImageModified(false);
+      setIsMainImageUploaded(true);
+      setIsPreviewImageUploaded(true);
 
       // Desplazarse hacia el formulario de edición
       if (editFormRef.current) {
@@ -628,22 +1086,43 @@ function Colecciones() {
       }
     } catch (error) {
       console.error("Error editing collection:", error);
+      toast.error("Error al cargar la colección");
     }
   };
 
   const handleCancelEdit = () => {
     setFormDataColeccion({
       bannerTitle: nombreTienda,
-      bannerText: nombreTienda,
+      bannerText: JSON.stringify({
+        desktop: {
+          showTitle: false,
+          showBannerText: false,
+          showButton: false,
+          textAlignment: "center",
+          bannerText: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+        mobile: {
+          showTitle: false,
+          showBannerText: false,
+          showButton: false,
+          textAlignment: "center",
+          bannerText: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+      }),
       title: "",
-      previewImage: {
+      mainImage: {
         name: "",
         type: "",
         size: null,
         data: "",
       },
-      landingText: nombreTienda,
-      mainImage: {
+      previewImage: {
         name: "",
         type: "",
         size: null,
@@ -652,10 +1131,21 @@ function Colecciones() {
     });
 
     setMainImageColeccion(null);
+    setPreviewImageColeccion(null);
+    setMobileImageColeccion(null);
     setSelectedProducts([]);
     setIsEditing(false);
     setEditingCollectionId(null);
-    setImageModified(false); // Resetear la modificación de imagen
+    setImageModified(false);
+    setIsMainImageUploaded(false);
+    setIsPreviewImageUploaded(false);
+    setIsMobileImageUploaded(false);
+    // Cerrar todas las secciones
+    setOpenSections({
+      basicInfo: false,
+      desktopConfig: false,
+      mobileConfig: false,
+    });
   };
 
   const imageUrlToBase64 = async (
@@ -760,6 +1250,26 @@ function Colecciones() {
     } catch (error) {
       console.error("Error al recortar/comprimir la imagen:", error);
     }
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setOpenSections((prev) => {
+      const newState = {
+        ...prev,
+        [sectionId]: !prev[sectionId],
+      };
+
+      if (newState[sectionId] && sectionRefs.current[sectionId]) {
+        setTimeout(() => {
+          sectionRefs.current[sectionId]?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }, 100);
+      }
+
+      return newState;
+    });
   };
 
   return (
@@ -908,578 +1418,1173 @@ function Colecciones() {
             </div>
           )}
           <form onSubmit={handleSubmit}>
-            <label className="block mt-4">
-              <h3 className="font-normal text-primary">
-                Nombre Colección <span className="text-primary">*</span>
-              </h3>
-              <input
-                id="title"
-                name="title"
-                value={formDataColeccion.title}
-                onChange={handleChange}
-                placeholder="Ingresa nombre de la colección..."
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </label>
-            {/*             <label className="block mt-4">
-              <h3 className="font-normal text-primary">
-                Título Banner <span className="text-primary">*</span>
-              </h3>
-              <input
-                id="bannerTitle"
-                name="bannerTitle"
-                value={formDataColeccion.bannerTitle}
-                onChange={handleChange}
-                placeholder="Ingresa título del banner..."
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </label> 
+            {/* Sección 1: Información Básica */}
+            <div
+              ref={(el) => (sectionRefs.current.basicInfo = el)}
+              className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-4"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <div className="text-sm font-medium border-b p-4 bg-gray-50">
+                <div className="flex gap-2">
+                  <div>Información Básica</div>
+                </div>
+              </div>
+              <div className="py-6 px-8">
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Información Básica */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre de la Colección{" "}
+                        <span className="text-primary">*</span>
+                      </label>
+                      <input
+                        id="title"
+                        name="title"
+                        value={formDataColeccion.title}
+                        onChange={handleChange}
+                        placeholder="Ingresa nombre de la colección..."
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
 
-            <label className="block mt-4">
-              <h3 className="font-normal text-primary">
-                Texto Banner <span className="text-primary">*</span>
-              </h3>
-              <input
-                id="bannerText"
-                name="bannerText"
-                value={formDataColeccion.bannerText}
-                onChange={handleChange}
-                placeholder="Ingresa texto del banner..."
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </label>*/}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Productos
+                      </label>
+                      <Select
+                        id="product"
+                        value={selectedProduct}
+                        onChange={handleProductChange}
+                        options={availableProducts.map((producto) => ({
+                          value: producto.id,
+                          label: producto.name,
+                          previewImageUrl: producto.mainImageUrl,
+                        }))}
+                        formatOptionLabel={formatOptionLabel}
+                        className="shadow block w-full"
+                        styles={{
+                          control: (base) => ({
+                            ...base,
+                            borderRadius: "var(--radius)",
+                          }),
+                        }}
+                        isClearable
+                      />
+                    </div>
 
-            <div>
-              <input
-                type="file"
-                accept="image/*"
-                id="mainImage"
-                className="hidden"
-                onChange={handleImageChange}
-              />
-              {isMainImageUploaded ? (
-                <div className="flex flex-col items-center mt-10 ">
-                  <h4 className="font-normal text-primary text-center text-slate-600 w-full">
-                    Tu fotografía{" "}
-                    <span className="text-dark">
-                      {" "}
-                      {formDataColeccion.mainImage.name}
-                    </span>{" "}
-                    ya ha sido cargada.
-                    <br /> Actualiza para ver los cambios.
-                  </h4>
-                  <button
-                    className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full   text-xs mt-4 "
-                    onClick={handleClearImage}
-                  >
-                    <span className="self-center">Seleccionar otra Imagen</span>
+                    {selectedProducts.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">
+                          Productos Seleccionados
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProducts.map((product) => (
+                            <div
+                              key={product.value}
+                              className="flex items-center space-x-2 bg-gray-50 p-2 rounded-md"
+                            >
+                              <img
+                                src={product.previewImageUrl}
+                                alt={product.label}
+                                className="w-8 h-8 object-cover rounded"
+                              />
+                              <span className="text-sm">{product.label}</span>
+                              {selectedProducts.length > 1 && (
+                                <button
+                                  onClick={() => handleRemoveProduct(product)}
+                                  className="text-red-500 hover:text-red-700"
+                                  title="Eliminar"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth="1.5"
+                                    stroke="currentColor"
+                                    className="w-4 h-4"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                    />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sección 2: Configuración Desktop */}
+            <div
+              ref={(el) => (sectionRefs.current.desktopConfig = el)}
+              className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-4"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <div
+                className="text-sm flex gap-2 font-medium border-b p-4 cursor-pointer hover:bg-gray-50"
+                onClick={() => toggleSection("desktopConfig")}
+              >
+                <div className="flex justify-between items-center w-full">
+                  <div className="flex gap-2">
+                    <div>Configuración Desktop</div>
+                  </div>
+                  {openSections.desktopConfig ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      strokeWidth={1.5}
+                      strokeWidth="1.5"
                       stroke="currentColor"
-                      className="w-6 h-6"
+                      className="size-6"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        d="m4.5 15.75 7.5-7.5 7.5 7.5"
                       />
                     </svg>
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="font-normal text-primary">
-                    Foto <span className="text-primary">*</span>
-                  </h3>
-                  <label
-                    htmlFor="mainImage"
-                    className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
-                  >
-                    <div className="flex flex-col justify-center items-center">
-                      <svg
-                        className="w-12 h-12 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Subir Imagen</span>
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG o Webp (800x800px)
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              )}
-            </div>
-            <div className="mt-4">
-              <input
-                type="file"
-                accept="image/*"
-                id="previewImage"
-                className="hidden"
-                onChange={handlePreviewImageChange}
-              />
-              {isPreviewImageUploaded ? (
-                <div className="flex flex-col items-center mt-10 ">
-                  <h4 className="font-normal text-primary text-center text-slate-600 w-full">
-                    Tu fotografía{" "}
-                    <span className="text-dark">
-                      {formDataColeccion.previewImage.name}
-                    </span>{" "}
-                    ha sido cargada.
-                    <br /> Actualiza para ver los cambios.
-                  </h4>
-                  <button
-                    className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full text-xs mt-4"
-                    onClick={handleClearImageMobile}
-                  >
-                    <span className="self-center">Seleccionar otra Imagen</span>
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="font-normal text-primary">
-                    Foto Mobile y Tablet <span className="text-primary">*</span>
-                  </h3>
-                  <label
-                    htmlFor="previewImage"
-                    className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
-                  >
-                    <div className="flex flex-col justify-center items-center">
-                      <svg
-                        className="w-12 h-12 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Subir Imagen</span>
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG o Webp (800x800px)
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-8">
-              <label
-                htmlFor="product"
-                className="block"
-              >
-                <h3 className="font-normal text-primary">Producto:</h3>
-                <Select
-                  id="product"
-                  value={selectedProduct}
-                  onChange={handleProductChange}
-                  options={availableProducts.map((producto) => ({
-                    value: producto.id,
-                    label: producto.name,
-                    previewImageUrl: producto.mainImageUrl,
-                  }))}
-                  formatOptionLabel={formatOptionLabel}
-                  className="shadow block w-full mt-2"
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      borderRadius: "var(--radius)",
-                    }),
-                  }}
-                  isClearable
-                />
-              </label>
-            </div>
-
-            <div className="mt-8">
-              {" "}
-              <h3 className="text-primary font-normal">
-                Productos seleccionados:
-              </h3>
-              {selectedProducts.length === 1 && (
-                <div
-                  style={{ borderRadius: "var(--radius)" }}
-                  className="shadow mt-4 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
-                  role="alert"
-                >
-                  <svg
-                    className="flex-shrink-0 inline w-4 h-4 me-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                  </svg>
-                  <span className="sr-only">Info</span>
-                  <div>
-                    {/*                     <span className="font-semibold">
-                      Debe haber un producto.
-                    </span>{" "} */}
-                    La colección <span className="font-semibold"> no </span> se
-                    mostrará en tu sitio web hasta que agregues uno o más
-                    productos.
-                  </div>
-                </div>
-              )}
-              {selectedProducts.length === 0 ? (
-                <div
-                  style={{ borderRadius: "var(--radius)" }}
-                  className="shadow mt-4 flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800"
-                  role="alert"
-                >
-                  <svg
-                    className="flex-shrink-0 inline w-4 h-4 me-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                  </svg>
-                  <span className="sr-only">Info</span>
-                  <div>
-                    <span className="font-semibold">
-                      No hay productos seleccionados.
-                    </span>{" "}
-                    Se debe seleccionar productos para poder mostrarlos en la
-                    colección.
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-4">
-                  {selectedProducts.map((product) => (
-                    <div
-                      key={product.value}
-                      className="shadow flex items-center space-x-2 mt-2 border p-2"
-                      style={{ borderRadius: "var(--radius)" }}
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="size-6"
                     >
-                      <img
-                        src={product.previewImageUrl}
-                        alt={product.label}
-                        className="w-8 h-8 object-cover rounded"
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
                       />
-                      <span>{product.label}</span>
-                      {selectedProducts.length > 1 && (
-                        <button
-                          onClick={() => handleRemoveProduct(product)}
-                          className="shadow ml-auto bg-primary text-secondary hover:text-primary hover:bg-secondary p-2 flex items-center justify-center"
-                          style={{ borderRadius: "var(--radius)" }}
-                          title="Eliminar"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth="1.5"
-                            stroke="currentColor"
-                            className="w-6 h-6"
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <div
+                className={`transition-all duration-300 overflow-hidden  ${
+                  openSections.desktopConfig ? "py-6 px-8" : "h-0 py-0 px-8"
+                }`}
+              >
+                <div className="space-y-6">
+                  {/* Vista Previa Desktop */}
+                  <PreviewBanner
+                    config={JSON.parse(formDataColeccion.bannerText)}
+                    image={mainImageColeccion || ""}
+                    isMobile={false}
+                  />
+
+                  {/* Grid de 2 columnas para Desktop */}
+                  <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6">
+                    {/* Columna 1: Alineación Desktop */}
+                    <div className="w-fit flex flex-col justify-center">
+                      <label className="block text-sm font-medium text-gray-700 mb-4">
+                        Alineación del Texto
+                      </label>
+                      <div className="flex space-x-3">
+                        {["left", "center", "right"].map((alignment) => (
+                          <button
+                            key={alignment}
+                            type="button"
+                            onClick={() => {
+                              const config = JSON.parse(
+                                formDataColeccion.bannerText
+                              );
+                              config.desktop.textAlignment = alignment;
+                              setFormDataColeccion(
+                                (prevData: typeof formDataColeccion) => ({
+                                  ...prevData,
+                                  bannerText: JSON.stringify(config),
+                                })
+                              );
+                            }}
+                            className={`p-4 rounded-lg ${
+                              JSON.parse(formDataColeccion.bannerText).desktop
+                                .textAlignment === alignment
+                                ? "bg-primary text-white"
+                                : "bg-gray-100 hover:bg-gray-200"
+                            }`}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                            {alignment === "left" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M4 12h10M4 18h12"
+                                />
+                              </svg>
+                            ) : alignment === "center" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M6 12h12M8 18h8"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M10 12h10M8 18h12"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Columna 2: Imagen Desktop */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Imagen Desktop <span className="text-primary">*</span>
+                      </label>
+                      <div className="relative">
+                        {isMainImageUploaded ? (
+                          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div className="flex flex-col space-y-4">
+                              <ImagePreview
+                                src={mainImageColeccion || ""}
+                                alt="Vista previa desktop"
+                              />
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <svg
+                                    className="w-6 h-6 text-green-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2"
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                  <span className="text-sm text-gray-600">
+                                    Imagen Desktop cargada correctamente
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={handleClearImage}
+                                  className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-secondary transition-colors"
+                                >
+                                  Cambiar Imagen
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor="mainImage"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <svg
+                                className="w-8 h-8 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                              </svg>
+                              <p className="mb-2 text-sm text-gray-500">
+                                PNG, JPG o Webp (1920x200px)
+                              </p>
+                            </div>
+                            <input
+                              id="mainImage"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleImageChange}
                             />
-                          </svg>
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Campos de texto con sus switches */}
+                  <div className="space-y-4">
+                    {/* Título */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">
+                          Título
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.desktop.showTitle =
+                              !config.desktop.showTitle;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .showTitle
+                              ? "bg-primary"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              JSON.parse(formDataColeccion.bannerText).desktop
+                                .showTitle
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                            }`}
+                          />
                         </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).desktop.title
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.title = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (e.target.value && !config.desktop.showTitle) {
+                            config.desktop.showTitle = true;
+                          }
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        placeholder="Título"
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    {/* Texto */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">
+                          Texto
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.desktop.showBannerText =
+                              !config.desktop.showBannerText;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .showBannerText
+                              ? "bg-primary"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              JSON.parse(formDataColeccion.bannerText).desktop
+                                .showBannerText
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <textarea
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .bannerText
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.bannerText = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (
+                            e.target.value &&
+                            !config.desktop.showBannerText
+                          ) {
+                            config.desktop.showBannerText = true;
+                          }
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        placeholder="Contenido del texto"
+                        rows={2}
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    {/* Botón */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">
+                          Botón
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.desktop.showButton =
+                              !config.desktop.showButton;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .showButton
+                              ? "bg-primary"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              JSON.parse(formDataColeccion.bannerText).desktop
+                                .showButton
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .buttonText
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.desktop.buttonText = e.target.value;
+                            // Activar el switch si se escribe algo
+                            if (e.target.value && !config.desktop.showButton) {
+                              config.desktop.showButton = true;
+                            }
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          placeholder="Texto del botón"
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .buttonLink
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.desktop.buttonLink = e.target.value;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          placeholder="Enlace del botón"
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Botón de acción Desktop */}
+                    <div className="mt-6 flex justify-end space-x-4">
+                      {isEditing && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={handleCancelEdit}
+                            className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleSubmit(e, "desktop")}
+                            disabled={selectedProducts.length === 0}
+                            className={`px-6 py-2 rounded-md transition-colors ${
+                              selectedProducts.length === 0
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-primary hover:bg-secondary text-white"
+                            }`}
+                          >
+                            Actualizar Desktop
+                          </button>
+                        </>
                       )}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="mt-4 flex justify-between">
-              <button
-                type="submit"
-                disabled={selectedProducts.length === 0}
-                className={`shadow ${
-                  selectedProducts.length === 0
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-primary hover:bg-secondary"
-                } w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6`}
-                style={{ borderRadius: "var(--radius)" }}
+            {/* Sección 3: Configuración Mobile */}
+            <div
+              ref={(el) => (sectionRefs.current.mobileConfig = el)}
+              className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <div
+                className="text-sm flex gap-2 font-medium border-b p-4 cursor-pointer hover:bg-gray-50"
+                onClick={() => toggleSection("mobileConfig")}
               >
-                {isEditing ? "Actualizar Colección" : "Crear Colección"}
-              </button>
-              {isEditing && (
+                <div className="flex justify-between items-center w-full">
+                  <div className="flex gap-2">
+                    <div>Configuración Mobile</div>
+                  </div>
+                  {openSections.mobileConfig ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <div
+                className={`transition-all duration-300 overflow-hidden ${
+                  openSections.mobileConfig ? "py-6 px-8" : "h-0 py-0 px-8"
+                }`}
+              >
+                <div className="space-y-6">
+                  {/* Vista Previa Mobile */}
+                  <PreviewBanner
+                    config={JSON.parse(formDataColeccion.bannerText)}
+                    image={mainPreviewColeccion || ""}
+                    isMobile={true}
+                  />
+
+                  {/* Grid de 2 columnas para Mobile */}
+                  <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6">
+                    {/* Columna 1: Alineación Mobile */}
+                    <div className="w-fit flex flex-col justify-center">
+                      <label className="block text-sm font-medium text-gray-700 mb-4">
+                        Alineación del Texto
+                      </label>
+                      <div className="flex space-x-3">
+                        {["left", "center", "right"].map((alignment) => (
+                          <button
+                            key={alignment}
+                            type="button"
+                            onClick={() => {
+                              const config = JSON.parse(
+                                formDataColeccion.bannerText
+                              );
+                              config.mobile.textAlignment = alignment;
+                              setFormDataColeccion(
+                                (prevData: typeof formDataColeccion) => ({
+                                  ...prevData,
+                                  bannerText: JSON.stringify(config),
+                                })
+                              );
+                            }}
+                            className={`p-4 rounded-lg ${
+                              JSON.parse(formDataColeccion.bannerText).mobile
+                                .textAlignment === alignment
+                                ? "bg-primary text-white"
+                                : "bg-gray-100 hover:bg-gray-200"
+                            }`}
+                          >
+                            {alignment === "left" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M4 12h10M4 18h12"
+                                />
+                              </svg>
+                            ) : alignment === "center" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M6 12h12M8 18h8"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M10 12h10M8 18h12"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Columna 2: Imagen Mobile */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Imagen Mobile <span className="text-primary">*</span>
+                      </label>
+                      <div className="relative">
+                        {isPreviewImageUploaded ? (
+                          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div className="flex flex-col space-y-4">
+                              <ImagePreview
+                                src={mainPreviewColeccion || ""}
+                                alt="Vista previa mobile"
+                              />
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <svg
+                                    className="w-6 h-6 text-green-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2"
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                  <span className="text-sm text-gray-600">
+                                    Imagen Mobile cargada correctamente
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={handleClearImageMobile}
+                                  className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-secondary transition-colors"
+                                >
+                                  Cambiar Imagen
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor="previewImage"
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                          >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <svg
+                                className="w-8 h-8 text-gray-400"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                              </svg>
+                              <p className="mb-2 text-sm text-gray-500">
+                                PNG, JPG o Webp (1080x300px)
+                              </p>
+                            </div>
+                            <input
+                              id="previewImage"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handlePreviewImageChange}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Campos de texto con sus switches */}
+                  <div className="space-y-4">
+                    {/* Título */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">
+                          Título
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.mobile.showTitle = !config.mobile.showTitle;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .showTitle
+                              ? "bg-primary"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              JSON.parse(formDataColeccion.bannerText).mobile
+                                .showTitle
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).mobile.title
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.title = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (e.target.value && !config.mobile.showTitle) {
+                            config.mobile.showTitle = true;
+                          }
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        placeholder="Título"
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    {/* Texto */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">
+                          Texto
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.mobile.showBannerText =
+                              !config.mobile.showBannerText;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .showBannerText
+                              ? "bg-primary"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              JSON.parse(formDataColeccion.bannerText).mobile
+                                .showBannerText
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <textarea
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .bannerText
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.bannerText = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (e.target.value && !config.mobile.showBannerText) {
+                            config.mobile.showBannerText = true;
+                          }
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        placeholder="Contenido del texto"
+                        rows={2}
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    {/* Botón */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-700">
+                          Botón
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.mobile.showButton =
+                              !config.mobile.showButton;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .showButton
+                              ? "bg-primary"
+                              : "bg-gray-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              JSON.parse(formDataColeccion.bannerText).mobile
+                                .showButton
+                                ? "translate-x-6"
+                                : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .buttonText
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.mobile.buttonText = e.target.value;
+                            // Activar el switch si se escribe algo
+                            if (e.target.value && !config.mobile.showButton) {
+                              config.mobile.showButton = true;
+                            }
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          placeholder="Texto del botón"
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .buttonLink
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.mobile.buttonLink = e.target.value;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          placeholder="Enlace del botón"
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Botón de acción Mobile */}
+                    <div className="mt-6 flex justify-end space-x-4">
+                      {isEditing && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={handleCancelEdit}
+                            className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleSubmit(e, "mobile")}
+                            disabled={selectedProducts.length === 0}
+                            className={`px-6 py-2 rounded-md transition-colors ${
+                              selectedProducts.length === 0
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-primary hover:bg-secondary text-white"
+                            }`}
+                          >
+                            Actualizar Mobile
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Eliminar el botón de acción principal */}
+            {!isEditing && (
+              <div className="mt-4 flex justify-end space-x-4">
                 <button
                   type="button"
                   onClick={handleCancelEdit}
-                  className="shadow bg-gray-300 hover:bg-gray-400 w-full uppercase text-black hover:text-white font-bold py-2 px-4 rounded flex-wrap mt-6 ml-4"
-                  style={{ borderRadius: "var(--radius)" }}
-                >
-                  Cancelar Edición
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-      )}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
-            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Recortar Imagen
-                </h2>
-              </div>
-              <button
-                onClick={() => {
-                  setMainImageColeccion(null);
-                  setIsMainImageUploaded(false);
-                  setIsModalOpen(false);
-                }}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="relative h-96 w-full">
-                <Cropper
-                  image={mainImageColeccion || ""}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1920 / 200}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={handleCropComplete}
-                />
-              </div>
-              <div className="mt-6 space-y-4">
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Zoom
-                  </label>
-                  <input
-                    type="range"
-                    value={zoom}
-                    min={1}
-                    max={3}
-                    step={0.01}
-                    aria-labelledby="Zoom"
-                    onChange={(e) => {
-                      setZoom(parseFloat(e.target.value));
-                    }}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={handleCrop}
-                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Recortar y Continuar
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMainImageColeccion(null);
-                      setIsMainImageUploaded(false);
-                      setIsModalOpen(false);
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isPreviewImageModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
-            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Recortar Imagen
-                </h2>
-              </div>
-              <button
-                onClick={() => {
-                  setPreviewImageColeccion(null);
-                  setIsPreviewImageUploaded(false);
-                  setIsPreviewImageModalOpen(false);
-                }}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="relative h-96 w-full">
-                <Cropper
-                  image={mainPreviewColeccion || ""}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1080 / 300}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={handleCropComplete}
-                />
-              </div>
-              <div className="mt-6 space-y-4">
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Zoom
-                  </label>
-                  <input
-                    type="range"
-                    value={zoom}
-                    min={1}
-                    max={3}
-                    step={0.01}
-                    aria-labelledby="Zoom"
-                    onChange={(e) => {
-                      setZoom(parseFloat(e.target.value));
-                    }}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={handlePreviewCrop}
-                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Recortar y Continuar
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPreviewImageColeccion(null);
-                      setIsPreviewImageUploaded(false);
-                      setIsPreviewImageModalOpen(false);
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isDeleteModalVisible && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
-            >
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span
-              className="hidden sm:inline-block sm:align-middle sm:h-screen"
-              aria-hidden="true"
-            >
-              &#8203;
-            </span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-              <div>
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                  <svg
-                    className="h-6 w-6 text-red-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </div>
-                <div className="mt-3 text-center sm:mt-5">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Eliminar Colección
-                  </h3>
-                  <div className="mt-2">
-                    <p>¿Estás seguro de que deseas eliminar esta colección?</p>
-                    <p className="text-sm text-red-500 uppercase mt-2">
-                      Esta acción no se puede deshacer.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse justify-between">
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                  onClick={hideDeleteModal}
+                  className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={confirmDeleteCollection}
+                  type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const missingFields = [];
+
+                    if (!formDataColeccion.title.trim()) {
+                      missingFields.push("nombre de la colección");
+                    }
+                    if (selectedProducts.length === 0) {
+                      missingFields.push("al menos un producto");
+                    }
+                    if (
+                      !isMainImageUploaded ||
+                      !formDataColeccion.mainImage?.data
+                    ) {
+                      missingFields.push("imagen desktop");
+                    }
+                    if (
+                      !isPreviewImageUploaded ||
+                      !formDataColeccion.previewImage?.data
+                    ) {
+                      missingFields.push("imagen mobile");
+                    }
+
+                    if (missingFields.length > 0) {
+                      toast.error(
+                        `Por favor, complete los siguientes campos obligatorios: ${missingFields.join(
+                          ", "
+                        )}`
+                      );
+                      return;
+                    }
+
+                    handleSubmit(e);
+                  }}
+                  className="px-6 py-2 rounded-md transition-colors bg-primary hover:bg-secondary text-white"
                 >
-                  Eliminar
+                  Crear Colección
                 </button>
               </div>
-            </div>
-          </div>
+            )}
+          </form>
         </div>
       )}
+
+      {/* Modal para recorte de imagen Desktop */}
+      <Modal
+        showModal={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Recortar imagen desktop"
+      >
+        <div className="relative h-[60vh] w-full">
+          <Cropper
+            image={mainImageColeccion || ""}
+            crop={crop}
+            zoom={zoom}
+            aspect={1900 / 400}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={handleCropComplete}
+          />
+        </div>
+        <div className="mt-4 flex justify-end space-x-2">
+          <button
+            onClick={() => setIsModalOpen(false)}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleCrop}
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary"
+          >
+            Recortar y Guardar
+          </button>
+        </div>
+      </Modal>
+
+      {/* Modal para recorte de imagen Mobile */}
+      <Modal
+        showModal={isPreviewImageModalOpen}
+        onClose={() => setIsPreviewImageModalOpen(false)}
+        title="Recortar imagen mobile"
+      >
+        <div className="relative h-[60vh] w-full">
+          <Cropper
+            image={mainPreviewColeccion || ""}
+            crop={crop}
+            zoom={zoom}
+            aspect={1080 / 400}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={handleCropComplete}
+          />
+        </div>
+        <div className="mt-4 flex justify-end space-x-2">
+          <button
+            onClick={() => setIsPreviewImageModalOpen(false)}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handlePreviewCrop}
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary"
+          >
+            Recortar y Guardar
+          </button>
+        </div>
+      </Modal>
+
+      {/* Modal de confirmación de eliminación */}
+      <Modal
+        showModal={isDeleteModalVisible}
+        onClose={hideDeleteModal}
+        title="Confirmar eliminación"
+      >
+        <div className="p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            ¿Estás seguro de que deseas eliminar esta colección?
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Esta acción no se puede deshacer.
+          </p>
+          <div className="mt-4 flex justify-end space-x-2">
+            <button
+              onClick={hideDeleteModal}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmDeleteCollection}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </section>
   );
 }
