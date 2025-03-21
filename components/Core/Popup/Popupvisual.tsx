@@ -312,25 +312,23 @@ const PopVisual: React.FC<PopupVisualProps> = ({ onClose }) => {
 
               {/* Botones */}
               {!config.fullBannerLink && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex flex-wrap gap-4">
-                    {config.showButton1 && config.button1Text && (
-                      <Link
-                        href={config.button1Link}
-                        className="bg-primary/60 text-white px-8 py-4 rounded-lg hover:bg-primary transition-all cursor-pointer drop-shadow-md"
-                      >
-                        {config.button1Text}
-                      </Link>
-                    )}
-                    {config.showButton2 && config.button2Text && !showButton2Link && (
-                      <button
-                        onClick={() => setShowButton2Link(true)}
-                        className="relative inline-block bg-white text-black border border-white/20 px-8 py-2 rounded-lg hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
-                      >
-                        {config.button2Text}
-                      </button>
-                    )}
-                  </div>
+                <div className="flex flex-wrap gap-4">
+                  {config.showButton1 && config.button1Text && (
+                    <Link
+                      href={config.button1Link}
+                      className="bg-primary/60 text-white px-8 py-2 rounded-lg hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                    >
+                      {config.button1Text}
+                    </Link>
+                  )}
+                  {config.showButton2 && config.button2Text && !showButton2Link && (
+                    <button
+                      onClick={() => setShowButton2Link(true)}
+                      className="relative inline-block bg-white text-black border border-white/20 px-8 py-2 rounded-lg hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
+                    >
+                      {config.button2Text}
+                    </button>
+                  )}
                   {showButton2Link && config.showButton2 && (
                     <div className="flex items-center gap-2">
                       <div className="bg-white backdrop-blur-sm text-black px-8 py-2 rounded-lg drop-shadow-md">

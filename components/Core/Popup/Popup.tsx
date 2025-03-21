@@ -1358,7 +1358,7 @@ const Popup: React.FC = () => {
 
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <label className="text-sm text-gray-700">Botón 2</label>
+                              <label className="text-sm text-gray-700">Botón Revelable</label>
                               <Switch
                                 checked={parallaxDisplayConfig.showButton2}
                                 onChange={handleParallaxButton2Toggle}
