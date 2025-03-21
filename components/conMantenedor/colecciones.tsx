@@ -18,7 +18,7 @@ const Colecciones: React.FC<ColeccionesProps> = ({
   collection,
   collectionProducts,
 }) => {
-  console.log('Datos de collection:', collection);
+  console.log("Datos de collection:", collection);
   const { addToCartHandler } = useAPI();
   const { ProductCard } = getActiveComponents();
   if (!collection && !collections) {
@@ -27,6 +27,34 @@ const Colecciones: React.FC<ColeccionesProps> = ({
 
   // Si es una colección individual (detalle)
   if (collection && collectionProducts) {
+    let bannerConfig;
+    try {
+      bannerConfig = JSON.parse(collection.bannerText);
+    } catch (e) {
+      bannerConfig = {
+        desktop: {
+          showTitle: true,
+          showLandingText: true,
+          showButton: true,
+          textAlignment: "center",
+          textContent: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+        mobile: {
+          showTitle: true,
+          showLandingText: true,
+          showButton: true,
+          textAlignment: "center",
+          textContent: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+      };
+    }
+
     return (
       <>
         <title>{collection.bannerTitle}</title>
@@ -40,7 +68,8 @@ const Colecciones: React.FC<ColeccionesProps> = ({
             text={collection.bannerText}
             imageUrl={collection.mainImageUrl}
             previewImageUrl={collection.previewImageUrl}
-            showTexts={false}
+            config={bannerConfig}
+            isMobile={false}
           />
           <div className="flex justify-center mx-auto px-4 mt-10 mb-20">
             <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px] max-w-[1100px]">

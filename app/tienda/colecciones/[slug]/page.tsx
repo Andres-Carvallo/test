@@ -62,16 +62,19 @@ async function fetchProductsWithOffers() {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?siteId=${siteId}&pageNumber=1&pageSize=50&hasValidOffers=true`,
-    { 
-      cache: 'no-store',
-      next: { tags: ["products"] } 
+    {
+      cache: "no-store",
+      next: { tags: ["products"] },
     }
   );
   const data = await response.json();
-  const productsWithOffersMap = (data.products || []).reduce((acc: any, product: any) => {
-    acc[product.id] = product.offers;
-    return acc;
-  }, {});
+  const productsWithOffersMap = (data.products || []).reduce(
+    (acc: any, product: any) => {
+      acc[product.id] = product.offers;
+      return acc;
+    },
+    {}
+  );
   return productsWithOffersMap;
 }
 
@@ -96,6 +99,36 @@ export default async function DetalleColeccion({
 
     // Obtener el detalle de la colección
     const { collection } = await getCollectionById(collectionFound.id);
+
+    // Asegurarse de que el bannerText sea un objeto válido
+    let bannerConfig;
+    try {
+      bannerConfig = JSON.parse(collection.bannerText);
+    } catch (e) {
+      bannerConfig = {
+        desktop: {
+          showTitle: true,
+          showLandingText: true,
+          showButton: true,
+          textAlignment: "center",
+          textContent: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+        mobile: {
+          showTitle: true,
+          showLandingText: true,
+          showButton: true,
+          textAlignment: "center",
+          textContent: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+      };
+    }
+
     // Filtrar productos activos y obtener precios y stock
     const activeProducts = collection.products.filter(
       (product: any) => product.statusCode === "ACTIVE"
@@ -141,7 +174,10 @@ export default async function DetalleColeccion({
     return (
       <section>
         <Colecciones
-          collection={collection}
+          collection={{
+            ...collection,
+            bannerText: JSON.stringify(bannerConfig),
+          }}
           collectionProducts={productsWithDetails}
         />
       </section>

@@ -14,7 +14,7 @@ import {
   ColumnDef,
   ColumnOrderState,
   Row,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 
 // Interfaces para Tipos de Producto y Respuesta de la API
 interface Product {
@@ -88,27 +88,29 @@ export default function ProductPageBO() {
 
   // Agregar estos estados
   const [stockModalVisible, setStockModalVisible] = useState(false);
-  const [selectedProductStock, setSelectedProductStock] = useState<VariationStock[]>([]);
+  const [selectedProductStock, setSelectedProductStock] = useState<
+    VariationStock[]
+  >([]);
   const [loadingStock, setLoadingStock] = useState(false);
 
   // Agregar estos estados
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([
-    'image',
-    'name',
-    'price',
-    'stock',
-    'type',
-    'published',
-    'featured',
-    'actions'
+    "image",
+    "name",
+    "price",
+    "stock",
+    "type",
+    "published",
+    "featured",
+    "actions",
   ]);
 
   // Agregar estos estados
   const [filters, setFilters] = useState({
-    published: 'all', // 'all', 'active', 'inactive'
-    type: 'all', // 'all', 'simple', 'variable'
-    featured: 'all', // 'all', 'featured', 'notFeatured'
-    categories: new Set<string>()
+    published: "all", // 'all', 'active', 'inactive'
+    type: "all", // 'all', 'simple', 'variable'
+    featured: "all", // 'all', 'featured', 'notFeatured'
+    categories: new Set<string>(),
   });
 
   // Agregar estos estados
@@ -117,15 +119,21 @@ export default function ProductPageBO() {
   const [loadingPrices, setLoadingPrices] = useState(false);
 
   // Agregar estos estados para el memo
-  const [stockCache, setStockCache] = useState<{ [key: string]: VariationStock[] }>({});
+  const [stockCache, setStockCache] = useState<{
+    [key: string]: VariationStock[];
+  }>({});
   const [priceCache, setPriceCache] = useState<{ [key: string]: any[] }>({});
 
   // Reemplazar fetchStockSimple
-  const fetchStockSimple = async (productId: string, skuId: string, forceUpdate = false) => {
+  const fetchStockSimple = async (
+    productId: string,
+    skuId: string,
+    forceUpdate = false
+  ) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const warehouseId = await getWarehouseId();
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?warehouseId=${warehouseId}&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -148,7 +156,11 @@ export default function ProductPageBO() {
   };
 
   // Reemplazar fetchPriceForProduct
-  const fetchPriceForProduct = async (productId: string, skuId: string, forceUpdate = false) => {
+  const fetchPriceForProduct = async (
+    productId: string,
+    skuId: string,
+    forceUpdate = false
+  ) => {
     try {
       const token = getCookie("AdminTokenAuth");
       const response = await fetch(
@@ -181,10 +193,10 @@ export default function ProductPageBO() {
         const allData: Product[] = [];
         let pageNumber = 1;
         let hasMoreData = true;
-        
+
         // Limpiar el caché de sessionStorage al cargar
         sessionStorage.clear();
-        
+
         while (hasMoreData) {
           const response = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=${pageNumber}&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -195,7 +207,7 @@ export default function ProductPageBO() {
               },
             }
           );
-          
+
           if (response.data.products.length === 0) {
             hasMoreData = false;
             break;
@@ -212,14 +224,14 @@ export default function ProductPageBO() {
                   const [stock, price, skuData] = await Promise.all([
                     fetchStockSimple(product.id, product.skuId, true),
                     fetchPriceForProduct(product.id, product.skuId, true),
-                    fetchSkuData(product.id, product.skuId)
+                    fetchSkuData(product.id, product.skuId),
                   ]);
-                  
-                  return { 
-                    ...product, 
+
+                  return {
+                    ...product,
                     stockQuantity: stock,
                     price: price,
-                    hasUnlimitedStock: skuData?.hasUnlimitedStock || false
+                    hasUnlimitedStock: skuData?.hasUnlimitedStock || false,
                   };
                 }
                 return product;
@@ -227,7 +239,7 @@ export default function ProductPageBO() {
             );
             allData.push(...productsWithData);
           }
-          
+
           pageNumber++;
         }
 
@@ -247,42 +259,56 @@ export default function ProductPageBO() {
 
   // Efecto para filtrar productos según la búsqueda y las categorías seleccionadas
   useEffect(() => {
-    const filtered = products.filter((product) => {
-      // Filtro por búsqueda
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const filtered = products
+      .filter((product) => {
+        // Filtro por búsqueda
+        const matchesSearch = product.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-      // Filtro por estado de publicación
-      const matchesPublished = filters.published === 'all' 
-        ? true 
-        : filters.published === 'active' 
-          ? product.statusCode === 'ACTIVE'
-          : product.statusCode !== 'ACTIVE';
+        // Filtro por estado de publicación
+        const matchesPublished =
+          filters.published === "all"
+            ? true
+            : filters.published === "active"
+            ? product.statusCode === "ACTIVE"
+            : product.statusCode !== "ACTIVE";
 
-      // Filtro por tipo de producto
-      const matchesType = filters.type === 'all'
-        ? true
-        : filters.type === 'simple'
-          ? !product.hasVariations
-          : product.hasVariations;
+        // Filtro por tipo de producto
+        const matchesType =
+          filters.type === "all"
+            ? true
+            : filters.type === "simple"
+            ? !product.hasVariations
+            : product.hasVariations;
 
-      // Filtro por destacados
-      const matchesFeatured = filters.featured === 'all'
-        ? true
-        : filters.featured === 'featured'
-          ? product.isFeatured
-          : !product.isFeatured;
+        // Filtro por destacados
+        const matchesFeatured =
+          filters.featured === "all"
+            ? true
+            : filters.featured === "featured"
+            ? product.isFeatured
+            : !product.isFeatured;
 
-      // Filtro por categorías
-      const matchesCategories = filters.categories.size === 0 ||
-        Array.from(filters.categories).every((category) =>
-          product.productTypes.some((type) => type.name === category)
+        // Filtro por categorías
+        const matchesCategories =
+          filters.categories.size === 0 ||
+          Array.from(filters.categories).every((category) =>
+            product.productTypes.some((type) => type.name === category)
+          );
+
+        return (
+          matchesSearch &&
+          matchesPublished &&
+          matchesType &&
+          matchesFeatured &&
+          matchesCategories
         );
-
-      return matchesSearch && matchesPublished && matchesType && matchesFeatured && matchesCategories;
-    }).map(product => ({
-      ...product,
-      stockQuantity: product.stockQuantity // Preservar el stockQuantity
-    }));
+      })
+      .map((product) => ({
+        ...product,
+        stockQuantity: product.stockQuantity, // Preservar el stockQuantity
+      }));
 
     setFilteredProducts(filtered);
     setTotalPages(Math.ceil(filtered.length / pageSize));
@@ -338,7 +364,7 @@ export default function ProductPageBO() {
     if (
       filterDropdownRef.current &&
       !filterDropdownRef.current.contains(event.target as Node) &&
-      !(event.target as Element).closest('#filterDropdownButton')
+      !(event.target as Element).closest("#filterDropdownButton")
     ) {
       setFilterDropdownVisible(false);
     }
@@ -429,7 +455,7 @@ export default function ProductPageBO() {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${product.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
-          method: 'PUT',
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -438,23 +464,23 @@ export default function ProductPageBO() {
             ...product,
             ...updates,
             hasFeaturedBaseSku: updates.isFeatured ?? product.isFeatured,
-          })
+          }),
         }
       );
 
       if (!response.ok) {
-        throw new Error('Error al actualizar el producto');
+        throw new Error("Error al actualizar el producto");
       }
 
       // Limpiar caché para este producto
-      setStockCache(prev => {
-        const newCache = {...prev};
+      setStockCache((prev) => {
+        const newCache = { ...prev };
         delete newCache[product.id];
         return newCache;
       });
 
-      setPriceCache(prev => {
-        const newCache = {...prev};
+      setPriceCache((prev) => {
+        const newCache = { ...prev };
         delete newCache[product.id];
         return newCache;
       });
@@ -467,16 +493,12 @@ export default function ProductPageBO() {
         price: product.price, // Mantener el precio actual
       };
 
-      setProducts(prevProducts =>
-        prevProducts.map(p =>
-          p.id === product.id ? updatedProduct : p
-        )
+      setProducts((prevProducts) =>
+        prevProducts.map((p) => (p.id === product.id ? updatedProduct : p))
       );
 
-      setFilteredProducts(prevFiltered =>
-        prevFiltered.map(p =>
-          p.id === product.id ? updatedProduct : p
-        )
+      setFilteredProducts((prevFiltered) =>
+        prevFiltered.map((p) => (p.id === product.id ? updatedProduct : p))
       );
 
       // Revalidar
@@ -515,7 +537,7 @@ export default function ProductPageBO() {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -524,28 +546,28 @@ export default function ProductPageBO() {
       );
 
       if (!response.ok) {
-        throw new Error('Error al eliminar el producto');
+        throw new Error("Error al eliminar el producto");
       }
 
       // Limpiar caché para este producto
-      setStockCache(prev => {
-        const newCache = {...prev};
+      setStockCache((prev) => {
+        const newCache = { ...prev };
         delete newCache[id];
         return newCache;
       });
 
-      setPriceCache(prev => {
-        const newCache = {...prev};
+      setPriceCache((prev) => {
+        const newCache = { ...prev };
         delete newCache[id];
         return newCache;
       });
 
       // Actualizar el estado local eliminando solo el producto específico
-      setProducts(prevProducts => 
-        prevProducts.filter(product => product.id !== id)
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== id)
       );
-      setFilteredProducts(prevFiltered => 
-        prevFiltered.filter(product => product.id !== id)
+      setFilteredProducts((prevFiltered) =>
+        prevFiltered.filter((product) => product.id !== id)
       );
 
       // Revalidar
@@ -584,7 +606,7 @@ export default function ProductPageBO() {
       setLoadingStock(true);
       const token = getCookie("AdminTokenAuth");
       const warehouseId = await getWarehouseId();
-      
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&statusCode=ACTIVE`,
         {
@@ -617,12 +639,12 @@ export default function ProductPageBO() {
                   "Content-Type": "application/json",
                 },
               }
-            )
+            ),
           ]);
 
           const [attributesData, stockData] = await Promise.all([
             attributesResponse.json(),
-            stockResponse.json()
+            stockResponse.json(),
           ]);
 
           const attributes = attributesData.skuAttributes
@@ -632,9 +654,10 @@ export default function ProductPageBO() {
               value: attr.value,
             }));
 
-          const quantity = stockData.skuInventories.length > 0 
-            ? stockData.skuInventories[0].quantity 
-            : 0;
+          const quantity =
+            stockData.skuInventories.length > 0
+              ? stockData.skuInventories[0].quantity
+              : 0;
 
           return {
             skuId: variation.id,
@@ -647,14 +670,16 @@ export default function ProductPageBO() {
         })
       );
 
-      const validStockData = stockData.filter(data => data.attributes.length > 0);
-      
+      const validStockData = stockData.filter(
+        (data) => data.attributes.length > 0
+      );
+
       // Guardar en cache
-      setStockCache(prev => ({
+      setStockCache((prev) => ({
         ...prev,
-        [productId]: validStockData
+        [productId]: validStockData,
       }));
-      
+
       setSelectedProductStock(validStockData);
     } catch (error) {
       console.error("Error fetching stock:", error);
@@ -699,7 +724,7 @@ export default function ProductPageBO() {
     setLoadingPrices(true);
     try {
       const token = getCookie("AdminTokenAuth");
-      
+
       const variationsResponse = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productId}/skus?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&statusCode=ACTIVE`,
         {
@@ -709,7 +734,7 @@ export default function ProductPageBO() {
         }
       );
       const variationsData = await variationsResponse.json();
-      
+
       const filteredVariations = variationsData.skus
         .filter((sku: any) => !sku.isBaseSku)
         .sort((a: any, b: any) => a.id.localeCompare(b.id));
@@ -732,17 +757,17 @@ export default function ProductPageBO() {
                   Authorization: `Bearer ${token}`,
                 },
               }
-            )
+            ),
           ]);
 
           const [priceData, attributesData] = await Promise.all([
             priceResponse.json(),
-            attributesResponse.json()
+            attributesResponse.json(),
           ]);
 
           const attributes = attributesData.skuAttributes.map((attr: any) => ({
             label: attr.attribute.name,
-            value: attr.value
+            value: attr.value,
           }));
 
           return {
@@ -750,19 +775,21 @@ export default function ProductPageBO() {
             name: sku.name,
             price: priceData.skuPricings[0]?.unitPrice || 0,
             attributes: attributes,
-            variationNumber: index + 1
+            variationNumber: index + 1,
           };
         })
       );
 
-      const validPrices = pricesWithAttributes.filter(result => result.attributes.length > 0);
-      
+      const validPrices = pricesWithAttributes.filter(
+        (result) => result.attributes.length > 0
+      );
+
       // Guardar en cache
-      setPriceCache(prev => ({
+      setPriceCache((prev) => ({
         ...prev,
-        [productId]: validPrices
+        [productId]: validPrices,
       }));
-      
+
       setSelectedProductPrices(validPrices);
     } catch (error) {
       console.error("Error al obtener los precios de las variaciones:", error);
@@ -773,34 +800,51 @@ export default function ProductPageBO() {
   };
 
   // Agregar estas funciones para manejar el drag and drop
-  const handleDragStart = (e: React.DragEvent<HTMLTableCellElement>, columnId: string) => {
-    if (columnId === 'image' || columnId === 'name' || columnId === 'actions') return;
-    e.dataTransfer.setData('text/plain', columnId);
+  const handleDragStart = (
+    e: React.DragEvent<HTMLTableCellElement>,
+    columnId: string
+  ) => {
+    if (columnId === "image" || columnId === "name" || columnId === "actions")
+      return;
+    e.dataTransfer.setData("text/plain", columnId);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLTableCellElement>) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLTableCellElement>, targetColumnId: string) => {
+  const handleDrop = (
+    e: React.DragEvent<HTMLTableCellElement>,
+    targetColumnId: string
+  ) => {
     e.preventDefault();
-    
+
     // No permitir soltar en columnas fijas
-    if (targetColumnId === 'image' || targetColumnId === 'name' || targetColumnId === 'actions') return;
-    
-    const draggedColumnId = e.dataTransfer.getData('text/plain');
-    
+    if (
+      targetColumnId === "image" ||
+      targetColumnId === "name" ||
+      targetColumnId === "actions"
+    )
+      return;
+
+    const draggedColumnId = e.dataTransfer.getData("text/plain");
+
     // No hacer nada si se intenta soltar una columna fija
-    if (draggedColumnId === 'image' || draggedColumnId === 'name' || draggedColumnId === 'actions') return;
-    
+    if (
+      draggedColumnId === "image" ||
+      draggedColumnId === "name" ||
+      draggedColumnId === "actions"
+    )
+      return;
+
     if (draggedColumnId && draggedColumnId !== targetColumnId) {
       const newColumnOrder = [...columnOrder];
       const draggedIndex = newColumnOrder.indexOf(draggedColumnId);
       const targetIndex = newColumnOrder.indexOf(targetColumnId);
-      
+
       newColumnOrder.splice(draggedIndex, 1);
       newColumnOrder.splice(targetIndex, 0, draggedColumnId);
-      
+
       setColumnOrder(newColumnOrder);
     }
   };
@@ -808,9 +852,9 @@ export default function ProductPageBO() {
   // Definir las columnas
   const columns = [
     {
-      id: 'image',
-      header: '',
-      accessorKey: 'mainImageUrl',
+      id: "image",
+      header: "",
+      accessorKey: "mainImageUrl",
       enableDragging: false,
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="w-10 min-w-[40px] flex items-center justify-center">
@@ -823,23 +867,25 @@ export default function ProductPageBO() {
       ),
     },
     {
-      id: 'name',
-      header: 'Nombre',
-      accessorKey: 'name',
+      id: "name",
+      header: "Nombre",
+      accessorKey: "name",
       enableDragging: false,
       cell: ({ row }: { row: Row<Product> }) => (
-        <div className="w-full min-w-[150px] max-w-[300px] truncate" title={row.original.name}>
+        <div
+          className="w-full min-w-[150px] max-w-[300px] truncate"
+          title={row.original.name}
+        >
           {row.original.name.length > 20
-            ? `${row.original.name.substring(0, 20)}...` 
-            : row.original.name
-          }
+            ? `${row.original.name.substring(0, 20)}...`
+            : row.original.name}
         </div>
       ),
     },
     {
-      id: 'price',
-      header: 'Precio',
-      accessorKey: 'price',
+      id: "price",
+      header: "Precio",
+      accessorKey: "price",
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="min-w-[100px]">
           {row.original.hasVariations ? (
@@ -854,18 +900,19 @@ export default function ProductPageBO() {
             </button>
           ) : (
             <span className="text-sm">
-              ${typeof row.original.price === 'number' ? 
-                row.original.price.toLocaleString('es-CL') : 
-                "0"}
+              $
+              {typeof row.original.price === "number"
+                ? row.original.price.toLocaleString("es-CL")
+                : "0"}
             </span>
           )}
         </div>
       ),
     },
     {
-      id: 'stock',
-      header: 'Stock',
-      accessorKey: 'stockQuantity',
+      id: "stock",
+      header: "Stock",
+      accessorKey: "stockQuantity",
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="min-w-[100px]">
           {row.original.hasVariations ? (
@@ -880,35 +927,34 @@ export default function ProductPageBO() {
             </button>
           ) : (
             <span className="text-sm">
-              {row.original.hasUnlimitedStock ? 
-                "Ilimitado" : 
-                row.original.stockQuantity || "0"
-              }
+              {row.original.hasUnlimitedStock
+                ? "Ilimitado"
+                : row.original.stockQuantity || "0"}
             </span>
           )}
         </div>
       ),
     },
     {
-      id: 'type',
-      header: 'Tipo',
-      accessorKey: 'hasVariations',
+      id: "type",
+      header: "Tipo",
+      accessorKey: "hasVariations",
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="relative group w-14 flex justify-center">
           {row.original.hasVariations ? (
             <>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                strokeWidth="1.5" 
-                stroke="currentColor" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
                 className="size-6"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
                 />
               </svg>
               <span className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
@@ -917,9 +963,20 @@ export default function ProductPageBO() {
             </>
           ) : (
             <>
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-</svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  stroke-linejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                />
+              </svg>
 
               <span className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap z-10">
                 Producto Simple
@@ -930,9 +987,9 @@ export default function ProductPageBO() {
       ),
     },
     {
-      id: 'published',
-      header: 'Publicado',
-      accessorKey: 'statusCode',
+      id: "published",
+      header: "Publicado",
+      accessorKey: "statusCode",
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="min-w-[100px] flex justify-start">
           <label className="inline-flex relative items-center cursor-pointer">
@@ -948,18 +1005,26 @@ export default function ProductPageBO() {
       ),
     },
     {
-      id: 'featured',
-      header: 'Destacado',
-      accessorKey: 'isFeatured',
+      id: "featured",
+      header: "Destacado",
+      accessorKey: "isFeatured",
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="min-w-[100px] flex justify-start">
           <button onClick={() => toggleFeatured(row.original)}>
             {row.original.isFeatured ? (
-              <svg className="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-6 h-6 text-yellow-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
                 <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
               </svg>
             ) : (
-              <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                className="w-6 h-6 text-gray-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
                 <path d="M9.049 2.927C9.403 2.061 10.597 2.061 10.951 2.927L12.263 6.182L15.905 6.682C16.838 6.822 17.175 7.981 16.461 8.541L13.732 10.579L14.474 14.131C14.658 15.047 13.692 15.725 12.917 15.29L10 13.528L7.083 15.29C6.308 15.725 5.342 15.047 5.526 14.131L6.268 10.579L3.539 8.541C2.825 7.981 3.162 6.822 4.095 6.682L7.737 6.182L9.049 2.927Z" />
               </svg>
             )}
@@ -968,9 +1033,9 @@ export default function ProductPageBO() {
       ),
     },
     {
-      id: 'actions',
-      header: 'Editar / Borrar',
-      accessorKey: 'actions',
+      id: "actions",
+      header: "Editar / Borrar",
+      accessorKey: "actions",
       enableDragging: false,
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="min-w-[100px] flex items-center space-x-2">
@@ -983,18 +1048,18 @@ export default function ProductPageBO() {
             className="p-2 rounded bg-primary text-white hover:bg-primary/80 transition-colors"
             title="Editar"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              strokeWidth={1.5} 
-              stroke="currentColor" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
               className="w-5 h-5"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
               />
             </svg>
           </Link>
@@ -1003,18 +1068,18 @@ export default function ProductPageBO() {
             className="p-2 rounded bg-red-600 text-white hover:bg-red-800 transition-colors"
             title="Eliminar"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              strokeWidth={1.5} 
-              stroke="currentColor" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
               className="w-5 h-5"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
               />
             </svg>
           </button>
@@ -1031,16 +1096,21 @@ export default function ProductPageBO() {
       columnOrder,
     },
     onColumnOrderChange: (updater) => {
-      const newOrder = typeof updater === 'function' ? updater(columnOrder) : updater;
+      const newOrder =
+        typeof updater === "function" ? updater(columnOrder) : updater;
       // Asegurarse de que las columnas fijas permanezcan en su lugar
-      const fixedStart = newOrder.filter(id => id === 'image' || id === 'name');
-      const middle = newOrder.filter(id => !['image', 'name', 'actions'].includes(id));
-      const fixedEnd = newOrder.filter(id => id === 'actions');
+      const fixedStart = newOrder.filter(
+        (id) => id === "image" || id === "name"
+      );
+      const middle = newOrder.filter(
+        (id) => !["image", "name", "actions"].includes(id)
+      );
+      const fixedEnd = newOrder.filter((id) => id === "actions");
       setColumnOrder([...fixedStart, ...middle, ...fixedEnd]);
     },
     getCoreRowModel: getCoreRowModel(),
     enableColumnResizing: false,
-    columnResizeMode: 'onChange',
+    columnResizeMode: "onChange",
   });
 
   // Agregar esta nueva función para obtener los datos del SKU
@@ -1167,11 +1237,20 @@ export default function ProductPageBO() {
                     className="w-full md:w-auto flex items-center gap-2 justify-center py-2 px-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                     type="button"
                   >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-</svg>
-
-                
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        stroke-linejoin="round"
+                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+                      />
+                    </svg>
                     Filtro
                     <svg
                       className="w-5 h-5"
@@ -1191,28 +1270,32 @@ export default function ProductPageBO() {
                     id="filterDropdown"
                     ref={filterDropdownRef}
                     className={`fixed top-16 right-[17px] inset-y-0  z-40 w-80 bg-white dark:bg-gray-800 p-4 transition-transform duration-300 ease-in-out transform ${
-                      filterDropdownVisible ? 'translate-x-0' : 'translate-x-full'
+                      filterDropdownVisible
+                        ? "translate-x-0"
+                        : "translate-x-full"
                     } shadow-lg`}
                   >
                     {/* Agregar header del sidebar */}
                     <div className="flex items-center justify-between mb-6">
-                      <h5 className="text-lg font-semibold text-gray-900 dark:text-white">Filtros</h5>
+                      <h5 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Filtros
+                      </h5>
                       <button
                         onClick={() => setFilterDropdownVisible(false)}
                         className="p-1 hover:bg-gray-100 rounded-full dark:hover:bg-gray-700"
                       >
-                        <svg 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          fill="none" 
-                          viewBox="0 0 24 24" 
-                          strokeWidth={1.5} 
-                          stroke="currentColor" 
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
                           className="w-6 h-6"
                         >
-                          <path 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            d="M6 18L18 6M6 6l12 12" 
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
                           />
                         </svg>
                       </button>
@@ -1227,7 +1310,12 @@ export default function ProductPageBO() {
                         </h6>
                         <select
                           value={filters.published}
-                          onChange={(e) => setFilters(prev => ({ ...prev, published: e.target.value }))}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              published: e.target.value,
+                            }))
+                          }
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2"
                         >
                           <option value="all">Todos</option>
@@ -1243,7 +1331,12 @@ export default function ProductPageBO() {
                         </h6>
                         <select
                           value={filters.type}
-                          onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              type: e.target.value,
+                            }))
+                          }
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2"
                         >
                           <option value="all">Todos</option>
@@ -1259,7 +1352,12 @@ export default function ProductPageBO() {
                         </h6>
                         <select
                           value={filters.featured}
-                          onChange={(e) => setFilters(prev => ({ ...prev, featured: e.target.value }))}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              featured: e.target.value,
+                            }))
+                          }
                           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2"
                         >
                           <option value="all">Todos</option>
@@ -1275,18 +1373,26 @@ export default function ProductPageBO() {
                         </h6>
                         <div className="max-h-48 overflow-y-auto space-y-2">
                           {categories.map((category, index) => (
-                            <label key={index} className="flex items-center">
+                            <label
+                              key={index}
+                              className="flex items-center"
+                            >
                               <input
                                 type="checkbox"
                                 checked={filters.categories.has(category)}
                                 onChange={() => {
-                                  const newCategories = new Set(filters.categories);
+                                  const newCategories = new Set(
+                                    filters.categories
+                                  );
                                   if (newCategories.has(category)) {
                                     newCategories.delete(category);
                                   } else {
                                     newCategories.add(category);
                                   }
-                                  setFilters(prev => ({ ...prev, categories: newCategories }));
+                                  setFilters((prev) => ({
+                                    ...prev,
+                                    categories: newCategories,
+                                  }));
                                 }}
                                 className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
                               />
@@ -1302,12 +1408,14 @@ export default function ProductPageBO() {
                       <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white dark:bg-gray-800">
                         <div className="flex justify-between gap-2">
                           <button
-                            onClick={() => setFilters({
-                              published: 'all',
-                              type: 'all',
-                              featured: 'all',
-                              categories: new Set()
-                            })}
+                            onClick={() =>
+                              setFilters({
+                                published: "all",
+                                type: "all",
+                                featured: "all",
+                                categories: new Set(),
+                              })
+                            }
                             className="w-1/2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border rounded"
                           >
                             Limpiar
@@ -1337,44 +1445,62 @@ export default function ProductPageBO() {
               <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                   <tr>
-                    {table.getHeaderGroups()[0].headers.map(header => (
+                    {table.getHeaderGroups()[0].headers.map((header) => (
                       <th
                         key={header.id}
                         className={`px-2 py-3 whitespace-nowrap ${
-                          header.id === 'image' ? 'w-10 min-w-[40px]' :
-                          header.id === 'name' ? 'min-w-[150px] max-w-[300px]' :
-                          'min-w-[100px]'
+                          header.id === "image"
+                            ? "w-10 min-w-[40px]"
+                            : header.id === "name"
+                            ? "min-w-[150px] max-w-[300px]"
+                            : "min-w-[100px]"
                         } ${
-                          header.id === 'image' || header.id === 'name' || header.id === 'actions'
-                            ? 'cursor-not-allowed'
-                            : 'cursor-move'
+                          header.id === "image" ||
+                          header.id === "name" ||
+                          header.id === "actions"
+                            ? "cursor-not-allowed"
+                            : "cursor-move"
                         }`}
-                        draggable={!(header.id === 'image' || header.id === 'name' || header.id === 'actions')}
+                        draggable={
+                          !(
+                            header.id === "image" ||
+                            header.id === "name" ||
+                            header.id === "actions"
+                          )
+                        }
                         onDragStart={(e) => handleDragStart(e, header.id)}
                         onDragOver={handleDragOver}
                         onDrop={(e) => handleDrop(e, header.id)}
                       >
                         <div className="flex items-center gap-2">
-                          {!(header.id === 'image' || header.id === 'name' || header.id === 'actions') && (
-                            <svg 
-                              xmlns="http://www.w3.org/2000/svg" 
-                              fill="none" 
-                              viewBox="0 0 24 24" 
-                              strokeWidth="1.5" 
-                              stroke="currentColor" 
+                          {!(
+                            header.id === "image" ||
+                            header.id === "name" ||
+                            header.id === "actions"
+                          ) && (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="1.5"
+                              stroke="currentColor"
                               className="size-4 text-gray-400"
                             >
-                              <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                d="M3.75 9h16.5m-16.5 6.75h16.5" 
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M3.75 9h16.5m-16.5 6.75h16.5"
                               />
                             </svg>
                           )}
-                          <span>{typeof header.column.columnDef.header === 'string' 
-                            ? header.column.columnDef.header 
-                            : flexRender(header.column.columnDef.header, header.getContext())
-                          }</span>
+                          <span>
+                            {typeof header.column.columnDef.header === "string"
+                              ? header.column.columnDef.header
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </span>
                         </div>
                       </th>
                     ))}
@@ -1393,11 +1519,20 @@ export default function ProductPageBO() {
                       </td>
                     </tr>
                   ) : (
-                    table.getRowModel().rows.map(row => (
-                      <tr key={row.id} className="border-b dark:border-gray-700">
-                        {row.getVisibleCells().map(cell => (
-                          <td key={cell.id} className="px-2 py-3">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    table.getRowModel().rows.map((row) => (
+                      <tr
+                        key={row.id}
+                        className="border-b dark:border-gray-700"
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <td
+                            key={cell.id}
+                            className="px-2 py-3"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
                           </td>
                         ))}
                       </tr>
@@ -1563,12 +1698,23 @@ export default function ProductPageBO() {
                 onClick={() => setStockModalVisible(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             {loadingStock ? (
               <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -1602,14 +1748,19 @@ export default function ProductPageBO() {
                         <td className="px-6 py-4 text-sm text-gray-900">
                           <div className="flex flex-wrap gap-2">
                             {stock.attributes.map((attr, index) => (
-                              <span key={index} className="bg-primary text-white px-2 py-1 rounded text-xs">
+                              <span
+                                key={index}
+                                className="bg-primary text-white px-2 py-1 rounded text-xs"
+                              >
                                 {attr.label}: {attr.value}
                               </span>
                             ))}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {stock.hasUnlimitedStock ? "Ilimitado" : stock.quantity}
+                          {stock.hasUnlimitedStock
+                            ? "Ilimitado"
+                            : stock.quantity}
                         </td>
                       </tr>
                     ))}
@@ -1629,12 +1780,23 @@ export default function ProductPageBO() {
                 onClick={() => setPriceModalVisible(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
-            
+
             {loadingPrices ? (
               <div className="flex justify-center items-center h-32">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -1667,15 +1829,20 @@ export default function ProductPageBO() {
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900">
                           <div className="flex flex-wrap gap-2">
-                            {price.attributes.map((attr: any, index: number) => (
-                              <span key={index} className="bg-primary text-white px-2 py-1 rounded text-xs">
-                                {attr.label}: {attr.value}
-                              </span>
-                            ))}
+                            {price.attributes.map(
+                              (attr: any, index: number) => (
+                                <span
+                                  key={index}
+                                  className="bg-primary text-white px-2 py-1 rounded text-xs"
+                                >
+                                  {attr.label}: {attr.value}
+                                </span>
+                              )
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          ${price.price?.toLocaleString('es-CL') || "0"}
+                          ${price.price?.toLocaleString("es-CL") || "0"}
                         </td>
                       </tr>
                     ))}

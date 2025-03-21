@@ -14,6 +14,7 @@ import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import toast from "react-hot-toast";
 import axios from "axios";
 import Loader from "@/components/common/Loader";
+import * as XLSX from "xlsx";
 
 type Pedido = {
   id: string;
@@ -53,6 +54,16 @@ function PedidosBO() {
   const [allPedidos, setAllPedidos] = useState<Pedido[]>([]); // Almacena todos los pedidos
 
   const [isMobile, setIsMobile] = useState(false);
+
+  // Nuevos estados para el modal de exportación
+  const [isExportModalVisible, setIsExportModalVisible] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportDateRange, setExportDateRange] = useState({
+    startDate: new Date(new Date().setMonth(new Date().getMonth() - 1))
+      .toISOString()
+      .split("T")[0], // Último mes por defecto
+    endDate: new Date().toISOString().split("T")[0],
+  });
 
   const toggleFilterDropdown = () => {
     setFilterDropdownVisible(!filterDropdownVisible);
@@ -383,6 +394,91 @@ function PedidosBO() {
     );
   };
 
+  const handleExportDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setExportDateRange((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const exportToExcel = async () => {
+    try {
+      setExportLoading(true);
+
+      // Filtrar pedidos por rango de fechas
+      const filteredPedidos = allPedidos.filter((pedido) => {
+        const pedidoDate = new Date(pedido.creationDate)
+          .toISOString()
+          .split("T")[0];
+        return (
+          pedidoDate >= exportDateRange.startDate &&
+          pedidoDate <= exportDateRange.endDate
+        );
+      });
+
+      if (filteredPedidos.length === 0) {
+        toast.error("No hay pedidos en el rango de fechas seleccionado");
+        setExportLoading(false);
+        return;
+      }
+
+      if (filteredPedidos.length > 5000) {
+        toast.error(
+          "El rango seleccionado contiene demasiados pedidos. Por favor, seleccione un rango más pequeño."
+        );
+        setExportLoading(false);
+        return;
+      }
+
+      // Preparar los datos para Excel en chunks para mejor rendimiento
+      const chunkSize = 1000;
+      const dataToExport = [];
+
+      for (let i = 0; i < filteredPedidos.length; i += chunkSize) {
+        const chunk = filteredPedidos.slice(i, i + chunkSize).map((pedido) => ({
+          "N° Pedido": pedido.correlative,
+          Fecha: new Date(pedido.creationDate).toLocaleDateString("es-ES"),
+          Cliente: `${pedido.customer.firstname} ${pedido.customer.lastname}`,
+          Email: pedido.customer.email,
+          "Tipo Delivery":
+            pedido.deliveryType.code === "HOME_DELIVERY_WITHOUT_COURIER"
+              ? "Delivery"
+              : "Retiro en Tienda",
+          Monto: new Intl.NumberFormat("es-CL", {
+            style: "currency",
+            currency: "CLP",
+          }).format(pedido.totals.totalAmount),
+          "Estado Pago": statusMap[pedido.statusCode] || "Estado desconocido",
+          "Estado Pedido":
+            pedido.internalStatusCode === "COMPLETED"
+              ? "Completado"
+              : "En Proceso",
+        }));
+        dataToExport.push(...chunk);
+      }
+
+      // Crear el libro de trabajo y la hoja
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+
+      // Generar el archivo y descargarlo
+      const fileName = `Pedidos_${exportDateRange.startDate}_a_${exportDateRange.endDate}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast.success(
+        `Archivo Excel generado correctamente con ${filteredPedidos.length} pedidos`
+      );
+      setIsExportModalVisible(false);
+    } catch (error) {
+      console.error("Error al exportar a Excel:", error);
+      toast.error("Error al generar el archivo Excel");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   return (
     <>
       <title>Mis Pedidos</title>
@@ -429,6 +525,26 @@ function PedidosBO() {
                   </form>
                 </div>
                 <div className="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
+                  <button
+                    onClick={() => setIsExportModalVisible(true)}
+                    className="flex items-center justify-center text-white bg-primary hover:bg-primary/80 focus:ring-4 focus:ring-primary/30 font-medium rounded-lg text-sm px-4 py-2 dark:bg-primary dark:hover:bg-primary/80 focus:outline-none dark:focus:ring-primary/30"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    Exportar a Excel
+                  </button>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <div className="relative">
                       <button
@@ -1127,6 +1243,126 @@ function PedidosBO() {
                     onClick={confirmDeleteOrder}
                   >
                     Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Exportación */}
+        {isExportModalVisible && (
+          <div className="fixed z-10 inset-0 overflow-y-auto">
+            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <div
+                className="fixed inset-0 transition-opacity"
+                aria-hidden="true"
+              >
+                <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              </div>
+              <span
+                className="hidden sm:inline-block sm:align-middle sm:h-screen"
+                aria-hidden="true"
+              >
+                &#8203;
+              </span>
+              <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div>
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="mt-3 text-center sm:mt-5">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Exportar Pedidos a Excel
+                    </h3>
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-500 mb-4">
+                        Selecciona el rango de fechas para exportar los pedidos
+                        (máximo 5000 registros por archivo)
+                      </p>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Fecha Inicio
+                          </label>
+                          <input
+                            type="date"
+                            name="startDate"
+                            value={exportDateRange.startDate}
+                            onChange={handleExportDateChange}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Fecha Fin
+                          </label>
+                          <input
+                            type="date"
+                            name="endDate"
+                            value={exportDateRange.endDate}
+                            onChange={handleExportDateChange}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                  <button
+                    type="button"
+                    onClick={exportToExcel}
+                    disabled={exportLoading}
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-2 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {exportLoading ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Generando...
+                      </>
+                    ) : (
+                      "Exportar"
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsExportModalVisible(false)}
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:col-start-1 sm:text-sm"
+                  >
+                    Cancelar
                   </button>
                 </div>
               </div>

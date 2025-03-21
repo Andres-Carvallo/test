@@ -18,6 +18,93 @@ import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 
+interface ConfigOptions {
+  desktop: {
+    showTitle: boolean;
+    showLandingText: boolean;
+    showButton: boolean;
+    textAlignment: string;
+    textContent: string;
+    title: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+  mobile: {
+    showTitle: boolean;
+    showLandingText: boolean;
+    showButton: boolean;
+    textAlignment: string;
+    textContent: string;
+    title: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+}
+
+const PreviewBanner = ({
+  config,
+  imageUrl,
+  isMobile = false,
+}: {
+  config: ConfigOptions;
+  imageUrl: string | null;
+  isMobile?: boolean;
+}) => {
+  const currentConfig = isMobile ? config.mobile : config.desktop;
+
+  return (
+    <div className="w-full bg-white rounded-lg shadow-md p-4">
+      <div
+        className={`relative ${
+          isMobile ? "w-[300px] mx-auto" : "w-full"
+        } h-[200px] bg-gray-100 rounded-lg overflow-hidden`}
+      >
+        {imageUrl && (
+          <img
+            src={imageUrl}
+            alt="Preview"
+            className="w-full h-full object-cover"
+          />
+        )}
+        <div
+          className={`absolute inset-0 flex flex-col justify-center items-center p-6 ${
+            currentConfig.textAlignment === "left"
+              ? "items-start"
+              : currentConfig.textAlignment === "right"
+              ? "items-end"
+              : "items-center"
+          }`}
+        >
+          {currentConfig.showTitle && currentConfig.title && (
+            <h2
+              className={`${
+                isMobile ? "text-xl" : "text-2xl"
+              } font-bold text-white mb-2`}
+            >
+              {currentConfig.title}
+            </h2>
+          )}
+          {currentConfig.showLandingText && currentConfig.textContent && (
+            <p className={`text-white ${isMobile ? "text-sm" : ""} mb-4`}>
+              {currentConfig.textContent}
+            </p>
+          )}
+          {currentConfig.showButton && currentConfig.buttonText && (
+            <a
+              href={currentConfig.buttonLink}
+              className={`bg-primary text-white ${
+                isMobile ? "px-4 py-2 text-sm" : "px-6 py-2"
+              } rounded-full hover:bg-secondary transition-colors`}
+            >
+              {currentConfig.buttonText}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function Colecciones() {
   const { triggerRevalidation } = useRevalidation();
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
@@ -48,9 +135,29 @@ function Colecciones() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [formDataColeccion, setFormDataColeccion] = useState<any>({
     bannerTitle: nombreTienda,
-    bannerText: nombreTienda,
+    bannerText: JSON.stringify({
+      desktop: {
+        showTitle: true,
+        showLandingText: true,
+        showButton: true,
+        textAlignment: "center",
+        textContent: "",
+        title: "",
+        buttonText: "Ver más",
+        buttonLink: "#",
+      },
+      mobile: {
+        showTitle: true,
+        showLandingText: true,
+        showButton: true,
+        textAlignment: "center",
+        textContent: "",
+        title: "",
+        buttonText: "Ver más",
+        buttonLink: "#",
+      },
+    }),
     title: "",
-    landingText: nombreTienda,
     mainImage: {
       name: "",
       type: "",
@@ -319,7 +426,6 @@ function Colecciones() {
       setError(error as Error);
     } finally {
       setLoading(false);
-      
     }
   };
 
@@ -375,11 +481,11 @@ function Colecciones() {
     try {
       const token = getCookie("AdminTokenAuth");
       let hasInvalidProducts = false;
-      
+
       // Verificar cada producto seleccionado
       for (const product of selectedProducts) {
-        const productInfo = productos.find(p => p.id === product.value);
-        
+        const productInfo = productos.find((p) => p.id === product.value);
+
         if (productInfo?.hasVariations) {
           const response = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products/${productInfo.id}/skus?statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -393,10 +499,14 @@ function Colecciones() {
 
           if (response.data.code === 0) {
             // Filtrar solo las variaciones (excluir el SKU base)
-            const variationSkus = response.data.skus.filter((sku: any) => !sku.isBaseSku);
+            const variationSkus = response.data.skus.filter(
+              (sku: any) => !sku.isBaseSku
+            );
 
             if (variationSkus.length === 0) {
-              toast.error(`El producto "${productInfo.name}" no tiene variaciones creadas. Por favor, crea las variaciones antes de continuar.`);
+              toast.error(
+                `El producto "${productInfo.name}" no tiene variaciones creadas. Por favor, crea las variaciones antes de continuar.`
+              );
               hasInvalidProducts = true;
               break;
             }
@@ -444,10 +554,9 @@ function Colecciones() {
 
     // Preparar los datos base
     let data: any = {
-      bannerTitle: formDataColeccion.bannerTitle,
-      bannerText: formDataColeccion.bannerText,
       title: formDataColeccion.title,
-      landingText: formDataColeccion.landingText,
+      landingText: nombreTienda, // Agregamos el landingText por defecto
+      bannerText: formDataColeccion.bannerText,
       products: selectedProducts.map((product) => ({
         id: product.value,
       })),
@@ -506,9 +615,29 @@ function Colecciones() {
       // Resetear el estado después de crear/actualizar
       setFormDataColeccion({
         bannerTitle: nombreTienda,
-        bannerText: nombreTienda,
+        bannerText: JSON.stringify({
+          desktop: {
+            showTitle: true,
+            showLandingText: true,
+            showButton: true,
+            textAlignment: "center",
+            textContent: "",
+            title: "",
+            buttonText: "Ver más",
+            buttonLink: "#",
+          },
+          mobile: {
+            showTitle: true,
+            showLandingText: true,
+            showButton: true,
+            textAlignment: "center",
+            textContent: "",
+            title: "",
+            buttonText: "Ver más",
+            buttonLink: "#",
+          },
+        }),
         title: "",
-        landingText: nombreTienda,
         mainImage: {
           name: "",
           type: "",
@@ -578,14 +707,44 @@ function Colecciones() {
       );
 
       const collection = response.data.collection;
-      console.log("Detalle:", response.data.collection);
+      console.log("Detalle:", collection);
 
-      // Convertir la URL de la imagen en base64 y obtener su tamaño
-      const { base64String: mainImageBase64, size } = await imageUrlToBase64(
-        collection.mainImageUrl
-      );
+      // Convertir las URLs de las imágenes en base64
+      const { base64String: mainImageBase64, size: mainImageSize } =
+        await imageUrlToBase64(collection.mainImageUrl);
+      const { base64String: previewImageBase64, size: previewImageSize } =
+        await imageUrlToBase64(collection.previewImageUrl);
 
-      // Filtrar los productos para incluir solo aquellos con statusCode: ACTIVE
+      // Intentar parsear el bannerText si existe, si no, usar la configuración por defecto
+      let bannerConfig;
+      try {
+        bannerConfig = JSON.parse(collection.bannerText);
+      } catch (e) {
+        bannerConfig = {
+          desktop: {
+            showTitle: true,
+            showLandingText: true,
+            showButton: true,
+            textAlignment: "center",
+            textContent: "",
+            title: "",
+            buttonText: "Ver más",
+            buttonLink: "#",
+          },
+          mobile: {
+            showTitle: true,
+            showLandingText: true,
+            showButton: true,
+            textAlignment: "center",
+            textContent: "",
+            title: "",
+            buttonText: "Ver más",
+            buttonLink: "#",
+          },
+        };
+      }
+
+      // Filtrar los productos activos
       const selectedProductsFromApi = collection.products
         .filter((product: any) => product.statusCode === "ACTIVE")
         .map((product: any) => ({
@@ -595,29 +754,30 @@ function Colecciones() {
         }));
 
       setFormDataColeccion({
-        bannerTitle: collection.bannerTitle,
-        bannerText: collection.bannerText,
         title: collection.title,
-        landingText: "pixelup",
-        previewImage: {
-          name: collection.bannerTitle,
+        bannerText: JSON.stringify(bannerConfig),
+        mainImage: {
+          name: collection.title,
           type: "image/jpeg",
-          size,
+          size: mainImageSize,
           data: mainImageBase64,
         },
-        mainImage: {
-          name: collection.bannerTitle,
+        previewImage: {
+          name: collection.title,
           type: "image/jpeg",
-          size,
-          data: mainImageBase64,
+          size: previewImageSize,
+          data: previewImageBase64,
         },
       });
 
       setMainImageColeccion(mainImageBase64);
+      setPreviewImageColeccion(previewImageBase64);
       setSelectedProducts(selectedProductsFromApi);
       setEditingCollectionId(collectionID);
       setIsEditing(true);
       setImageModified(false);
+      setIsMainImageUploaded(true);
+      setIsPreviewImageUploaded(true);
 
       // Desplazarse hacia el formulario de edición
       if (editFormRef.current) {
@@ -625,22 +785,43 @@ function Colecciones() {
       }
     } catch (error) {
       console.error("Error editing collection:", error);
+      toast.error("Error al cargar la colección");
     }
   };
 
   const handleCancelEdit = () => {
     setFormDataColeccion({
       bannerTitle: nombreTienda,
-      bannerText: nombreTienda,
+      bannerText: JSON.stringify({
+        desktop: {
+          showTitle: true,
+          showLandingText: true,
+          showButton: true,
+          textAlignment: "center",
+          textContent: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+        mobile: {
+          showTitle: true,
+          showLandingText: true,
+          showButton: true,
+          textAlignment: "center",
+          textContent: "",
+          title: "",
+          buttonText: "Ver más",
+          buttonLink: "#",
+        },
+      }),
       title: "",
-      previewImage: {
+      mainImage: {
         name: "",
         type: "",
         size: null,
         data: "",
       },
-      landingText: nombreTienda,
-      mainImage: {
+      previewImage: {
         name: "",
         type: "",
         size: null,
@@ -652,7 +833,7 @@ function Colecciones() {
     setSelectedProducts([]);
     setIsEditing(false);
     setEditingCollectionId(null);
-    setImageModified(false); // Resetear la modificación de imagen
+    setImageModified(false);
   };
 
   const imageUrlToBase64 = async (
@@ -919,168 +1100,809 @@ function Colecciones() {
                 style={{ borderRadius: "var(--radius)" }}
               />
             </label>
-            {/*             <label className="block mt-4">
-              <h3 className="font-normal text-primary">
-                Título Banner <span className="text-primary">*</span>
-              </h3>
-              <input
-                id="bannerTitle"
-                name="bannerTitle"
-                value={formDataColeccion.bannerTitle}
-                onChange={handleChange}
-                placeholder="Ingresa título del banner..."
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </label> 
 
-            <label className="block mt-4">
-              <h3 className="font-normal text-primary">
-                Texto Banner <span className="text-primary">*</span>
+            <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+              <h3 className="font-semibold text-lg text-primary mb-6">
+                Configuración del Banner
               </h3>
-              <input
-                id="bannerText"
-                name="bannerText"
-                value={formDataColeccion.bannerText}
-                onChange={handleChange}
-                placeholder="Ingresa texto del banner..."
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
-              />
-            </label>*/}
 
-            <div>
-              <input
-                type="file"
-                accept="image/*"
-                id="mainImage"
-                className="hidden"
-                onChange={handleImageChange}
-              />
-              {isMainImageUploaded ? (
-                <div className="flex flex-col items-center mt-10 ">
-                  <h4 className="font-normal text-primary text-center text-slate-600 w-full">
-                    Tu fotografía{" "}
-                    <span className="text-dark">
-                      {" "}
-                      {formDataColeccion.mainImage.name}
-                    </span>{" "}
-                    ya ha sido cargada.
-                    <br /> Actualiza para ver los cambios.
-                  </h4>
-                  <button
-                    className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full   text-xs mt-4 "
-                    onClick={handleClearImage}
-                  >
-                    <span className="self-center">Seleccionar otra Imagen</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-6 h-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              {/* Configuración Desktop */}
+              <div className="mb-8">
+                <h4 className="font-medium text-gray-700 mb-4">
+                  Configuración Desktop
+                </h4>
+                <div className="space-y-6">
+                  {/* Vista previa Desktop */}
+                  <PreviewBanner
+                    config={JSON.parse(formDataColeccion.bannerText)}
+                    imageUrl={mainImageColeccion}
+                    isMobile={false}
+                  />
+
+                  {/* Carga de imagen Desktop */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="mainImage"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                    {isMainImageUploaded ? (
+                      <div className="flex flex-col items-center mt-4">
+                        <h4 className="font-normal text-primary text-center text-slate-600 w-full">
+                          Tu fotografía{" "}
+                          <span className="text-dark">
+                            {formDataColeccion.mainImage.name}
+                          </span>{" "}
+                          ya ha sido cargada.
+                          <br /> Actualiza para ver los cambios.
+                        </h4>
+                        <button
+                          className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full text-xs mt-4"
+                          onClick={handleClearImage}
+                        >
+                          <span className="self-center">
+                            Seleccionar otra Imagen
+                          </span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-6 h-6"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 className="font-normal text-primary">
+                          Foto Desktop <span className="text-primary">*</span>
+                        </h3>
+                        <label
+                          htmlFor="mainImage"
+                          className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
+                        >
+                          <div className="flex flex-col justify-center items-center">
+                            <svg
+                              className="w-12 h-12 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="font-semibold">
+                                Subir Imagen
+                              </span>
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              PNG, JPG o Webp (1920x200px)
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Switches de visibilidad */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Mostrar Título
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.showTitle = !config.desktop.showTitle;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .showTitle
+                            ? "bg-primary"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .showTitle
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Mostrar Texto
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.showLandingText =
+                            !config.desktop.showLandingText;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .showLandingText
+                            ? "bg-primary"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .showLandingText
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Mostrar Botón
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.showButton =
+                            !config.desktop.showButton;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .showButton
+                            ? "bg-primary"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .showButton
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Botones de alineación */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Alineación del Texto
+                    </label>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.textAlignment = "left";
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`p-2 rounded ${
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .textAlignment === "left"
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.textAlignment = "center";
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`p-2 rounded ${
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .textAlignment === "center"
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm2 5a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm2 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.textAlignment = "right";
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`p-2 rounded ${
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .textAlignment === "right"
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm4 5a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zm4 5a1 1 0 011-1h4a1 1 0 110 2h-4a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Campos de texto */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Título
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).desktop.title
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.title = e.target.value;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
                       />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="font-normal text-primary">
-                    Foto <span className="text-primary">*</span>
-                  </h3>
-                  <label
-                    htmlFor="mainImage"
-                    className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
-                  >
-                    <div className="flex flex-col justify-center items-center">
-                      <svg
-                        className="w-12 h-12 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-semibold">Subir Imagen</span>
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        PNG, JPG o Webp (800x800px)
-                      </p>
                     </div>
-                  </label>
-                </div>
-              )}
-            </div>
-            <div className="mt-4">
-              <input
-                type="file"
-                accept="image/*"
-                id="previewImage"
-                className="hidden"
-                onChange={handlePreviewImageChange}
-              />
-              {isPreviewImageUploaded ? (
-                <div className="flex flex-col items-center mt-10 ">
-                  <h4 className="font-normal text-primary text-center text-slate-600 w-full">
-                    Tu fotografía{" "}
-                    <span className="text-dark">
-                      {formDataColeccion.previewImage.name}
-                    </span>{" "}
-                    ha sido cargada.
-                    <br /> Actualiza para ver los cambios.
-                  </h4>
-                  <button
-                    className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full text-xs mt-4"
-                    onClick={handleClearImageMobile}
-                  >
-                    <span className="self-center">Seleccionar otra Imagen</span>
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="font-normal text-primary">
-                    Foto Mobile y Tablet <span className="text-primary">*</span>
-                  </h3>
-                  <label
-                    htmlFor="previewImage"
-                    className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
-                  >
-                    <div className="flex flex-col justify-center items-center">
-                      <svg
-                        className="w-12 h-12 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Subir Imagen</span>
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG o Webp (800x800px)
-                      </p>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Contenido del Texto
+                      </label>
+                      <textarea
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).desktop
+                            .textContent
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.desktop.textContent = e.target.value;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        rows={3}
+                      />
                     </div>
-                  </label>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Texto del Botón
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .buttonText
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.desktop.buttonText = e.target.value;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Enlace del Botón
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).desktop
+                              .buttonLink
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.desktop.buttonLink = e.target.value;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* Configuración Mobile - Similar a Desktop pero con config.mobile */}
+              <div>
+                <h4 className="font-medium text-gray-700 mb-4">
+                  Configuración Mobile
+                </h4>
+                <div className="space-y-6">
+                  {/* Vista previa Mobile */}
+                  <PreviewBanner
+                    config={JSON.parse(formDataColeccion.bannerText)}
+                    imageUrl={mainPreviewColeccion}
+                    isMobile={true}
+                  />
+
+                  {/* Carga de imagen Mobile */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="previewImage"
+                      className="hidden"
+                      onChange={handlePreviewImageChange}
+                    />
+                    {isPreviewImageUploaded ? (
+                      <div className="flex flex-col items-center mt-4">
+                        <h4 className="font-normal text-primary text-center text-slate-600 w-full">
+                          Tu fotografía{" "}
+                          <span className="text-dark">
+                            {formDataColeccion.previewImage.name}
+                          </span>{" "}
+                          ha sido cargada.
+                          <br /> Actualiza para ver los cambios.
+                        </h4>
+                        <button
+                          className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full text-xs mt-4"
+                          onClick={handleClearImageMobile}
+                        >
+                          <span className="self-center">
+                            Seleccionar otra Imagen
+                          </span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 className="font-normal text-primary">
+                          Foto Mobile y Tablet{" "}
+                          <span className="text-primary">*</span>
+                        </h3>
+                        <label
+                          htmlFor="previewImage"
+                          className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
+                        >
+                          <div className="flex flex-col justify-center items-center">
+                            <svg
+                              className="w-12 h-12 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                            <p className="mb-2 text-sm text-gray-500">
+                              <span className="font-semibold">
+                                Subir Imagen
+                              </span>
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              PNG, JPG o Webp (1080x300px)
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Switches de visibilidad */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Mostrar Título
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.showTitle = !config.mobile.showTitle;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .showTitle
+                            ? "bg-primary"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .showTitle
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Mostrar Texto
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.showLandingText =
+                            !config.mobile.showLandingText;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .showLandingText
+                            ? "bg-primary"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .showLandingText
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Mostrar Botón
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.showButton = !config.mobile.showButton;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .showButton
+                            ? "bg-primary"
+                            : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .showButton
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Botones de alineación */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Alineación del Texto
+                    </label>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.textAlignment = "left";
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`p-2 rounded ${
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .textAlignment === "left"
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.textAlignment = "center";
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`p-2 rounded ${
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .textAlignment === "center"
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm2 5a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm2 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.textAlignment = "right";
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className={`p-2 rounded ${
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .textAlignment === "right"
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 hover:bg-gray-200"
+                        }`}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm4 5a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zm4 5a1 1 0 011-1h4a1 1 0 110 2h-4a1 1 0 01-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Campos de texto */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Título
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).mobile.title
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.title = e.target.value;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Contenido del Texto
+                      </label>
+                      <textarea
+                        value={
+                          JSON.parse(formDataColeccion.bannerText).mobile
+                            .textContent
+                        }
+                        onChange={(e) => {
+                          const config = JSON.parse(
+                            formDataColeccion.bannerText
+                          );
+                          config.mobile.textContent = e.target.value;
+                          setFormDataColeccion({
+                            ...formDataColeccion,
+                            bannerText: JSON.stringify(config),
+                          });
+                        }}
+                        className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Texto del Botón
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .buttonText
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.mobile.buttonText = e.target.value;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Enlace del Botón
+                        </label>
+                        <input
+                          type="text"
+                          value={
+                            JSON.parse(formDataColeccion.bannerText).mobile
+                              .buttonLink
+                          }
+                          onChange={(e) => {
+                            const config = JSON.parse(
+                              formDataColeccion.bannerText
+                            );
+                            config.mobile.buttonLink = e.target.value;
+                            setFormDataColeccion({
+                              ...formDataColeccion,
+                              bannerText: JSON.stringify(config),
+                            });
+                          }}
+                          className="shadow block w-full px-4 py-2 border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="mt-8">
@@ -1242,7 +2064,9 @@ function Colecciones() {
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen
+                </h2>
               </div>
               <button
                 onClick={() => {
@@ -1328,7 +2152,9 @@ function Colecciones() {
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen
+                </h2>
               </div>
               <button
                 onClick={() => {

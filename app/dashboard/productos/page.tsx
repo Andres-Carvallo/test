@@ -360,8 +360,11 @@ export default function ProductPageBO() {
 
     // Cargar stock y precios solo para los productos de la página actual
     const loadCurrentPageData = async () => {
-      const productsToUpdate = currentPageProducts.filter(p => !p.hasVariations && (p.stockQuantity === null || p.price === null));
-      
+      const productsToUpdate = currentPageProducts.filter(
+        (p) =>
+          !p.hasVariations && (p.stockQuantity === null || p.price === null)
+      );
+
       if (productsToUpdate.length === 0) return;
 
       await Promise.all(
@@ -824,7 +827,9 @@ export default function ProductPageBO() {
         }
       );
       const variationsData = await variationsResponse.json();
-      const variations = variationsData.skus.filter((sku: any) => !sku.isBaseSku);
+      const variations = variationsData.skus.filter(
+        (sku: any) => !sku.isBaseSku
+      );
 
       const pricesWithAttributes = await Promise.all(
         variations.map(async (variation: any, index: number) => {
@@ -948,7 +953,7 @@ export default function ProductPageBO() {
       cell: ({ row }: { row: Row<Product> }) => (
         <div className="w-10 min-w-[40px] flex items-center justify-center">
           {row.original.statusCode === "ACTIVE" ? (
-            <Link 
+            <Link
               target="_blank"
               href={`/tienda/productos/${slugify(row.original.name)}`}
               className="hover:opacity-75 transition-opacity"
@@ -975,12 +980,13 @@ export default function ProductPageBO() {
       accessorKey: "name",
       enableDragging: false,
       cell: ({ row }: { row: Row<Product> }) => {
-        const displayName = row.original.name.length > 20
-          ? `${row.original.name.substring(0, 20)}...`
-          : row.original.name;
+        const displayName =
+          row.original.name.length > 20
+            ? `${row.original.name.substring(0, 20)}...`
+            : row.original.name;
 
         return row.original.statusCode === "ACTIVE" ? (
-          <Link 
+          <Link
             href={`/tienda/productos/${slugify(row.original.name)}`}
             target="_blank"
             className="w-full min-w-[150px] max-w-[300px] truncate hover:text-primary transition-colors hover:underline"
@@ -989,7 +995,7 @@ export default function ProductPageBO() {
             {displayName}
           </Link>
         ) : (
-          <span 
+          <span
             className="w-full min-w-[150px] max-w-[300px] truncate text-gray-500"
             title={`${row.original.name} (No publicado)`}
           >
@@ -1092,7 +1098,7 @@ export default function ProductPageBO() {
                 className="size-6"
               >
                 <path
-                  stroke-linecap="round"
+                  strokeLinecap="round"
                   stroke-linejoin="round"
                   d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
                 />
@@ -1366,7 +1372,7 @@ export default function ProductPageBO() {
                       className="size-6"
                     >
                       <path
-                        stroke-linecap="round"
+                        strokeLinecap="round"
                         stroke-linejoin="round"
                         d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
                       />
@@ -1704,9 +1710,9 @@ export default function ProductPageBO() {
 
                   for (let i = 1; i <= totalPages; i++) {
                     if (
-                      i === 1 || 
-                      i === totalPages || 
-                      i === currentPage || 
+                      i === 1 ||
+                      i === totalPages ||
+                      i === currentPage ||
                       (i >= currentPage - delta && i <= currentPage + delta)
                     ) {
                       range.push(i);
@@ -1718,7 +1724,7 @@ export default function ProductPageBO() {
                       if (i - l === 2) {
                         rangeWithDots.push(l + 1);
                       } else if (i - l !== 1) {
-                        rangeWithDots.push('...');
+                        rangeWithDots.push("...");
                       }
                     }
                     rangeWithDots.push(i);
@@ -1728,12 +1734,16 @@ export default function ProductPageBO() {
                   return rangeWithDots.map((pageNum, index) => (
                     <li key={index}>
                       <button
-                        onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
-                        disabled={pageNum === '...'}
+                        onClick={() =>
+                          typeof pageNum === "number"
+                            ? handlePageChange(pageNum)
+                            : undefined
+                        }
+                        disabled={pageNum === "..."}
                         className={`flex items-center justify-center px-4 h-10 leading-tight border border-gray-300 ${
                           pageNum === currentPage
                             ? "text-white bg-primary border-primary z-10"
-                            : pageNum === '...'
+                            : pageNum === "..."
                             ? "text-gray-500 bg-white cursor-default"
                             : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"
                         }`}
@@ -1750,7 +1760,9 @@ export default function ProductPageBO() {
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ${
-                      currentPage === totalPages ? "cursor-not-allowed opacity-50" : ""
+                      currentPage === totalPages
+                        ? "cursor-not-allowed opacity-50"
+                        : ""
                     }`}
                   >
                     <span className="sr-only">Siguiente</span>
