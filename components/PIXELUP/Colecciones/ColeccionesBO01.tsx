@@ -17,24 +17,25 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
+import Image from "next/image";
 
 interface ConfigOptions {
   desktop: {
     showTitle: boolean;
-    showLandingText: boolean;
+    showBannerText: boolean;
     showButton: boolean;
     textAlignment: string;
-    textContent: string;
+    bannerText: string;
     title: string;
     buttonText: string;
     buttonLink: string;
   };
   mobile: {
     showTitle: boolean;
-    showLandingText: boolean;
+    showBannerText: boolean;
     showButton: boolean;
     textAlignment: string;
-    textContent: string;
+    bannerText: string;
     title: string;
     buttonText: string;
     buttonLink: string;
@@ -111,66 +112,75 @@ const ImagePreview = ({
   );
 };
 
-const PreviewBanner = ({
-  config,
-  imageUrl,
-  isMobile = false,
-}: {
-  config: ConfigOptions;
-  imageUrl: string | null;
-  isMobile?: boolean;
-}) => {
-  const currentConfig = isMobile ? config.mobile : config.desktop;
+const PreviewBanner = ({ config, image, isMobile = false }: any) => {
+  const currentConfig = config[isMobile ? "mobile" : "desktop"];
+  const hasContent = image;
+  const hasElements =
+    currentConfig.showTitle ||
+    currentConfig.showBannerText ||
+    currentConfig.showButton;
+
+  if (!hasContent) {
+    return null;
+  }
+
+  const getAlignmentClasses = (alignment: string) => {
+    switch (alignment) {
+      case "left":
+        return "items-start text-left";
+      case "right":
+        return "items-end text-right";
+      default:
+        return "items-center text-center";
+    }
+  };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-md p-4">
-      <div
-        className={`relative ${
-          isMobile ? "w-[300px] mx-auto" : "w-full"
-        } h-[200px] bg-gray-100 rounded-lg overflow-hidden`}
-      >
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt="Preview"
-            className="w-full h-full object-cover"
-          />
-        )}
-        <div
-          className={`absolute inset-0 flex flex-col ${
-            currentConfig.textAlignment === "left"
-              ? "items-start"
-              : currentConfig.textAlignment === "right"
-              ? "items-end"
-              : "items-center"
-          } justify-center p-6`}
-        >
-          {currentConfig.showTitle && currentConfig.title && (
-            <h2
-              className={`${
-                isMobile ? "text-xl" : "text-2xl"
-              } font-bold text-white mb-2`}
-            >
-              {currentConfig.title}
-            </h2>
-          )}
-          {currentConfig.showLandingText && currentConfig.textContent && (
-            <p className={`text-white ${isMobile ? "text-sm" : ""} mb-4`}>
-              {currentConfig.textContent}
-            </p>
-          )}
-          {currentConfig.showButton && currentConfig.buttonText && (
-            <a
-              href={currentConfig.buttonLink}
-              className={`bg-primary text-white ${
-                isMobile ? "px-4 py-2 text-sm" : "px-6 py-2"
-              } rounded-full hover:bg-secondary transition-colors`}
-            >
-              {currentConfig.buttonText}
-            </a>
-          )}
+    <div className="relative w-full">
+      {image && (
+        <Image
+          src={image}
+          alt="Preview"
+          width={isMobile ? 375 : 1920}
+          height={isMobile ? 500 : 600}
+          className="w-full object-cover"
+        />
+      )}
+      {hasElements && (
+        <div className="absolute inset-0 bg-black bg-opacity-50">
+          <div
+            className={`flex h-full flex-col ${getAlignmentClasses(
+              currentConfig.textAlignment
+            )} justify-center p-4`}
+          >
+            <div className="max-w-[90%]">
+              {currentConfig.showTitle && (
+                <h2 className="mb-4 text-2xl font-bold text-white">
+                  {currentConfig.title}
+                </h2>
+              )}
+              {currentConfig.showBannerText && (
+                <p className="mb-4 text-white">{currentConfig.bannerText}</p>
+              )}
+              {currentConfig.showButton && (
+                <div
+                  className={`flex ${
+                    currentConfig.textAlignment === "center"
+                      ? "justify-center"
+                      : currentConfig.textAlignment === "right"
+                      ? "justify-end"
+                      : "justify-start"
+                  }`}
+                >
+                  <button className="inline-block rounded bg-white px-4 py-2 text-black">
+                    {currentConfig.buttonText}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -212,21 +222,21 @@ function Colecciones() {
     bannerTitle: nombreTienda,
     bannerText: JSON.stringify({
       desktop: {
-        showTitle: true,
-        showLandingText: true,
-        showButton: true,
+        showTitle: false,
+        showBannerText: false,
+        showButton: false,
         textAlignment: "center",
-        textContent: "",
+        bannerText: "",
         title: "",
         buttonText: "Ver más",
         buttonLink: "#",
       },
       mobile: {
-        showTitle: true,
-        showLandingText: true,
-        showButton: true,
+        showTitle: false,
+        showBannerText: false,
+        showButton: false,
         textAlignment: "center",
-        textContent: "",
+        bannerText: "",
         title: "",
         buttonText: "Ver más",
         buttonLink: "#",
@@ -238,12 +248,14 @@ function Colecciones() {
       type: "",
       size: null,
       data: "",
+      url: "", // Agregado para compatibilidad
     },
     previewImage: {
       name: "",
       type: "",
       size: null,
       data: "",
+      url: "", // Agregado para compatibilidad
     },
   });
 
@@ -905,21 +917,21 @@ function Colecciones() {
           bannerTitle: nombreTienda,
           bannerText: JSON.stringify({
             desktop: {
-              showTitle: true,
-              showLandingText: true,
-              showButton: true,
+              showTitle: false,
+              showBannerText: false,
+              showButton: false,
               textAlignment: "center",
-              textContent: "",
+              bannerText: "",
               title: "",
               buttonText: "Ver más",
               buttonLink: "#",
             },
             mobile: {
-              showTitle: true,
-              showLandingText: true,
-              showButton: true,
+              showTitle: false,
+              showBannerText: false,
+              showButton: false,
               textAlignment: "center",
-              textContent: "",
+              bannerText: "",
               title: "",
               buttonText: "Ver más",
               buttonLink: "#",
@@ -1012,20 +1024,20 @@ function Colecciones() {
         bannerConfig = {
           desktop: {
             showTitle: true,
-            showLandingText: true,
+            showBannerText: true,
             showButton: true,
             textAlignment: "center",
-            textContent: "",
+            bannerText: "",
             title: "",
             buttonText: "Ver más",
             buttonLink: "#",
           },
           mobile: {
             showTitle: true,
-            showLandingText: true,
+            showBannerText: true,
             showButton: true,
             textAlignment: "center",
-            textContent: "",
+            bannerText: "",
             title: "",
             buttonText: "Ver más",
             buttonLink: "#",
@@ -1083,21 +1095,21 @@ function Colecciones() {
       bannerTitle: nombreTienda,
       bannerText: JSON.stringify({
         desktop: {
-          showTitle: true,
-          showLandingText: true,
-          showButton: true,
+          showTitle: false,
+          showBannerText: false,
+          showButton: false,
           textAlignment: "center",
-          textContent: "",
+          bannerText: "",
           title: "",
           buttonText: "Ver más",
           buttonLink: "#",
         },
         mobile: {
-          showTitle: true,
-          showLandingText: true,
-          showButton: true,
+          showTitle: false,
+          showBannerText: false,
+          showButton: false,
           textAlignment: "center",
-          textContent: "",
+          bannerText: "",
           title: "",
           buttonText: "Ver más",
           buttonLink: "#",
@@ -1566,7 +1578,7 @@ function Colecciones() {
                   {/* Vista Previa Desktop */}
                   <PreviewBanner
                     config={JSON.parse(formDataColeccion.bannerText)}
-                    imageUrl={mainImageColeccion || ""}
+                    image={mainImageColeccion || ""}
                     isMobile={false}
                   />
 
@@ -1601,24 +1613,52 @@ function Colecciones() {
                                 : "bg-gray-100 hover:bg-gray-200"
                             }`}
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-6 w-6"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d={
-                                  alignment === "left"
-                                    ? "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                    : alignment === "center"
-                                    ? "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm2 5a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm2 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"
-                                    : "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm4 5a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zm4 5a1 1 0 011-1h4a1 1 0 110 2h-4a1 1 0 01-1-1z"
-                                }
-                                clipRule="evenodd"
-                              />
-                            </svg>
+                            {alignment === "left" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M4 12h10M4 18h12"
+                                />
+                              </svg>
+                            ) : alignment === "center" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M6 12h12M8 18h8"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M10 12h10M8 18h12"
+                                />
+                              </svg>
+                            )}
                           </button>
                         ))}
                       </div>
@@ -1749,6 +1789,10 @@ function Colecciones() {
                             formDataColeccion.bannerText
                           );
                           config.desktop.title = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (e.target.value && !config.desktop.showTitle) {
+                            config.desktop.showTitle = true;
+                          }
                           setFormDataColeccion({
                             ...formDataColeccion,
                             bannerText: JSON.stringify(config),
@@ -1771,8 +1815,8 @@ function Colecciones() {
                             const config = JSON.parse(
                               formDataColeccion.bannerText
                             );
-                            config.desktop.showLandingText =
-                              !config.desktop.showLandingText;
+                            config.desktop.showBannerText =
+                              !config.desktop.showBannerText;
                             setFormDataColeccion({
                               ...formDataColeccion,
                               bannerText: JSON.stringify(config),
@@ -1780,7 +1824,7 @@ function Colecciones() {
                           }}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
                             JSON.parse(formDataColeccion.bannerText).desktop
-                              .showLandingText
+                              .showBannerText
                               ? "bg-primary"
                               : "bg-gray-200"
                           }`}
@@ -1788,7 +1832,7 @@ function Colecciones() {
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                               JSON.parse(formDataColeccion.bannerText).desktop
-                                .showLandingText
+                                .showBannerText
                                 ? "translate-x-6"
                                 : "translate-x-1"
                             }`}
@@ -1798,13 +1842,20 @@ function Colecciones() {
                       <textarea
                         value={
                           JSON.parse(formDataColeccion.bannerText).desktop
-                            .textContent
+                            .bannerText
                         }
                         onChange={(e) => {
                           const config = JSON.parse(
                             formDataColeccion.bannerText
                           );
-                          config.desktop.textContent = e.target.value;
+                          config.desktop.bannerText = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (
+                            e.target.value &&
+                            !config.desktop.showBannerText
+                          ) {
+                            config.desktop.showBannerText = true;
+                          }
                           setFormDataColeccion({
                             ...formDataColeccion,
                             bannerText: JSON.stringify(config),
@@ -1864,6 +1915,10 @@ function Colecciones() {
                               formDataColeccion.bannerText
                             );
                             config.desktop.buttonText = e.target.value;
+                            // Activar el switch si se escribe algo
+                            if (e.target.value && !config.desktop.showButton) {
+                              config.desktop.showButton = true;
+                            }
                             setFormDataColeccion({
                               ...formDataColeccion,
                               bannerText: JSON.stringify(config),
@@ -1981,7 +2036,7 @@ function Colecciones() {
                   {/* Vista Previa Mobile */}
                   <PreviewBanner
                     config={JSON.parse(formDataColeccion.bannerText)}
-                    imageUrl={mainPreviewColeccion || ""}
+                    image={mainPreviewColeccion || ""}
                     isMobile={true}
                   />
 
@@ -2016,24 +2071,52 @@ function Colecciones() {
                                 : "bg-gray-100 hover:bg-gray-200"
                             }`}
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-6 w-6"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d={
-                                  alignment === "left"
-                                    ? "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                    : alignment === "center"
-                                    ? "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm2 5a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm2 5a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"
-                                    : "M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm4 5a1 1 0 011-1h8a1 1 0 110 2H8a1 1 0 01-1-1zm4 5a1 1 0 011-1h4a1 1 0 110 2h-4a1 1 0 01-1-1z"
-                                }
-                                clipRule="evenodd"
-                              />
-                            </svg>
+                            {alignment === "left" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M4 12h10M4 18h12"
+                                />
+                              </svg>
+                            ) : alignment === "center" ? (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M6 12h12M8 18h8"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 6h16M10 12h10M8 18h12"
+                                />
+                              </svg>
+                            )}
                           </button>
                         ))}
                       </div>
@@ -2163,6 +2246,10 @@ function Colecciones() {
                             formDataColeccion.bannerText
                           );
                           config.mobile.title = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (e.target.value && !config.mobile.showTitle) {
+                            config.mobile.showTitle = true;
+                          }
                           setFormDataColeccion({
                             ...formDataColeccion,
                             bannerText: JSON.stringify(config),
@@ -2185,8 +2272,8 @@ function Colecciones() {
                             const config = JSON.parse(
                               formDataColeccion.bannerText
                             );
-                            config.mobile.showLandingText =
-                              !config.mobile.showLandingText;
+                            config.mobile.showBannerText =
+                              !config.mobile.showBannerText;
                             setFormDataColeccion({
                               ...formDataColeccion,
                               bannerText: JSON.stringify(config),
@@ -2194,7 +2281,7 @@ function Colecciones() {
                           }}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
                             JSON.parse(formDataColeccion.bannerText).mobile
-                              .showLandingText
+                              .showBannerText
                               ? "bg-primary"
                               : "bg-gray-200"
                           }`}
@@ -2202,7 +2289,7 @@ function Colecciones() {
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                               JSON.parse(formDataColeccion.bannerText).mobile
-                                .showLandingText
+                                .showBannerText
                                 ? "translate-x-6"
                                 : "translate-x-1"
                             }`}
@@ -2212,13 +2299,17 @@ function Colecciones() {
                       <textarea
                         value={
                           JSON.parse(formDataColeccion.bannerText).mobile
-                            .textContent
+                            .bannerText
                         }
                         onChange={(e) => {
                           const config = JSON.parse(
                             formDataColeccion.bannerText
                           );
-                          config.mobile.textContent = e.target.value;
+                          config.mobile.bannerText = e.target.value;
+                          // Activar el switch si se escribe algo
+                          if (e.target.value && !config.mobile.showBannerText) {
+                            config.mobile.showBannerText = true;
+                          }
                           setFormDataColeccion({
                             ...formDataColeccion,
                             bannerText: JSON.stringify(config),
@@ -2278,6 +2369,10 @@ function Colecciones() {
                               formDataColeccion.bannerText
                             );
                             config.mobile.buttonText = e.target.value;
+                            // Activar el switch si se escribe algo
+                            if (e.target.value && !config.mobile.showButton) {
+                              config.mobile.showButton = true;
+                            }
                             setFormDataColeccion({
                               ...formDataColeccion,
                               bannerText: JSON.stringify(config),
@@ -2351,12 +2446,41 @@ function Colecciones() {
                 </button>
                 <button
                   type="submit"
-                  disabled={selectedProducts.length === 0}
-                  className={`px-6 py-2 rounded-md transition-colors ${
-                    selectedProducts.length === 0
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-primary hover:bg-secondary text-white"
-                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const missingFields = [];
+
+                    if (!formDataColeccion.title.trim()) {
+                      missingFields.push("nombre de la colección");
+                    }
+                    if (selectedProducts.length === 0) {
+                      missingFields.push("al menos un producto");
+                    }
+                    if (
+                      !isMainImageUploaded ||
+                      !formDataColeccion.mainImage?.data
+                    ) {
+                      missingFields.push("imagen desktop");
+                    }
+                    if (
+                      !isPreviewImageUploaded ||
+                      !formDataColeccion.previewImage?.data
+                    ) {
+                      missingFields.push("imagen mobile");
+                    }
+
+                    if (missingFields.length > 0) {
+                      toast.error(
+                        `Por favor, complete los siguientes campos obligatorios: ${missingFields.join(
+                          ", "
+                        )}`
+                      );
+                      return;
+                    }
+
+                    handleSubmit(e);
+                  }}
+                  className="px-6 py-2 rounded-md transition-colors bg-primary hover:bg-secondary text-white"
                 >
                   Crear Colección
                 </button>
