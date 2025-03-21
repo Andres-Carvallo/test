@@ -27,7 +27,7 @@ const ProductGridShop = ({
   const [productTypes] = useState(initialProductTypes);
   const [page, setPage] = useState(initialPage);
   const [isLoading, setIsLoading] = useState(false);
-  const [sortBy, setSortBy] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("nameAsc");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToCartHandler } = useAPI();
@@ -213,11 +213,11 @@ const ProductGridShop = ({
         const priceB = getPrice(b);
 
         return sortBy === "asc" ? priceA - priceB : priceB - priceA;
-      } else if (sortBy === "nameAsc" || sortBy === "nameDesc") {
-        // Ordenamiento alfabético
+      } else if (sortBy === "nameAsc" || sortBy === "nameDesc" || sortBy === "") {
+        // Ordenamiento alfabético (también aplica cuando sortBy está vacío)
         const nameA = a.name.toLowerCase();
         const nameB = b.name.toLowerCase();
-        return sortBy === "nameAsc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        return nameA.localeCompare(nameB);
       } else if (sortBy === "offerAsc" || sortBy === "offerDesc") {
         // Ordenamiento por ofertas
         const getOfferPercentage = (product: any) => {
@@ -318,7 +318,7 @@ const ProductGridShop = ({
 
           <div className="relative flex-1 sm:w-48">
             <select
-              value={sortBy}
+              value={sortBy === "nameAsc" ? "" : sortBy}
               onChange={(e) => handleSortChange(e.target.value)}
               id="Offer"
               className="w-full shadow h-12 border border-gray-300 text-gray-900 text-xs font-normal leading-7 rounded-full py-2.5 px-4 appearance-none focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50"

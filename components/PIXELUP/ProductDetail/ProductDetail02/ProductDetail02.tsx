@@ -1224,6 +1224,7 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
         <Stars
           reviewAverageScore={reviewAverageScore}
           totalReviews={totalReviews}
+          productId={selectedVariation?.product?.id || initialProduct?.skus?.[0]?.product?.id}
         />
       </div>
       {showModal && (

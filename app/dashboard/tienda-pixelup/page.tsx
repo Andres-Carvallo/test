@@ -308,7 +308,6 @@ const ExchangesGrid = () => {
                 <option
                   key={category.id}
                   value={category.id}
-                  className="text-[13px]"
                 >
                   {category.name}
                 </option>
