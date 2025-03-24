@@ -71,10 +71,12 @@ function PedidosBO() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setPageNumber(1);
   };
 
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(status);
+    setPageNumber(1);
   };
 
   const fetchPedidos = useCallback(async () => {
@@ -114,10 +116,13 @@ function PedidosBO() {
         ? pedido.customer.email
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          pedido.correlative.toString().includes(searchTerm)
+          pedido.correlative.toString().includes(searchTerm) ||
+          `${pedido.customer.firstname} ${pedido.customer.lastname}`
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
         : true;
       const matchesPending = showPendingOnly
-        ? pedido.internalStatusCode === "PENDING"
+        ? pedido.internalStatusCode !== "COMPLETED"
         : true;
       const matchesCompleted = showCompletedOnly
         ? pedido.internalStatusCode === "COMPLETED"
@@ -152,8 +157,7 @@ function PedidosBO() {
     PAYMENT_PENDING: "Pendiente de pago",
     PAYMENT_COMPLETED: "Pagado",
     CREATED: "Creada",
-    PENDING: "En proceso",
-    COMPLETED: "Completado",
+
   };
 
   const handlePageChange = (newPageNumber: number) => {
@@ -518,7 +522,7 @@ function PedidosBO() {
                         value={searchTerm}
                         onChange={handleSearchChange}
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="Busca por Email o N° de Pedido"
+                        placeholder="Busca por Email, Cliente o N° de Pedido"
                         required
                       />
                     </div>
@@ -649,40 +653,8 @@ function PedidosBO() {
                               Creada
                             </label>
                           </li>
-                          <li className="flex items-center">
-                            <input
-                              id="pending"
-                              type="checkbox"
-                              checked={statusFilter === "PENDING"}
-                              onChange={() =>
-                                handleStatusFilterChange("PENDING")
-                              }
-                              className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                            />
-                            <label
-                              htmlFor="pending"
-                              className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                            >
-                              En proceso
-                            </label>
-                          </li>
-                          <li className="flex items-center">
-                            <input
-                              id="completed"
-                              type="checkbox"
-                              checked={statusFilter === "COMPLETED"}
-                              onChange={() =>
-                                handleStatusFilterChange("COMPLETED")
-                              }
-                              className="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-                            />
-                            <label
-                              htmlFor="completed"
-                              className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"
-                            >
-                              Completado
-                            </label>
-                          </li>
+
+
                         </ul>
                       </div>
                     </div>
@@ -692,6 +664,7 @@ function PedidosBO() {
                         onClick={() => {
                           setShowPendingOnly(!showPendingOnly);
                           setShowCompletedOnly(false);
+                          setPageNumber(1);
                         }}
                         className={`w-full sm:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium ${
                           showPendingOnly
@@ -725,6 +698,7 @@ function PedidosBO() {
                         onClick={() => {
                           setShowCompletedOnly(!showCompletedOnly);
                           setShowPendingOnly(false);
+                          setPageNumber(1);
                         }}
                         className={`w-full sm:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium ${
                           showCompletedOnly

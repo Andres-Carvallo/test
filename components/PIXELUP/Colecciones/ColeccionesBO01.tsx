@@ -600,11 +600,22 @@ function Colecciones() {
   };
 
   const handleClearImage = () => {
-    setMainImageColeccion(
-      formDataColeccion.mainImage.url || formDataColeccion.mainImage.data
-    );
+    setMainImageColeccion(null);
     setIsMainImageUploaded(false);
-    // Reiniciar el estado
+    setFormDataColeccion((prevFormData: any) => ({
+      ...prevFormData,
+      mainImage: {
+        name: "",
+        type: "",
+        size: null,
+        data: "",
+      },
+    }));
+    // Limpiar el input de archivo
+    const fileInput = document.getElementById('desktop-image') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const handleClearImageMobile = () => {
@@ -619,6 +630,11 @@ function Colecciones() {
         data: "",
       },
     }));
+    // Limpiar el input de archivo
+    const fileInput = document.getElementById('mobile-image') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   };
 
   const handleProductChange = (selectedOption: any) => {
@@ -1485,6 +1501,7 @@ function Colecciones() {
                       </label>
                       <Select
                         id="product"
+                        placeholder="Selección de productos..."
                         value={selectedProduct}
                         onChange={handleProductChange}
                         options={availableProducts.map((producto) => ({
@@ -1829,7 +1846,7 @@ function Colecciones() {
                 <div className="flex items-center justify-between mb-2">
                   <label className="font-medium text-gray-700">
                     Imagen para escritorio
-                    </label>
+                  </label>
                 </div>
                 {mainImageColeccion ? (
                   <div className="text-center">
@@ -1837,25 +1854,32 @@ function Colecciones() {
                       Imagen cargada
                     </p>
                     <div className="flex justify-center pt-4">
-                        <button
-                          type="button"
-                        onClick={() => handleClearImage()}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleClearImage();
+                          // Activar el input de archivo
+                          const fileInput = document.getElementById('desktop-image') as HTMLInputElement;
+                          if (fileInput) {
+                            fileInput.click();
+                          }
+                        }}
                         className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                       >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
                           className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
+                          />
+                        </svg>
                         Cambiar
                       </button>
                     </div>
@@ -1902,7 +1926,7 @@ function Colecciones() {
                 <div className="flex items-center justify-between mb-2">
                   <label className="font-medium text-gray-700">
                     Imagen para móvil
-                    </label>
+                  </label>
                 </div>
                 {mainPreviewColeccion ? (
                   <div className="text-center">
@@ -1912,7 +1936,14 @@ function Colecciones() {
                     <div className="flex justify-center pt-4">
                       <button
                         type="button"
-                        onClick={() => handleClearImageMobile()}
+                        onClick={() => {
+                          handleClearImageMobile();
+                          // Activar el input de archivo
+                          const fileInput = document.getElementById('mobile-image') as HTMLInputElement;
+                          if (fileInput) {
+                            fileInput.click();
+                          }
+                        }}
                         className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
                       >
                         <svg
