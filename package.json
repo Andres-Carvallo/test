@@ -6,9 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "generate-robots": "node scripts/generate-robots.js",
-    "postbuild": "npm run generate-robots"
+    "lint": "next lint"
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.22",
