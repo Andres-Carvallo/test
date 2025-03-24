@@ -13,4 +13,6 @@ export default function BannerTienda() {
       </div>
     </section>
   );
+  
 }
+
