@@ -300,6 +300,13 @@ const BannerTienda01BO: React.FC<any> = () => {
           ...prevConfigOptions[section as keyof typeof prevConfigOptions],
           [property]: value,
         },
+        // Si es una alineación, sincronizar con la otra vista
+        ...(property === "textAlignment" && {
+          [section === "desktop" ? "mobile" : "desktop"]: {
+            ...prevConfigOptions[section === "desktop" ? "mobile" : "desktop"],
+            textAlignment: value,
+          },
+        }),
       }));
     } else {
       // Para propiedades de nivel superior (si las hay)
@@ -1088,7 +1095,7 @@ const BannerTienda01BO: React.FC<any> = () => {
                           id="desktop-image-upload"
                           type="file"
                           accept="image/*"
-                          onChange={handleMainImageChange}
+                          onChange={(e) => handleMainImageChange(e)}
                           className="hidden"
                         />
                       </label>
@@ -1139,7 +1146,7 @@ const BannerTienda01BO: React.FC<any> = () => {
                           id="mobile-image-upload"
                           type="file"
                           accept="image/*"
-                          onChange={handleMobileImageChange}
+                          onChange={(e) => handleMobileImageChange(e)}
                           className="hidden"
                         />
                       </label>
@@ -1428,7 +1435,7 @@ const BannerTienda01BO: React.FC<any> = () => {
             <div className="flex justify-end mt-6 border-t pt-6">
               <button
                 type="submit"
-                className="px-6 py-3 bg-dark text-white rounded-md hover:bg-primary transition-colors shadow-md flex items-center gap-2"
+                className="w-full px-6 py-3 bg-primary text-secondary rounded-md hover:bg-secondary hover:text-primary transition-colors shadow-md flex items-center justify-center gap-2"
                 disabled={loading}
               >
                 {loading ? (
@@ -1482,112 +1489,172 @@ const BannerTienda01BO: React.FC<any> = () => {
 
       {/* Modal para recortar imagen */}
       {isModalOpen && (
-        <Modal
-          showModal={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title="Recortar imagen"
-        >
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={mainImageHero || ""}
-              crop={crop}
-              zoom={zoom}
-              aspect={activeView === "desktop" ? 16 / 5 : 9 / 5}
-              onCropChange={setCrop}
-              onCropComplete={handleCropComplete}
-              onZoomChange={setZoom}
-            />
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setMainImageHero(null);
+                  setIsModalOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mainImageHero || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={activeView === "desktop" ? 16 / 5 : 9 / 5}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMainImageHero(null);
+                      setIsModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mt-4">
-            <label
-              htmlFor="zoom"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Zoom: {zoom.toFixed(1)}x
-            </label>
-            <input
-              type="range"
-              id="zoom"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full mt-1"
-            />
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleCrop}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Aplicar recorte
-            </button>
-          </div>
-        </Modal>
+        </div>
       )}
 
       {/* Modal para recortar imagen móvil */}
       {isMobileImageModalOpen && (
-        <Modal
-          showModal={isMobileImageModalOpen}
-          onClose={() => setIsMobileImageModalOpen(false)}
-          title="Recortar imagen móvil"
-        >
-          <div className="relative h-96 w-full">
-            <Cropper
-              image={mobileImageHero || ""}
-              crop={crop}
-              zoom={zoom}
-              aspect={9 / 5}
-              onCropChange={setCrop}
-              onCropComplete={handleCropComplete}
-              onZoomChange={setZoom}
-            />
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen Móvil</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setMobileImageHero(null);
+                  setIsMobileImageModalOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mobileImageHero || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={9 / 5}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleMobileCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileImageHero(null);
+                      setIsMobileImageModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mt-4">
-            <label
-              htmlFor="zoom-mobile"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Zoom: {zoom.toFixed(1)}x
-            </label>
-            <input
-              type="range"
-              id="zoom-mobile"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full mt-1"
-            />
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setIsMobileImageModalOpen(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={handleMobileCrop}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Aplicar recorte
-            </button>
-          </div>
-        </Modal>
+        </div>
       )}
 
       {/* Modal de alerta para texto descriptivo */}

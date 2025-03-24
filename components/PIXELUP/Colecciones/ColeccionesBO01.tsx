@@ -2196,70 +2196,174 @@ function Colecciones() {
       )}
 
       {/* Modal para recorte de imagen Desktop */}
-      <Modal
-        showModal={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Recortar imagen desktop"
-      >
-        <div className="relative h-[60vh] w-full">
-          <Cropper
-            image={mainImageColeccion || ""}
-            crop={crop}
-            zoom={zoom}
-            aspect={1900 / 400}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={handleCropComplete}
-          />
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen Desktop</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setMainImageColeccion(null);
+                  setIsModalOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mainImageColeccion || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1900 / 400}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handleCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMainImageColeccion(null);
+                      setIsModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="mt-4 flex justify-end space-x-2">
-          <button
-            onClick={() => setIsModalOpen(false)}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleCrop}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary"
-          >
-            Recortar y Guardar
-          </button>
-        </div>
-      </Modal>
+      )}
 
       {/* Modal para recorte de imagen Mobile */}
-      <Modal
-        showModal={isPreviewImageModalOpen}
-        onClose={() => setIsPreviewImageModalOpen(false)}
-        title="Recortar imagen mobile"
-      >
-        <div className="relative h-[60vh] w-full">
-          <Cropper
-            image={mainPreviewColeccion || ""}
-            crop={crop}
-            zoom={zoom}
-            aspect={1080 / 400}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={handleCropComplete}
-          />
+      {isPreviewImageModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen Mobile</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setPreviewImageColeccion(null);
+                  setIsPreviewImageModalOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mainPreviewColeccion || ""}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1080 / 600}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropComplete={handleCropComplete}
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoom}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoom(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={handlePreviewCrop}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPreviewImageColeccion(null);
+                      setIsPreviewImageModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="mt-4 flex justify-end space-x-2">
-          <button
-            onClick={() => setIsPreviewImageModalOpen(false)}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handlePreviewCrop}
-            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary"
-          >
-            Recortar y Guardar
-          </button>
-        </div>
-      </Modal>
+      )}
 
       {/* Modal de confirmación de eliminación */}
       <Modal

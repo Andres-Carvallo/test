@@ -97,7 +97,7 @@ const BannerColeccion01: React.FC<BannerColeccion01BOProps> = ({
           currentConfig.showBannerText ||
           currentConfig.showButton) && (
           <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center px-6 py-6 w-full">
-            <div className="w-full max-w-[95%] mx-auto px-4">
+            <div className="w-full max-w-[95%] mx-auto px-4 ">
               <div
                 className={`${
                   currentConfig.textAlignment === "center"
