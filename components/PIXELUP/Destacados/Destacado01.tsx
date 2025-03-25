@@ -85,9 +85,9 @@ const Destacados01: React.FC<any> = ({
 
       setProducts(productsWithStock);
       setPagination({
-        currentPage: page,
-        totalPages: Math.ceil(data.totalItems / pageSize),
-        totalItems: data.totalItems,
+        currentPage: data.pagination.pageNumber,
+        totalPages: data.pagination.totalPages,
+        totalItems: data.pagination.totalRecords,
       });
       setLoading(false);
     } catch (error) {
@@ -173,10 +173,13 @@ const Destacados01: React.FC<any> = ({
     previous?: () => void;
   }) => {
     return (
-      <div className="hidden absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
+      <div className="absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
         <button
-          className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
+          className={`text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125 ${
+            pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           onClick={previous}
+          disabled={pagination.currentPage === 1}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -194,8 +197,13 @@ const Destacados01: React.FC<any> = ({
           </svg>
         </button>
         <button
-          className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
+          className={`text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125 ${
+            pagination.currentPage === pagination.totalPages
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
           onClick={next}
+          disabled={pagination.currentPage === pagination.totalPages}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -239,9 +247,7 @@ const Destacados01: React.FC<any> = ({
         removeArrowOnDeviceType={["tablet", "mobile"]}
         dotListClass="custom-dot-list-style mt-12 "
         itemClass="px-2 mb-12"
-        customButtonGroup={
-          showArrows ? <CustomButtonGroupAsArrows /> : undefined
-        }
+        customButtonGroup={<CustomButtonGroupAsArrows />}
         renderButtonGroupOutside={true}
       >
         {products.map((product: any) => (
