@@ -256,25 +256,27 @@ const Destacados01: React.FC<any> = ({
       </Carousel>
 
       {/* Controles de Paginación */}
-      <div className="flex justify-center items-center gap-2 mt-4">
-        <button
-          onClick={() => handlePageChange(pagination.currentPage - 1)}
-          disabled={pagination.currentPage === 1}
-          className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
-        >
-          Anterior
-        </button>
-        <span className="px-3 py-1">
-          Página {pagination.currentPage} de {pagination.totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(pagination.currentPage + 1)}
-          disabled={pagination.currentPage === pagination.totalPages}
-          className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
-        >
-          Siguiente
-        </button>
-      </div>
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
+          >
+            Anterior
+          </button>
+          <span className="px-3 py-1">
+            Página {pagination.currentPage} de {pagination.totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages}
+            className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
 
       <div className="mt-6 flex items-center justify-center">
         <Link
