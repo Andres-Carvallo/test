@@ -16,18 +16,32 @@ interface Product {
   // Otros campos que puedan estar en el producto
 }
 
-const Destacados01: React.FC<any> = ({ text, ProductCardComponent = ProductCard01 }) => {
-  const [loading, setLoading] = useState(true);
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+}
 
+const Destacados01: React.FC<any> = ({
+  text,
+  ProductCardComponent = ProductCard01,
+}) => {
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { addToCartHandler } = useAPI();
   const [products, setProducts] = useState<Product[]>([]);
   const [autoplay, setAutoplay] = useState(true);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
 
   const fetchStockForVariation = async (productId: string, skuId: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        { next: { tags: ["inventory"] } }
       );
       const data = await response.json();
       let stock = 0;
@@ -37,51 +51,72 @@ const Destacados01: React.FC<any> = ({ text, ProductCardComponent = ProductCard0
           0
         );
       }
-
       return stock;
     } catch (error) {
       console.error("Error fetching stock:", error);
       return 0;
     }
   };
+
+  const fetchProducts = async (page: number) => {
+    try {
+      const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const pageSize = 8; // Número de productos por página
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=${page}&pageSize=${pageSize}&isFeatured=true&siteId=${SiteId}`,
+        { next: { tags: ["products"] } }
+      );
+
+      const data = await response.json();
+
+      const productsWithStock = await Promise.all(
+        data.products.map(async (producto: any) => {
+          if (!producto.hasVariations && producto.skuId) {
+            const stock = await fetchStockForVariation(
+              producto.id,
+              producto.skuId
+            );
+            return { ...producto, stock } as any;
+          }
+          return { ...producto, stock: null } as any;
+        })
+      );
+
+      setProducts(productsWithStock);
+      setPagination({
+        currentPage: page,
+        totalPages: Math.ceil(data.totalItems / pageSize),
+        totalItems: data.totalItems,
+      });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(error as Error);
+    }
+  };
+
   useEffect(() => {
-    const fetchProductosConStock = async () => {
-      try {
-        const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-        const productosData = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=1&pageSize=100&isFeatured=true&siteId=${SiteId}`
-        );
-
-        const productsWithStock = await Promise.all(
-          productosData.data.products.map(async (producto: any) => {
-            if (!producto.hasVariations && producto.skuId) {
-              const stock = await fetchStockForVariation(
-                producto.id,
-                producto.skuId
-              );
-
-              return { ...producto, stock } as any;
-            }
-            return { ...producto, stock: null } as any;
-          })
-        );
-
-        setProducts(productsWithStock);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        setError(error as Error);
-      }
-    };
-    fetchProductosConStock();
+    fetchProducts(1);
   }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setAutoplay(!autoplay);
+      if (pagination.currentPage < pagination.totalPages) {
+        handlePageChange(pagination.currentPage + 1);
+      } else {
+        handlePageChange(1); // Volver a la primera página cuando llegue al final
+      }
     }, 10000);
     return () => clearInterval(interval);
-  }, [autoplay]);
+  }, [pagination.currentPage, pagination.totalPages]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setLoading(true); // Añadimos loading al cambiar de página
+      fetchProducts(newPage);
+    }
+  };
 
   if (loading) {
     return (
@@ -219,6 +254,28 @@ const Destacados01: React.FC<any> = ({ text, ProductCardComponent = ProductCard0
           />
         ))}
       </Carousel>
+
+      {/* Controles de Paginación */}
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button
+          onClick={() => handlePageChange(pagination.currentPage - 1)}
+          disabled={pagination.currentPage === 1}
+          className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
+        >
+          Anterior
+        </button>
+        <span className="px-3 py-1">
+          Página {pagination.currentPage} de {pagination.totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(pagination.currentPage + 1)}
+          disabled={pagination.currentPage === pagination.totalPages}
+          className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
+        >
+          Siguiente
+        </button>
+      </div>
+
       <div className="mt-6 flex items-center justify-center">
         <Link
           className="px-4 cursor-pointer py-2 mt-2 tracking-wide text-secondary capitalize transition-colors duration-300 transform bg-primary hover:scale-105 rounded"
