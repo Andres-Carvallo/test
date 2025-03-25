@@ -1,12 +1,17 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Link from "next/link";
 import { obtenerTiposProductos } from "@/app/utils/obtenerTiposProductos";
+import { slugify } from "@/app/utils/slugify";
+import Modal from "@/components/Core/Modals/ModalSeo";
+import Cropper from "react-easy-crop";
+import { getCroppedImg } from "@/lib/cropImage";
+import imageCompression from "browser-image-compression";
 
-const BannersCategoriasBO = () => {
+const Categorias01BO = () => {
   const [slidersData, setSlidersData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [categories, setCategories] = useState<any[]>([]);
@@ -30,10 +35,16 @@ const BannersCategoriasBO = () => {
     },
   });
 
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
+
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true);
-      const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA01_ID}`;
       const BannersCategory = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
@@ -68,11 +79,11 @@ const BannersCategoriasBO = () => {
   };
 
   const deleteSlider = async (id: any) => {
-    const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
+    const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA01_ID}`;
     try {
       const token = getCookie("AdminTokenAuth");
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,7 +99,13 @@ const BannersCategoriasBO = () => {
 
   const SliderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const bannerId =  `${process.env.NEXT_PUBLIC_CATEGORIA05_ID}`;
+    const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA01_ID}`;
+
+    // Verificar si hay una imagen seleccionada
+    if (!mainImageSlider || !updatedSliderCategory.mainImage.data) {
+      alert("Por favor, selecciona una imagen para el slider.");
+      return;
+    }
 
     // Verificar si hay menos de 4 sliders antes de agregar uno nuevo
     if (slidersData.length >= 4) {
@@ -118,7 +135,7 @@ const BannersCategoriasBO = () => {
       const token = getCookie("AdminTokenAuth");
 
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         { ...updatedSliderCategory },
         {
           headers: {
@@ -134,29 +151,19 @@ const BannersCategoriasBO = () => {
     }
   };
 
-  const handleImageSliderChange = (
+  const handleImageSliderChange = async (
     e: ChangeEvent<HTMLInputElement>,
     setImage: React.Dispatch<React.SetStateAction<string | null>>,
     imageKey: string
   ) => {
     const file = e.target.files?.[0];
-    console.log(file, "Image file");
     if (file) {
+      setFileName(file.name);
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
         setImage(result);
-
-        const imageInfo = {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          data: result,
-        };
-        setUpdatedSliderCategory((prevFormData: any) => ({
-          ...prevFormData,
-          [imageKey]: imageInfo,
-        }));
+        setIsModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
@@ -185,7 +192,8 @@ const BannersCategoriasBO = () => {
     );
 
     if (selectedCategory) {
-      const buttonLink = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda?productTypeId=${value}`;
+      const categorySlug = slugify(selectedCategory.name);
+      const buttonLink = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/${categorySlug}`;
 
       setUpdatedSliderCategory((prevData) => ({
         ...prevData,
@@ -199,6 +207,81 @@ const BannersCategoriasBO = () => {
   ) => {
     setImage(null); // Limpiar la imagen seleccionada
   };
+
+  const handleCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: any) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  const handleCrop = async () => {
+    if (!mainImageSlider) return;
+
+    try {
+      const croppedImage = await getCroppedImg(
+        mainImageSlider,
+        croppedAreaPixels
+      );
+      if (!croppedImage) {
+        console.error("Error al recortar la imagen: croppedImage es null");
+        return;
+      }
+
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1900,
+        useWebWorker: true,
+        initialQuality: 1,
+      };
+      const compressedFile = await imageCompression(
+        croppedImage as File,
+        options
+      );
+      const base64 = await convertToBase64(compressedFile);
+
+      const imageInfo = {
+        name: fileName || "default-image.jpg",
+        type: compressedFile.type,
+        size: compressedFile.size,
+        data: base64,
+      };
+
+      setUpdatedSliderCategory((prevFormData: any) => ({
+        ...prevFormData,
+        mainImage: imageInfo,
+      }));
+      setMainImageSlider(base64);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error al recortar/comprimir la imagen:", error);
+    }
+  };
+
+  const convertToBase64 = (file: Blob) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Función para obtener los números de orden disponibles
+  const getAvailableOrderNumbers = () => {
+    const maxSliders = 4;
+    const usedOrders = slidersData.map((slider) => slider.orderNumber);
+    const availableOrders = [];
+
+    for (let i = 1; i <= maxSliders; i++) {
+      if (!usedOrders.includes(i)) {
+        availableOrders.push(i);
+      }
+    }
+
+    return availableOrders;
+  };
+
   useEffect(() => {
     fetchBannerCategoryHome();
     fetchProductTypes();
@@ -210,6 +293,17 @@ const BannersCategoriasBO = () => {
       [...prevData].sort((a, b) => a.orderNumber - b.orderNumber)
     );
   }, []);
+
+  // Modificar el useEffect para actualizar el orderNumber automáticamente
+  useEffect(() => {
+    const availableOrders = getAvailableOrderNumbers();
+    if (availableOrders.length > 0) {
+      setUpdatedSliderCategory((prev) => ({
+        ...prev,
+        orderNumber: availableOrders[0],
+      }));
+    }
+  }, [slidersData]);
 
   return (
     <section
@@ -284,7 +378,7 @@ const BannersCategoriasBO = () => {
           <div className="my-4">
             <label htmlFor="orderNumber">
               <h3 className="font-normal text-primary">
-                Seleccionar Categoria <span className="text-primary">*</span>
+                Orden del Slider <span className="text-primary">*</span>
               </h3>
             </label>
             <select
@@ -294,12 +388,25 @@ const BannersCategoriasBO = () => {
               onChange={(event) => handleChangeSlider(event)}
               className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
               style={{ borderRadius: "var(--radius)" }}
+              disabled={getAvailableOrderNumbers().length === 0}
             >
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
+              {getAvailableOrderNumbers().map((number) => (
+                <option
+                  key={number}
+                  value={number}
+                >
+                  {number}
+                </option>
+              ))}
+              {getAvailableOrderNumbers().length === 0 && (
+                <option value="">No hay posiciones disponibles</option>
+              )}
             </select>
+            {getAvailableOrderNumbers().length === 0 && (
+              <p className="text-sm text-red-500 mt-1">
+                Has alcanzado el límite máximo de sliders (4)
+              </p>
+            )}
           </div>
           <div className="mb-4 hidden">
             <label
@@ -452,7 +559,7 @@ const BannersCategoriasBO = () => {
                       <span className="font-semibold">Subir Imagen</span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                    PNG, JPG o Webp (800x800px)
+                      PNG, JPG o Webp (800x800px)
                     </p>
                   </div>
                 </label>
@@ -463,16 +570,78 @@ const BannersCategoriasBO = () => {
           <div className="mt-6 flex justify-center">
             <button
               type="submit"
-              className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+              disabled={!mainImageSlider || !selectedCategoryId}
+              className={`shadow w-full uppercase font-bold py-2 px-4 rounded flex-wrap mt-6 ${
+                !mainImageSlider || !selectedCategoryId
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-primary hover:bg-secondary text-secondary hover:text-primary"
+              }`}
               style={{ borderRadius: "var(--radius)" }}
             >
-              Agregar Slider
+              {!mainImageSlider
+                ? "Selecciona una imagen"
+                : !selectedCategoryId
+                ? "Selecciona una categoría"
+                : "Agregar Slider"}
             </button>
           </div>
         </form>
       </div>
+
+      {isModalOpen && (
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImageSlider || ""}
+              crop={crop}
+              zoom={zoom}
+              aspect={400 / 800} // Ajusta esto según las dimensiones que necesites
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+          </div>
+          <div className="flex flex-col justify-end">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.1}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range"
+              />
+            </div>
+
+            <div className="flex justify-between w-full gap-2">
+              <button
+                onClick={handleCrop}
+                className="bg-primary text-[13px] md:text-[16px] hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
+              <button
+                onClick={() => {
+                  setMainImageSlider(null);
+                  setIsModalOpen(false);
+                }}
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-[13px] md:text-[16px]"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </section>
   );
 };
 
-export default BannersCategoriasBO;
+export default Categorias01BO;

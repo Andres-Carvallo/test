@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { slugify } from "@/app/utils/slugify";
+import axios from "axios";
 
 interface PricingRange {
   minimumAmount: string | number;
@@ -30,6 +32,31 @@ const ProductCard02: React.FC<ProductCardProps> = ({
   isOnSale,
   stock,
 }) => {
+  const [cuotasEnabled, setCuotasEnabled] = useState(false);
+  const [numeroCuotas, setNumeroCuotas] = useState(0);
+
+  useEffect(() => {
+    const fetchCuotasConfig = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        if (response.data.contentBlock?.contentText) {
+          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+          setCuotasEnabled(cuotasConfig.enabled);
+          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cuotas:", error);
+        setCuotasEnabled(false);
+        setNumeroCuotas(0);
+      }
+    };
+
+    fetchCuotasConfig();
+  }, []);
+
   const renderPrice = () => {
     // Para productos con variaciones
     if (product.hasVariations) {
@@ -48,6 +75,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
         const maxNormalPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
         const minOfferPrice = Math.min(...offerPrices);
         const maxOfferPrice = Math.max(...offerPrices);
+        const minPrecioPorCuota = cuotasEnabled ? Math.ceil(minOfferPrice / numeroCuotas) : 0;
 
         return (
           <div className="flex flex-col">
@@ -63,6 +91,11 @@ const ProductCard02: React.FC<ProductCardProps> = ({
                 : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
               }
             </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
@@ -71,14 +104,22 @@ const ProductCard02: React.FC<ProductCardProps> = ({
       if (normalPrices.length > 0) {
         const minPrice = Math.min(...normalPrices.map((p: PriceRange) => p.min));
         const maxPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
+        const minPrecioPorCuota = cuotasEnabled ? Math.ceil(minPrice / numeroCuotas) : 0;
 
         return (
-          <span className="text-gray-600">
-            {minPrice === maxPrice
-              ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
-            }
-          </span>
+          <div className="flex flex-col">
+            <span className="text-gray-600">
+              {minPrice === maxPrice
+                ? `$${minPrice.toLocaleString("es-CL")}`
+                : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
+              }
+            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
+          </div>
         );
       }
     } else {
@@ -87,6 +128,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
       const offerPrice = isOnSale && product.offers?.[0]?.amount 
         ? Number(product.offers[0].amount) 
         : null;
+      const precioPorCuota = cuotasEnabled ? Math.ceil((offerPrice || normalPrice) / numeroCuotas) : 0;
 
       if (offerPrice) {
         return (
@@ -97,12 +139,26 @@ const ProductCard02: React.FC<ProductCardProps> = ({
             <span className="text-red-600 font-semibold text-lg">
               ${offerPrice.toLocaleString("es-CL")}
             </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
 
       if (normalPrice > 0) {
-        return <span className="text-gray-600">${normalPrice.toLocaleString("es-CL")}</span>;
+        return (
+          <div className="flex flex-col">
+            <span className="text-gray-600">${normalPrice.toLocaleString("es-CL")}</span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
+          </div>
+        );
       }
     }
 
@@ -141,7 +197,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
               .map((productType: any, index: any) => (
                 <span
                   key={index}
-                  className="text-gray-400 mr-3 uppercase text-sm text-primary rounded-lg"
+                  className="text-gray-400 mr-3 uppercase text-sm text-primary rounded-lg max-w-[14ch] md:max-w-[22ch] truncate"
                 >
                   {productType.name}
                 </span>
@@ -152,7 +208,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
               {product.name}
             </p>
           </Link>
-          <div className="flex items-center text-black min-h-[50px]">
+          <div className="flex items-center text-black min-h-[70px]">
             <span className="text-gray-600 text-[20px]">{renderPrice()}</span>
             <div className="ml-auto flex">
               {product.hasVariations || stock === 0 ? (

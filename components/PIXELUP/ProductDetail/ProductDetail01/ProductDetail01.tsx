@@ -864,12 +864,6 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
-                  onClick={() => setShowPaymentModal(true)}
-                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                >
-                  Ver métodos de pago
-                </button>
               </>
             )}
           </div>
@@ -888,12 +882,6 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
-                  onClick={() => setShowPaymentModal(true)}
-                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                >
-                  Ver métodos de pago
-                </button>
               </>
             )}
           </div>
@@ -944,18 +932,12 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
                 : `$${minOfferPrice.toLocaleString("es-CL")} - $${maxOfferPrice.toLocaleString("es-CL")}`}
-              </span>
+            </span>
             {cuotasEnabled && numeroCuotas > 0 && (
               <>
                 <span className="text-sm text-green-500 mt-1 font-medium">
-                  Desde {numeroCuotas} cuotas sin interés de ${minPrecioPorCuota.toLocaleString("es-CL")}
+                  En {numeroCuotas} cuotas sin interés desde ${minPrecioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
-                  onClick={() => setShowPaymentModal(true)}
-                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                >
-                  Ver métodos de pago
-                </button>
               </>
             )}
           </div>
@@ -978,14 +960,8 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
             {cuotasEnabled && numeroCuotas > 0 && (
               <>
                 <span className="text-sm text-green-500 mt-1 font-medium">
-                  Desde {numeroCuotas} cuotas sin interés de ${minPrecioPorCuota.toLocaleString("es-CL")}
+                  En {numeroCuotas} cuotas sin interés desde ${minPrecioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
-                  onClick={() => setShowPaymentModal(true)}
-                  className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
-                >
-                  Ver métodos de pago
-                </button>
               </>
             )}
           </div>
@@ -1383,6 +1359,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
         <Stars
           reviewAverageScore={reviewAverageScore}
           totalReviews={totalReviews}
+          productId={selectedVariation?.product?.id || initialProduct?.skus?.[0]?.product?.id}
         />
       </div>
       {showModal && (

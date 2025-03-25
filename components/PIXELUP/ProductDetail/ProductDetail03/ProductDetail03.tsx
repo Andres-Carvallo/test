@@ -856,12 +856,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                     <span className="text-sm text-green-500 mt-1 font-medium">
                       En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                     </span>
-                    <button 
+{/*                     <button 
                       onClick={() => setShowPaymentModal(true)}
                       className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                     >
                       Ver métodos de pago
-                    </button>
+                    </button> */}
                   </>
                 )}
               </div>
@@ -883,12 +883,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés de ${precioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
+{/*                 <button 
                   onClick={() => setShowPaymentModal(true)}
                   className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                 >
                   Ver métodos de pago
-                </button>
+                </button> */}
               </>
             )}
           </div>
@@ -945,12 +945,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés desde ${Math.ceil(minOfferPrice / numeroCuotas).toLocaleString("es-CL")}
                 </span>
-                <button 
+{/*                 <button 
                   onClick={() => setShowPaymentModal(true)}
                   className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                 >
                   Ver métodos de pago
-                </button>
+                </button> */}
               </>
             )}
           </div>
@@ -976,12 +976,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                 <span className="text-sm text-green-500 mt-1 font-medium">
                   En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
                 </span>
-                <button 
+{/*                 <button 
                   onClick={() => setShowPaymentModal(true)}
                   className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
                 >
                   Ver métodos de pago
-                </button>
+                </button> */}
               </>
             )}
           </div>
@@ -1008,12 +1008,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
               <span className="text-sm text-green-500 mt-1 font-medium">
                 En {numeroCuotas} cuotas sin interés desde ${precioPorCuota.toLocaleString("es-CL")}
               </span>
-              <button 
+{/*               <button 
                 onClick={() => setShowPaymentModal(true)}
                 className="text-sm font-light text-blue-800 hover:text-blue-600 hover:underline mt-4 text-left"
               >
                 Ver métodos de pago
-              </button>
+              </button> */}
             </>
           )}
         </div>
@@ -1068,30 +1068,30 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
               {/* Título y precio */}
               <div>
                 <h1 className="text-2xl font-medium mb-2">{productName}</h1>
+                {reviewAverageScore && (
+                  <div className="flex items-center gap-1 mb-2">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-4 h-4 ${i < Math.floor(reviewAverageScore) ? 'text-yellow-400' : 'text-gray-300'}`}
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="ml-1 text-gray-600">
+                        {reviewAverageScore} ({totalReviews})
+                      </span>
+                  </div>
+                )}
+
+
+                
                 <div className="flex items-center gap-2">
                   {renderPrice()}
-                  {reviewAverageScore && (
-                    <div className="flex items-center gap-1">
-                      <span>{reviewAverageScore}</span>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`w-4 h-4 ${i < Math.floor(reviewAverageScore) ? 'text-yellow-400' : 'text-gray-300'}`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                      {totalReviews && (
-                        <a href="#reviews" className="text-sm text-blue-600">
-                          Ver {totalReviews} reseñas
-                        </a>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -1128,7 +1128,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
               <button
                 onClick={handleAddToCart}
                 disabled={!areAllAttributesSelected() || isOutOfStock}
-                className="w-full bg-blue-600 text-white py-4 rounded-lg font-medium disabled:bg-gray-200"
+                className="w-full bg-primary text-secondary py-4 rounded-lg font-medium disabled:bg-gray-200 disabled:text-white"
               >
                 {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
               </button>
@@ -1144,12 +1144,12 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
 
         {/* Sección "Te puede gustar" */}
         <div className="mt-16">
-          <h2 className="text-2xl font-medium mb-8">Te puede gustar</h2>
-          <Destacados01 />
+          <Destacados01 text="TE PUEDE GUSTAR" />
           <Stars
-          reviewAverageScore={reviewAverageScore}
-          totalReviews={totalReviews}
-        />
+            reviewAverageScore={reviewAverageScore}
+            totalReviews={totalReviews}
+            productId={selectedVariation?.product?.id || initialProduct?.skus?.[0]?.product?.id}
+          />
         </div>
 
       </div>

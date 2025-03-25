@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { slugify } from "@/app/utils/slugify";
+import axios from "axios";
 
 interface ProductCardProps {
   product: any;
@@ -32,6 +33,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [cuotasEnabled, setCuotasEnabled] = useState(false);
+  const [numeroCuotas, setNumeroCuotas] = useState(0);
 
   useEffect(() => {
     const img = new Image();
@@ -44,6 +47,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
       setIsLoading(false);
     };
   }, [product.mainImageUrl]);
+
+  useEffect(() => {
+    const fetchCuotasConfig = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        if (response.data.contentBlock?.contentText) {
+          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+          setCuotasEnabled(cuotasConfig.enabled);
+          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cuotas:", error);
+        setCuotasEnabled(false);
+        setNumeroCuotas(0);
+      }
+    };
+
+    fetchCuotasConfig();
+  }, []);
 
   const getDisplayPrice = () => {
     if (product.hasVariations) {
@@ -62,6 +87,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         const maxNormalPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
         const minOfferPrice = Math.min(...offerPrices);
         const maxOfferPrice = Math.max(...offerPrices);
+        const minPrecioPorCuota = cuotasEnabled ? Math.ceil(minOfferPrice / numeroCuotas) : 0;
 
         return (
           <div className="flex flex-col">
@@ -77,6 +103,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
               }
             </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
@@ -85,14 +116,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
       if (normalPrices.length > 0) {
         const minPrice = Math.min(...normalPrices.map((p: PriceRange) => p.min));
         const maxPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
+        const minPrecioPorCuota = cuotasEnabled ? Math.ceil(minPrice / numeroCuotas) : 0;
 
         return (
-          <span className="text-primary">
-            {minPrice === maxPrice
-              ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
-            }
-          </span>
+          <div className="flex flex-col">
+            <span className="text-primary">
+              {minPrice === maxPrice
+                ? `$${minPrice.toLocaleString("es-CL")}`
+                : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
+              }
+            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
+          </div>
         );
       }
     } else {
@@ -101,6 +140,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       const offerPrice = isOnSale && product.offers?.[0]?.amount 
         ? Number(product.offers[0].amount) 
         : null;
+      const precioPorCuota = cuotasEnabled ? Math.ceil((offerPrice || normalPrice) / numeroCuotas) : 0;
 
       if (offerPrice) {
         return (
@@ -111,12 +151,26 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <span className="text-red-600 font-semibold text-base">
               ${offerPrice.toLocaleString("es-CL")}
             </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
 
       if (normalPrice > 0) {
-        return <span className="text-primary">${normalPrice.toLocaleString("es-CL")}</span>;
+        return (
+          <div className="flex flex-col">
+            <span className="text-primary">${normalPrice.toLocaleString("es-CL")}</span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
+          </div>
+        );
       }
     }
 
@@ -155,7 +209,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
           />
         )}
         <div className="max-w-[150px] md:max-w-[200px]">
-          <p className="text-primary text-base mt-4">{product.name}</p>
+          <p className="text-primary text-base mt-4 max-w-[20ch] truncate">{product.name}</p>
         </div>
         <div className="mt-2">
           <div className="mt-1 text-sm">{getDisplayPrice()}</div>

@@ -156,6 +156,13 @@ const ExchangesGrid = () => {
 
     let filtered = [...exchanges];
 
+    // Ordenar los exchanges para que Pixel Up aparezca primero
+    filtered.sort((a, b) => {
+      if (a.companyName === "Pixel Up" && b.companyName !== "Pixel Up") return -1;
+      if (a.companyName !== "Pixel Up" && b.companyName === "Pixel Up") return 1;
+      return 0;
+    });
+
     console.log("Filtering with:", {
       selectedCompany,
       totalExchanges: exchanges.length,
@@ -301,7 +308,6 @@ const ExchangesGrid = () => {
                 <option
                   key={category.id}
                   value={category.id}
-                  className="text-[13px]"
                 >
                   {category.name}
                 </option>

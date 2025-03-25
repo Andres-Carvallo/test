@@ -8,7 +8,7 @@ import { getCookie, deleteCookie } from "cookies-next";
 import { useRouter, usePathname } from "next/navigation";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import { jwtDecode } from "jwt-decode";
-
+import NextTopLoader from "nextjs-toploader";
 export default function RootLayout({
   children,
 }: {
@@ -73,6 +73,7 @@ export default function RootLayout({
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
+            <NextTopLoader showSpinner={false}/>
 {/*           <Header
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}

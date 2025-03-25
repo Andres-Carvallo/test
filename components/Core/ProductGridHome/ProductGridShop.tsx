@@ -6,7 +6,7 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
 import Loader from "@/components/common/Loader-t";
-import ProductCard04 from "@/components/PIXELUP/ProductCards/ProductCards04/ProductCards04";
+import { getActiveComponents } from "@/app/config/GlobalConfig";
 
 interface ProductGridShopProps {
   initialProducts: any[];
@@ -21,12 +21,13 @@ const ProductGridShop = ({
   selectedCategory,
   currentPage: initialPage,
 }: ProductGridShopProps) => {
+  const { ProductCard } = getActiveComponents();
   const { shouldRevalidate, setShouldRevalidate } = useRevalidation();
   const [products, setProducts] = useState(initialProducts);
   const [productTypes] = useState(initialProductTypes);
   const [page, setPage] = useState(initialPage);
   const [isLoading, setIsLoading] = useState(false);
-  const [sortBy, setSortBy] = useState<string>("asc");
+  const [sortBy, setSortBy] = useState<string>("nameAsc");
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToCartHandler } = useAPI();
@@ -64,25 +65,49 @@ const ProductGridShop = ({
     return rangeWithDots;
   };
 
-  // Efecto para recargar datos cuando shouldRevalidate es true
+  // Efecto para recargar datos cuando shouldRevalidate es true o cambia el ordenamiento
   useEffect(() => {
-    if (shouldRevalidate) {
+    if (sortBy === 'featured') {
       setIsLoading(true);
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}&pageNumber=1&pageSize=1000`
-      )
+      const url = new URL(`${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products`);
+      url.searchParams.append('siteId', process.env.NEXT_PUBLIC_API_URL_SITEID || '');
+      url.searchParams.append('pageNumber', '1');
+      url.searchParams.append('pageSize', '1000');
+      url.searchParams.append('isFeatured', 'true');
+
+      fetch(url.toString())
+        .then((res) => res.json())
+        .then((data) => {
+          setProducts(data.products);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error loading featured products:", error);
+          setIsLoading(false);
+        });
+    } else if (shouldRevalidate) {
+      const url = new URL(`${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products`);
+      url.searchParams.append('siteId', process.env.NEXT_PUBLIC_API_URL_SITEID || '');
+      url.searchParams.append('pageNumber', '1');
+      url.searchParams.append('pageSize', '1000');
+
+      fetch(url.toString())
         .then((res) => res.json())
         .then((data) => {
           setProducts(data.products);
           setShouldRevalidate(false);
-          setIsLoading(false);
         })
         .catch((error) => {
           console.error("Error reloading products:", error);
-          setIsLoading(false);
         });
+    } else if (sortBy === "") {
+      // Si se selecciona "Ordenar por..." volvemos al orden original
+      setProducts(initialProducts);
+    } else {
+      // Si se cambia a cualquier otro filtro, usamos los productos que ya tenemos
+      setProducts(initialProducts);
     }
-  }, [shouldRevalidate, setShouldRevalidate]);
+  }, [shouldRevalidate, setShouldRevalidate, sortBy, initialProducts]);
 
   // Efecto para desactivar el loader después de cualquier navegación
   useEffect(() => {
@@ -92,7 +117,6 @@ const ProductGridShop = ({
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", newPage.toString());
-    setIsLoading(true);
     setPage(newPage);
 
     // Añadir referencia a la sección de productos
@@ -105,7 +129,6 @@ const ProductGridShop = ({
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    setIsLoading(true);
     const params = new URLSearchParams(searchParams.toString());
     if (categoryId === "ALL") {
       params.delete("categoria");
@@ -143,34 +166,93 @@ const ProductGridShop = ({
   // Ordenar productos filtrados
   const sortedProducts = useMemo(() => {
     return filteredProducts.slice().sort((a, b) => {
-      const getPrice = (product: any) => {
-        let priceRange = {
-          min: Infinity,
-          max: -Infinity,
+      if (sortBy === "featured") {
+        // Ordenamiento por destacados
+        if (a.isFeatured === true && b.isFeatured !== true) return -1;
+        if (a.isFeatured !== true && b.isFeatured === true) return 1;
+        return 0;
+      } else if (sortBy === "asc" || sortBy === "desc") {
+        const getPrice = (product: any) => {
+          let priceRange = {
+            min: Infinity,
+            max: -Infinity,
+          };
+
+          // Si el producto tiene ofertas
+          if (product.offers && product.offers.length > 0) {
+            priceRange.min = product.offers[0].amount;
+            priceRange.max = product.offers[0].amount;
+          } 
+          // Si el producto tiene variaciones
+          else if (product.hasVariations && product.variations && product.variations.length > 0) {
+            // Buscar el precio más bajo y más alto entre todas las variaciones
+            const prices = product.variations.map((variation: any) => {
+              if (variation.offers && variation.offers.length > 0) {
+                return variation.offers[0].amount;
+              }
+              return variation.pricings?.[0]?.amount || Infinity;
+            });
+            priceRange.min = Math.min(...prices);
+            priceRange.max = Math.max(...prices);
+          }
+          // Si es un producto simple sin ofertas
+          else if (product.pricings) {
+            priceRange.min = product.pricings[0].amount;
+            priceRange.max = product.pricings[0].amount;
+          }
+          // Si es un producto variable sin variaciones
+          else if (product.pricingRanges) {
+            priceRange.min = product.pricingRanges[0].minimumAmount;
+            priceRange.max = product.pricingRanges[0].maximumAmount;
+          }
+
+          return sortBy === "asc" ? priceRange.min : priceRange.max;
         };
 
-        if (
-          !product.hasVariations &&
-          product.offers &&
-          product.offers.length > 0
-        ) {
-          priceRange.min = product.offers[0].amount;
-          priceRange.max = product.offers[0].amount;
-        } else if (product.hasVariations && product.pricingRanges) {
-          priceRange.min = product.pricingRanges[0].minimumAmount;
-          priceRange.max = product.pricingRanges[0].maximumAmount;
-        } else if (product.pricings) {
-          priceRange.min = product.pricings[0].amount;
-          priceRange.max = product.pricings[0].amount;
-        }
+        const priceA = getPrice(a);
+        const priceB = getPrice(b);
 
-        return sortBy === "asc" ? priceRange.min : priceRange.max;
-      };
+        return sortBy === "asc" ? priceA - priceB : priceB - priceA;
+      } else if (sortBy === "nameAsc" || sortBy === "nameDesc" || sortBy === "") {
+        // Ordenamiento alfabético (también aplica cuando sortBy está vacío)
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        return nameA.localeCompare(nameB);
+      } else if (sortBy === "offerAsc" || sortBy === "offerDesc") {
+        // Ordenamiento por ofertas
+        const getOfferPercentage = (product: any) => {
+          // Primero verificar si el producto principal tiene ofertas
+          if (product.offers && product.offers.length > 0) {
+            const originalPrice = product.pricings?.[0]?.amount || product.pricingRanges?.[0]?.minimumAmount || 0;
+            const offerPrice = product.offers[0].amount;
+            if (originalPrice === 0) return 0;
+            const discount = ((originalPrice - offerPrice) / originalPrice) * 100;
+            return discount;
+          }
 
-      const priceA = getPrice(a);
-      const priceB = getPrice(b);
+          // Si el producto tiene variaciones
+          if (product.hasVariations && product.variations && product.variations.length > 0) {
+            // Encontrar el descuento más alto entre todas las variaciones
+            const maxDiscount = Math.max(...product.variations.map((variation: any) => {
+              if (!variation.offers || variation.offers.length === 0) return 0;
+              const originalPrice = variation.pricings?.[0]?.amount || 0;
+              const offerPrice = variation.offers[0].amount;
+              if (originalPrice === 0) return 0;
+              return ((originalPrice - offerPrice) / originalPrice) * 100;
+            }));
+            return maxDiscount;
+          }
+          
+          return 0;
+        };
 
-      return sortBy === "asc" ? priceA - priceB : priceB - priceA;
+        const offerA = getOfferPercentage(a);
+        const offerB = getOfferPercentage(b);
+
+        const result = sortBy === "offerAsc" ? offerA - offerB : offerB - offerA;
+        return result;
+      }
+      return 0;
     });
   }, [filteredProducts, sortBy]);
 
@@ -236,14 +318,18 @@ const ProductGridShop = ({
 
           <div className="relative flex-1 sm:w-48">
             <select
-              value={sortBy}
+              value={sortBy === "nameAsc" ? "" : sortBy}
               onChange={(e) => handleSortChange(e.target.value)}
               id="Offer"
               className="w-full shadow h-12 border border-gray-300 text-gray-900 text-xs font-normal leading-7 rounded-full py-2.5 px-4 appearance-none focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50"
             >
-              <option value="asc">Ordenar por...</option>
-              <option value="asc">Precio: Menor a Mayor</option>
-              <option value="desc">Precio: Mayor a Menor</option>
+              <option value="">Ordenar por...</option>
+              <option value="featured">Recomendados</option>
+              <option value="asc">Precio de Menor a Mayor</option>
+              <option value="desc">Precio de Mayor a Menor</option>
+              <option value="nameAsc">Nombre A - Z</option>
+              <option value="nameDesc">Nombre Z - A</option>
+              <option value="offerDesc">Mayor Descuento</option>
             </select>
           </div>
         </div>
@@ -258,7 +344,7 @@ const ProductGridShop = ({
                   key={product.id}
                   className="flex justify-center"
                 >
-                  <ProductCard04
+                  <ProductCard
                     key={product.id}
                     product={product}
                     addToCartHandler={addToCartHandler}

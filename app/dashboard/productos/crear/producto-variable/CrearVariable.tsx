@@ -246,6 +246,10 @@ const CrearVariable: React.FC = () => {
       toast.error("El nombre del producto es requerido");
       valid = false;
     }
+    if (nameError) {
+      toast.error("No se puede publicar el producto con un nombre que ya existe");
+      valid = false;
+    }
     if (!formData.description) {
       toast.error("La descripción del producto es requerida");
       valid = false;
@@ -787,6 +791,44 @@ const CrearVariable: React.FC = () => {
     setOpenModalId(null);
   };
 
+  const [isCheckingName, setIsCheckingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  const checkProductNameExists = async (name: string) => {
+    if (!name || isEditMode) return;
+    
+    try {
+      setIsCheckingName(true);
+      setNameError(null);
+      const token = getCookie("AdminTokenAuth");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/products?pageNumber=1&pageSize=100&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (data.code === 0) {
+        const existingProduct = data.products.find(
+          (product: any) => product.name.toLowerCase() === name.toLowerCase()
+        );
+        
+        if (existingProduct) {
+          setNameError("Ya existe un producto con este nombre");
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el nombre del producto:", error);
+      setNameError("Error al verificar el nombre del producto");
+    } finally {
+      setIsCheckingName(false);
+    }
+  };
+
   if (isLoading) {
     return <LoaderProgress />;
   }
@@ -1089,15 +1131,30 @@ const CrearVariable: React.FC = () => {
                       Nombre Producto Base
                     </label>
                     <input
-                      className="shadow py-3 block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border border-dark/30 focus:ring-primary focus:border-primary"
+                      className={`shadow py-3 block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md border ${
+                        nameError ? 'border-red-500' : 'border-dark/30'
+                      } focus:ring-primary focus:border-primary`}
                       type="text"
                       name="nombreProducto"
                       id="nombreProducto"
                       value={formData.name}
-                      onChange={(event) =>
-                        setFormData({ ...formData, name: event.target.value })
-                      }
+                      onChange={(event) => {
+                        setFormData({ ...formData, name: event.target.value });
+                        setNameError(null);
+                      }}
+                      onBlur={(event) => checkProductNameExists(event.target.value)}
+                      disabled={isCheckingName}
                     />
+                    {isCheckingName && (
+                      <div className="text-sm text-gray-500 mt-1">
+                        Verificando nombre del producto...
+                      </div>
+                    )}
+                    {nameError && (
+                      <div className="text-sm text-red-500 mt-1">
+                        {nameError}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="mt-8">

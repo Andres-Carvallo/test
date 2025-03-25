@@ -8,19 +8,25 @@ import Frase01 from "@/components/PIXELUP/Frases/Frase01/Frase01";
 import Frase02 from "@/components/PIXELUP/Frases/Frase02/Frase02";
 import BannerPrincipal02 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02";
 import Destacados01 from "@/components/PIXELUP/Destacados/Destacado01";
-import BannerPrincipal02Mobile from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02Mobile/BannerPrincipal02Mobile";
 import {
   DynamicNavbar,
   DynamicFooter,
 } from "@/app/components/LayoutComponents";
 import DiscountModal from "@/components/PIXELUP/Modal/DiscountModal";
-import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 import BannerPrincipal01 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01";
 import Banner from "@/components/PIXELUP/Skeleton/Banner";
 import Destacados from "@/components/PIXELUP/Skeleton/Destacados";
 import Parallax from "@/components/PIXELUP/Parallax/Parallax";
-
+import Colecciones02 from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02";
+import WhatsAppButton from "@/components/Core/WhatsAppButton/WhatsAppButton";
+import FeedInstagram from "@/components/PIXELUP/FeedInstagram/FeedInstagram";
+import Ubicacion from "@/components/PIXELUP/Ubicacion/Ubicacion";
+import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
+import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
+import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
+import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
+import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -29,7 +35,7 @@ export const revalidate = 60; // Revalida cada 60 segundos
 export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
 
 async function fetchBannerData() {
-  const bannerId = process.env.NEXT_PUBLIC_SEO_ID_BANNER;
+  const bannerId = process.env.NEXT_PUBLIC_SEO_BANNER_ID;
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
   );
@@ -38,7 +44,7 @@ async function fetchBannerData() {
 
 export const metadata = async () => {
   const defaultSeoData = {
-    title: "PixelUP Title",
+    title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
     description: "Una nueva plataforma para emprendedores y Pymes!",
     ogImage: "http://pixelup.cl/img/avatardefault.jpg",
     keywords: "pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl",
@@ -91,15 +97,43 @@ export default async function Page() {
 
     return (
       <>
+        <MarqueeTOP />
         <DynamicNavbar />
-
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
         </Suspense>
         <Suspense fallback={<Banner />}>
+          <Hero01 />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Hero02 />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Hero03 />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Hero04 />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <Destacados01 text="Destacados" />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
           <Parallax />
         </Suspense>
-{/* 
+        <Suspense fallback={<Banner />}>
+          <Colecciones02 />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Categoria02 />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <Ubicacion />
+        </Suspense>
+        <Suspense fallback={<Banner />}>
+          <FeedInstagram />
+        </Suspense>
+
+        {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
         </Suspense>
@@ -124,20 +158,7 @@ export default async function Page() {
         <DynamicFooter />
 
         {/* <DiscountModal /> */}
-        <a
-          href={process.env.NEXT_PUBLIC_WHATSAPP_LINK || ""}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed right-6 bottom-[30px] z-50 bg-green-500 rounded-full p-3 hover:bg-green-600 transition-colors animate-pulse-whatsapp"
-          style={{ zIndex: 999 }}
-        >
-          <img
-            src="/whatsapp.svg"
-            alt="WhatsApp"
-            className="w-8 h-8 hover:scale-110 transition-transform duration-200"
-            loading="lazy"
-          />
-        </a>
+        <WhatsAppButton />
       </>
     );
   } catch (error) {
@@ -145,14 +166,3 @@ export default async function Page() {
     return <div>Ha ocurrido un error al cargar la página</div>;
   }
 }
-
-const BannerResponsive = () => (
-  <>
-    <div className="block lg:hidden">
-      <BannerPrincipal02Mobile />
-    </div>
-    <div className="hidden lg:block">
-      <BannerPrincipal02 />
-    </div>
-  </>
-);

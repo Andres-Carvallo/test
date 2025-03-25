@@ -31,15 +31,20 @@ function MarqueeTOP() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial
   return (
-    <section>
-      <div className="flex items-center max-md:flex-col bg-primary font-medium text-white px-6 py-2 font-sans uppercase">
-{/*         <div className="max-md:mt-4">
+    <section className="w-full">
+      <div className="flex items-center max-md:flex-col bg-primary font-medium text-white px-8 py-4 font-sans uppercase">
+        {/*         <div className="max-md:mt-4">
           <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
             {bannerData?.title}
           </h3>{" "}
         </div> */}
-        <p className="text-xs sm:text-base flex-1 text-center">
-         <Marquee>{bannerData?.contentText}</Marquee>
+        <p className="text-sm sm:text-base flex-1 text-center py-1">
+          <Marquee
+            speed={40}
+            gradient={false}
+          >
+            {bannerData?.contentText}
+          </Marquee>
         </p>
       </div>
     </section>

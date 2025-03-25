@@ -28,8 +28,8 @@ const CategoryPills: React.FC<CategoryPillsProps> = ({
             transition-all duration-200 ease-in-out whitespace-nowrap
             ${
               selectedCategories.includes(category.id)
-                ? "bg-pink-100 text-pink-800 hover:bg-pink-200"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                ? "bg-primary text-white hover:bg-secondary hover:text-primary"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }
           `}
         >

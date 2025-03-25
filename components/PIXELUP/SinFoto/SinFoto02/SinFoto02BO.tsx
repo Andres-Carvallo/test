@@ -821,7 +821,7 @@ const SinFoto02BO: React.FC<any> = () => {
                 value={zoom}
                 min={1}
                 max={3}
-                step={0.01}
+                step={0.1}
                 aria-labelledby="Zoom"
                 onChange={(e) => {
                   setZoom(parseFloat(e.target.value));

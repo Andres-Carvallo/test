@@ -1,5 +1,4 @@
-import Link from 'next/link';
-import { Home } from 'lucide-react';
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -15,15 +14,15 @@ export default function NotFound() {
           ¡Ups! Página no encontrada
         </h2>
         <p className="text-gray-600 mb-6">
-          Lo sentimos, la página que buscas parece que se ha perdido en el espacio.
+          Lo sentimos, la página que buscas parece que se ha perdido en el
+          espacio.
         </p>
 
         {/* Botón para volver al inicio */}
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
-          <Home className="w-5 h-5 mr-2" />
           Volver al inicio
         </Link>
       </div>

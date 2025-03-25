@@ -2,16 +2,21 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Marquee from "react-fast-marquee";
+import { socialConfig } from "@/app/config/menulinks";
 
 function MarqueeTOP() {
   const [loading, setLoading] = useState(false);
   const [bannerData, setBannerData] = useState<any | null>(null);
 
+  // Filtrar los enlaces de redes sociales que son visibles
+  const socialItems = socialConfig.showInNavbar
+    ? socialConfig.links.filter((link) => link.isVisible)
+    : [];
+
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = "483f6151-a82f-47de-bc18-8d25aa2cf85e";
-
+      const bannerId = process.env.NEXT_PUBLIC_MARQUEE_TOP_CONTENTBLOCK;
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
@@ -30,16 +35,34 @@ function MarqueeTOP() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Debería ejecutarse solo en el montaje inicial
   return (
-    <section>
-      <div className="flex items-center max-md:flex-col bg-primary font-medium text-white px-6 py-2 font-sans uppercase">
-        {/*  <div className="max-md:mt-4">
-          <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
-            {bannerData?.title}
-          </h3>
-        </div>*/}
-        <p className="text-base flex-1">
-          <Marquee>{bannerData?.contentText}</Marquee>
-        </p>
+    <section className="w-full">
+      <div className="bg-primary font-medium text-white px-8 py-2 font-sans uppercase flex items-center justify-between">
+        {/* Marquee - centro */}
+        <div className="flex-1 text-sm">
+          <Marquee
+            speed={40}
+            gradient={false}
+          >
+            {bannerData?.contentText}
+          </Marquee>
+        </div>
+
+        {/* Redes sociales - lado derecho */}
+        {socialConfig.showInNavbar && socialItems.length > 0 && (
+          <div className="flex items-center space-x-3 ml-4">
+            {socialItems.map((social, index) => (
+              <a
+                key={index}
+                href={social.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-white hover:text-secondary transition-colors"
+              >
+                <div className="size-4">{social.icon}</div>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

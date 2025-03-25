@@ -2,7 +2,10 @@
 "use client";
 import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import Navbar from "@/components/PIXELUP/Navbar/Navbar02/cdgnavbar";
-
+import { DynamicNavbar, DynamicFooter } from "../components/LayoutComponents";
+import WhatsAppButton from "@/components/Core/WhatsAppButton/WhatsAppButton";
+import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
+import NextTopLoader from "nextjs-toploader";
 export default function RootLayout({
   children,
 }: {
@@ -11,21 +14,12 @@ export default function RootLayout({
   return (
     <RevalidationProvider>
       <div>
-        <Navbar />
+        <MarqueeTOP />
+        <NextTopLoader showSpinner={false} />
+        <DynamicNavbar />
         {children}
-        <a
-          href={process.env.NEXT_PUBLIC_WHATSAPP_LINK || ""}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed right-6 bottom-[30px] z-50 bg-green-500 rounded-full p-3 hover:bg-green-600 transition-colors animate-pulse-whatsapp"
-          style={{ zIndex: 999 }}
-        >
-          <img
-            src="/whatsapp.svg"
-            alt="WhatsApp"
-            className="w-8 h-8 hover:scale-110 transition-transform duration-200"
-          />
-        </a>
+        <WhatsAppButton />
+        <DynamicFooter />
       </div>
     </RevalidationProvider>
   );

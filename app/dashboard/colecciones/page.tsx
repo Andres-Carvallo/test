@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import BannerPrincipalBO from "@/components/conMantenedor/Mantenedores/BannerPrincipalBO";
 import BannerTiendaBO from "@/components/conMantenedor/Mantenedores/BannerTiendaBO";
 import BannersCategoriasBO from "@/components/conMantenedor/Mantenedores/BannersCategoriasBO";
-import ColeccionesBO from "../../../components/conMantenedor/Mantenedores/coleccionesBO";
+import ColeccionesBO01 from "@/components/PIXELUP/Colecciones/ColeccionesBO01";
+
 import type { Metadata } from "next";
 
 export default function BannerHome() {
@@ -15,7 +16,7 @@ export default function BannerHome() {
         style={{ borderRadius: "var(--radius)" }}
       >
         {/* <h4 className="uppercase font-bold mb-4">Colecciones</h4> */}
-        <ColeccionesBO />
+        <ColeccionesBO01 />
       </div>
     </section>
   );

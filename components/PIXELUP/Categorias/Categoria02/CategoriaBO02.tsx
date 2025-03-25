@@ -29,7 +29,7 @@ const Categoria02BO = () => {
 
   const [updatedSliderCategory, setUpdatedSliderCategory] = useState({
     title: "",
-    landingText: "pixelup",
+    landingText: "",
     buttonLink: "",
     buttonText: "click",
     orderNumber: 1,
@@ -103,6 +103,11 @@ const Categoria02BO = () => {
   const SliderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (slidersData.length >= 3) {
+      alert("No se pueden agregar más de 3 sliders.");
+      return;
+    }
+
     // Asegurarnos de que el buttonLink use el nombre de la categoría
     if (updatedSliderCategory.title) {
       const categoryName = updatedSliderCategory.title
@@ -114,12 +119,6 @@ const Categoria02BO = () => {
     }
 
     const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA02_ID}`;
-
-    // Verificar si hay menos de 4 sliders antes de agregar uno nuevo
-    if (slidersData.length >= 4) {
-      alert("No se pueden agregar más de 4 sliders.");
-      return;
-    }
 
     // Verificar si la categoría seleccionada ya tiene un slider asociado
     const categoryExists = slidersData.some(
@@ -163,7 +162,7 @@ const Categoria02BO = () => {
   const resetSliderData = () => {
     setUpdatedSliderCategory({
       title: "pixelup",
-      landingText: "pixelup",
+      landingText: "",
       buttonLink: "",
       buttonText: "click",
       orderNumber: 1,
@@ -208,13 +207,13 @@ const Categoria02BO = () => {
           setAspect(1 / 1); // Aspecto 1
           break;
         case "2":
-          setAspect(1.5 / 1); // Aspecto 2
+          setAspect(1 / 1); // Aspecto 2
           break;
         case "3":
-          setAspect(2.38 / 1); // Aspecto 3
+          setAspect(1 / 1); // Aspecto 3
           break;
         case "4":
-          setAspect(1.53 / 1); // Aspecto 4
+          setAspect(1 / 1); // Aspecto 4
           break;
         default:
           setAspect(1 / 1); // Valor por defecto
@@ -275,7 +274,8 @@ const Categoria02BO = () => {
     });
   };
 
-  const defaultImage = "/img/placeholder.webp";
+  const defaultImage =
+    "/img/placeholder.webp";
   const getDefaultBanner = (index: number) => {
     return slidersData && slidersData[index]
       ? slidersData[index]
@@ -322,214 +322,56 @@ const Categoria02BO = () => {
   };
 
   return (
-    <section
-      id="banner"
-      className="w-full"
-    >
-      {/*       <div className="flex flex-wrap gap-6 items-center align-middle justify-center">
-        {slidersData.map((banner) => (
-          <div
-            className="flex-1 max-w-[200px] min-w-[200px]"
-            key={banner.id}
-          >
-            <span>{banner.orderNumber}</span>
-            <Link
-              href={banner.buttonLink}
-              className="group relative flex h-96 items-end overflow-hidden rounded-lg bg-gray-100 p-4 shadow-lg"
-            >
-              <img
-                alt="Banner Image"
-                src={banner.mainImage.url}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="relative w-full text-center bg-white rounded-xl p-2 font-bold ">
-                <h3 className="text-xl text-dark">{banner.title}</h3>
-                <p className="mt-1 text-sm text-black hidden">
-                  {banner.landingText}
-                </p>
-              </div>
-            </Link>
-            <button
-              onClick={() => deleteSlider(banner.id)}
-              className="mt-2 text-red-500 hover:text-red-700"
-            >
-              Eliminar
-            </button>
-          </div>
-        ))}
-      </div> */}
-
-      <div>
+    <section id="banner" className="w-full">
+      {/* Vista previa */}
+      <div className="py-16">
         {slidersData && (
-          <div className="flex items-center justify-center px-4 lg:px-0">
-            <div className="max-w-7xl mx-auto rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* COLGANTES */}
-                <div className="relative flex flex-col items-center w-full">
-                  <div
-                    rel="noopener noreferrer"
-                    className="w-full"
-                  >
-                    <div
-                      className="w-[200px] h-[150px] md:w-[250px] md:h-[450px] lg:w-[400px] lg:h-[400px] bg-cover bg-center mx-auto"
-                      style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(0).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
-                        backgroundPosition: "center bottom",
-                      }}
-                    >
-                      <div
-                        className="w-full h-full flex items-end justify-start p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(0).title}
-                        </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3">
+            {[0, 1, 2].map((index) => (
+              <div
+                key={index}
+                className="group cursor-pointer relative h-[400px] md:h-[500px] overflow-hidden"
+              >
+                <div className="relative w-full h-full">
+                  <img
+                    src={getDefaultBanner(index).mainImage.url}
+                    alt={getDefaultBanner(index).title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent opacity-80" />
+                  <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+                    <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                      <h3 className="text-2xl md:text-3xl text-white font-bold mb-3">
+                        {getDefaultBanner(index).title}
+                      </h3>
+                      <p className="text-gray-200 mb-2 text-base">
+                        {getDefaultBanner(index).landingText}
+                      </p>
+                      <div className="bg-white text-gray-800 px-8 py-3 rounded font-bold opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#eea83b] transform -translate-y-2 group-hover:translate-y-0">
+                        Explorar Categoría
                       </div>
                     </div>
                   </div>
-                  {slidersData[0] &&
-                    (slidersData[0].title || slidersData[0].mainImage.url) && (
-                      <button
-                        className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                        }}
-                        onClick={() => deleteSlider(slidersData[0].id)}
-                      >
-                        X
-                      </button>
-                    )}
-                </div>
-                {/* ANILLOS */}
-                <div className="relative flex flex-col items-center w-full">
-                  <div
-                    rel="noopener noreferrer"
-                    className="w-full"
-                  >
-                    <div
-                      className="w-[200px]  h-[250px] md:w-[250px] md:h-[330px] lg:w-[400px] lg:h-[280px] bg-cover bg-center mx-auto"
+                  {slidersData[index] && (
+                    <button
+                      className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1 z-10"
                       style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(1).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
                       }}
+                      onClick={() => deleteSlider(slidersData[index].id)}
                     >
-                      <div
-                        className="w-full h-full flex items-end justify-end p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(1).title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                  {slidersData[1] &&
-                    (slidersData[1].title || slidersData[1].mainImage.url) && (
-                      <button
-                        className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                        }}
-                        onClick={() => deleteSlider(slidersData[1].id)}
-                      >
-                        X
-                      </button>
-                    )}
-                </div>
-                {/* PULSERAS */}
-                <div className="relative flex flex-col items-center w-full">
-                  <div
-                    rel="noopener noreferrer"
-                    className="w-full"
-                  >
-                    <div
-                      className="w-[200px] h-[150px] md:w-[250px] md:h-[210px] lg:w-[400px] lg:h-[160px] bg-cover bg-center mx-auto"
-                      style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(2).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
-                      }}
-                    >
-                      <div
-                        className="w-full h-full flex items-start justify-start p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(2).title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                  {slidersData[2] &&
-                    (slidersData[2].title || slidersData[2].mainImage.url) && (
-                      <button
-                        className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                        }}
-                        onClick={() => deleteSlider(slidersData[2].id)}
-                      >
-                        X
-                      </button>
-                    )}
-                </div>
-                {/* AROS */}
-                <div className="relative flex flex-col items-center w-full mt-0 md:mt-[-120px]">
-                  <div
-                    rel="noopener noreferrer"
-                    className="w-full"
-                  >
-                    <div
-                      className="w-[200px] h-[250px] md:w-[250px] md:h-[330px] lg:w-[400px] lg:h-[280px] bg-cover bg-center mx-auto"
-                      style={{
-                        backgroundImage: `url(${
-                          getDefaultBanner(3).mainImage.url
-                        })`,
-                        borderRadius: "var(--radius)",
-                      }}
-                    >
-                      <div
-                        className="w-full h-full flex items-end justify-end p-4"
-                        style={{ borderRadius: "var(--radius)" }}
-                      >
-                        <h2 className="text-2xl md:text-4xl font-bold text-white">
-                          {getDefaultBanner(3).title}
-                        </h2>
-                      </div>
-                    </div>
-                  </div>
-                  {slidersData[3] &&
-                    (slidersData[3].title || slidersData[3].mainImage.url) && (
-                      <button
-                        className="shadow absolute top-2 right-2 bg-red-500 hover:bg-red-700 text-white rounded-full p-2 m-1"
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                        }}
-                        onClick={() => deleteSlider(slidersData[3].id)}
-                      >
-                        X
-                      </button>
-                    )}
+                      X
+                    </button>
+                  )}
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
+
       <div className="mt-8">
         <h2 className="text-md uppercase font-semibold text-center mb-4">
           Agregar Nuevo Slider
@@ -580,7 +422,6 @@ const Categoria02BO = () => {
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
-              <option value="4">4</option>
             </select>
           </div>
           <div className="mb-4 hidden">
@@ -599,12 +440,12 @@ const Categoria02BO = () => {
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
-          <div className="mb-4 hidden">
+          <div className="mb-4 ">
             <label
               htmlFor="landingText"
               className="block text-sm font-medium text-gray-700"
             >
-              Texto de la Landing
+              Texto 
             </label>
             <input
               type="text"
@@ -612,6 +453,7 @@ const Categoria02BO = () => {
               name="landingText"
               value={updatedSliderCategory.landingText}
               onChange={handleChangeSlider}
+              placeholder="Texto..."
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
@@ -732,7 +574,7 @@ const Categoria02BO = () => {
                       <span className="font-semibold">Subir Imagen</span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG o Webp (800x800px)
+                      PNG, JPG o Webp (Recomendada 1024 × 1024px)
                     </p>
                   </div>
                 </label>

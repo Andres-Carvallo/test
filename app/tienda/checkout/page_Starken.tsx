@@ -890,6 +890,134 @@ const Checkout: React.FC = () => {
             </div>
             <div className="md:mt-10 bg-white px-4 pt-8 lg:mt-0">
               <div className="space-y-4">
+                                {/* Datos personales */}
+                                <div className="bg-gray-100 rounded-lg shadow-sm p-6">
+                  <p className="text-xl font-medium">Datos Personales</p>
+                  <p className="text-gray-400">Completa tus datos personales</p>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <label
+                      htmlFor="firstname"
+                      className="block mt-4"
+                    >
+                      Nombre <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="firstname"
+                        name="firstname"
+                        value={customer.customer?.firstname || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              firstname: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                    <label
+                      htmlFor="lastname"
+                      className="block mt-4"
+                    >
+                      Apellido <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="lastname"
+                        name="lastname"
+                        value={customer.customer?.lastname || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              lastname: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <label
+                      htmlFor="phoneNumber"
+                      className="block mt-4"
+                    >
+                      Teléfono <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        value={customer.customer?.phoneNumber || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              phoneNumber: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                    <label
+                      htmlFor="email"
+                      className="block mt-4"
+                    >
+                      Email <span className="text-red-500">*</span>
+                      <input
+                        type="text"
+                        id="email"
+                        name="email"
+                        value={customer.customer?.email || ""}
+                        onChange={(e) =>
+                          setCustomer({
+                            ...customer,
+                            customer: {
+                              ...customer.customer,
+                              email: e.target.value,
+                            },
+                          })
+                        }
+                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
+                          isLoggedIn ? "bg-gray-200" : "bg-white"
+                        }`}
+                        disabled={!!isLoggedIn}
+                      />
+                    </label>
+                    
+                  </div>
+                  <label htmlFor="addressLine2" className="block mt-4">
+                              Indicaciones extra
+                              <input
+                                type="text"
+                                id="addressLine2"
+                                value={customer.customer?.addressLine2 || ""}
+                                onChange={(e) =>
+                                  setCustomer({
+                                    ...customer,
+                                    customer: {
+                                      ...customer.customer,
+                                      addressLine2: e.target.value,
+                                    },
+                                  })
+                                }
+                                className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
+                              />
+                            </label>
+                </div>
                 {/* Tipo de envío */}
                 <div className="bg-gray-100 rounded-lg shadow-sm p-6">
                   <p className="text-xl font-medium">Tipo de envío</p>
@@ -1158,134 +1286,7 @@ const Checkout: React.FC = () => {
                   )}
                 </div>
 
-                {/* Datos personales */}
-                <div className="bg-gray-100 rounded-lg shadow-sm p-6">
-                  <p className="text-xl font-medium">Datos Personales</p>
-                  <p className="text-gray-400">Completa tus datos personales</p>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <label
-                      htmlFor="firstname"
-                      className="block mt-4"
-                    >
-                      Nombre <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="firstname"
-                        name="firstname"
-                        value={customer.customer?.firstname || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              firstname: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                    <label
-                      htmlFor="lastname"
-                      className="block mt-4"
-                    >
-                      Apellido <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="lastname"
-                        name="lastname"
-                        value={customer.customer?.lastname || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              lastname: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label
-                      htmlFor="phoneNumber"
-                      className="block mt-4"
-                    >
-                      Teléfono <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={customer.customer?.phoneNumber || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              phoneNumber: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                    <label
-                      htmlFor="email"
-                      className="block mt-4"
-                    >
-                      Email <span className="text-red-500">*</span>
-                      <input
-                        type="text"
-                        id="email"
-                        name="email"
-                        value={customer.customer?.email || ""}
-                        onChange={(e) =>
-                          setCustomer({
-                            ...customer,
-                            customer: {
-                              ...customer.customer,
-                              email: e.target.value,
-                            },
-                          })
-                        }
-                        className={`block w-full rounded-md border-dark/50 border p-1 mt-1 ${
-                          isLoggedIn ? "bg-gray-200" : "bg-white"
-                        }`}
-                        disabled={!!isLoggedIn}
-                      />
-                    </label>
-                    
-                  </div>
-                  <label htmlFor="addressLine2" className="block mt-4">
-                              Indicaciones extra
-                              <input
-                                type="text"
-                                id="addressLine2"
-                                value={customer.customer?.addressLine2 || ""}
-                                onChange={(e) =>
-                                  setCustomer({
-                                    ...customer,
-                                    customer: {
-                                      ...customer.customer,
-                                      addressLine2: e.target.value,
-                                    },
-                                  })
-                                }
-                                className="block w-full rounded-md text-sm border-dark/50 border p-2 mt-1 bg-white"
-                              />
-                            </label>
-                </div>
+
               </div>
               <button
                 onClick={handleSubmitOrder}

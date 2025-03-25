@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "next/navigation";
 
-const Stars = ({ reviewAverageScore, totalReviews }: any) => {
+interface StarsProps {
+  reviewAverageScore: number | null;
+  totalReviews: number | null;
+  productId: string;
+}
+
+const Stars = ({ reviewAverageScore, totalReviews, productId }: StarsProps) => {
   const [reviews, setReviews] = useState<any[]>([]);
-  const { id } = useParams();
 
   const fetchReviews = async () => {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${id}/reviews`,
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/reviews`,
         {
           params: {
             siteId: process.env.NEXT_PUBLIC_API_URL_SITEID || "",
@@ -26,11 +30,11 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
   };
 
   useEffect(() => {
-    if (id) {
+    if (productId) {
       fetchReviews();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [productId]);
 
   const safeReviews = Array.isArray(reviews) ? reviews : [];
 
@@ -59,19 +63,16 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
                   <div className="flex items-center px-6">
                     <div className="flex flex-col sm:flex-row items-center max-lg:justify-center w-full h-full">
                       <div className="sm:pr-3 md:border-r border-gray-200 flex items-center justify-center flex-col min-w-[300px] w-full">
-{/*                         <h2 className="mt-4 md:mt-0 font-manrope font-bold text-5xl text-black text-center mb-4">
-                          {parseFloat(reviewAverageScore).toFixed(1)}
-                        </h2> */}
-                         <h2 className="mt-4 md:mt-0 font-manrope font-bold text-5xl text-black text-center mb-4">
-  {Math.floor(reviewAverageScore * 10) / 10}
-</h2> 
+                        <h2 className="mt-4 md:mt-0 font-manrope font-bold text-5xl text-black text-center mb-4">
+                          {reviewAverageScore ? Math.floor(reviewAverageScore * 10) / 10 : 0}
+                        </h2>
 
                         <div className="flex items-center gap-3 mb-4">
                           {[...Array(5)].map((_, i) => (
                             <svg
                               key={i}
                               className={`w-8 h-8 ${
-                                i < reviewAverageScore
+                                reviewAverageScore && i < reviewAverageScore
                                   ? "text-yellow-500"
                                   : "text-gray-300"
                               }`}
@@ -83,7 +84,7 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
                           ))}
                         </div>
                         <p className="font-normal text-lg leading-8 text-gray-400">
-                          {totalReviews} Calificaciones
+                          {totalReviews || 0} Calificaciones
                         </p>
                       </div>
                     </div>
@@ -119,7 +120,7 @@ const Stars = ({ reviewAverageScore, totalReviews }: any) => {
                               style={{
                                 width: `${
                                   (ratingDistribution[rating - 1] /
-                                    totalReviews) *
+                                    (totalReviews || 0)) *
                                   100
                                 }%`,
                               }}

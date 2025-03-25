@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import Loader from "@/components/common/Loader";
 
 export const metadata: Metadata = {
-  title: "Pago",
-  description: "This is About Page for Startup Nextjs Template",
+  title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA + "Pago",
+  description: "Checkout Pago",
   // other metadata
 };
 

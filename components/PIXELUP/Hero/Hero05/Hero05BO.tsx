@@ -84,12 +84,12 @@ const Hero05BO: React.FC = () => {
   });
 
   const [additionalData, setAdditionalData] = useState<AdditionalData>({
-    subtitle: "Peluquería canina de especialidad",
-    newServiceTitle: "Spa Day Canino",
+    subtitle: "Pixel Up",
+    newServiceTitle: "Propuesta de valor",
     newServiceSubtitle: "NUEVO",
-    newServiceDescription: "Incluye baño relajante y masaje",
-    primaryButtonText: "Reserva tu cita",
-    secondaryButtonText: "Nuestros servicios",
+    newServiceDescription: "Descripción",
+    primaryButtonText: "Botón principal",
+    secondaryButtonText: "Botón secundario",
   });
 
   const [mainImage, setMainImage] = useState<string | null>(null);
@@ -106,16 +106,12 @@ const Hero05BO: React.FC = () => {
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
 
   const prepareDataForSubmit = () => {
-    console.log("Preparing data for submit");
-    console.log("Current content state:", content);
-    console.log("Current mainImage:", content.mainImage);
 
     const dataToSubmit = {
       ...content,
       buttonText: JSON.stringify(additionalData),
     };
 
-    console.log("Data prepared for submit:", dataToSubmit);
     return dataToSubmit;
   };
 
@@ -129,16 +125,16 @@ const Hero05BO: React.FC = () => {
       const additionalInfo = JSON.parse(data.buttonText);
       setAdditionalData({
         subtitle:
-          additionalInfo.subtitle || "Peluquería canina de especialidad",
-        newServiceTitle: additionalInfo.newServiceTitle || "Spa Day Canino",
+          additionalInfo.subtitle || "Pixel Up",
+        newServiceTitle: additionalInfo.newServiceTitle || "Propuesta de valor",
         newServiceSubtitle: additionalInfo.newServiceSubtitle || "NUEVO",
         newServiceDescription:
           additionalInfo.newServiceDescription ||
-          "Incluye baño relajante y masaje",
+          "Descripción",
         primaryButtonText:
-          additionalInfo.primaryButtonText || "Reserva tu cita",
+          additionalInfo.primaryButtonText || "Botón principal",
         secondaryButtonText:
-          additionalInfo.secondaryButtonText || "Nuestros servicios",
+          additionalInfo.secondaryButtonText || "Botón secundario",
       });
     } catch (e) {
       console.error("Error parsing additional data:", e);
@@ -149,10 +145,10 @@ const Hero05BO: React.FC = () => {
       ...parsedContent,
       title:
         parsedContent.title ||
-        "Rosamonte, el lugar indicado para el cuidado de tu mascota",
+        "Título principal",
       landingText:
         parsedContent.landingText ||
-        "Un lugar donde pueden estar seguros de que nosotras amaremos y respetaremos a tu perrin...",
+        "Descripción principal",
       buttonLink: parsedContent.buttonLink || "/servicios",
       mainImageLink: parsedContent.mainImageLink || "",
       orderNumber: parsedContent.orderNumber || 1,
@@ -169,7 +165,7 @@ const Hero05BO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_PROPUESTA_VALOR_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO05_ID}`;
 
       // Obtener contenido general
       const contentResponse = await axios.get(
@@ -188,7 +184,7 @@ const Hero05BO: React.FC = () => {
 
       // Obtener imagen
       try {
-        const imageId = `${process.env.NEXT_PUBLIC_PROPUESTA_VALOR_IMGID}`;
+        const imageId = `${process.env.NEXT_PUBLIC_HERO05_IMGID}`;
         const imageResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
@@ -235,8 +231,8 @@ const Hero05BO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_PROPUESTA_VALOR_ID}`;
-      const imageId = `${process.env.NEXT_PUBLIC_PROPUESTA_VALOR_IMGID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO05_ID}`;
+      const imageId = `${process.env.NEXT_PUBLIC_HERO05_IMGID}`;
 
       // Aseguramos la estructura correcta pero manteniendo valores existentes
       const defaultData = {
@@ -276,8 +272,8 @@ const Hero05BO: React.FC = () => {
         }
       );
 
-      // Si hay una imagen en el estado (nueva o existente), la actualizamos
-      if (content.mainImage?.data) {
+      // Solo enviamos la imagen si hay una nueva imagen cargada
+      if (isMainImageUploaded && content.mainImage?.data) {
         const imageData = {
           title: "Imagen Propuesta Valor",
           landingText: "Imagen Propuesta Valor",
@@ -287,8 +283,6 @@ const Hero05BO: React.FC = () => {
           mainImageLink: "https://www.lafuentedebelleza.cl",
           mainImage: content.mainImage,
         };
-
-        console.log("Enviando imagen:", imageData);
 
         await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${imageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -322,6 +316,7 @@ const Hero05BO: React.FC = () => {
       reader.onload = () => {
         setTempImage(reader.result as string);
         setIsModalOpen(true);
+        setIsMainImageUploaded(true); // Marcamos que se ha cargado una nueva imagen
       };
       reader.readAsDataURL(file);
     } catch (error) {
@@ -391,7 +386,7 @@ const Hero05BO: React.FC = () => {
       <h3 className="text-lg font-semibold mb-4">Vista Previa</h3>
 
       {/* Vista previa del Hero Section */}
-      <section className="py-24 bg-white border rounded-lg mb-12">
+      <section className="py-24 bg-white  rounded-lg mb-12">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-4">
@@ -399,18 +394,18 @@ const Hero05BO: React.FC = () => {
                 <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 block">
                   {additionalData.subtitle}
                 </span>
-                <h1 className="text-6xl font-light text-[#877EB6] leading-12">
+                <h1 className="text-4xl font-light text-[#5B488E] leading-12">
                   {content.title}
                 </h1>
               </div>
               <p className="text-lg text-gray-600">{content.landingText}</p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="bg-[#81C4BA] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all">
+                <div className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all">
                   {additionalData.primaryButtonText}
-                </button>
-                <button className="border-2 border-[#81C4BA] text-[#81C4BA] px-8 py-4 rounded hover:bg-[#81C4BA] hover:text-white transition-all">
+                </div>
+                <div className="border-2 border-[#81C4BA] text-[#81C4BA] px-8 py-4 rounded hover:bg-[#5B488E] hover:text-white transition-all">
                   {additionalData.secondaryButtonText}
-                </button>
+                </div>
               </div>
             </div>
 
@@ -428,7 +423,7 @@ const Hero05BO: React.FC = () => {
                 <span className="text-[#81C4BA] text-sm font-medium">
                   {additionalData.newServiceSubtitle}
                 </span>
-                <h3 className="text-[#877EB6] font-medium mt-2">
+                <h3 className="text-[#5B488E] font-medium mt-2">
                   {additionalData.newServiceTitle}
                 </h3>
                 <p className="text-gray-500 text-sm mt-1">
@@ -448,7 +443,7 @@ const Hero05BO: React.FC = () => {
       >
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Subtítulo Superior
+            Epígrafe
           </label>
           <input
             type="text"
@@ -457,7 +452,7 @@ const Hero05BO: React.FC = () => {
               setAdditionalData({ ...additionalData, subtitle: e.target.value })
             }
             className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
-            placeholder="Peluquería canina de especialidad"
+            placeholder="Epígrafe"
           />
         </div>
 
@@ -470,7 +465,7 @@ const Hero05BO: React.FC = () => {
             value={content.title}
             onChange={(e) => setContent({ ...content, title: e.target.value })}
             className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
-            placeholder="Título principal..."
+            placeholder="Título principal"
           />
         </div>
 
@@ -489,7 +484,7 @@ const Hero05BO: React.FC = () => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className=" grid-cols-2 gap-4 hidden">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Texto Botón Principal
@@ -527,7 +522,7 @@ const Hero05BO: React.FC = () => {
         <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Etiqueta Nuevo
+              Etiqueta (Nuevo)
             </label>
             <input
               type="text"
@@ -564,14 +559,20 @@ const Hero05BO: React.FC = () => {
             <input
               type="text"
               value={additionalData.newServiceDescription}
-              onChange={(e) =>
-                setAdditionalData({
-                  ...additionalData,
-                  newServiceDescription: e.target.value,
-                })
-              }
+              onChange={(e) => {
+                if (e.target.value.length <= 31) {
+                  setAdditionalData({
+                    ...additionalData,
+                    newServiceDescription: e.target.value,
+                  });
+                }
+              }}
+              maxLength={31}
               className="shadow block w-full px-4 py-3 border border-gray-300 rounded-md"
             />
+            <span className="text-sm text-gray-500 mt-1">
+              {additionalData.newServiceDescription.length}/31 caracteres
+            </span>
           </div>
         </div>
 
@@ -592,7 +593,7 @@ const Hero05BO: React.FC = () => {
               onClick={() => fileInputRef.current?.click()}
               className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
             >
-              Seleccionar Imagen
+              Seleccionar Imagen (Recomendado 1500 × 1000px)
             </button>
             {(mainImage || content.mainImage?.data) && (
               <div className="relative w-32 h-32">
@@ -651,17 +652,34 @@ const Hero05BO: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
           title="Recortar Imagen"
         >
-          <div className="relative w-full h-[60vh]">
+          <div className="relative w-full h-96 ">
             <Cropper
               image={tempImage || ""}
               crop={crop}
               zoom={zoom}
-              aspect={560 / 500}
+              aspect={3 / 2}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={handleCropComplete}
             />
+          </div> 
+          
+          {/* Agregamos la barra de zoom */}
+          <div className="w-full py-6">
+            <input
+              type="range"
+              value={zoom}
+              min={1}
+              max={3}
+              step={0.01}
+              aria-labelledby="Zoom"
+              onChange={(e) => {
+                setZoom(parseFloat(e.target.value));
+              }}
+              className="zoom-range w-full custom-range"
+            />
           </div>
+          
           <div className="mt-4 flex justify-end gap-2">
             <button
               onClick={() => setIsModalOpen(false)}

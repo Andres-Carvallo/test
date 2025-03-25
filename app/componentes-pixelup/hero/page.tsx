@@ -57,7 +57,7 @@ export default async function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 01</span>
 </div>
         <SinFoto01/>
-        <div className="inline-flex items-center justify-center w-full">
+        {/* <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 02</span>
 </div>
@@ -67,7 +67,7 @@ export default async function hero() {
                     Box1Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX1_CONTENTBLOCK || "",
                     Box2Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX2_CONTENTBLOCK || "",
                     Box3Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX3_CONTENTBLOCK || "",
-                  }}/>
+                  }}/> */}
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 03</span>

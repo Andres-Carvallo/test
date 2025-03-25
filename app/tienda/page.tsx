@@ -2,8 +2,7 @@
 import React from "react";
 import ProductGridShop from "@/components/Core/ProductGridHome/ProductGridShop";
 import { RevalidationProvider } from "@/app/Context/RevalidationContext";
-import BannerTienda01Mobile from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01Mobile";
-import BannerTienda01 from "@/components/PIXELUP/BannerTienda/CacheTest/BannerTienda01";
+import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
 
 // Componente del servidor para la carga inicial
 async function fetchInitialData(searchParams: {
@@ -49,12 +48,7 @@ export default async function Tienda({
     <RevalidationProvider>
       <title>Tienda</title>
       <div className="w-full">
-        <div className="hidden lg:block w-full">
-          <BannerTienda01 />
-        </div>
-        <div className="block lg:hidden w-full">
-          <BannerTienda01Mobile />
-        </div>
+        <BannerTienda01 />
         <ProductGridShop
           initialProducts={initialData.products}
           initialProductTypes={initialData.productTypes}

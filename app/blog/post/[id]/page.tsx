@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
+import Link from "next/link";
 
 interface Post {
   id: string;
@@ -157,31 +158,39 @@ if (typeof document !== "undefined") {
 const PostDetail: React.FC = () => {
   const { id } = useParams();
   const [post, setPost] = useState<Post | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/articles/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-        setPost(response.data.article);
+        const [postResponse, relatedResponse] = await Promise.all([
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/articles/${id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+          ),
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/articles?pageSize=4&pageNumber=1&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+          )
+        ]);
+        
+        setPost(postResponse.data.article);
+        setRelatedPosts(relatedResponse.data.articles.filter((p: Post) => p.id !== id).slice(0, 4));
       } catch (error) {
-        console.error("Error fetching post", error);
-        setError("Failed to fetch post. Please try again later.");
+        console.error("Error fetching data", error);
+        setError("Error al cargar los datos. Por favor, intente más tarde.");
       } finally {
         setLoading(false);
       }
     };
 
     if (id) {
-      fetchPost();
+      fetchData();
     }
   }, [id]);
 
   if (loading) {
-    return <div className="text-center mt-8">Loading...</div>;
+    return <div className="text-center mt-8">Cargando...</div>;
   }
 
   if (error) {
@@ -189,40 +198,102 @@ const PostDetail: React.FC = () => {
   }
 
   if (!post) {
-    return <div className="text-center mt-8">Post not found</div>;
+    return <div className="text-center mt-8">Post no encontrado</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 overflow-hidden">
-      <h1 className="text-3xl font-bold mb-6">{post.title}</h1>
-      {post.detailImage?.url && (
-        <div className="relative w-full mb-6 overflow-hidden">
-          <img
-            src={post.detailImage.url}
-            alt={post.title}
-            className="rounded-md w-full object-cover"
-          />
-        </div>
-      )}
-      <p className="text-gray-700 dark:text-gray-300 mb-4">
-        Published on {new Date(post.creationDate).toLocaleDateString()}
-      </p>
-      <div className="ql-editor prose dark:prose-invert max-w-none">
-        <div dangerouslySetInnerHTML={{ __html: post.detailContent }} />
+    <main>
+      {/* Banner de imagen principal */}
+      <div className="w-full h-[300px] mb-12">
+        <img
+          src={post.detailImage?.url}
+          alt={post.title}
+          className="object-cover w-full h-full"
+        />
       </div>
-      {post.previewImage?.url && (
-        <div className="relative w-full h-48 mt-6">
-          <img
-            src={post.previewImage.url}
-            alt="Preview"
-            className="rounded-md w-full h-full object-cover"
-          />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
+        {/* Breadcrumb */}
+        <div className="mb-8 text-sm text-gray-600">
+          <Link href="/blog" className="hover:text-blue-600">
+            Blog
+          </Link>
+          <span className="mx-2">→</span>
+          <span>Artículo</span>
         </div>
-      )}
-      <div className="prose dark:prose-dark">
-        <div dangerouslySetInnerHTML={{ __html: post.previewContent }} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+          {/* Contenido Principal */}
+          <div className="lg:col-span-3">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-4 text-gray-600 mb-4 text-sm">
+                <time className="bg-gray-100 px-3 py-1 rounded">
+                  {new Date(post.creationDate).toLocaleDateString("es-ES", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </time>
+              </div>
+              <h1 className="text-4xl font-bold mb-6 leading-tight">
+                {post.title}
+              </h1>
+            </div>
+
+            <div className="prose prose-lg max-w-3xl">
+              <div
+                dangerouslySetInnerHTML={{ __html: post.previewContent }}
+                className="ql-editor"
+              />
+            </div>
+            <div className="prose prose-lg max-w-3xl">
+              <div
+                dangerouslySetInnerHTML={{ __html: post.detailContent }}
+                className="ql-editor"
+              />
+            </div>
+          </div>
+
+          {/* Barra lateral */}
+          <aside className="lg:col-span-1">
+            <div className="sticky top-8 bg-gray-50 rounded p-6">
+              <h2 className="text-xl font-bold mb-6 pb-4 border-b">
+                Últimos artículos
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+                {relatedPosts.map((relatedPost) => (
+                  <Link
+                    href={`/blog/post/${relatedPost.id}`}
+                    key={relatedPost.id}
+                    className="flex flex-col gap-3 group"
+                  >
+                    <div className="relative w-full aspect-video">
+                      <img
+                        src={relatedPost.previewImage?.url}
+                        alt={relatedPost.title}
+                        className="object-cover rounded w-full h-full transition-transform group-hover:scale-105"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="font-medium group-hover:text-blue-600 transition-colors line-clamp-2">
+                        {relatedPost.title}
+                      </h3>
+                      <time className="text-sm text-gray-600 mt-1 block">
+                        {new Date(relatedPost.creationDate).toLocaleDateString("es-ES", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </time>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
-    </div>
+    </main>
   );
 };
 

@@ -18,9 +18,11 @@ import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import Head from "next/head";
 import { NavbarProvider } from "./Context/NavbarContext";
 import { AuthProvider } from "./Context/AuthContext";
-import MarqueeTOP from "@/components/PIXELUP/Marquee/MarqueeTop/Marquee";
+import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import GoogleAnalytics from "@/components/Core/Google/Analytics";
+import PopVisual from "@/components/Core/Popup/Popupvisual";
 import { useRouter, usePathname } from "next/navigation";
+import NextTopLoader from "nextjs-toploader";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -63,6 +65,7 @@ export default function RootLayout({
   const [error, setError] = useState<Error | null>(null);
   const [siteStatus, setSiteStatus] = useState<string | null>(null);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -77,13 +80,26 @@ export default function RootLayout({
         setSiteStatus(siteResponse.data.site.statusCode);
 
         // Verificar estado de mantenimiento
-        const contentBlockId = process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
+        const contentBlockId =
+          process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
         const maintenanceResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${id}`
         );
-        
-        const maintenanceConfig = JSON.parse(maintenanceResponse.data.contentBlock.contentText);
+
+        const maintenanceConfig = JSON.parse(
+          maintenanceResponse.data.contentBlock.contentText
+        );
         setIsMaintenanceMode(maintenanceConfig.enabled || false);
+
+        // Verificar estado del popup
+        const popupContentBlockId = process.env.NEXT_PUBLIC_POPUP_CONTENTBLOCK;
+        if (popupContentBlockId) {
+          const popupResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${popupContentBlockId}?siteId=${id}`
+          );
+          const popupConfig = JSON.parse(popupResponse.data.contentBlock.contentText || '{"enabled": false}');
+          setShowPopup(popupConfig.enabled && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard"));
+        }
 
         // Redireccionar según las condiciones
         if (
@@ -155,11 +171,12 @@ export default function RootLayout({
         />
         <AuthProvider>
           <RevalidationProvider>
-            {/*  <MarqueeTOP /> */}
             <NavbarProvider>
               <APIContextProvider SiteId={SiteId}>
                 <Toaster />
+                <NextTopLoader showSpinner={false}/>
                 <div className="md:min-h-screen ">{children}</div>
+                {showPopup && <PopVisual />}
               </APIContextProvider>
             </NavbarProvider>
           </RevalidationProvider>

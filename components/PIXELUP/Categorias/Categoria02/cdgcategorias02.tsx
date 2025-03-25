@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -13,30 +12,16 @@ interface Categoria02Props {
     img2: string;
     categoria3: string;
     img3: string;
-    categoria4: string;
-    img4: string;
   };
 }
 
 const Categoria02: React.FC<Categoria02Props> = ({ Categoria02Data }) => {
-  const {
-    titulo,
-    categoria1,
-    img1,
-    categoria2,
-    img2,
-    categoria3,
-    img3,
-    categoria4,
-    img4,
-  } = Categoria02Data;
-
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchBannerCategoryHome = async () => {
     try {
-      setLoading(true); // Mostrar el indicador de carga
+      setLoading(true);
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const bannerId = `${process.env.NEXT_PUBLIC_CATEGORIA02_ID}`;
       const BannersCategory = await axios.get(
@@ -49,148 +34,64 @@ const Categoria02: React.FC<Categoria02Props> = ({ Categoria02Data }) => {
       setBannerData(sortedBannerImages);
     } catch (error) {
       console.error("Error al obtener los tipos de producto:", error);
-      // Manejar el error según sea necesario
     } finally {
-      setLoading(false); // Ocultar el indicador de carga
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchBannerCategoryHome();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Debería ejecutarse solo en el montaje inicial
+  }, []);
 
   const defaultImage = "/img/placeholder.webp";
   const getDefaultBanner = (index: number) => {
     return bannerData && bannerData[index]
       ? bannerData[index]
-      : {
-          mainImage: { url: defaultImage },
-          title: "Titulo por defecto",
-          buttonLink: "#",
-        };
+      : { mainImage: { url: defaultImage }, title: "Titulo por defecto", buttonLink: "#" };
   };
 
   return (
-    <div>
+    <div className="py-16">
       {bannerData && (
-        <div className="flex items-center justify-center px-4 lg:px-0">
-          <div className="max-w-7xl mx-auto rounded-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* COLGANTES */}
-              <div className="relative flex flex-col items-center w-full">
-                <Link
-                  href={getDefaultBanner(0).buttonLink}
-                  rel="noopener noreferrer"
-                  className="w-full"
-                >
-                  <div
-                    className="w-[326px] h-[220px] md:w-[300px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-cover bg-center mx-auto"
-                    style={{
-                      backgroundImage: `url(${
-                        getDefaultBanner(0).mainImage.url
-                      })`,
-                      borderRadius: "var(--radius)",
-                      backgroundPosition: "center center",
-                    }}
-                  >
-                    <div
-                      className="w-full h-full flex items-end justify-start p-4"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <h2 className="text-2xl md:text-4xl font-bold text-white">
-                        {getDefaultBanner(0).title}
-                      </h2>
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-3">
+          {[0, 1, 2].map((index) => (
+            <div
+              key={index}
+              className="group cursor-pointer relative h-[400px] md:h-[500px] overflow-hidden"
+            >
+              <Link href={getDefaultBanner(index).buttonLink}>
+                <img
+                  src={getDefaultBanner(index).mainImage.url}
+                  alt={getDefaultBanner(index).title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10 group-hover:opacity-20 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent opacity-80" />
+                <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
+                  <div className="transform group-hover:translate-y-0 transition-transform duration-300">
+                    <h3 className="text-2xl md:text-3xl text-white font-bold mb-3">
+                      {getDefaultBanner(index).title}
+                    </h3>
+                    <p className="text-gray-200 mb-2 text-base">
+                      {getDefaultBanner(index).landingText}
+                    </p>
+                    <button className="bg-white text-gray-800 px-8 py-3 rounded font-bold transition-all duration-300 hover:bg-[#eea83b]">
+                      Explorar Categoría
+                    </button>
                   </div>
-                </Link>
-              </div>
-              {/* ANILLOS */}
-              <div className="relative flex flex-col items-center w-full">
-                <Link
-                  href={getDefaultBanner(1).buttonLink}
-                  rel="noopener noreferrer"
-                  className="w-full"
-                >
-                  <div
-                    className="w-[326px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
-                    style={{
-                      backgroundImage: `url(${
-                        getDefaultBanner(1).mainImage.url
-                      })`,
-                      borderRadius: "var(--radius)",
-                    }}
-                  >
-                    <div
-                      className="w-full h-full flex items-end justify-end p-4"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <h2 className="text-2xl md:text-4xl font-bold text-white">
-                        {getDefaultBanner(1).title}
-                      </h2>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              {/* PULSERAS */}
-              <div className="relative flex flex-col items-center w-full">
-                <Link
-                  href={getDefaultBanner(2).buttonLink}
-                  rel="noopener noreferrer"
-                  className="w-full"
-                >
-                  <div
-                    className="w-[326px] h-[150px] md:w-[300px] md:h-[260px] lg:w-[600px] lg:h-[360px] bg-cover bg-center mx-auto"
-                    style={{
-                      backgroundImage: `url(${
-                        getDefaultBanner(2).mainImage.url
-                      })`,
-                      borderRadius: "var(--radius)",
-                    }}
-                  >
-                    <div
-                      className="w-full h-full flex items-start justify-start p-4"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <h2 className="text-2xl md:text-4xl font-bold text-white">
-                        {getDefaultBanner(2).title}
-                      </h2>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              {/* AROS */}
-              <div className="relative flex flex-col items-center w-full mt-0 md:mt-[-120px]">
-                <Link
-                  href={getDefaultBanner(3).buttonLink}
-                  rel="noopener noreferrer"
-                  className="w-full"
-                >
-                  <div
-                    className="w-[326px] h-[250px] md:w-[300px] md:h-[380px] lg:w-[600px] lg:h-[480px] bg-cover bg-center mx-auto"
-                    style={{
-                      backgroundImage: `url(${
-                        getDefaultBanner(3).mainImage.url
-                      })`,
-                      borderRadius: "var(--radius)",
-                    }}
-                  >
-                    <div
-                      className="w-full h-full flex items-end justify-end p-4"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <h2 className="text-2xl md:text-4xl font-bold text-white">
-                        {getDefaultBanner(3).title}
-                      </h2>
-                    </div>
-                  </div>
-                </Link>
-              </div>
+                </div>
+              </Link>
             </div>
-          </div>
+          ))}
         </div>
       )}
+              <div className="text-center mt-12">
+          <Link href="/tienda" className="bg-[#eea83b] font-light text-md  text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all">
+            Ir a la Tienda
+          </Link>
+        </div>
     </div>
+    
   );
 };
 

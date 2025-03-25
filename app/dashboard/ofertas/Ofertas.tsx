@@ -7,6 +7,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
 import Cuotas from "@/components/Core/Cuotas/Cuotas";
+import Popup from "@/components/Core/Popup/Popup";
+import PopupVisual from "@/components/Core/Popup/Popupvisual";
 
 interface Product {
   id: number;
@@ -146,6 +148,9 @@ function Ofertas() {
       <Breadcrumb pageName="Ofertas" />
       <div className="flex flex-col gap-10">
         <Cuotas/>
+      </div>
+      <div className="flex flex-col gap-10 mt-4">
+        <Popup/>
       </div>
       <div className="rounded-lg p-4 bg-white my-6 overflow-x-auto">
         <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6">

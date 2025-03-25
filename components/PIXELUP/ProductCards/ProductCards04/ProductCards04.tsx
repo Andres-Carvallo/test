@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { slugify } from "@/app/utils/slugify";
+import axios from "axios";
 
 type ProductCardProps = {
   key: any;
@@ -21,6 +23,31 @@ const ProductCard04: React.FC<ProductCardProps> = ({
   isOnSale,
   stock,
 }) => {
+  const [cuotasEnabled, setCuotasEnabled] = useState(false);
+  const [numeroCuotas, setNumeroCuotas] = useState(0);
+
+  useEffect(() => {
+    const fetchCuotasConfig = async () => {
+      try {
+        const contentBlockId = process.env.NEXT_PUBLIC_CUOTAS_CONTENTBLOCK;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        if (response.data.contentBlock?.contentText) {
+          const cuotasConfig = JSON.parse(response.data.contentBlock.contentText);
+          setCuotasEnabled(cuotasConfig.enabled);
+          setNumeroCuotas(cuotasConfig.enabled ? parseInt(cuotasConfig.installments) : 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cuotas:", error);
+        setCuotasEnabled(false);
+        setNumeroCuotas(0);
+      }
+    };
+
+    fetchCuotasConfig();
+  }, []);
+
   const renderPrice = () => {
     // Para productos con variaciones
     if (product.hasVariations) {
@@ -39,6 +66,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
         const maxNormalPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
         const minOfferPrice = Math.min(...offerPrices);
         const maxOfferPrice = Math.max(...offerPrices);
+        const minPrecioPorCuota = cuotasEnabled ? Math.ceil(minOfferPrice / numeroCuotas) : 0;
 
         return (
           <div className="flex flex-col">
@@ -48,12 +76,17 @@ const ProductCard04: React.FC<ProductCardProps> = ({
                 : `$${Math.min(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")} - $${Math.max(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")}`
               }
             </span>
-            <span className="text-red-600 font-semibold text-base">
+            <span className="text-red-600 text-base">
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
                 : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
               }
             </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
@@ -62,14 +95,22 @@ const ProductCard04: React.FC<ProductCardProps> = ({
       if (normalPrices.length > 0) {
         const minPrice = Math.min(...normalPrices.map((p: PriceRange) => p.min));
         const maxPrice = Math.max(...normalPrices.map((p: PriceRange) => p.max));
+        const minPrecioPorCuota = cuotasEnabled ? Math.ceil(minPrice / numeroCuotas) : 0;
 
         return (
-          <span>
-            {minPrice === maxPrice
-              ? `$${minPrice.toLocaleString("es-CL")}`
-              : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
-            }
-          </span>
+          <div className="flex flex-col">
+            <span>
+              {minPrice === maxPrice
+                ? `$${minPrice.toLocaleString("es-CL")}`
+                : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
+              }
+            </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
+          </div>
         );
       }
     } else {
@@ -78,6 +119,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
       const offerPrice = isOnSale && product.offers?.[0]?.amount 
         ? Number(product.offers[0].amount) 
         : null;
+      const precioPorCuota = cuotasEnabled ? Math.ceil((offerPrice || normalPrice) / numeroCuotas) : 0;
 
       if (offerPrice) {
         return (
@@ -88,12 +130,26 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             <span className="text-red-600">
               ${offerPrice.toLocaleString("es-CL")}
             </span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
           </div>
         );
       }
 
       if (normalPrice > 0) {
-        return <span>${normalPrice.toLocaleString("es-CL")}</span>;
+        return (
+          <div className="flex flex-col">
+            <span>${normalPrice.toLocaleString("es-CL")}</span>
+            {cuotasEnabled && numeroCuotas > 0 && (
+              <span className="text-xs text-green-500 mt-1">
+                En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
+              </span>
+            )}
+          </div>
+        );
       }
     }
 
@@ -116,12 +172,12 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             <img
               src={product.mainImageUrl}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              className="md:min-w-[250px] md:min-h-[250px] w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />
           </Link>
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             {product.productTypes && product.productTypes.length > 0 && (
-              <span className="bg-[#81C4BA] px-3 py-1 rounded text-sm text-white font-medium">
+              <span className="bg-[#81C4BA] px-3 py-1 rounded text-sm text-white font-medium max-w-[14ch] md:max-w-[22ch] truncate">
                 {product.productTypes[0].name}
               </span>
             )}
@@ -132,9 +188,9 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             )}
           </div>
         </div>
-        <div className="p-4 min-h-[114px]">
+        <div className="p-4 min-h-[170px] md:min-h-[138px]">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
-            <h3 className="text-primary font-medium mb-2 max-w-[15ch] truncate">
+            <h3 className="text-primary font-medium mb-2 max-w-[8ch]  md:max-w-[15ch]  truncate">
               {product.name}
             </h3>
           </Link>
@@ -143,7 +199,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             {product.hasVariations || stock === 0 ? (
               <Link
                 href={`/tienda/productos/${slugify(product.name)}`}
-                className="bg-white p-2 rounded border  text-primary hover:text-secondary hover:shadow-md transition-all"
+                className="bg-white p-2 rounded border text-primary hover:text-secondary hover:shadow-md transition-all"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

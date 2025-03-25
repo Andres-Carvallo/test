@@ -45,7 +45,7 @@ const Hero: React.FC = () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_SEO_ID_BANNER}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_SEO_BANNER_ID}`;
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -104,8 +104,8 @@ const Hero: React.FC = () => {
       }
 
       // Enviar los datos actualizados al servidor
-      const bannerId = `${process.env.NEXT_PUBLIC_SEO_ID_BANNER}`;
-      const bannerImageId = `${process.env.NEXT_PUBLIC_SEO_ID_BANNER_IMG}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_SEO_BANNER_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_SEO_BANNER_IMGID}`;
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         updatedDataWithoutImage,

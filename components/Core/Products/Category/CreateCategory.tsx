@@ -252,14 +252,14 @@ const CreateCategory: React.FC<CreateCategoryProps> = ({
               >
                 Crear Categoría
               </button>
-              <button
+{/*               <button
                 data-modal-toggle="createProductModal"
                 type="button"
                 onClick={handleCloseModal}
                 className="bg-red-800 hover:bg-secondary text-white hover:text-primary font-medium rounded-lg px-5 py-2.5"
               >
                 Cancelar
-              </button>
+              </button> */}
             </div>
           </form>
         </div>
