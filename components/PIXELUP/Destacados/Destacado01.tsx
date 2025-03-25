@@ -178,7 +178,7 @@ const Destacados01: React.FC<any> = ({
           className={`text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125 ${
             pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
           }`}
-          onClick={previous}
+          onClick={() => handlePageChange(pagination.currentPage - 1)}
           disabled={pagination.currentPage === 1}
         >
           <svg
@@ -202,7 +202,7 @@ const Destacados01: React.FC<any> = ({
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
-          onClick={next}
+          onClick={() => handlePageChange(pagination.currentPage + 1)}
           disabled={pagination.currentPage === pagination.totalPages}
         >
           <svg
@@ -226,63 +226,46 @@ const Destacados01: React.FC<any> = ({
 
   const showArrows = products.length > 4;
   return (
-    <div className="container mx-auto m-8  max-w-6xl relative">
+    <div className="container mx-auto m-8 max-w-6xl relative">
       <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
         {text}
       </h1>
-      <Carousel
-        swipeable={true}
-        draggable={true}
-        ssr={true}
-        showDots={true}
-        responsive={responsive}
-        infinite={true}
-        autoPlay={autoplay}
-        arrows={false}
-        autoPlaySpeed={10000}
-        keyBoardControl={true}
-        customTransition="all .5s"
-        transitionDuration={500}
-        containerClass="carousel-container relative"
-        removeArrowOnDeviceType={["tablet", "mobile"]}
-        dotListClass="custom-dot-list-style mt-12 "
-        itemClass="px-2 mb-12"
-        customButtonGroup={<CustomButtonGroupAsArrows />}
-        renderButtonGroupOutside={true}
-      >
-        {products.map((product: any) => (
-          <ProductCardComponent
-            key={product.id}
-            product={product}
-            addToCartHandler={addToCartHandler}
-            isOnSale={product.offers && product.offers.length > 0}
-            stock={product.stock}
-          />
-        ))}
-      </Carousel>
-
-      {/* Controles de Paginación */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-4">
-          <button
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
-          >
-            Anterior
-          </button>
-          <span className="px-3 py-1">
-            Página {pagination.currentPage} de {pagination.totalPages}
-          </span>
-          <button
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage === pagination.totalPages}
-            className="px-3 py-1 rounded bg-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
-          >
-            Siguiente
-          </button>
-        </div>
-      )}
+      <div className="relative">
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        )}
+        <Carousel
+          swipeable={true}
+          draggable={true}
+          ssr={true}
+          showDots={true}
+          responsive={responsive}
+          infinite={false}
+          autoPlay={false}
+          arrows={false}
+          keyBoardControl={true}
+          customTransition="all .5s"
+          transitionDuration={500}
+          containerClass="carousel-container relative"
+          removeArrowOnDeviceType={["tablet", "mobile"]}
+          dotListClass="custom-dot-list-style mt-12"
+          itemClass="px-2 mb-12"
+          customButtonGroup={<CustomButtonGroupAsArrows />}
+          renderButtonGroupOutside={true}
+        >
+          {products.map((product: any) => (
+            <ProductCardComponent
+              key={product.id}
+              product={product}
+              addToCartHandler={addToCartHandler}
+              isOnSale={product.offers && product.offers.length > 0}
+              stock={product.stock}
+            />
+          ))}
+        </Carousel>
+      </div>
 
       <div className="mt-6 flex items-center justify-center">
         <Link
