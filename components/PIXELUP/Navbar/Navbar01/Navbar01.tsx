@@ -6,6 +6,7 @@ import CartCanvas from "@/components/Core/CartCanva/CartCanvas";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import DropdownAdmin from "@/components/Core/Dropdown/DropdownAdmin/DropdownAdmin";
 import DropdownUser from "@/components/Core/Dropdown/DropdownUser/DropdownUser";
 import DropdownUserMobile from "@/components/Core/Dropdown/DropdownUser/DropdownUserMobile";
@@ -22,6 +23,7 @@ export default function Navbar() {
   );
   const { theme, setTheme } = useTheme();
   const [productosIniciales, setProductosIniciales] = useState([]);
+  const pathname = usePathname();
 
   const Logo = process.env.NEXT_PUBLIC_LOGO_COLOR;
   const AdminToken = getCookie("AdminTokenAuth");
@@ -29,7 +31,6 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [collections, setCollections] = useState<any[]>([]);
-  const [pathname, setPathname] = useState("");
 
   // Filtrar los enlaces del menú que son visibles
   const menuItems = mainMenuConfig.showInNavbar
@@ -49,12 +50,6 @@ export default function Navbar() {
     .filter((collection) => !excludedIds.includes(collection.id))
     .sort((a, b) => a.title.localeCompare(b.title));
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setPathname(window.location.pathname);
-    }
-  }, []);
-
   // Función para verificar si una ruta está activa
   const isActive = (path: string) => {
     if (!pathname) return false;
@@ -63,10 +58,13 @@ export default function Navbar() {
     if (pathname === path) return true;
 
     // Caso especial para la tienda
-    if (path === "/tienda" && pathname.startsWith("/tienda/")) return true;
+    if (path === "/tienda" && pathname.startsWith("/tienda/") && !pathname.includes("/tienda/colecciones")) return true;
 
-    // Verificar si es una subruta (para colecciones)
-    if (path !== "/" && pathname.startsWith(path)) return true;
+    // Caso especial para colecciones
+    if (path.includes("/colecciones") && pathname.includes("/tienda/colecciones")) return true;
+
+    // Verificar si es una subruta (para otros casos)
+    if (path !== "/" && pathname.startsWith(path) && !pathname.includes("/tienda/colecciones")) return true;
 
     return false;
   };

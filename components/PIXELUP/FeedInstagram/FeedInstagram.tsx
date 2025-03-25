@@ -5,7 +5,7 @@ import "./quill-custom.css";
 
 interface Post {
   id: string;
-  nombre: string;  // URL de Instagram
+  nombre: string; // URL de Instagram
 }
 
 const InstagramEmbed = ({ url }: { url: string }) => (
@@ -13,7 +13,7 @@ const InstagramEmbed = ({ url }: { url: string }) => (
     src={`${url}embed`}
     className="instagram-media"
     width="100%"
-    height="650"
+    height="470"
     frameBorder="0"
     scrolling="no"
     allowTransparency={true}
@@ -39,7 +39,9 @@ export default function FeedInstagram() {
         }
       );
 
-      const postsData = JSON.parse(response.data.contentBlock.contentText || "[]");
+      const postsData = JSON.parse(
+        response.data.contentBlock.contentText || "[]"
+      );
       setPosts(postsData);
     } catch (error) {
       console.error("Error al obtener los posts:", error);
@@ -64,17 +66,26 @@ export default function FeedInstagram() {
   if (!posts.length) return null;
 
   return (
-    <section className="bg-gray-100  "> {/* bg-[#F5F7F2] */}
+    <section className="bg-gray-100  py-10">
+      {" "}
+      {/* bg-[#F5F7F2] */}
       <div className="mx-auto px-6 py-4">
-        <h2 className="text-4xl   mb-12 text-center"> {/* font-kalam text-[#4A6741] */}
-          <span className="text-sm uppercase tracking-[0.3em] block mb-3  "> {/* font-montserrat text-[#8BA888] */}
+        <h2 className="text-4xl   mb-12 text-center text-primary">
+          {" "}
+          {/* font-kalam text-[#4A6741] */}
+          <span className="text-sm uppercase tracking-[0.3em] block mb-3 text-[#f64b85] ">
+            {" "}
+            {/* font-montserrat text-[#8BA888] */}
             Social
           </span>
-          Sígueme en Redes Sociales
+          Sígueme en Instagram
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {posts.slice(0, visiblePosts).map((post) => (
-            <div key={post.id} className="flex justify-center">
+            <div
+              key={post.id}
+              className="flex justify-center"
+            >
               {isClient && <InstagramEmbed url={post.nombre} />}
             </div>
           ))}
@@ -84,7 +95,11 @@ export default function FeedInstagram() {
         {visiblePosts < posts.length && (
           <div className="text-center mt-12">
             <button
-              onClick={() => setVisiblePosts(prev => Math.min(prev + (isMobile ? 1 : 3), posts.length))}
+              onClick={() =>
+                setVisiblePosts((prev) =>
+                  Math.min(prev + (isMobile ? 1 : 3), posts.length)
+                )
+              }
               className="inline-flex items-center px-8 py-3  rounded-full  transition duration-300 group bg-secondary" /* bg-[#6B8E4E]/10 text-[#4A6741] hover:bg-[#6B8E4E]/20 */
             >
               <span className="font-montserrat text-sm tracking-wider">
