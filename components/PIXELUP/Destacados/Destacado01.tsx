@@ -31,6 +31,7 @@ const Destacados01: React.FC<any> = ({
   const { addToCartHandler } = useAPI();
   const [products, setProducts] = useState<Product[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
@@ -84,6 +85,7 @@ const Destacados01: React.FC<any> = ({
       );
 
       setProducts(productsWithStock);
+      setAllProducts((prev) => [...prev, ...productsWithStock]);
       setPagination({
         currentPage: data.pagination.pageNumber,
         totalPages: data.pagination.totalPages,
@@ -101,22 +103,25 @@ const Destacados01: React.FC<any> = ({
   }, []);
 
   const handleNext = () => {
-    if (currentIndex < products.length - 1) {
+    if (currentIndex < allProducts.length - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else if (pagination.currentPage < pagination.totalPages) {
-      setLoading(true);
-      fetchProducts(pagination.currentPage + 1);
-      setCurrentIndex(0);
+      if (
+        (currentIndex + 1) % 4 === 0 &&
+        pagination.currentPage < pagination.totalPages
+      ) {
+        setLoading(true);
+        fetchProducts(pagination.currentPage + 1);
+      }
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-    } else if (pagination.currentPage > 1) {
-      setLoading(true);
-      fetchProducts(pagination.currentPage - 1);
-      setCurrentIndex(3); // 4 elementos por página, así que el último índice es 3
+      if (currentIndex % 4 === 0 && pagination.currentPage > 1) {
+        setLoading(true);
+        fetchProducts(pagination.currentPage - 1);
+      }
     }
   };
 
@@ -172,12 +177,10 @@ const Destacados01: React.FC<any> = ({
       <div className="absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
         <button
           className={`text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125 ${
-            currentIndex === 0 && pagination.currentPage === 1
-              ? "opacity-50 cursor-not-allowed"
-              : ""
+            currentIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={handlePrevious}
-          disabled={currentIndex === 0 && pagination.currentPage === 1}
+          disabled={currentIndex === 0}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -196,16 +199,12 @@ const Destacados01: React.FC<any> = ({
         </button>
         <button
           className={`text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125 ${
-            currentIndex === products.length - 1 &&
-            pagination.currentPage === pagination.totalPages
+            currentIndex === pagination.totalItems - 1
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
           onClick={handleNext}
-          disabled={
-            currentIndex === products.length - 1 &&
-            pagination.currentPage === pagination.totalPages
-          }
+          disabled={currentIndex === pagination.totalItems - 1}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -263,7 +262,7 @@ const Destacados01: React.FC<any> = ({
             }
           }}
         >
-          {products.map((product: any) => (
+          {allProducts.map((product: any) => (
             <ProductCardComponent
               key={product.id}
               product={product}
