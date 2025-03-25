@@ -61,7 +61,7 @@ const Destacados01: React.FC<any> = ({
   const fetchProducts = async (page: number) => {
     try {
       const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      const pageSize = 8; // Número de productos por página
+      const pageSize = 4; // Número de productos por página
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?pageNumber=${page}&pageSize=${pageSize}&isFeatured=true&siteId=${SiteId}`,
