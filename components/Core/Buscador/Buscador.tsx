@@ -162,7 +162,7 @@ const BuscadorClient: React.FC<BuscadorClientProps> = ({
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
-            stroke="#4D4D4D"
+            stroke="hsl(var(--primary))"
             className="size-6"
           >
             <path
