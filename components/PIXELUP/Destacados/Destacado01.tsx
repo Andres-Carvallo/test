@@ -30,7 +30,7 @@ const Destacados01: React.FC<any> = ({
   const [error, setError] = useState<Error | null>(null);
   const { addToCartHandler } = useAPI();
   const [products, setProducts] = useState<Product[]>([]);
-  const [autoplay, setAutoplay] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
@@ -100,21 +100,23 @@ const Destacados01: React.FC<any> = ({
     fetchProducts(1);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (pagination.currentPage < pagination.totalPages) {
-        handlePageChange(pagination.currentPage + 1);
-      } else {
-        handlePageChange(1); // Volver a la primera página cuando llegue al final
-      }
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [pagination.currentPage, pagination.totalPages]);
+  const handleNext = () => {
+    if (currentIndex < products.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else if (pagination.currentPage < pagination.totalPages) {
+      setLoading(true);
+      fetchProducts(pagination.currentPage + 1);
+      setCurrentIndex(0);
+    }
+  };
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      setLoading(true); // Añadimos loading al cambiar de página
-      fetchProducts(newPage);
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else if (pagination.currentPage > 1) {
+      setLoading(true);
+      fetchProducts(pagination.currentPage - 1);
+      setCurrentIndex(3); // 4 elementos por página, así que el último índice es 3
     }
   };
 
@@ -165,21 +167,17 @@ const Destacados01: React.FC<any> = ({
     },
   };
 
-  const CustomButtonGroupAsArrows = ({
-    next,
-    previous,
-  }: {
-    next?: () => void;
-    previous?: () => void;
-  }) => {
+  const CustomButtonGroupAsArrows = () => {
     return (
       <div className="absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
         <button
           className={`text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125 ${
-            pagination.currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+            currentIndex === 0 && pagination.currentPage === 1
+              ? "opacity-50 cursor-not-allowed"
+              : ""
           }`}
-          onClick={() => handlePageChange(pagination.currentPage - 1)}
-          disabled={pagination.currentPage === 1}
+          onClick={handlePrevious}
+          disabled={currentIndex === 0 && pagination.currentPage === 1}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -198,12 +196,16 @@ const Destacados01: React.FC<any> = ({
         </button>
         <button
           className={`text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125 ${
+            currentIndex === products.length - 1 &&
             pagination.currentPage === pagination.totalPages
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}
-          onClick={() => handlePageChange(pagination.currentPage + 1)}
-          disabled={pagination.currentPage === pagination.totalPages}
+          onClick={handleNext}
+          disabled={
+            currentIndex === products.length - 1 &&
+            pagination.currentPage === pagination.totalPages
+          }
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -224,7 +226,6 @@ const Destacados01: React.FC<any> = ({
     );
   };
 
-  const showArrows = products.length > 4;
   return (
     <div className="container mx-auto m-8 max-w-6xl relative">
       <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
@@ -254,6 +255,13 @@ const Destacados01: React.FC<any> = ({
           itemClass="px-2 mb-12"
           customButtonGroup={<CustomButtonGroupAsArrows />}
           renderButtonGroupOutside={true}
+          beforeChange={(nextSlide) => {
+            if (nextSlide > currentIndex) {
+              handleNext();
+            } else {
+              handlePrevious();
+            }
+          }}
         >
           {products.map((product: any) => (
             <ProductCardComponent
