@@ -217,7 +217,7 @@ const ProductGridShop = ({
         // Ordenamiento alfabético (también aplica cuando sortBy está vacío)
         const nameA = a.name.toLowerCase();
         const nameB = b.name.toLowerCase();
-        return nameA.localeCompare(nameB);
+        return sortBy === "nameDesc" ? nameB.localeCompare(nameA) : nameA.localeCompare(nameB);
       } else if (sortBy === "offerAsc" || sortBy === "offerDesc") {
         // Ordenamiento por ofertas
         const getOfferPercentage = (product: any) => {
@@ -318,7 +318,7 @@ const ProductGridShop = ({
 
           <div className="relative flex-1 sm:w-48">
             <select
-              value={sortBy === "nameAsc" ? "" : sortBy}
+              value={sortBy}
               onChange={(e) => handleSortChange(e.target.value)}
               id="Offer"
               className="w-full shadow h-12 border border-gray-300 text-gray-900 text-xs font-normal leading-7 rounded-full py-2.5 px-4 appearance-none focus:outline-none bg-white transition-all duration-500 hover:border-gray-400 hover:bg-gray-50"
