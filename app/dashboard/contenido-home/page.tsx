@@ -14,7 +14,7 @@ const Hero02BO = dynamic(
 const BannerPrincipal02BO = dynamic(
   () =>
     import(
-      "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02"
+      "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02BO"
     ),
   { ssr: false }
 );
@@ -200,7 +200,7 @@ export default function BannerHome() {
           component: <FeedInstagramBO />,
         },
 
-        /*          { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
+        /* { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
         { id: "bannerPrincipal04", title: "Barra Superior", component: <BannerPrincipal04BO /> },
         { id: "cardsPage", title: "Hero 03", component: <CardsPage /> },
         { id: "hero03", title: "Hero 03", component: <Hero03BO /> },
