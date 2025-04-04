@@ -71,7 +71,7 @@ const Categoria02BO = () => {
         process.env.NEXT_PUBLIC_API_URL_SITEID,
         token,
         1, // PageNumber
-        10 // PageSize
+        100 // PageSize
       );
 
       setCategories(productTypes.productTypes);
