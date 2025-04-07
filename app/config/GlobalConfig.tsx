@@ -19,6 +19,10 @@ export const globalConfig: GlobalConfig = {
     isActive: true,
     link: process.env.NEXT_PUBLIC_WHATSAPP_LINK || "",
   },
+  bannerAspects: {
+    desktop: "12/5",
+    mobile: "3/2",
+  },
 };
 
 // **************************************************
@@ -144,6 +148,10 @@ export interface GlobalConfig {
   whatsappButton: {
     isActive: boolean;
     link: string;
+  };
+  bannerAspects: {
+    desktop: string;
+    mobile: string;
   };
 }
 

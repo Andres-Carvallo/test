@@ -15,6 +15,7 @@ import imageCompression from "browser-image-compression";
 import { Switch } from "@/components/Core/Switch";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
+import { globalConfig } from "@/app/config/GlobalConfig";
 
 interface BannerImage {
   id: string;
@@ -159,6 +160,10 @@ const BannerPrincipal01BO: React.FC = () => {
     useState<BannerImage | null>(null);
   const [relatedDesktopImage, setRelatedDesktopImage] =
     useState<BannerImage | null>(null);
+
+  // Obtener los aspectos de las imágenes desde la configuración global
+  const desktopAspect = globalConfig.bannerAspects.desktop;
+  const mobileAspect = globalConfig.bannerAspects.mobile;
 
   const parseButtonTextData = (buttonText: string): ButtonTextData => {
     try {
@@ -1071,8 +1076,8 @@ const BannerPrincipal01BO: React.FC = () => {
                 ) : (
                   <div className={`relative overflow-hidden ${
                     previewMode === "mobile" 
-                      ? "aspect-[3/2] h-full" 
-                      : "aspect-[12/5] h-full"
+                      ? `aspect-[${mobileAspect}] h-full` 
+                      : `aspect-[${desktopAspect}] h-full`
                   }`}>
                     {displayConfig.fullBannerLink &&
                       displayConfig.fullBannerLinkUrl && (
@@ -1870,7 +1875,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   image={mainImage || ""}
                   crop={cropDesktop}
                   zoom={zoomDesktop}
-                  aspect={12 / 5}
+                  aspect={parseFloat(desktopAspect.split('/')[0]) / parseFloat(desktopAspect.split('/')[1])}
                   onCropChange={setCropDesktop}
                   onZoomChange={setZoomDesktop}
                   onCropComplete={(croppedArea, croppedAreaPixels) =>
@@ -1959,7 +1964,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   image={mobileImage || ""}
                   crop={cropMobile}
                   zoom={zoomMobile}
-                  aspect={3 / 2}
+                  aspect={parseFloat(mobileAspect.split('/')[0]) / parseFloat(mobileAspect.split('/')[1])}
                   onCropChange={setCropMobile}
                   onZoomChange={setZoomMobile}
                   onCropComplete={(croppedArea, croppedAreaPixels) =>

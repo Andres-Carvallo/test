@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { globalConfig } from "@/app/config/GlobalConfig";
 
 interface BannerImage {
   mainImage: any;
@@ -50,6 +51,10 @@ const BannerPrincipal01: React.FC = () => {
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">(
     "left"
   );
+
+  // Obtener los aspectos de las imágenes desde la configuración global
+  const desktopAspect = globalConfig.bannerAspects.desktop;
+  const mobileAspect = globalConfig.bannerAspects.mobile;
 
   // Agregar constantes para valores por defecto
   const DEFAULT_TITLE = "Banner";
@@ -316,14 +321,14 @@ const BannerPrincipal01: React.FC = () => {
   return (
     <section
       className={`relative overflow-hidden w-full ${
-        isMobile ? "aspect-[3/2]" : "aspect-[12/5]"
+        isMobile ? `aspect-[${mobileAspect}]` : `aspect-[${desktopAspect}]`
       }`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Contenedor de imágenes */}
       <div className={`absolute inset-0 w-full ${
-        isMobile ? "aspect-[3/2]" : "aspect-[12/5]"
+        isMobile ? `aspect-[${mobileAspect}]` : `aspect-[${desktopAspect}]`
       }`}>
         {bannerData.images.map((image, index) => {
           const config = parseDisplayConfig(image.landingText);
