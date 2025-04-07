@@ -511,9 +511,10 @@ const BannerPrincipal01BO: React.FC = () => {
 
   const handleNextImage = async () => {
     setSkeletonLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    // Reducir el tiempo de espera artificial
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Filtrar las imágenes según la versión actual (mobile/desktop)
+    // Filtrar las imágenes una sola vez
     const filteredImages = bannerData.filter((image: BannerImage) => {
       const config = parseDisplayConfig(image.landingText);
       return config.isMobileVersion === showMobileVersion;
@@ -522,31 +523,34 @@ const BannerPrincipal01BO: React.FC = () => {
     const nextIndex = (currentIndex + 1) % filteredImages.length;
     const nextImage = filteredImages[nextIndex];
 
+    // Actualizar todos los estados de una vez
     const nextConfig = parseDisplayConfig(nextImage.landingText);
-    setDisplayConfig(nextConfig);
-
-    // Parsear y validar el buttonText
     const parsedButtonText = parseButtonTextData(nextImage.buttonText);
-    setButtonTextData(parsedButtonText);
 
-    setCurrentIndex(nextIndex);
-    setFormData({
-      ...nextImage,
-      title: nextImage.title || DEFAULT_TITLE,
-      buttonLink: nextImage.buttonLink || DEFAULT_BUTTON_LINK,
-      mainImageLink: nextImage.mainImageLink || "#",
+    // Batch state updates
+    Promise.resolve().then(() => {
+      setDisplayConfig(nextConfig);
+      setButtonTextData(parsedButtonText);
+      setCurrentIndex(nextIndex);
+      setFormData({
+        ...nextImage,
+        title: nextImage.title || DEFAULT_TITLE,
+        buttonLink: nextImage.buttonLink || DEFAULT_BUTTON_LINK,
+        mainImageLink: nextImage.mainImageLink || "#",
+      });
+      setMainImage(nextImage.mainImage.url || nextImage.mainImage.data);
+      setIsMainImageUploaded(false);
+      updateRelatedVersions(nextImage);
+      setSkeletonLoading(false);
     });
-    setMainImage(nextImage.mainImage.url || nextImage.mainImage.data);
-    setIsMainImageUploaded(false);
-    updateRelatedVersions(nextImage);
-    setSkeletonLoading(false);
   };
 
   const handlePrevImage = async () => {
     setSkeletonLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    // Reducir el tiempo de espera artificial
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Filtrar las imágenes según la versión actual (mobile/desktop)
+    // Filtrar las imágenes una sola vez
     const filteredImages = bannerData.filter((image: BannerImage) => {
       const config = parseDisplayConfig(image.landingText);
       return config.isMobileVersion === showMobileVersion;
@@ -556,25 +560,28 @@ const BannerPrincipal01BO: React.FC = () => {
       (currentIndex - 1 + filteredImages.length) % filteredImages.length;
     const prevImage = filteredImages[prevIndex];
 
+    // Actualizar todos los estados de una vez
     const prevConfig = parseDisplayConfig(prevImage.landingText);
-    setDisplayConfig(prevConfig);
-
-    // Parsear y validar el buttonText
     const parsedButtonText = parseButtonTextData(prevImage.buttonText);
-    setButtonTextData(parsedButtonText);
 
-    setCurrentIndex(prevIndex);
-    setFormData({
-      ...prevImage,
-      title: prevImage.title || DEFAULT_TITLE,
-      buttonLink: prevImage.buttonLink || DEFAULT_BUTTON_LINK,
-      mainImageLink: prevImage.mainImageLink || "#",
+    // Batch state updates
+    Promise.resolve().then(() => {
+      setDisplayConfig(prevConfig);
+      setButtonTextData(parsedButtonText);
+      setCurrentIndex(prevIndex);
+      setFormData({
+        ...prevImage,
+        title: prevImage.title || DEFAULT_TITLE,
+        buttonLink: prevImage.buttonLink || DEFAULT_BUTTON_LINK,
+        mainImageLink: prevImage.mainImageLink || "#",
+      });
+      setMainImage(prevImage.mainImage.url || prevImage.mainImage.data);
+      setIsMainImageUploaded(false);
+      updateRelatedVersions(prevImage);
+      setSkeletonLoading(false);
     });
-    setMainImage(prevImage.mainImage.url || prevImage.mainImage.data);
-    setIsMainImageUploaded(false);
-    updateRelatedVersions(prevImage);
-    setSkeletonLoading(false);
   };
+
   const handleAddImageClick = () => {
     if (isAddingImage) {
       // Si ya estamos en el estado de agregar, esto cancela la operación

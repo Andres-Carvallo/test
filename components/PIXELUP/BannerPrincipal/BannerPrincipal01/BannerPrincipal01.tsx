@@ -55,19 +55,47 @@ const BannerPrincipal01: React.FC = () => {
   const DEFAULT_TITLE = "Banner";
   const DEFAULT_BUTTON_LINK = "#";
 
-  // Detectar si es mobile
+  // Detectar si es mobile con debounce para mejor rendimiento
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+    // Función con debounce para evitar múltiples actualizaciones
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheckMobile = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkMobile, 100);
+    };
 
+    // Verificar inmediatamente al cargar
+    checkMobile();
+
+    // Agregar listener con debounce
+    window.addEventListener("resize", debouncedCheckMobile);
+
+    // Cleanup
     return () => {
-      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("resize", debouncedCheckMobile);
+      clearTimeout(timeoutId);
     };
   }, []);
+
+  // Precargar imágenes
+  useEffect(() => {
+    if (bannerData?.images) {
+      bannerData.images.forEach((image) => {
+        if (image.mainImage?.url) {
+          const img = new Image();
+          img.src = image.mainImage.url;
+        }
+        if (image.mobileImage?.url) {
+          const img = new Image();
+          img.src = image.mobileImage.url;
+        }
+      });
+    }
+  }, [bannerData]);
 
   const fetchBannerHome = async () => {
     try {
@@ -299,23 +327,53 @@ const BannerPrincipal01: React.FC = () => {
             isMobile && image.mobileImage?.url
               ? image.mobileImage
               : image.mainImage;
+          const nextImageToShow =
+            isMobile && image.mobileImage?.url
+              ? image.mainImage
+              : image.mobileImage;
 
           return (
             <div
               key={index}
               className="absolute inset-0"
+              style={{
+                opacity: index === currentIndex ? 1 : 0,
+                transition: "all 800ms cubic-bezier(0.4, 0, 0.2, 1)",
+                visibility:
+                  Math.abs(index - currentIndex) <= 1 ? "visible" : "hidden",
+              }}
             >
+              {/* Imagen principal visible */}
               <img
                 src={imageToShow.url}
                 alt={image.title !== DEFAULT_TITLE ? image.title : ""}
-                className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-                  index === currentIndex ? "opacity-100" : "opacity-0"
-                }`}
+                className="w-full h-full object-cover"
+                style={{
+                  transition: "transform 800ms cubic-bezier(0.4, 0, 0.2, 1)",
+                  transform:
+                    index === currentIndex ? "scale(1)" : "scale(1.05)",
+                }}
+                loading={index === 0 ? "eager" : "lazy"}
               />
+
+              {/* Imagen alternativa precargada pero oculta */}
+              {nextImageToShow?.url && (
+                <img
+                  src={nextImageToShow.url}
+                  alt=""
+                  className="hidden"
+                  aria-hidden="true"
+                />
+              )}
+
               {shouldShowOverlay(image) && index === currentIndex && (
                 <div
                   className="absolute inset-0 bg-black/30"
-                  style={{ pointerEvents: "none" }}
+                  style={{
+                    pointerEvents: "none",
+                    transition: "opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)",
+                    opacity: index === currentIndex ? 0.3 : 0,
+                  }}
                 />
               )}
               {config.fullBannerLink &&
@@ -325,6 +383,7 @@ const BannerPrincipal01: React.FC = () => {
                     href={config.fullBannerLinkUrl}
                     className="absolute inset-0 z-30 cursor-pointer pointer-events-auto"
                     target="_self"
+                    prefetch={true}
                   >
                     <span className="sr-only">Ver más</span>
                   </Link>
@@ -336,7 +395,7 @@ const BannerPrincipal01: React.FC = () => {
 
       {/* Contenido del banner */}
       <div className="relative h-full z-20">
-        <div className="h-full mx-auto px-4 sm:px-6 md:px-20 lg:px-24">
+        <div className="h-full mx-auto px-14 sm:px-20 md:px-20 lg:px-24">
           <div
             className={`flex flex-col justify-center h-full ${
               isMobile ? "min-h-[300px]" : "min-h-[450px]"
