@@ -97,8 +97,8 @@ export const socialConfig: SocialConfig = {
   links: [
     {
       platform: "Facebook",
-      url: "https://facebook.com/tuempresa",
-      isVisible: true,
+      url: process.env.NEXT_PUBLIC_FACEBOOK || "",
+      isVisible: false,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -112,7 +112,7 @@ export const socialConfig: SocialConfig = {
     },
     {
       platform: "Instagram",
-      url: "https://instagram.com/tuempresa",
+      url: process.env.NEXT_PUBLIC_INSTAGRAM || "",
       isVisible: true,
       icon: (
         <svg
@@ -127,8 +127,8 @@ export const socialConfig: SocialConfig = {
     },
     {
       platform: "Twitter",
-      url: "https://twitter.com/tuempresa",
-      isVisible: true,
+      url: process.env.NEXT_PUBLIC_TWITTER || "",
+      isVisible: false,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"

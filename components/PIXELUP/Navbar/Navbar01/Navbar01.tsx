@@ -153,7 +153,7 @@ export default function Navbar() {
         >
           {/* Menú principal - versión escritorio */}
           <div
-            className={`hidden xl:flex ${
+            className={`hidden lg:flex ${
               layoutConfig.logoCentered
                 ? "order-1 justify-start w-1/3"
                 : "order-2 flex-grow justify-center"
@@ -163,6 +163,7 @@ export default function Navbar() {
               {menuItems.map((item, index) => {
                 // Si es un menú desplegable de colecciones
                 if (item.isDropdown && item.dropdownType === "collections") {
+                  
                   return (
                     <li
                       key={index}
@@ -201,7 +202,7 @@ export default function Navbar() {
                             : "opacity-0 invisible"
                         }`}
                       >
-                        {filteredCollections.map((collection) => {
+                        {filteredCollections.length > 0 && filteredCollections.map((collection) => {
                           const collectionPath = `/tienda/colecciones/${slugify(
                             collection.title
                           )}`;
@@ -275,7 +276,7 @@ export default function Navbar() {
           <div
             className={`flex items-center gap-6 min-w-[120px] ${
               layoutConfig.logoCentered
-                ? "xl:order-2 xl:absolute xl:left-1/2 xl:transform xl:-translate-x-1/2 order-1 flex-grow justify-center"
+                ? "lg:order-2 lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2 order-1 flex-grow justify-center"
                 : "order-1"
             }`}
           >
@@ -292,19 +293,19 @@ export default function Navbar() {
 
           {/* Botones de acción - versión escritorio */}
           <div
-            className={`hidden xl:flex items-center gap-4 ${
+            className={`hidden lg:flex items-center gap-4 ${
               layoutConfig.logoCentered
                 ? "order-3 w-1/3 justify-end"
                 : "order-3"
             }`}
           >
-            <div className="hidden xl:flex">
+            <div className="hidden lg:flex">
               <Buscador productosIniciales={productosIniciales} />
             </div>
-            <div className="hidden xl:flex">
+            <div className="hidden lg:flex">
               <CartCanvas />
             </div>
-            <div className="hidden xl:flex">
+            <div className="hidden lg:flex">
               {AdminToken ? (
                 <DropdownAdmin />
               ) : ClientToken ? (
@@ -323,7 +324,7 @@ export default function Navbar() {
 
           {/* Botones de acción - versión móvil */}
           <div
-            className={`flex xl:hidden items-center gap-4 order-2 justify-end`}
+            className={`flex lg:hidden items-center gap-4 order-2 justify-end`}
           >
             <div className="flex items-center">
               <Buscador productosIniciales={productosIniciales} />
@@ -496,7 +497,7 @@ export default function Navbar() {
 
             {isVisible && (
               <div className="border-t border-gray-200 dark:border-gray-700 py-3 mt-2 bg-gray-50 dark:bg-gray-700 rounded-md">
-                {collections.length > 0 && (
+                {filteredCollections.length > 0 && (
                   <ul className="flex flex-col space-y-2 text-center px-4">
                     {filteredCollections.map((collection) => {
                       const collectionPath = `/tienda/colecciones/${collection.id}`;
