@@ -6,6 +6,7 @@ import Link from "next/link";
 
 interface BannerImage {
   mainImage: any;
+  mobileImage?: any;
   url: string;
   title: string;
   landingText: string;
@@ -45,6 +46,7 @@ const BannerPrincipal01: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">(
     "left"
   );
@@ -52,6 +54,20 @@ const BannerPrincipal01: React.FC = () => {
   // Agregar constantes para valores por defecto
   const DEFAULT_TITLE = "Banner";
   const DEFAULT_BUTTON_LINK = "#";
+
+  // Detectar si es mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
+  }, []);
 
   const fetchBannerHome = async () => {
     try {
@@ -279,13 +295,18 @@ const BannerPrincipal01: React.FC = () => {
       <div className="absolute inset-0">
         {bannerData.images.map((image, index) => {
           const config = parseDisplayConfig(image.landingText);
+          const imageToShow =
+            isMobile && image.mobileImage?.url
+              ? image.mobileImage
+              : image.mainImage;
+
           return (
             <div
               key={index}
               className="absolute inset-0"
             >
               <img
-                src={image.mainImage.url}
+                src={imageToShow.url}
                 alt={image.title !== DEFAULT_TITLE ? image.title : ""}
                 className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
                   index === currentIndex ? "opacity-100" : "opacity-0"
@@ -317,7 +338,9 @@ const BannerPrincipal01: React.FC = () => {
       <div className="relative h-full z-20">
         <div className="h-full mx-auto px-4 sm:px-6 md:px-20 lg:px-24">
           <div
-            className={`flex flex-col justify-center h-full min-h-[300px] sm:min-h-[450px] ${(() => {
+            className={`flex flex-col justify-center h-full ${
+              isMobile ? "min-h-[300px]" : "min-h-[450px]"
+            } ${(() => {
               const config = parseDisplayConfig(currentImage.landingText);
               switch (config.contentAlignment) {
                 case "center":

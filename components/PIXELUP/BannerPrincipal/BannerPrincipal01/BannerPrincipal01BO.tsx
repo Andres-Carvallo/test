@@ -25,6 +25,7 @@ interface BannerImage {
   mainImageLink: string;
   orderNumber: number;
   mainImage?: any;
+  mobileImage?: any;
 }
 
 interface ButtonTextData {
@@ -48,6 +49,9 @@ interface DisplayConfig {
   contentAlignment: "left" | "center" | "right";
   fullBannerLink: boolean;
   fullBannerLinkUrl: string;
+  isMobileVersion: boolean;
+  desktopImageId?: string;
+  mobileImageId?: string;
 }
 
 // Modificar la interfaz BannerData
@@ -57,13 +61,19 @@ interface BannerData {
 
 const BannerPrincipal01BO: React.FC = () => {
   const [fileName, setFileName] = useState<string | null>(null);
+  const [mobileFileName, setMobileFileName] = useState<string | null>(null);
 
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
+  const [isMobileImageUploaded, setIsMobileImageUploaded] = useState(false);
   const [isAddingImage, setIsAddingImage] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
   const [bannerData, setBannerData] = useState<BannerImage[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
+    "desktop"
+  );
   const [formData, setFormData] = useState<BannerImage>({
     id: "",
     title: "Banner",
@@ -79,15 +89,33 @@ const BannerPrincipal01BO: React.FC = () => {
       size: null,
       data: "",
     },
+    mobileImage: {
+      url: "",
+      name: "",
+      type: "",
+      size: null,
+      data: "",
+    },
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [skeletonLoading, setSkeletonLoading] = useState<boolean>(true);
   const [mainImage, setMainImage] = useState<string | null>(null);
+  const [mobileImage, setMobileImage] = useState<string | null>(null);
 
-  // States for image cropping
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  // States for image cropping - Desktop
+  const [cropDesktop, setCropDesktop] = useState({ x: 0, y: 0 });
+  const [zoomDesktop, setZoomDesktop] = useState(1);
+  const [croppedAreaPixelsDesktop, setCroppedAreaPixelsDesktop] =
+    useState<any>(null);
+  const [isDesktopModalOpen, setIsDesktopModalOpen] = useState(false);
+
+  // States for image cropping - Mobile
+  const [cropMobile, setCropMobile] = useState({ x: 0, y: 0 });
+  const [zoomMobile, setZoomMobile] = useState(1);
+  const [croppedAreaPixelsMobile, setCroppedAreaPixelsMobile] =
+    useState<any>(null);
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -114,6 +142,7 @@ const BannerPrincipal01BO: React.FC = () => {
     contentAlignment: "left",
     fullBannerLink: false,
     fullBannerLinkUrl: "",
+    isMobileVersion: false,
   });
 
   // Agregar constantes para valores por defecto
@@ -124,6 +153,12 @@ const BannerPrincipal01BO: React.FC = () => {
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+
+  const [showMobileVersion, setShowMobileVersion] = useState(false);
+  const [relatedMobileImage, setRelatedMobileImage] =
+    useState<BannerImage | null>(null);
+  const [relatedDesktopImage, setRelatedDesktopImage] =
+    useState<BannerImage | null>(null);
 
   const parseButtonTextData = (buttonText: string): ButtonTextData => {
     try {
@@ -168,9 +203,15 @@ const BannerPrincipal01BO: React.FC = () => {
         })
       );
 
+      // Filtrar solo las versiones desktop para la navegación principal
+      const desktopImages = imagesWithDefaults.filter((image: BannerImage) => {
+        const config = parseDisplayConfig(image.landingText);
+        return !config.isMobileVersion;
+      });
+
       setBannerData(imagesWithDefaults);
-      if (imagesWithDefaults.length > 0) {
-        const initialImage = imagesWithDefaults[0];
+      if (desktopImages.length > 0) {
+        const initialImage = desktopImages[0];
         const parsedButtonText = parseButtonTextData(initialImage.buttonText);
         setButtonTextData(parsedButtonText);
         const parsedLandingText = parseDisplayConfig(initialImage.landingText);
@@ -182,6 +223,7 @@ const BannerPrincipal01BO: React.FC = () => {
           mainImageLink: initialImage.mainImageLink || "#",
         });
         setMainImage(initialImage.mainImage.url || initialImage.mainImage.data);
+        updateRelatedVersions(initialImage);
       }
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
@@ -204,31 +246,54 @@ const BannerPrincipal01BO: React.FC = () => {
     }));
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (
+    e: ChangeEvent<HTMLInputElement>,
+    isMobile: boolean = false
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFileName(file.name); // Almacena el nombre del archivo
+      if (isMobile) {
+        setMobileFileName(file.name);
+      } else {
+        setFileName(file.name);
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        setMainImage(result);
-        setIsModalOpen(true); // Abre el modal para recortar
+        if (isMobile) {
+          setMobileImage(result);
+          setIsMobileModalOpen(true);
+        } else {
+          setMainImage(result);
+          setIsDesktopModalOpen(true);
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleCropComplete = useCallback(
-    (croppedArea: any, croppedAreaPixels: any) => {
-      setCroppedAreaPixels(croppedAreaPixels);
+    (croppedArea: any, croppedAreaPixels: any, isMobile: boolean = false) => {
+      if (isMobile) {
+        setCroppedAreaPixelsMobile(croppedAreaPixels);
+      } else {
+        setCroppedAreaPixelsDesktop(croppedAreaPixels);
+      }
     },
     []
   );
-  const handleCrop = async () => {
-    if (!mainImage) return;
+
+  const handleCrop = async (isMobile: boolean = false) => {
+    const imageToCrop = isMobile ? mobileImage : mainImage;
+    const croppedAreaPixels = isMobile
+      ? croppedAreaPixelsMobile
+      : croppedAreaPixelsDesktop;
+
+    if (!imageToCrop) return;
 
     try {
-      const croppedImage = await getCroppedImg(mainImage, croppedAreaPixels);
+      const croppedImage = await getCroppedImg(imageToCrop, croppedAreaPixels);
       if (!croppedImage) {
         console.error("Error al recortar la imagen: croppedImage es null");
         return;
@@ -236,7 +301,7 @@ const BannerPrincipal01BO: React.FC = () => {
 
       const options = {
         maxSizeMB: 1,
-        maxWidthOrHeight: 1900,
+        maxWidthOrHeight: isMobile ? 768 : 1900,
         useWebWorker: true,
         initialQuality: 0.95,
       };
@@ -248,20 +313,31 @@ const BannerPrincipal01BO: React.FC = () => {
       const base64 = await convertToBase64(compressedFile);
 
       const imageInfo = {
-        name: fileName || "banner-image.jpg",
+        name: isMobile
+          ? mobileFileName || "banner-mobile.jpg"
+          : fileName || "banner-image.jpg",
         type: compressedFile.type,
         size: compressedFile.size,
         data: base64,
       };
 
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        mainImage: imageInfo,
-      }));
-
-      setMainImage(base64);
-      setIsModalOpen(false);
-      setIsMainImageUploaded(true);
+      if (isMobile) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          mobileImage: imageInfo,
+        }));
+        setMobileImage(base64);
+        setIsMobileImageUploaded(true);
+        setIsMobileModalOpen(false);
+      } else {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          mainImage: imageInfo,
+        }));
+        setMainImage(base64);
+        setIsMainImageUploaded(true);
+        setIsDesktopModalOpen(false);
+      }
     } catch (error) {
       console.error("Error al recortar/comprimir la imagen:", error);
     }
@@ -325,6 +401,13 @@ const BannerPrincipal01BO: React.FC = () => {
         landingText: JSON.stringify({
           ...displayConfig,
           fullBannerLinkUrl: formattedFullBannerLinkUrl,
+          isMobileVersion: showMobileVersion,
+          desktopImageId: !showMobileVersion
+            ? formData.id
+            : relatedDesktopImage?.id,
+          mobileImageId: showMobileVersion
+            ? formData.id
+            : relatedMobileImage?.id,
         }),
         buttonText: JSON.stringify({
           price: buttonTextData.price || "",
@@ -338,6 +421,7 @@ const BannerPrincipal01BO: React.FC = () => {
         mainImageLink: formData.mainImageLink || "#",
         orderNumber: formData.orderNumber,
         ...(isMainImageUploaded && { mainImage: formData.mainImage }),
+        ...(isMobileImageUploaded && { mobileImage: formData.mobileImage }),
       };
 
       console.log("Datos a enviar:", dataToSend);
@@ -365,6 +449,7 @@ const BannerPrincipal01BO: React.FC = () => {
         await fetchBannerHome();
         if (isAddingImage) {
           setIsAddingImage(false);
+          setShowMobileVersion(false);
         }
       } else {
         throw new Error(`Error en la respuesta: ${response.status}`);
@@ -427,8 +512,15 @@ const BannerPrincipal01BO: React.FC = () => {
   const handleNextImage = async () => {
     setSkeletonLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
-    const nextIndex = (currentIndex + 1) % bannerData.length;
-    const nextImage = bannerData[nextIndex];
+
+    // Filtrar las imágenes según la versión actual (mobile/desktop)
+    const filteredImages = bannerData.filter((image: BannerImage) => {
+      const config = parseDisplayConfig(image.landingText);
+      return config.isMobileVersion === showMobileVersion;
+    });
+
+    const nextIndex = (currentIndex + 1) % filteredImages.length;
+    const nextImage = filteredImages[nextIndex];
 
     const nextConfig = parseDisplayConfig(nextImage.landingText);
     setDisplayConfig(nextConfig);
@@ -446,15 +538,23 @@ const BannerPrincipal01BO: React.FC = () => {
     });
     setMainImage(nextImage.mainImage.url || nextImage.mainImage.data);
     setIsMainImageUploaded(false);
+    updateRelatedVersions(nextImage);
     setSkeletonLoading(false);
   };
 
   const handlePrevImage = async () => {
     setSkeletonLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // Filtrar las imágenes según la versión actual (mobile/desktop)
+    const filteredImages = bannerData.filter((image: BannerImage) => {
+      const config = parseDisplayConfig(image.landingText);
+      return config.isMobileVersion === showMobileVersion;
+    });
+
     const prevIndex =
-      (currentIndex - 1 + bannerData.length) % bannerData.length;
-    const prevImage = bannerData[prevIndex];
+      (currentIndex - 1 + filteredImages.length) % filteredImages.length;
+    const prevImage = filteredImages[prevIndex];
 
     const prevConfig = parseDisplayConfig(prevImage.landingText);
     setDisplayConfig(prevConfig);
@@ -472,6 +572,7 @@ const BannerPrincipal01BO: React.FC = () => {
     });
     setMainImage(prevImage.mainImage.url || prevImage.mainImage.data);
     setIsMainImageUploaded(false);
+    updateRelatedVersions(prevImage);
     setSkeletonLoading(false);
   };
   const handleAddImageClick = () => {
@@ -492,14 +593,27 @@ const BannerPrincipal01BO: React.FC = () => {
           size: null,
           data: "",
         },
+        mobileImage: bannerData[currentIndex]?.mobileImage || {
+          url: "",
+          name: "",
+          type: "",
+          size: null,
+          data: "",
+        },
       });
       setMainImage(
         bannerData[currentIndex]?.mainImage?.url ||
           bannerData[currentIndex]?.mainImage?.data ||
           null
       );
+      setMobileImage(
+        bannerData[currentIndex]?.mobileImage?.url ||
+          bannerData[currentIndex]?.mobileImage?.data ||
+          null
+      );
       setIsAddingImage(false);
       setIsMainImageUploaded(false);
+      setIsMobileImageUploaded(false);
     } else {
       // Inicializar con valores por defecto para el nuevo banner
       const initialLandingText = JSON.stringify({
@@ -539,6 +653,13 @@ const BannerPrincipal01BO: React.FC = () => {
           size: null,
           data: "",
         },
+        mobileImage: {
+          url: "",
+          name: "",
+          type: "",
+          size: null,
+          data: "",
+        },
       });
 
       // Establecer la configuración inicial de visualización
@@ -556,6 +677,7 @@ const BannerPrincipal01BO: React.FC = () => {
         contentAlignment: "left",
         fullBannerLink: false,
         fullBannerLinkUrl: "",
+        isMobileVersion: false,
       });
 
       // Establecer la configuración inicial del botón
@@ -566,9 +688,12 @@ const BannerPrincipal01BO: React.FC = () => {
       });
 
       setMainImage(null);
+      setMobileImage(null);
       setIsAddingImage(true);
       fileInputRef.current?.click();
+      mobileFileInputRef.current?.click();
       setIsMainImageUploaded(false);
+      setIsMobileImageUploaded(false);
     }
   };
 
@@ -635,6 +760,7 @@ const BannerPrincipal01BO: React.FC = () => {
           contentAlignment: parsed.contentAlignment || "left",
           fullBannerLink: parsed.fullBannerLink ?? false,
           fullBannerLinkUrl: fullBannerLinkUrl,
+          isMobileVersion: parsed.isMobileVersion ?? false,
         };
       }
       return {
@@ -651,6 +777,7 @@ const BannerPrincipal01BO: React.FC = () => {
         contentAlignment: "left",
         fullBannerLink: false,
         fullBannerLinkUrl: "",
+        isMobileVersion: false,
       };
     } catch {
       return {
@@ -667,6 +794,7 @@ const BannerPrincipal01BO: React.FC = () => {
         contentAlignment: "left",
         fullBannerLink: false,
         fullBannerLinkUrl: "",
+        isMobileVersion: false,
       };
     }
   };
@@ -764,6 +892,37 @@ const BannerPrincipal01BO: React.FC = () => {
     updateDisplayConfig({ showButton2: checked });
   };
 
+  // Función para encontrar la versión relacionada (mobile o desktop)
+  const findRelatedVersion = useCallback(
+    (currentImage: BannerImage, isMobile: boolean) => {
+      return bannerData.find((img) => {
+        const imgConfig = parseDisplayConfig(img.landingText);
+        const currentConfig = parseDisplayConfig(currentImage.landingText);
+        return (
+          img.orderNumber === currentImage.orderNumber &&
+          imgConfig.isMobileVersion === isMobile &&
+          img.id !== currentImage.id
+        );
+      });
+    },
+    [bannerData]
+  );
+
+  // Función para actualizar las versiones relacionadas
+  const updateRelatedVersions = useCallback(
+    (currentImage: BannerImage) => {
+      const currentConfig = parseDisplayConfig(currentImage.landingText);
+      if (currentConfig.isMobileVersion) {
+        setRelatedDesktopImage(findRelatedVersion(currentImage, false) || null);
+        setRelatedMobileImage(null);
+      } else {
+        setRelatedMobileImage(findRelatedVersion(currentImage, true) || null);
+        setRelatedDesktopImage(null);
+      }
+    },
+    [findRelatedVersion]
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -796,139 +955,196 @@ const BannerPrincipal01BO: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <h3 className="text-lg font-medium text-gray-900">Vista Previa</h3>
-          <button
-            onClick={() => setIsPreviewVisible(!isPreviewVisible)}
-            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            {isPreviewVisible ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <button
+                onClick={() => setPreviewMode("desktop")}
+                className={`px-3 py-1 rounded ${
+                  previewMode === "desktop"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-600"
+                }`}
               >
-                <path
-                  fillRule="evenodd"
-                  d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={() => setPreviewMode("mobile")}
+                className={`px-3 py-1 rounded ${
+                  previewMode === "mobile"
+                    ? "bg-white shadow text-primary"
+                    : "text-gray-600"
+                }`}
               >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-          </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+            <button
+              onClick={() => setIsPreviewVisible(!isPreviewVisible)}
+              className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {isPreviewVisible ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
         {isPreviewVisible && (
           <div>
-            <div className="h-[450px] transition-all duration-300 ease-in-out">
-              {skeletonLoading ? (
-                <SkeletonLoader />
-              ) : (
-                <div className="relative h-[450px] overflow-hidden">
-                  {displayConfig.fullBannerLink &&
-                    displayConfig.fullBannerLinkUrl && (
-                      <Link
-                        href={displayConfig.fullBannerLinkUrl}
-                        className="absolute inset-0 z-30 cursor-pointer"
-                        target="_blank"
-                      />
-                    )}
-                  <div className="absolute inset-0">
-                    <img
-                      src={mainImage || formData.mainImage.url}
-                      alt="Banner Image"
-                      className="w-full h-full object-cover"
-                    />
-                    {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
-                      formData.title !== DEFAULT_TITLE ||
-                      displayConfig.text ||
-                      (buttonTextData.show &&
-                        (displayConfig.showPrice || displayConfig.showValue)) ||
-                      displayConfig.showButton1 ||
-                      displayConfig.showButton2) && (
-                      <div className="absolute inset-0 bg-black/50" />
-                    )}
-                  </div>
-
-                  <div className="relative h-full  mx-auto px-20 md:px-24 ">
-                    <div
-                      className={`flex flex-col justify-center h-full ${(() => {
-                        switch (displayConfig.contentAlignment) {
-                          case "center":
-                            return "items-center text-center mx-auto";
-                          case "right":
-                            return "items-end text-right ml-auto";
-                          default:
-                            return "items-start text-left";
+            <div
+              className={`transition-all duration-300 ease-in-out ${
+                previewMode === "mobile" ? "max-w-[375px] mx-auto" : ""
+              }`}
+            >
+              <div className="h-[450px]">
+                {skeletonLoading ? (
+                  <SkeletonLoader />
+                ) : (
+                  <div className="relative h-[450px] overflow-hidden">
+                    {displayConfig.fullBannerLink &&
+                      displayConfig.fullBannerLinkUrl && (
+                        <Link
+                          href={displayConfig.fullBannerLinkUrl}
+                          className="absolute inset-0 z-30 cursor-pointer"
+                          target="_blank"
+                        />
+                      )}
+                    <div className="absolute inset-0">
+                      <img
+                        src={
+                          previewMode === "mobile"
+                            ? mobileImage || formData.mobileImage?.url
+                            : mainImage || formData.mainImage?.url
                         }
-                      })()} max-w-2xl`}
-                    >
-                      {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
-                        <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
-                          {formData.buttonLink}
-                        </span>
+                        alt="Banner Image"
+                        className="w-full h-full object-cover"
+                      />
+                      {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
+                        formData.title !== DEFAULT_TITLE ||
+                        displayConfig.text ||
+                        (buttonTextData.show &&
+                          (displayConfig.showPrice ||
+                            displayConfig.showValue)) ||
+                        displayConfig.showButton1 ||
+                        displayConfig.showButton2) && (
+                        <div className="absolute inset-0 bg-black/50" />
                       )}
+                    </div>
 
-                      {formData.title !== DEFAULT_TITLE && (
-                        <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
-                          {formData.title}
-                        </h2>
-                      )}
-
-                      {displayConfig.showText && displayConfig.text && (
-                        <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
-                          {displayConfig.text}
-                        </p>
-                      )}
-
-                      {/* Mostrar precio y valor según la configuración */}
-                      <div className="flex items-center gap-4 mb-8">
-                        {displayConfig.showPrice && buttonTextData.price && (
-                          <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                            {buttonTextData.price}
+                    <div className="relative h-full  mx-auto px-20 md:px-24 ">
+                      <div
+                        className={`flex flex-col justify-center h-full ${(() => {
+                          switch (displayConfig.contentAlignment) {
+                            case "center":
+                              return "items-center text-center mx-auto";
+                            case "right":
+                              return "items-end text-right ml-auto";
+                            default:
+                              return "items-start text-left";
+                          }
+                        })()} max-w-2xl`}
+                      >
+                        {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
+                          <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+                            {formData.buttonLink}
                           </span>
                         )}
-                        {displayConfig.showValue && buttonTextData.value && (
-                          <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                            {buttonTextData.value}
-                          </span>
-                        )}
-                      </div>
 
-                      {/* Mostrar botones según la configuración */}
-                      <div className="flex flex-wrap gap-4">
-                        {displayConfig.showButton1 && (
-                          <a
-                            href={displayConfig.button1Link}
-                            className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
-                          >
-                            {displayConfig.button1Text}
-                          </a>
+                        {formData.title !== DEFAULT_TITLE && (
+                          <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+                            {formData.title}
+                          </h2>
                         )}
-                        {displayConfig.showButton2 && (
-                          <a
-                            href={displayConfig.button2Link}
-                            className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
-                          >
-                            {displayConfig.button2Text}
-                          </a>
+
+                        {displayConfig.showText && displayConfig.text && (
+                          <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                            {displayConfig.text}
+                          </p>
                         )}
+
+                        {/* Mostrar precio y valor según la configuración */}
+                        <div className="flex items-center gap-4 mb-8">
+                          {displayConfig.showPrice && buttonTextData.price && (
+                            <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                              {buttonTextData.price}
+                            </span>
+                          )}
+                          {displayConfig.showValue && buttonTextData.value && (
+                            <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                              {buttonTextData.value}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Mostrar botones según la configuración */}
+                        <div className="flex flex-wrap gap-4">
+                          {displayConfig.showButton1 && (
+                            <a
+                              href={displayConfig.button1Link}
+                              className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                            >
+                              {displayConfig.button1Text}
+                            </a>
+                          )}
+                          {displayConfig.showButton2 && (
+                            <a
+                              href={displayConfig.button2Link}
+                              className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
+                            >
+                              {displayConfig.button2Text}
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             {/* Controles de Navegación */}
             {bannerData.length > 1 && !isAddingImage && (
@@ -1293,135 +1509,164 @@ const BannerPrincipal01BO: React.FC = () => {
             </div>
           </div>
 
-          {/* Columna 2: Imagen y Precios */}
+          {/* Columna 2: Imágenes Desktop y Mobile */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            {/* Sección de Imagen */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-md font-medium text-gray-900">
-                  Imagen del Banner
-                </h3>
-              </div>
+            <div className="space-y-6">
+              {/* Sección de Imagen Desktop */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-md font-medium text-gray-900">
+                    Imagen Desktop
+                  </h3>
+                </div>
 
-              <div className="text-center">
-                {isMainImageUploaded ? (
-                  <div className="flex flex-col items-center">
-                    <p className="text-sm text-gray-600 mb-2">
-                      Tu fotografía{" "}
-                      <span className="font-bold">
-                        {fileName || "POST PIXELUP"}
-                      </span>{" "}
-                      ya ha sido cargada.
-                    </p>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Actualiza para ver los cambios.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (fileInputRef.current) {
-                          fileInputRef.current.click();
-                        }
-                      }}
-                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Seleccionar otra Imagen
-                    </button>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
-                  >
+                <div className="text-center">
+                  {isMainImageUploaded ? (
                     <div className="flex flex-col items-center">
-                      <svg
-                        className="w-12 h-12 text-gray-400 mb-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <p className="text-sm text-gray-500">
-                        PNG, JPG, GIF hasta 5MB
+                      <p className="text-sm text-gray-600 mb-2">
+                        Tu fotografía{" "}
+                        <span className="font-bold">
+                          {fileName || "POST PIXELUP"}
+                        </span>{" "}
+                        ya ha sido cargada.
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (fileInputRef.current) {
+                            fileInputRef.current.click();
+                          }
+                        }}
+                        className="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center gap-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Cambiar Imagen Desktop
+                      </button>
                     </div>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                />
-              </div>
-            </div>
-
-            {/* Separador */}
-            <div className="border-t border-gray-200 my-6"></div>
-
-            {/* Sección de Precios y Valores */}
-            <h3 className="text-md font-medium text-gray-900 mb-4">
-              Cajas Informativas
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-700">Caja 1</label>
-                  <Switch
-                    checked={displayConfig.showPrice}
-                    onChange={(checked) =>
-                      updateDisplayConfig({ showPrice: checked })
-                    }
+                  ) : (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                    >
+                      <div className="flex flex-col items-center">
+                        <svg
+                          className="w-12 h-12 text-gray-400 mb-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                        <p className="text-sm text-gray-500">
+                          Subir imagen Desktop (PNG, JPG, GIF hasta 5MB)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={(e) => handleImageChange(e, false)}
                   />
                 </div>
-                <input
-                  type="text"
-                  name="price"
-                  value={buttonTextData.price}
-                  onChange={handleButtonTextChange}
-                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
-                  placeholder="Ej: Desde $29.990 / Temporada 2024 / etc."
-                  disabled={!displayConfig.showPrice}
-                />
               </div>
+
+              {/* Separador */}
+              <div className="border-t border-gray-200 my-6"></div>
+
+              {/* Sección de Imagen Mobile */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-700">Caja 2</label>
-                  <Switch
-                    checked={displayConfig.showValue}
-                    onChange={(checked) =>
-                      updateDisplayConfig({ showValue: checked })
-                    }
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-md font-medium text-gray-900">
+                    Imagen Mobile
+                  </h3>
+                </div>
+
+                <div className="text-center">
+                  {isMobileImageUploaded ? (
+                    <div className="flex flex-col items-center">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Tu fotografía mobile{" "}
+                        <span className="font-bold">
+                          {mobileFileName || "POST PIXELUP MOBILE"}
+                        </span>{" "}
+                        ya ha sido cargada.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (mobileFileInputRef.current) {
+                            mobileFileInputRef.current.click();
+                          }
+                        }}
+                        className="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center gap-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Cambiar Imagen Mobile
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => mobileFileInputRef.current?.click()}
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                    >
+                      <div className="flex flex-col items-center">
+                        <svg
+                          className="w-12 h-12 text-gray-400 mb-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                          />
+                        </svg>
+                        <p className="text-sm text-gray-500">
+                          Subir imagen Mobile (PNG, JPG, GIF hasta 5MB)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={mobileFileInputRef}
+                    onChange={(e) => handleImageChange(e, true)}
                   />
                 </div>
-                <input
-                  type="text"
-                  name="value"
-                  value={buttonTextData.value}
-                  onChange={handleButtonTextChange}
-                  className="w-full text-sm p-2 border border-gray-200 rounded-md"
-                  placeholder="Ej: 60 min / Envío Gratis / etc."
-                  disabled={!displayConfig.showValue}
-                />
               </div>
             </div>
           </div>
@@ -1557,19 +1802,21 @@ const BannerPrincipal01BO: React.FC = () => {
         </div>
       </form>
 
-      {/* Modal de Recorte */}
-      {isModalOpen && (
+      {/* Modal de Recorte Desktop */}
+      {isDesktopModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-[9999]">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen Desktop
+                </h2>
               </div>
               <button
                 onClick={() => {
                   setMainImage(null);
-                  setIsModalOpen(false);
+                  setIsDesktopModalOpen(false);
                 }}
                 className="text-gray-500 hover:text-gray-700 transition-colors"
               >
@@ -1593,12 +1840,14 @@ const BannerPrincipal01BO: React.FC = () => {
               <div className="relative h-96 w-full">
                 <Cropper
                   image={mainImage || ""}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={4 / 3}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={handleCropComplete}
+                  crop={cropDesktop}
+                  zoom={zoomDesktop}
+                  aspect={16 / 9}
+                  onCropChange={setCropDesktop}
+                  onZoomChange={setZoomDesktop}
+                  onCropComplete={(croppedArea, croppedAreaPixels) =>
+                    handleCropComplete(croppedArea, croppedAreaPixels, false)
+                  }
                 />
               </div>
               <div className="mt-6 space-y-4">
@@ -1608,20 +1857,20 @@ const BannerPrincipal01BO: React.FC = () => {
                   </label>
                   <input
                     type="range"
-                    value={zoom}
+                    value={zoomDesktop}
                     min={1}
                     max={3}
                     step={0.01}
                     aria-labelledby="Zoom"
                     onChange={(e) => {
-                      setZoom(parseFloat(e.target.value));
+                      setZoomDesktop(parseFloat(e.target.value));
                     }}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
                 <div className="flex justify-end gap-3">
                   <button
-                    onClick={handleCrop}
+                    onClick={() => handleCrop(false)}
                     className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     Recortar y Continuar
@@ -1629,7 +1878,96 @@ const BannerPrincipal01BO: React.FC = () => {
                   <button
                     onClick={() => {
                       setMainImage(null);
-                      setIsModalOpen(false);
+                      setIsDesktopModalOpen(false);
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Recorte Mobile */}
+      {isMobileModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
+            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen Mobile
+                </h2>
+              </div>
+              <button
+                onClick={() => {
+                  setMobileImage(null);
+                  setIsMobileModalOpen(false);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="relative h-96 w-full">
+                <Cropper
+                  image={mobileImage || ""}
+                  crop={cropMobile}
+                  zoom={zoomMobile}
+                  aspect={9 / 16}
+                  onCropChange={setCropMobile}
+                  onZoomChange={setZoomMobile}
+                  onCropComplete={(croppedArea, croppedAreaPixels) =>
+                    handleCropComplete(croppedArea, croppedAreaPixels, true)
+                  }
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Zoom
+                  </label>
+                  <input
+                    type="range"
+                    value={zoomMobile}
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    aria-labelledby="Zoom"
+                    onChange={(e) => {
+                      setZoomMobile(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => handleCrop(true)}
+                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Recortar y Continuar
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileImage(null);
+                      setIsMobileModalOpen(false);
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
                   >
