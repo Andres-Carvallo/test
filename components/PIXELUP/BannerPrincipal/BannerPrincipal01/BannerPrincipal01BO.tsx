@@ -392,8 +392,8 @@ const BannerPrincipal01BO: React.FC = () => {
         ? formatURL(displayConfig.fullBannerLinkUrl)
         : "";
 
-      // Preparar los datos a enviar incluyendo toda la configuración actual
-      const dataToSend = {
+      // Preparar los datos base a enviar
+      const dataToSend: any = {
         title:
           formData.title === DEFAULT_TITLE || !formData.title
             ? DEFAULT_TITLE
@@ -420,9 +420,17 @@ const BannerPrincipal01BO: React.FC = () => {
             : formData.buttonLink,
         mainImageLink: formData.mainImageLink || "#",
         orderNumber: formData.orderNumber,
-        ...(isMainImageUploaded && { mainImage: formData.mainImage }),
-        ...(isMobileImageUploaded && { mobileImage: formData.mobileImage }),
       };
+
+      // Solo incluir mainImage si se ha subido una nueva imagen
+      if (isMainImageUploaded) {
+        dataToSend.mainImage = formData.mainImage;
+      }
+
+      // Solo incluir mobileImage si se ha subido una nueva imagen
+      if (isMobileImageUploaded) {
+        dataToSend.mobileImage = formData.mobileImage;
+      }
 
       console.log("Datos a enviar:", dataToSend);
 
@@ -451,6 +459,9 @@ const BannerPrincipal01BO: React.FC = () => {
           setIsAddingImage(false);
           setShowMobileVersion(false);
         }
+        // Resetear los estados de carga de imágenes después de un envío exitoso
+        setIsMainImageUploaded(false);
+        setIsMobileImageUploaded(false);
       } else {
         throw new Error(`Error en la respuesta: ${response.status}`);
       }
