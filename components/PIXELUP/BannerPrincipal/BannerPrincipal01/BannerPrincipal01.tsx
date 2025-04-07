@@ -315,12 +315,16 @@ const BannerPrincipal01: React.FC = () => {
 
   return (
     <section
-      className="relative overflow-hidden"
+      className={`relative overflow-hidden w-full ${
+        isMobile ? "aspect-[3/2]" : "aspect-[12/5]"
+      }`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Contenedor de imágenes */}
-      <div className="absolute inset-0">
+      <div className={`absolute inset-0 w-full ${
+        isMobile ? "aspect-[3/2]" : "aspect-[12/5]"
+      }`}>
         {bannerData.images.map((image, index) => {
           const config = parseDisplayConfig(image.landingText);
           const imageToShow =
@@ -398,21 +402,21 @@ const BannerPrincipal01: React.FC = () => {
         <div className="h-full mx-auto px-14 sm:px-20 md:px-20 lg:px-24">
           <div
             className={`flex flex-col justify-center h-full ${
-              isMobile ? "min-h-[300px]" : "min-h-[450px]"
-            } ${(() => {
-              const config = parseDisplayConfig(currentImage.landingText);
-              switch (config.contentAlignment) {
-                case "center":
-                  return "items-center text-center mx-auto";
-                case "right":
-                  return "items-end text-right ml-auto";
-                default:
-                  return "items-start text-left";
-              }
-            })()} max-w-2xl`}
+              (() => {
+                const config = parseDisplayConfig(currentImage.landingText);
+                switch (config.contentAlignment) {
+                  case "center":
+                    return "items-center text-center mx-auto";
+                  case "right":
+                    return "items-end text-right ml-auto";
+                  default:
+                    return "items-start text-left";
+                }
+              })()
+            } max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-              <span className="text-[#81C4BA] text-xs sm:text-sm uppercase tracking-widest mb-2 sm:mb-4 drop-shadow-md">
+              <span className="text-white text-xs sm:text-sm uppercase tracking-widest mb-2 sm:mb-4 drop-shadow-md">
                 {currentImage.buttonLink}
               </span>
             )}

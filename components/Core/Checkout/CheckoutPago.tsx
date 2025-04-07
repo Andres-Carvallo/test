@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { getCookie, deleteCookie } from "cookies-next";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import AutoSubmitForm from "@/components/Core/Checkout/AutoSubmitForm";
 import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesID";
 import { useSearchParams } from "next/navigation";

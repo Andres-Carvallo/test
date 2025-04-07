@@ -736,7 +736,11 @@ const BannerPrincipal01BO: React.FC = () => {
   };
 
   const SkeletonLoader = () => (
-    <div className="relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10">
+    <div className={`relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10 ${
+      previewMode === "mobile" 
+        ? "aspect-[9/16] w-full" 
+        : "aspect-[12/9] w-full"
+    }`}>
       <div className="absolute inset-0 w-full h-full bg-gray-100 animate-pulse" />
       <div className="min-h-[300px] relative z-20 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
         <div className="w-1/2 h-6 bg-gray-500 animate-pulse mb-2 rounded"></div>
@@ -1056,14 +1060,20 @@ const BannerPrincipal01BO: React.FC = () => {
           <div>
             <div
               className={`transition-all duration-300 ease-in-out ${
-                previewMode === "mobile" ? "max-w-[375px] mx-auto" : ""
+                previewMode === "mobile" 
+                  ? "max-w-auto mx-auto" 
+                  : "max-w-auto mx-auto"
               }`}
             >
-              <div className="h-[450px]">
+              <div className="h-[450px] flex items-center justify-center">
                 {skeletonLoading ? (
                   <SkeletonLoader />
                 ) : (
-                  <div className="relative h-[450px] overflow-hidden">
+                  <div className={`relative overflow-hidden ${
+                    previewMode === "mobile" 
+                      ? "aspect-[3/2] h-full" 
+                      : "aspect-[12/5] h-full"
+                  }`}>
                     {displayConfig.fullBannerLink &&
                       displayConfig.fullBannerLinkUrl && (
                         <Link
@@ -1090,7 +1100,7 @@ const BannerPrincipal01BO: React.FC = () => {
                             displayConfig.showValue)) ||
                         displayConfig.showButton1 ||
                         displayConfig.showButton2) && (
-                        <div className="absolute inset-0 bg-black/50" />
+                        <div className="absolute inset-0 bg-black/20" />
                       )}
                     </div>
 
@@ -1223,7 +1233,7 @@ const BannerPrincipal01BO: React.FC = () => {
             className={`py-2 px-4 rounded text-white font-medium text-sm ${
               isAddingImage
                 ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
+                : "bg-green-700 hover:bg-green-700"
             }`}
           >
             {isAddingImage ? "Cancelar" : "Agregar Banner"}
@@ -1233,7 +1243,7 @@ const BannerPrincipal01BO: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsDeleteModalOpen(true)}
-              className="py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white font-medium text-sm"
+              className="py-2 px-4 rounded bg-red-700 hover:bg-red-700 text-white font-medium text-sm"
             >
               Borrar Banner
             </button>
@@ -1860,7 +1870,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   image={mainImage || ""}
                   crop={cropDesktop}
                   zoom={zoomDesktop}
-                  aspect={16 / 9}
+                  aspect={12 / 5}
                   onCropChange={setCropDesktop}
                   onZoomChange={setZoomDesktop}
                   onCropComplete={(croppedArea, croppedAreaPixels) =>
@@ -1949,7 +1959,7 @@ const BannerPrincipal01BO: React.FC = () => {
                   image={mobileImage || ""}
                   crop={cropMobile}
                   zoom={zoomMobile}
-                  aspect={9 / 16}
+                  aspect={3 / 2}
                   onCropChange={setCropMobile}
                   onZoomChange={setZoomMobile}
                   onCropComplete={(croppedArea, croppedAreaPixels) =>

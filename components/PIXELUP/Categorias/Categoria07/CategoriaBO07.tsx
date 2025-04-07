@@ -10,7 +10,7 @@ import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
-import toast, { Toaster } from 'react-hot-toast';
+import toast from "react-hot-toast";
 
 const Categorias07BO = () => {
   const [slidersData, setSlidersData] = useState<any[]>([]);
@@ -352,7 +352,6 @@ const Categorias07BO = () => {
       id="banner"
       className="w-full"
     >
-      <Toaster position="top-right" />
       <div className="w-full">
 
 
