@@ -114,10 +114,10 @@ export default function Ubicacion() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div className="space-y-6 lg:space-y-8">
-            <span className="text-[#81C4BA] text-sm uppercase tracking-widest">
+            <span className="text-primary/70 text-sm uppercase tracking-widest">
               {content.additionalData.subtitle}
             </span>
-            <h2 className="text-3xl lg:text-4xl font-light text-[#5B488E]">
+            <h2 className="text-3xl lg:text-4xl font-light text-primary">
               {content.title}
             </h2>
             <div 
@@ -129,8 +129,8 @@ export default function Ubicacion() {
               <div className="bg-white p-4 lg:p-6 rounded shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3 lg:gap-4">
                   <div className="p-2 lg:p-3 bg-[#5B488E]/10 rounded-xl">
-                    <svg
-                      className="w-6 h-6 text-[#81C4BA]"
+                    <svg    
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -150,7 +150,7 @@ export default function Ubicacion() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#5B488E] mb-1 text-sm lg:text-base">Dirección</h3>
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">Dirección</h3>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.address.street}</p>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.address.city}</p>
                   </div>
@@ -161,7 +161,7 @@ export default function Ubicacion() {
                 <div className="flex items-start gap-3 lg:gap-4">
                   <div className="p-2 lg:p-3 bg-[#5B488E]/10 rounded-xl">
                     <svg
-                      className="w-6 h-6 text-[#81C4BA]"
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -175,7 +175,7 @@ export default function Ubicacion() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#5B488E] mb-1 text-sm lg:text-base">Horario de Atención</h3>
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">Horario de Atención</h3>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.schedule.weekdays}</p>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.schedule.saturday}</p>
                   </div>
@@ -186,7 +186,7 @@ export default function Ubicacion() {
                 <div className="flex items-start gap-3 lg:gap-4">
                   <div className="p-2 lg:p-3 bg-[#5B488E]/10 rounded-xl">
                     <svg
-                      className="w-6 h-6 text-[#81C4BA]"
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -200,7 +200,7 @@ export default function Ubicacion() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#5B488E] mb-1 text-sm lg:text-base">Contacto</h3>
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">Contacto</h3>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.contact.phone}</p>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.contact.email}</p>
                   </div>
@@ -230,7 +230,7 @@ export default function Ubicacion() {
                   <div className="flex items-center gap-2 lg:gap-3">
                     <div className="w-10 h-10 lg:w-12 lg:h-12 bg-[#2A9D8F]/10 rounded flex items-center justify-center">
                       <svg
-                        className="w-6 h-6 text-[#2A9D8F]"
+                        className="w-6 h-6 text-gray-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

@@ -70,12 +70,12 @@ const Categoria02: React.FC<Categoria02Props> = ({ Categoria02Data }) => {
                 <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12">
                   <div className="transform group-hover:translate-y-0 transition-transform duration-300">
                     <h3 className="text-2xl md:text-3xl text-white font-bold mb-3">
-                      {getDefaultBanner(index).title}
+                {getDefaultBanner(index).landingText}
                     </h3>
-                    <p className="text-gray-200 mb-2 text-base">
-                      {getDefaultBanner(index).landingText}
-                    </p>
-                    <button className="bg-white text-gray-800 px-8 py-3 rounded font-bold transition-all duration-300 hover:bg-[#eea83b]">
+{/*                     <p className="text-gray-200 mb-2 text-base">
+                    {getDefaultBanner(index).title} 
+                    </p> */}
+                    <button className="bg-white text-black px-8 py-3 rounded font-bold transition-all duration-300 hover:bg-primary hover:text-white">
                       Explorar Categoría
                     </button>
                   </div>
@@ -86,7 +86,7 @@ const Categoria02: React.FC<Categoria02Props> = ({ Categoria02Data }) => {
         </div>
       )}
               <div className="text-center mt-12">
-          <Link href="/tienda" className="bg-[#eea83b] font-light text-md  text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all">
+          <Link href="/tienda" className="bg-primary font-light text-md  text-white hover:scale-105 px-8 py-2 rounded  transition-all">
             Ir a la Tienda
           </Link>
         </div>

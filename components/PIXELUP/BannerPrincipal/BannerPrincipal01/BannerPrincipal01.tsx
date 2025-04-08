@@ -320,16 +320,18 @@ const BannerPrincipal01: React.FC = () => {
 
   return (
     <section
-      className={`relative overflow-hidden w-full ${
-        isMobile ? `aspect-[${mobileAspect}]` : `aspect-[${desktopAspect}]`
-      }`}
+      className={`relative overflow-hidden w-full`}
+      style={{
+        aspectRatio: isMobile ? mobileAspect : desktopAspect,
+      }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Contenedor de imágenes */}
-      <div className={`absolute inset-0 w-full ${
-        isMobile ? `aspect-[${mobileAspect}]` : `aspect-[${desktopAspect}]`
-      }`}>
+      <div className={`absolute inset-0 w-full`}
+        style={{
+          aspectRatio: isMobile ? mobileAspect : desktopAspect,
+        }}>
         {bannerData.images.map((image, index) => {
           const config = parseDisplayConfig(image.landingText);
           const imageToShow =
