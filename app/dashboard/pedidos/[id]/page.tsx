@@ -268,7 +268,7 @@ export default function DetalleOrdenes() {
         </div>
         <div className="flex items-center w-full justify-center ">
           <div
-            className="mb-6 p-6 max-w-[900px] bg-white rounded mt-6"
+            className="mb-6 p-6 w-full max-w-4xl bg-white rounded mt-6"
             ref={printRef}
           >
             <div className="text-center mt-6 mb-6">
