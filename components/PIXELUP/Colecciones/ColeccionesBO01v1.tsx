@@ -138,7 +138,7 @@ const PreviewBanner = ({ config, image, isMobile = false }: any) => {
   return (
     <div className="relative w-full">
       {image && (
-        <Image
+        <img
           src={image}
           alt="Preview"
           width={isMobile ? 375 : 1920}

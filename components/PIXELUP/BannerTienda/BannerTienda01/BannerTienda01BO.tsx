@@ -757,15 +757,14 @@ const BannerTienda01BO: React.FC<any> = () => {
                   margin: activeView === "mobile" ? "0 auto" : "0",
                 }}
               >
-                <Image
+                <img
                   src={
                     activeView === "desktop"
                       ? mainImageHero || "/placeholder.png"
                       : mobileImageHero || "/placeholder.png"
                   }
                   alt="Banner preview"
-                  fill
-                  style={{ objectFit: "cover" }}
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
                 {((activeView === "desktop" &&
                   (configOptions.desktop.showTitle ||
@@ -1224,9 +1223,7 @@ const BannerTienda01BO: React.FC<any> = () => {
                         }
                       }}
                       className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                        !configOptions.desktop.showTitle
-                          ? "opacity-50"
-                          : ""
+                        !configOptions.desktop.showTitle ? "opacity-50" : ""
                       }`}
                       placeholder="Ingresa el título del banner"
                       disabled={!configOptions.desktop.showTitle}
@@ -1494,7 +1491,9 @@ const BannerTienda01BO: React.FC<any> = () => {
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen
+                </h2>
               </div>
               <button
                 onClick={() => {
@@ -1579,7 +1578,9 @@ const BannerTienda01BO: React.FC<any> = () => {
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen Móvil</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen Móvil
+                </h2>
               </div>
               <button
                 onClick={() => {
