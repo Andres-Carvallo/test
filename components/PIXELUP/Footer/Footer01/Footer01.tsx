@@ -9,12 +9,14 @@ import MailchimpForm from "@/components/Core/MailChimp/MailchimpForm";
 import axios from "axios";
 import { mainMenuConfig, socialConfig } from "@/app/config/menulinks";
 import { slugify } from "@/app/utils/slugify";
+import { useLogo } from "@/context/LogoContext";
 
 export default function Footer() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [collections, setCollections] = useState<any[]>([]);
+  const { logoUrl } = useLogo();
 
   // Filtrar los enlaces del menú que son visibles
   const menuItems = mainMenuConfig.showInFooter
@@ -86,7 +88,7 @@ export default function Footer() {
             <img
               alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               className="h-40 object-cover mb-6"
-              src={process.env.NEXT_PUBLIC_LOGO_COLOR}
+              src={logoUrl || process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
             <p className="text-secondary text-center lg:text-left mt-4 max-w-xs">
               {process.env.NEXT_PUBLIC_DESCRIPCION_TIENDA ||

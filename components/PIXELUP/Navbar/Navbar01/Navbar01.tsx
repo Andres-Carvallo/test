@@ -13,6 +13,7 @@ import DropdownUserMobile from "@/components/Core/Dropdown/DropdownUser/Dropdown
 import DropdownAdminMobile from "@/components/Core/Dropdown/DropdownAdmin/DropdownAdminMobile";
 import { mainMenuConfig, layoutConfig } from "@/app/config/menulinks";
 import { slugify } from "@/app/utils/slugify";
+import { useLogo } from "@/context/LogoContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,8 +25,9 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [productosIniciales, setProductosIniciales] = useState([]);
   const pathname = usePathname();
+  const { logoUrl } = useLogo();
 
-  const Logo = process.env.NEXT_PUBLIC_LOGO_COLOR;
+  const Logo = logoUrl || process.env.NEXT_PUBLIC_LOGO_COLOR;
   const AdminToken = getCookie("AdminTokenAuth");
   const ClientToken = getCookie("ClientTokenAuth");
   const [loading, setLoading] = useState(true);
@@ -149,7 +151,7 @@ export default function Navbar() {
             layoutConfig.logoCentered
               ? "justify-between relative"
               : "justify-between"
-          } h-24`}
+          } min-h-24 py-4`}
         >
           {/* Menú principal - versión escritorio */}
           <div
@@ -274,7 +276,7 @@ export default function Navbar() {
 
           {/* Logo - puede estar centrado o a la izquierda según la configuración */}
           <div
-            className={`flex items-center gap-6 min-w-[120px] ${
+            className={`flex items-center gap-6 min-w-[150px] ${
               layoutConfig.logoCentered
                 ? "lg:order-2 lg:absolute lg:left-1/2 lg:transform lg:-translate-x-1/2 order-1 flex-grow justify-center"
                 : "order-1"
@@ -283,7 +285,7 @@ export default function Navbar() {
             <div className="flex-shrink-0 pr-4">
               <Link href="/">
                 <img
-                  className="w-24"
+                  className="w-auto max-h-16"
                   src={Logo}
                   alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
                 />
@@ -406,7 +408,7 @@ export default function Navbar() {
               onClick={() => setIsOpen(false)}
             >
               <img
-                className="w-48"
+                className="w-auto max-h-20"
                 src={Logo}
                 alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               />

@@ -10,6 +10,7 @@ import { deleteCookie, getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import axios from "axios";
+import { useLogo } from "@/context/LogoContext";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -29,6 +30,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [menuEnabled, setMenuEnabled] = useState<boolean>(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const { logoUrl } = useLogo();
 
   useEffect(() => {
     if (!token) {
@@ -428,7 +430,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             <Link
               href="/"
               target="_blank"
-              className={`flex items-center ${
+              className={`flex items-center sidebar-logo ${
                 isExpanded || isHovered || sidebarOpen
                   ? "w-full justify-center"
                   : ""
@@ -437,11 +439,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               <div
                 className={`relative ${
                   isExpanded || isHovered || sidebarOpen
-                    ? "h-20 lg:h-20"
+                    ? "h-24 lg:h-28"
                     : "h-10"
                 } ${
                   isExpanded || isHovered || sidebarOpen
-                    ? "w-[200px] lg:w-[280px]"
+                    ? "w-[220px] lg:w-[260px]"
                     : "w-[120px]"
                 }`}
               >
@@ -452,12 +454,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       : "opacity-0"
                   }`}
                 >
-                  <img
-                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                  <Image
+                    src={logoUrl}
                     alt={
                       process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
                     }
                     className="w-8 h-8 object-contain"
+                    width={128}
+                    height={32}
+                    priority
                   />
                 </div>
                 <div
@@ -469,18 +474,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     isExpanded || isHovered || sidebarOpen
                       ? "opacity-100"
                       : "opacity-0"
-                  }`}
+                  } flex items-center justify-center`}
                 >
-                  <img
-                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                  <Image
+                    src={logoUrl}
                     alt={
                       process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
                     }
                     className={`object-contain ${
                       isExpanded || isHovered || sidebarOpen
-                        ? "w-40 lg:w-60 scale-110"
+                        ? "w-48 lg:w-64 max-w-full"
                         : "w-60 scale-100"
                     } transition-transform duration-300`}
+                    width={128}
+                    height={32}
+                    priority
                   />
                 </div>
               </div>
@@ -519,7 +527,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden sidebar-scroll">
           {/* Navigation Menu */}
           <div className="flex flex-1">
-            <nav className="w-full pb-4 pt-8">
+            <nav className="w-full pb-4 pt-8 sidebar-menu">
               <div>
                 <ul className="flex flex-col">
                   {sidebarLinks
@@ -551,7 +559,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <Link
             href="/tienda"
             target="_blank"
-            className={`text-center justify-center mt-4 mx-auto flex items-center text-sm gap-2 rounded-lg py-1.5 px-2 font-medium text-white hover:bg-black/10 transition-all duration-300 ${
+            className={`text-center justify-center mt-4 mx-auto flex items-center text-sm gap-2 rounded-lg py-1.5 px-2 font-medium text-white hover:bg-black/10 transition-all duration-300 sidebar-store-link ${
               !isExpanded && !isHovered
                 ? "w-[40px] justify-center"
                 : "w-[150px] border border-white "
@@ -569,7 +577,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           </Link>
           <button
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-            className={`flex items-center gap-3 ${
+            className={`flex items-center gap-3 sidebar-user ${
               !isExpanded && !isHovered
                 ? "h-[48px] justify-center px-0"
                 : "py-3 px-4"
