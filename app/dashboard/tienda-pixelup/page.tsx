@@ -156,11 +156,14 @@ const ExchangesGrid = () => {
 
     let filtered = [...exchanges];
 
-    // Ordenar los exchanges para que Pixel Up aparezca primero
+    // Ordenar los exchanges para que Pixel Up aparezca primero y luego por precio de menor a mayor
     filtered.sort((a, b) => {
+      // Primero ordenar por Pixel Up
       if (a.companyName === "Pixel Up" && b.companyName !== "Pixel Up") return -1;
       if (a.companyName !== "Pixel Up" && b.companyName === "Pixel Up") return 1;
-      return 0;
+      
+      // Si ambos son de Pixel Up o ambos no son de Pixel Up, ordenar por precio
+      return a.creditAmount - b.creditAmount;
     });
 
     console.log("Filtering with:", {
