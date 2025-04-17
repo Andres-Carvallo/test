@@ -6,6 +6,7 @@ import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";
 import toast from "react-hot-toast";
+import { validateImage } from "@/utils/imageValidation";
 
 type ImageUploaderVariableProps = {
   productId: string;
@@ -108,6 +109,13 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length > 0) {
+      // Validar cada archivo antes de procesarlo
+      for (const file of files) {
+        if (!validateImage(file)) {
+          return;
+        }
+      }
+
       const totalImages =
         files.length + currentImages.length + pendingImages.length;
       if (totalImages > 4) {

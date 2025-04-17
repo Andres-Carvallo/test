@@ -16,6 +16,7 @@ import { Switch } from "@/components/Core/Switch";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { globalConfig } from "@/app/config/GlobalConfig";
+import { validateImage } from "@/utils/imageValidation";
 
 interface BannerImage {
   id: string;
@@ -257,6 +258,10 @@ const BannerPrincipal01BO: React.FC = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!validateImage(file)) {
+        return;
+      }
+
       if (isMobile) {
         setMobileFileName(file.name);
       } else {
