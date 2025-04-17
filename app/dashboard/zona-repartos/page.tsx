@@ -72,6 +72,7 @@ function ZonasRepartos() {
   });
   const [expandedRegions, setExpandedRegions] = useState<{ [key: string]: boolean }>({});
   const [isLoadingAllRegions, setIsLoadingAllRegions] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 0 });
 
   const showDeleteModal = (zoneId: any) => {
     setZoneToDelete(zoneId);
@@ -448,12 +449,12 @@ function ZonasRepartos() {
     }
   };
 
-  const addAllRegions = async () => {
-    setIsLoadingAllRegions(true);
-    try {
-      const allCommunes: CommuneWithRegion[] = [];
-      
-      for (const region of regions) {
+  const processBatch = async (regions: Region[], startIndex: number, batchSize: number) => {
+    const endIndex = Math.min(startIndex + batchSize, regions.length);
+    const batch = regions.slice(startIndex, endIndex);
+    
+    const batchPromises = batch.map(async (region) => {
+      try {
         const communesResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/countries/CL/regions/${region.id}/communes?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
           {
@@ -464,14 +465,39 @@ function ZonasRepartos() {
           }
         );
         
-        const regionCommunes = communesResponse.data.communes.map((commune: any) => ({
+        return communesResponse.data.communes.map((commune: any) => ({
           id: commune.id,
           name: commune.name,
           regionId: region.id,
           regionName: region.name,
         }));
+      } catch (error) {
+        console.error(`Error al cargar comunas de la región ${region.name}:`, error);
+        return [];
+      }
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    return batchResults.flat();
+  };
+
+  const addAllRegions = async () => {
+    setIsLoadingAllRegions(true);
+    setLoadingProgress({ current: 0, total: regions.length });
+    
+    try {
+      const BATCH_SIZE = 3; // Procesar 3 regiones a la vez
+      const allCommunes: CommuneWithRegion[] = [];
+      
+      for (let i = 0; i < regions.length; i += BATCH_SIZE) {
+        const batchCommunes = await processBatch(regions, i, BATCH_SIZE);
+        allCommunes.push(...batchCommunes);
+        setLoadingProgress(prev => ({ ...prev, current: Math.min(i + BATCH_SIZE, regions.length) }));
         
-        allCommunes.push(...regionCommunes);
+        // Pequeña pausa entre lotes para no sobrecargar la API
+        if (i + BATCH_SIZE < regions.length) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
 
       // Filtrar comunas que ya están seleccionadas
@@ -490,6 +516,7 @@ function ZonasRepartos() {
       toast.error("Error al cargar todas las regiones.");
     } finally {
       setIsLoadingAllRegions(false);
+      setLoadingProgress({ current: 0, total: 0 });
     }
   };
 
@@ -983,7 +1010,7 @@ function ZonasRepartos() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Cargando...
+                  Cargando... ({loadingProgress.current}/{loadingProgress.total} regiones)
                 </>
               ) : (
                 'Agregar Todas las Regiones'
