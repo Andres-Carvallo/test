@@ -131,13 +131,13 @@ export default function BannerHome() {
     <section className="gap-4 flex flex-col py-10 mx-4">
       <title>Content block - Home</title>
       {[
-        { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
-        {
+/*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
+ */        {
           id: "bannerPrincipal01",
           title: "Banner",
           component: <BannerPrincipal01BO />,
         },
-        {
+/*         {
           id: "bannerPrincipal02",
           title: "Banner Doble",
           component: <BannerPrincipal02BO />,
@@ -204,7 +204,7 @@ export default function BannerHome() {
           title: "Feed Instagram",
           component: <FeedInstagramBO />,
         },
-        { id: "parallax", title: "Parallax", component: <ParallaxBO /> }
+        { id: "parallax", title: "Parallax", component: <ParallaxBO /> } */
         /* ,
         { id: "bannerPrincipal04", title: "Barra Superior", component: <BannerPrincipal04BO /> },
         { id: "cardsPage", title: "Hero 03", component: <CardsPage /> },

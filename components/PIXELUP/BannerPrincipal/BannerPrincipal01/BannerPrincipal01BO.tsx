@@ -9,6 +9,7 @@ import React, {
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Modal from "@/components/Core/Modals/ModalSeo"; // Asegúrate de importar el modal
+import ModalPesoImagen from "@/components/Core/Modals/ModalPesoImagen"; // Importar el nuevo modal
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
@@ -17,6 +18,7 @@ import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { globalConfig } from "@/app/config/GlobalConfig";
 import { validateImage } from "@/utils/imageValidation";
+import { FaQuestionCircle } from "react-icons/fa";
 
 interface BannerImage {
   id: string;
@@ -120,6 +122,7 @@ const BannerPrincipal01BO: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPesoImagenModalOpen, setIsPesoImagenModalOpen] = useState(false); // Nuevo estado para el modal de peso de imagen
 
   const [buttonTextData, setButtonTextData] = useState<ButtonTextData>({
     price: "",
@@ -274,9 +277,11 @@ const BannerPrincipal01BO: React.FC = () => {
         if (isMobile) {
           setMobileImage(result);
           setIsMobileModalOpen(true);
+          setZoomMobile(1);
         } else {
           setMainImage(result);
           setIsDesktopModalOpen(true);
+          setZoomDesktop(1);
         }
       };
       reader.readAsDataURL(file);
@@ -955,6 +960,13 @@ const BannerPrincipal01BO: React.FC = () => {
     [findRelatedVersion]
   );
 
+  // Función para abrir el modal sin actualizar el banner
+  const handleOpenPesoImagenModal = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevenir el comportamiento predeterminado
+    e.stopPropagation(); // Detener la propagación del evento
+    setIsPesoImagenModalOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -987,6 +999,7 @@ const BannerPrincipal01BO: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <h3 className="text-lg font-medium text-gray-900">Vista Previa</h3>
+          
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
               <button
@@ -1553,8 +1566,14 @@ const BannerPrincipal01BO: React.FC = () => {
               {/* Sección de Imagen Desktop */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-md font-medium text-gray-900">
+                  <h3 className="text-md font-medium text-gray-900 flex items-center gap-2">
                     Imagen Desktop
+                    <div className="group relative">
+                      <FaQuestionCircle className="text-rosa cursor-help" />
+                      <div className="absolute left-0 top-6 z-10 w-96 rounded-md bg-white p-2 text-base text-gray-600 shadow-lg opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none">
+                        Peso máximo de la imagen 5MB
+                      </div>
+                    </div>
                   </h3>
                 </div>
 
@@ -1595,11 +1614,11 @@ const BannerPrincipal01BO: React.FC = () => {
                   ) : (
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-3 hover:border-gray-400 transition-colors cursor-pointer bg-white"
                     >
                       <div className="flex flex-col items-center">
                         <svg
-                          className="w-12 h-12 text-gray-400 mb-4"
+                          className="w-12 h-8 text-gray-400 mb-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1612,7 +1631,7 @@ const BannerPrincipal01BO: React.FC = () => {
                           />
                         </svg>
                         <p className="text-sm text-gray-500">
-                          Subir imagen Desktop (PNG, JPG, GIF hasta 5MB)
+                          Subir imagen Desktop (PNG, JPG, GIF)
                         </p>
                       </div>
                     </div>
@@ -1630,11 +1649,49 @@ const BannerPrincipal01BO: React.FC = () => {
               {/* Separador */}
               <div className="border-t border-gray-200 my-6"></div>
 
+              {/* Comentarios Adicionales */}
+              <div
+                className="mt-4 mb-4 flex items-center rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800  "
+                role="alert"
+              >
+                <svg
+                  className="me-3 inline h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  <span className="font-medium"></span>{" "}
+                  ¿No sabes como bajarle el peso a tu imagen?
+                  <div className="">
+                    <button 
+                      onClick={handleOpenPesoImagenModal} 
+                      className="text-blue-500 hover:text-blue-600"
+                    >
+                      Haz click aquí
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Separador */}
+              <div className="border-t border-gray-200 my-6"></div>
+
               {/* Sección de Imagen Mobile */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-md font-medium text-gray-900">
+                  <h3 className="text-md font-medium text-gray-900 flex items-center gap-2">
                     Imagen Mobile
+                    <div className="group relative">
+                      <FaQuestionCircle className="text-rosa cursor-help" />
+                      <div className="absolute left-0 top-6 z-10 w-96 rounded-md bg-white p-2 text-base text-gray-600 shadow-lg opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none">
+                        Peso máximo de la imagen 5MB
+                      </div>
+                    </div>
                   </h3>
                 </div>
 
@@ -1675,11 +1732,11 @@ const BannerPrincipal01BO: React.FC = () => {
                   ) : (
                     <div
                       onClick={() => mobileFileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-3 hover:border-gray-400 transition-colors cursor-pointer bg-white"
                     >
                       <div className="flex flex-col items-center">
                         <svg
-                          className="w-12 h-12 text-gray-400 mb-4"
+                          className="w-12 h-8 text-gray-400 mb-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1692,7 +1749,7 @@ const BannerPrincipal01BO: React.FC = () => {
                           />
                         </svg>
                         <p className="text-sm text-gray-500">
-                          Subir imagen Mobile (PNG, JPG, GIF hasta 5MB)
+                          Subir imagen Mobile (PNG, JPG, GIF)
                         </p>
                       </div>
                     </div>
@@ -2138,6 +2195,12 @@ const BannerPrincipal01BO: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* Modal de Peso de Imagen */}
+      <ModalPesoImagen 
+        showModal={isPesoImagenModalOpen} 
+        onClose={() => setIsPesoImagenModalOpen(false)} 
+      />
     </div>
   );
 };

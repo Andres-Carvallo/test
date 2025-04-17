@@ -272,7 +272,7 @@ const LogoEdit: React.FC = () => {
           <div className="p-4">
             
             {logoData && (
-              <div className="flex flex-col items-center mb-4">
+              <div className="flex flex-col items-center py-4">
                 <div className="mb-4">
                   <img
                     src={logoData[0].mainImage.url}
@@ -280,10 +280,30 @@ const LogoEdit: React.FC = () => {
                     className="w-[150px] h-[150px] object-contain border border-gray-200 rounded-md"
                   />
                 </div>
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-500 mb-2">
                   Este es el logo actual que se muestra en el sitio web
                 </p>
+                <div
+                className="mb-4 flex items-center rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800  "
+                role="alert"
+              >
+                <svg
+                  className="me-3 inline h-4 w-4 shrink-0"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+                </svg>
+                <span className="sr-only">Info</span>
+                <div>
+                  <span className="font-medium"></span>{" "}
+                  Recuerda subir un archivo PNG para que el logo se vea correctamente.
+                </div>
               </div>
+              </div>
+              
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
