@@ -102,6 +102,9 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
         </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <Destacados01 text="Destacados" />
+        </Suspense>
         <Suspense fallback={<Banner />}>
           <Hero01 />
         </Suspense>
@@ -114,9 +117,7 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <Hero04 />
         </Suspense>
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <Destacados01 text="Destacados" />
-        </Suspense>
+
         <Suspense fallback={<Banner />}>
           <Parallax />
         </Suspense>
