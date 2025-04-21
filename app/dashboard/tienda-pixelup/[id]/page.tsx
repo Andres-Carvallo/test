@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 import Loader from "@/components/common/Loader"; // Usa tu componente de Loader si es necesario
@@ -43,6 +43,7 @@ export default function DetalleCanje() {
   >(null);
   const Token = String(getCookie("AdminTokenAuth"));
   const router = useRouter(); // Para redirigir después de la compra
+  const searchParams = useSearchParams(); // Para obtener los parámetros de la URL actual
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -111,6 +112,18 @@ export default function DetalleCanje() {
     setShowModal(true);
   };
 
+  // Función para volver a la tienda preservando los parámetros de la URL
+  const handleBackToStore = () => {
+    // Obtener los parámetros de la URL actual
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Construir la URL de retorno con los parámetros
+    const returnUrl = `/dashboard/tienda-pixelup?${params.toString()}`;
+    
+    // Navegar a la URL de retorno
+    router.push(returnUrl);
+  };
+
   if (!exchange) {
     return <Loader />; // Muestra un loader mientras se obtienen los datos
   }
@@ -138,8 +151,8 @@ export default function DetalleCanje() {
             />
 
             {/* Botón volver reubicado */}
-            <Link
-              href="/dashboard/tienda-pixelup/"
+            <button
+              onClick={handleBackToStore}
               className="absolute top-4 left-4 inline-flex items-center px-3 py-2 
                        bg-black/30 hover:bg-black/40 text-white rounded-lg 
                        transition-colors backdrop-blur-sm text-sm"
@@ -158,7 +171,7 @@ export default function DetalleCanje() {
                 />
               </svg>
               Volver a la tienda
-            </Link>
+            </button>
           </div>
 
           {/* Contenido */}

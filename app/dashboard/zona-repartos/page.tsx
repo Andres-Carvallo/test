@@ -140,6 +140,60 @@ function ZonasRepartos() {
     fetchCurrencyCode();
   }, []);
 
+  const updateZoneInBatches = async (zoneId: string, communes: CommuneWithRegion[], token: string | undefined, currencyCodeId: string) => {
+    if (!token) {
+      toast.error("No se encontró el token de autenticación");
+      return false;
+    }
+    
+    const BATCH_SIZE = 80; // Número de comunas por lote
+    const totalBatches = Math.ceil(communes.length / BATCH_SIZE);
+    let success = true;
+
+    for (let i = 0; i < totalBatches; i++) {
+      const start = i * BATCH_SIZE;
+      const end = Math.min(start + BATCH_SIZE, communes.length);
+      const batchCommunes = communes.slice(start, end);
+
+      try {
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${zoneId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          {
+            id: zoneId,
+            currencyCodeId: currencyCodeId,
+            name: zoneData.name,
+            description: zoneData.description,
+            amount: zoneData.amount !== null && zoneData.amount !== undefined
+              ? parseInt(zoneData.amount.toString())
+              : 0,
+            statusCode: zoneData.statusCode,
+            communes: batchCommunes.map((commune) => ({ id: commune.id })),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Mostrar progreso
+        toast.success(`Actualizando zona... ${Math.round((i + 1) / totalBatches * 100)}%`);
+        
+        // Pequeña pausa entre lotes para no sobrecargar la API
+        if (i < totalBatches - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (error) {
+        console.error(`Error en el lote ${i + 1}:`, error);
+        success = false;
+        break;
+      }
+    }
+
+    return success;
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
@@ -218,28 +272,13 @@ function ZonasRepartos() {
       }));
       let response;
       if (isEditing) {
-        response = await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${zoneData.id}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            id: zoneData.id,
-            currencyCodeId: currencyCodeId,
-            name: zoneData.name,
-            description: zoneData.description,
-            amount:
-              zoneData.amount !== null && zoneData.amount !== undefined
-                ? parseInt(zoneData.amount.toString())
-                : 0,
-            statusCode: zoneData.statusCode,
-            communes: selectedCommunes.map((commune) => ({ id: commune.id })),
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        toast.success("Zona actualizada exitosamente.");
+        const success = await updateZoneInBatches(zoneData.id!, selectedCommunes, token, currencyCodeId);
+        if (success) {
+          toast.success("Zona actualizada exitosamente.");
+        } else {
+          toast.error("Error al actualizar la zona. Por favor, intente nuevamente.");
+          return;
+        }
       } else {
         response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -247,10 +286,9 @@ function ZonasRepartos() {
             currencyCodeId: currencyCodeId,
             name: zoneData.name,
             description: zoneData.description,
-            amount:
-              zoneData.amount !== null && zoneData.amount !== undefined
-                ? parseInt(zoneData.amount.toString())
-                : 0,
+            amount: zoneData.amount !== null && zoneData.amount !== undefined
+              ? parseInt(zoneData.amount.toString())
+              : 0,
             statusCode: zoneData.statusCode,
             communes: selectedCommunes.map((commune) => ({ id: commune.id })),
           },
