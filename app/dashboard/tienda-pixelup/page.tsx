@@ -285,12 +285,15 @@ const ExchangesGrid = () => {
     setSelectedCompany('');
     
     // Actualizar la URL sin filtros
-    updateUrlWithFilters(1);
+    const params = new URLSearchParams();
+    params.set('page', '1');
+    router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
   };
 
   // Función para actualizar la URL con los filtros actuales
   const updateUrlWithFilters = (page: number, categoryId?: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    // Crear un nuevo objeto URLSearchParams para evitar modificar el original
+    const params = new URLSearchParams();
     
     // Actualizar página
     params.set('page', page.toString());
@@ -301,22 +304,22 @@ const ExchangesGrid = () => {
       if (category) {
         params.set('categoria', category.name);
       }
-    } else {
-      params.delete('categoria');
+    } else if (selectedCategories.length > 0) {
+      // Si no se proporciona categoryId pero hay categorías seleccionadas
+      const category = categories.find(cat => cat.id === selectedCategories[0]);
+      if (category) {
+        params.set('categoria', category.name);
+      }
     }
     
     // Actualizar búsqueda
     if (searchQuery) {
       params.set('buscar', searchQuery);
-    } else {
-      params.delete('buscar');
     }
     
-    // Actualizar compañía
+    // Actualizar compañía - SIEMPRE incluir si existe, independientemente de otros filtros
     if (selectedCompany) {
       params.set('empresa', selectedCompany);
-    } else {
-      params.delete('empresa');
     }
     
     // Actualizar la URL sin recargar la página
@@ -400,13 +403,32 @@ const ExchangesGrid = () => {
               onChange={(e) => {
                 const categoryId = e.target.value;
                 setPageNumber(1);
-                if (categoryId === "") {
-                  setSelectedCategories([]);
-                } else {
-                  setSelectedCategories([categoryId]);
+                const newSelectedCategories = categoryId === "" ? [] : [categoryId];
+                setSelectedCategories(newSelectedCategories);
+                
+                // Crear params con todos los filtros actuales
+                const params = new URLSearchParams();
+                params.set('page', '1');
+                
+                // Añadir categoría si existe
+                if (categoryId !== "") {
+                  const category = categories.find(cat => cat.id === categoryId);
+                  if (category) {
+                    params.set('categoria', category.name);
+                  }
                 }
-                // Actualizar la URL con el filtro de categoría
-                updateUrlWithFilters(1, categoryId);
+                
+                // Mantener empresa si existe
+                if (selectedCompany) {
+                  params.set('empresa', selectedCompany);
+                }
+                
+                // Mantener búsqueda si existe
+                if (searchQuery) {
+                  params.set('buscar', searchQuery);
+                }
+                
+                router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
               }}
             >
               <option value="">Todas las categorías</option>
@@ -427,10 +449,33 @@ const ExchangesGrid = () => {
                       hover:border-rosa/50 cursor-pointer min-w-[200px]"
               value={selectedCompany}
               onChange={(e) => {
-                setSelectedCompany(e.target.value);
+                const company = e.target.value;
+                setSelectedCompany(company);
                 setPageNumber(1);
-                // Actualizar la URL con el filtro de compañía
-                updateUrlWithFilters(1);
+                
+                // Crear params con todos los filtros actuales
+                const params = new URLSearchParams();
+                params.set('page', '1');
+                
+                // Mantener categoría si existe
+                if (selectedCategories.length > 0) {
+                  const category = categories.find(cat => cat.id === selectedCategories[0]);
+                  if (category) {
+                    params.set('categoria', category.name);
+                  }
+                }
+                
+                // Añadir empresa si existe
+                if (company) {
+                  params.set('empresa', company);
+                }
+                
+                // Mantener búsqueda si existe
+                if (searchQuery) {
+                  params.set('buscar', searchQuery);
+                }
+                
+                router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
               }}
             >
               <option value="">Todas las empresas</option>

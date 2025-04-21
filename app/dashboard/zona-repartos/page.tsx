@@ -7,6 +7,7 @@ import { getCookie } from "cookies-next";
 import axios from "axios";
 import toast from "react-hot-toast";
 import FreeShippingOption from "./FreeShippingOption";
+import LoaderProgress from "@/components/common/LoaderProgress";
 
 interface Zone {
   id: string;
@@ -72,7 +73,8 @@ function ZonasRepartos() {
   });
   const [expandedRegions, setExpandedRegions] = useState<{ [key: string]: boolean }>({});
   const [isLoadingAllRegions, setIsLoadingAllRegions] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 0 });
+  const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 100 });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const showDeleteModal = (zoneId: any) => {
     setZoneToDelete(zoneId);
@@ -169,7 +171,6 @@ function ZonasRepartos() {
         }
       );
       
-      toast.success("Zona actualizada exitosamente.");
       return true;
     } catch (error) {
       console.error("Error al actualizar la zona:", error);
@@ -179,14 +180,18 @@ function ZonasRepartos() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setLoadingProgress({ current: 0, total: 100 });
 
     // Validación básica
     if (!zoneData.name) {
       toast.error("El nombre de la zona es obligatorio.");
+      setIsSubmitting(false);
       return;
     }
     if (!zoneData.description) {
       toast.error("La descripción de la zona es obligatoria.");
+      setIsSubmitting(false);
       return;
     }
     if (
@@ -195,14 +200,17 @@ function ZonasRepartos() {
       zoneData.amount <= 1
     ) {
       toast.error("El costo de despacho debe ser mayor que 1.");
+      setIsSubmitting(false);
       return;
     }
     if (selectedCommunes.length === 0) {
       toast.error("Debe agregar al menos una comuna.");
+      setIsSubmitting(false);
       return;
     }
 
     try {
+      setLoadingProgress({ current: 20, total: 100 });
       const token = getCookie("AdminTokenAuth");
 
       // Obtener todas las zonas existentes
@@ -216,13 +224,14 @@ function ZonasRepartos() {
         }
       );
 
+      setLoadingProgress({ current: 40, total: 100 });
       const existingZones = existingZonesResponse.data.shippingZones;
 
-      // Comprobar si alguna comuna ya está asignada en otra zona (excepto la zona actual si estamos editando)
+      // Comprobar si alguna comuna ya está asignada en otra zona
       const communesInOtherZones = selectedCommunes.filter((commune) =>
         existingZones.some(
           (zone: any) =>
-            zone.id !== zoneData.id && // Ignorar la zona actual si estamos editando
+            zone.id !== zoneData.id &&
             zone.communes.some(
               (existingCommune: any) => existingCommune.id === commune.id
             )
@@ -236,9 +245,11 @@ function ZonasRepartos() {
         toast.error(
           `Las siguientes comunas ya tienen un precio asignado: ${communeNames}`
         );
+        setIsSubmitting(false);
         return;
       }
 
+      setLoadingProgress({ current: 60, total: 100 });
       const currencyResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/currency-codes?pageNumber=1&pageSize=50&statusCode=ACTIVE&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -254,16 +265,17 @@ function ZonasRepartos() {
         currencyCodeId: currencyCodeId,
       }));
 
+      setLoadingProgress({ current: 80, total: 100 });
       if (isEditing) {
         const success = await updateZoneInBatches(zoneData.id!, selectedCommunes, token, currencyCodeId);
         if (success) {
           toast.success("Zona actualizada exitosamente.");
         } else {
           toast.error("Error al actualizar la zona. Por favor, intente nuevamente.");
+          setIsSubmitting(false);
           return;
         }
       } else {
-        // Crear la zona con todas las comunas en una sola solicitud
         try {
           const response = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -289,10 +301,12 @@ function ZonasRepartos() {
         } catch (error) {
           console.error("Error al crear la zona:", error);
           toast.error("Error al crear la zona. Por favor, intente nuevamente.");
+          setIsSubmitting(false);
           return;
         }
       }
 
+      setLoadingProgress({ current: 100, total: 100 });
       fetchZonas();
       ZonasRef.current?.scrollIntoView({ behavior: "smooth" });
       setIsEditing(false);
@@ -325,6 +339,9 @@ function ZonasRepartos() {
           "Error al " + (isEditing ? "actualizar" : "crear") + " la zona."
         );
       }
+    } finally {
+      setIsSubmitting(false);
+      setLoadingProgress({ current: 0, total: 0 });
     }
   };
 
@@ -407,6 +424,10 @@ function ZonasRepartos() {
 
   const addCommune = () => {
     if (selectedCommune) {
+      if (selectedCommunes.length >= 200) {
+        toast.error("Has alcanzado el límite máximo de 200 comunas.");
+        return;
+      }
       const selectedCommuneObj = communes.find(
         (commune) => commune.id === selectedCommune
       );
@@ -461,11 +482,26 @@ function ZonasRepartos() {
           }));
 
         if (newCommunes.length > 0) {
-          setSelectedCommunes((prevCommunes) => [
-            ...prevCommunes,
-            ...newCommunes,
-          ]);
-          toast.success("Todas las comunas de la región han sido agregadas.");
+          const totalCommunesAfterAdd = selectedCommunes.length + newCommunes.length;
+          if (totalCommunesAfterAdd > 200) {
+            const remainingSlots = 200 - selectedCommunes.length;
+            if (remainingSlots > 0) {
+              const communesToAdd = newCommunes.slice(0, remainingSlots);
+              setSelectedCommunes((prevCommunes) => [
+                ...prevCommunes,
+                ...communesToAdd,
+              ]);
+              toast.success(`Se han agregado ${remainingSlots} comunas de la región. Has alcanzado el límite máximo de 200 comunas.`);
+            } else {
+              toast.error("Has alcanzado el límite máximo de 200 comunas.");
+            }
+          } else {
+            setSelectedCommunes((prevCommunes) => [
+              ...prevCommunes,
+              ...newCommunes,
+            ]);
+            toast.success("Todas las comunas de la región han sido agregadas.");
+          }
         } else {
           toast.error(
             "Todas las comunas de esta región ya han sido seleccionadas."
@@ -534,8 +570,20 @@ function ZonasRepartos() {
       );
 
       if (newCommunes.length > 0) {
-        setSelectedCommunes(prev => [...prev, ...newCommunes]);
-        toast.success("Todas las regiones han sido agregadas exitosamente.");
+        const totalCommunesAfterAdd = selectedCommunes.length + newCommunes.length;
+        if (totalCommunesAfterAdd > 200) {
+          const remainingSlots = 200 - selectedCommunes.length;
+          if (remainingSlots > 0) {
+            const communesToAdd = newCommunes.slice(0, remainingSlots);
+            setSelectedCommunes(prev => [...prev, ...communesToAdd]);
+            toast.success(`Se han agregado ${remainingSlots} comunas. Has alcanzado el límite máximo de 200 comunas.`);
+          } else {
+            toast.error("Has alcanzado el límite máximo de 200 comunas.");
+          }
+        } else {
+          setSelectedCommunes(prev => [...prev, ...newCommunes]);
+          toast.success("Todas las regiones han sido agregadas exitosamente.");
+        }
       } else {
         toast.error("Todas las comunas ya han sido seleccionadas.");
       }
@@ -1038,7 +1086,7 @@ function ZonasRepartos() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Cargando... ({loadingProgress.current}/{loadingProgress.total} regiones)
+                  Cargando regiones...
                 </>
               ) : (
                 'Agregar Todas las Regiones'
@@ -1049,7 +1097,7 @@ function ZonasRepartos() {
           <div className="mt-4">
             <div className="text-sm flex gap-2 font-medium border-b py-2 mb-6 ">
               <h3 className="font-normal text-primary">
-                Comunas Seleccionadas:
+                Comunas Seleccionadas: {selectedCommunes.length}/200
               </h3>
             </div>
             {selectedCommunes.length > 0 && (
@@ -1198,10 +1246,25 @@ function ZonasRepartos() {
           <div className="mt-4">
             <button
               onClick={handleSubmit}
-              className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary  font-bold py-2 px-4 rounded flex-wrap mt-6"
+              disabled={isSubmitting}
+              className={`shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6 ${
+                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
               style={{ borderRadius: "var(--radius)" }}
             >
-              {isEditing ? "Actualizar Zona" : "Crear Zona"}
+              {isSubmitting ? (
+                <div className="w-full">
+                  <div className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-secondary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {isEditing ? "Actualizando Zona..." : "Creando Zona..."}
+                  </div>
+                </div>
+              ) : (
+                isEditing ? "Actualizar Zona" : "Crear Zona"
+              )}
             </button>
           </div>
         </div>
@@ -1348,6 +1411,8 @@ function ZonasRepartos() {
         )}
         <div ref={endOfPageRef} />
       </section>
+      {isSubmitting && <LoaderProgress message={isEditing ? "Actualizando zona..." : "Creando zona..."} />}
+      {isLoadingAllRegions && <LoaderProgress message="Cargando regiones..." />}
     </>
   );
 }

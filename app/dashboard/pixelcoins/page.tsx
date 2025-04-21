@@ -172,6 +172,7 @@ const CreditChecker = () => {
           Mis PixelCoins
         </h1>
 
+
         {loading ? (
           <div className="bg-white p-8 rounded-lg shadow-md">
             <p className="text-gray-600">Cargando información...</p>
@@ -190,9 +191,20 @@ const CreditChecker = () => {
                     key={summary.customerId}
                     className="bg-white p-8 rounded-xl shadow-md"
                   >
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                    <h2 className="text-2xl font-bold mb-2 text-gray-800">
                       Resumen de PixelCoins
                     </h2>
+
+                    
+        <div className="py-7 flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800" role="alert">
+          <svg className="shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+          </svg>
+          <span className="sr-only">Info</span>
+          <div>
+            <span className="font-bold">¡Importante!</span> Los PixelCoins se actualizan 1 vez al día.
+          </div>
+        </div>
                     {summary.creditsBalance === 0 ? (
                       <div className="flex items-center p-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 border border-yellow-400">
                         <svg
