@@ -270,7 +270,7 @@ function ZonasRepartos() {
         ...prevData,
         currencyCodeId: currencyCodeId,
       }));
-      let response;
+
       if (isEditing) {
         const success = await updateZoneInBatches(zoneData.id!, selectedCommunes, token, currencyCodeId);
         if (success) {
@@ -280,26 +280,88 @@ function ZonasRepartos() {
           return;
         }
       } else {
-        response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-          {
-            currencyCodeId: currencyCodeId,
-            name: zoneData.name,
-            description: zoneData.description,
-            amount: zoneData.amount !== null && zoneData.amount !== undefined
-              ? parseInt(zoneData.amount.toString())
-              : 0,
-            statusCode: zoneData.statusCode,
-            communes: selectedCommunes.map((commune) => ({ id: commune.id })),
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
+        // Crear zona por lotes
+        const BATCH_SIZE = 80;
+        const totalBatches = Math.ceil(selectedCommunes.length / BATCH_SIZE);
+        let createdZoneId: string | null = null;
+
+        try {
+          // Primer paso: Crear la zona con las primeras 80 comunas
+          const firstBatchCommunes = selectedCommunes.slice(0, BATCH_SIZE);
+          const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              currencyCodeId: currencyCodeId,
+              name: zoneData.name,
+              description: zoneData.description,
+              amount: zoneData.amount !== null && zoneData.amount !== undefined
+                ? parseInt(zoneData.amount.toString())
+                : 0,
+              statusCode: zoneData.statusCode,
+              communes: firstBatchCommunes.map((commune) => ({ id: commune.id })),
             },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          
+          // Asegurarnos de obtener el ID correctamente de la respuesta
+          createdZoneId = response.data.shippingZone.id;
+          if (!createdZoneId) {
+            throw new Error("No se pudo obtener el ID de la zona creada");
           }
-        );
-        toast.success("Zona creada exitosamente.");
+          
+          toast.success("Zona creada exitosamente. Agregando más comunas...");
+
+          // Si hay más comunas, actualizar la zona con los lotes restantes
+          if (selectedCommunes.length > BATCH_SIZE) {
+            for (let i = 1; i < totalBatches; i++) {
+              const start = i * BATCH_SIZE;
+              const end = Math.min(start + BATCH_SIZE, selectedCommunes.length);
+              const batchCommunes = selectedCommunes.slice(start, end);
+              
+              // Actualizar la zona con las comunas acumuladas hasta este punto
+              const communesToUpdate = selectedCommunes.slice(0, end);
+              
+              console.log("Actualizando zona con ID:", createdZoneId); // Para debugging
+              
+              await axios.put(
+                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/shipping-zones/${createdZoneId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+                {
+                  id: createdZoneId,
+                  currencyCodeId: currencyCodeId,
+                  name: zoneData.name,
+                  description: zoneData.description,
+                  amount: zoneData.amount !== null && zoneData.amount !== undefined
+                    ? parseInt(zoneData.amount.toString())
+                    : 0,
+                  statusCode: zoneData.statusCode,
+                  communes: communesToUpdate.map((commune) => ({ id: commune.id })),
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              toast.success(`Actualizando zona... ${Math.round((i + 1) / totalBatches * 100)}%`);
+              
+              // Pequeña pausa entre lotes para no sobrecargar la API
+              if (i < totalBatches - 1) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+              }
+            }
+          }
+          toast.success("Zona creada y actualizada exitosamente.");
+        } catch (error) {
+          console.error("Error al procesar los lotes:", error);
+          toast.error("Error al procesar los lotes de comunas.");
+          return;
+        }
       }
 
       fetchZonas();
@@ -320,7 +382,6 @@ function ZonasRepartos() {
       setSelectedCommune("");
     } catch (error: any) {
       if (error.response && error.response.status === 409) {
-        // Suponiendo que el código de error es 409 (Conflict)
         toast.error(
           "Una o más comunas o regiones ya tienen asignado un valor de despacho."
         );
