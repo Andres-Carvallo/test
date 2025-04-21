@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect, useCallback, ChangeEvent } from "react";
+import React, { useState, useEffect, useCallback, ChangeEvent, useRef } from "react";
 import { getCookie } from "cookies-next"; // asegúrate de tener cookies-next instalado
 import Loader from "@/components/common/Loader-t";
 import Modal from "@/components/Core/Modals/ModalSeo";
@@ -31,6 +31,7 @@ const ImageUploader: React.FC<any> = ({
   const [imageQueue, setImageQueue] = useState<File[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(-1);
   const [currentFileName, setCurrentFileName] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_IMAGES = 4;
 
@@ -39,6 +40,13 @@ const ImageUploader: React.FC<any> = ({
       skuImages?.filter((image: any) => !pendingDeletions.includes(image?.id))
         ?.length || 0;
     return currentImagesCount + pendingImages.length;
+  };
+
+  // Función para reiniciar el input de archivo
+  const resetFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Efecto para la carga inicial
@@ -107,6 +115,7 @@ const ImageUploader: React.FC<any> = ({
 
   const handleClearImage = (imageId: string) => {
     setPendingDeletions((prev) => [...prev, imageId]);
+    resetFileInput(); // Reiniciar el input de archivo
   };
 
   const handleUpdateImage = (event: any, imageId: any) => {
@@ -147,6 +156,8 @@ const ImageUploader: React.FC<any> = ({
       };
       reader.readAsDataURL(file);
     }
+    // Reiniciar el input de archivo después de la actualización
+    event.target.value = '';
   };
 
   const handleCropComplete = useCallback(
@@ -219,6 +230,7 @@ const ImageUploader: React.FC<any> = ({
 
   const handleRemovePendingImage = (index: number) => {
     setPendingImages((prev) => prev.filter((_, i) => i !== index));
+    resetFileInput(); // Reiniciar el input de archivo
   };
 
   return (
@@ -340,6 +352,7 @@ const ImageUploader: React.FC<any> = ({
           </div>
           <input
             id="imageUpload"
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             multiple

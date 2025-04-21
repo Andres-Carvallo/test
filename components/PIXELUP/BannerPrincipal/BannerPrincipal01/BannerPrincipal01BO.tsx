@@ -367,21 +367,49 @@ const BannerPrincipal01BO: React.FC = () => {
     });
   };
 
-  const handleClearImage = () => {
-    setMainImage(null);
-    setIsMainImageUploaded(false);
-    setFormData((prev) => ({
-      ...prev,
-      mainImage: {
-        url: "",
-        name: "",
-        type: "",
-        size: null,
-        data: "",
-      },
-    }));
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleClearImage = (isMobile: boolean = false) => {
+    if (isMobile) {
+      setMobileImage(null);
+      setMobileFileName(null);
+      setIsMobileImageUploaded(false);
+      setFormData(prev => ({
+        ...prev,
+        mobileImage: {
+          url: "",
+          name: "",
+          type: "",
+          size: null,
+          data: "",
+        }
+      }));
+      // Reiniciar el input de archivo mobile
+      if (mobileFileInputRef.current) {
+        mobileFileInputRef.current.value = '';
+        // Forzar un nuevo evento de cambio
+        const event = new Event('change', { bubbles: true });
+        mobileFileInputRef.current.dispatchEvent(event);
+      }
+    } else {
+      setMainImage(null);
+      setFileName(null);
+      setIsMainImageUploaded(false);
+      setFormData(prev => ({
+        ...prev,
+        mainImage: {
+          url: "",
+          name: "",
+          type: "",
+          size: null,
+          data: "",
+        }
+      }));
+      // Reiniciar el input de archivo desktop
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+        // Forzar un nuevo evento de cambio
+        const event = new Event('change', { bubbles: true });
+        fileInputRef.current.dispatchEvent(event);
+      }
     }
   };
 
@@ -1589,11 +1617,7 @@ const BannerPrincipal01BO: React.FC = () => {
                       </p>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (fileInputRef.current) {
-                            fileInputRef.current.click();
-                          }
-                        }}
+                        onClick={() => handleClearImage(false)}
                         className="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center gap-2"
                       >
                         <svg
@@ -1707,11 +1731,7 @@ const BannerPrincipal01BO: React.FC = () => {
                       </p>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (mobileFileInputRef.current) {
-                            mobileFileInputRef.current.click();
-                          }
-                        }}
+                        onClick={() => handleClearImage(true)}
                         className="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center gap-2"
                       >
                         <svg

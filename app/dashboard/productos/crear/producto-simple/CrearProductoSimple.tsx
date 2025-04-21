@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
+import React, { useState, useEffect, ChangeEvent, useCallback, useRef } from "react";
 import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import TabExtra from "@/components/Core/Products/ProductoSimple/TabExtra";
 import TabCategory from "@/components/Core/Products/Category/TabCategory";
@@ -48,6 +48,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isCheckingName, setIsCheckingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
   const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
@@ -368,7 +369,10 @@ const CrearProductoSimple: React.FC = ({}) => {
   const handleClearImage = (
     setImage: React.Dispatch<React.SetStateAction<string | null>>
   ) => {
-    setImage(null);
+    setImage(null); // Limpiar la imagen seleccionada
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reiniciar el input de archivo
+    }
   };
 
   const productTypeOptions = productType.map(
@@ -1620,6 +1624,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                 accept="image/*"
                 id="mainImage"
                 className="hidden"
+                ref={fileInputRef}
                 onChange={(e) =>
                   handleImageChange(e, setMainImage, "mainImage")
                 }
