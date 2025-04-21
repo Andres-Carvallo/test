@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { setCookie } from "cookies-next";
+import { setCookie, deleteCookie, getCookie } from "cookies-next";
 import Link from "next/link";
 import {
   GoogleReCaptchaProvider,
@@ -112,7 +112,15 @@ function AdminLoginForm() {
           maxAge: 18000,
         });
         setLoginAttempts(0);
-        window.location.href = "/dashboard";
+        
+        // Obtener la URL de redirección guardada
+        const redirectUrl = getCookie("redirectAfterLogin")?.toString();
+        if (redirectUrl) {
+          deleteCookie("redirectAfterLogin");
+          window.location.href = redirectUrl;
+        } else {
+          window.location.href = "/dashboard";
+        }
       } else {
         throw new Error("Error during login");
       }

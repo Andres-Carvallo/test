@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Loader from "@/components/common/Loader";
 import Sidebar from "@/components/Core/Sidebar";
 import Header from "@/components/Core/HeaderDashboard";
-import { getCookie, deleteCookie } from "cookies-next";
-import { useRouter, usePathname } from "next/navigation";
+import { getCookie, deleteCookie, setCookie } from "cookies-next";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import { jwtDecode } from "jwt-decode";
 import NextTopLoader from "nextjs-toploader";
@@ -18,6 +18,7 @@ export default function RootLayout({
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const handleLogout = async () => {
     deleteCookie("AdminTokenAuth");
@@ -28,6 +29,8 @@ export default function RootLayout({
     const token = getCookie("AdminTokenAuth")?.toString();
 
     if (!token) {
+      const currentPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
+      setCookie("redirectAfterLogin", currentPath);
       router.push("/admin/login");
     } else {
       try {
