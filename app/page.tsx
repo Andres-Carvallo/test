@@ -117,7 +117,6 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <Hero04 />
         </Suspense>
-
         <Suspense fallback={<Banner />}>
           <Parallax />
         </Suspense>
