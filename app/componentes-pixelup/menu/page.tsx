@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportam
 
 
 
-export default async function marcas() {
+export default function menu() {
     return (
       <>
 <div className="bg-gray-100 pb-16">

@@ -2,6 +2,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
+
+const GaleriaBO = dynamic(
+  () => import("@/components/PIXELUP/Galeria/GaleriaBO"),
+  { ssr: false }
+);
 // Importaciones dinámicas para evitar problemas de SSR
 const Hero01BO = dynamic(
   () => import("@/components/PIXELUP/Hero/Hero01/Hero01BO"),
@@ -28,6 +33,10 @@ const BannerPrincipal01BO = dynamic(
     import(
       "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01BO"
     ),
+  { ssr: false }
+);
+const MaterialesBO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/Materiales/MaterialesBO"),
   { ssr: false }
 );
 const MarqueeTOP = dynamic(
@@ -83,6 +92,10 @@ const Categoria01BO = dynamic(
   () => import("@/components/PIXELUP/Categorias/Categoria01/CategoriaBO01"),
   { ssr: false }
 );
+const SinFotoBO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto/SinFotoBO"),
+  { ssr: false }
+);
 const Categoria03BO = dynamic(
   () => import("@/components/PIXELUP/Categorias/Categoria03/CategoriaBO03"),
   { ssr: false }
@@ -99,7 +112,27 @@ const Categoria07BO = dynamic(
   () => import("@/components/PIXELUP/Categorias/Categoria07/CategoriaBO07"),
   { ssr: false }
 );
+const Hero06BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero06/Hero06BO"),
+  { ssr: false }
+);
+const Hero07BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero07/Hero07BO"),
+  { ssr: false }
+);
+const LogosCarruselBO = dynamic(
+  () => import("@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarruselBO"),
+  { ssr: false }
+);
+const Testimonios01BO = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01BO"),
+  { ssr: false }
+);
 
+const Testimonios03BO = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios03/Testimonios03BO"),
+  { ssr: false }
+);
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
     {}
@@ -132,11 +165,15 @@ export default function BannerHome() {
       <title>Content block - Home</title>
       {[
 /*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
- */        {
-          id: "bannerPrincipal01",
-          title: "Banner",
-          component: <BannerPrincipal01BO />,
-        },
+ */        {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
+        {id: "galeria", title: "Galería", component: <GaleriaBO/>},
+        {id: "sinFoto", title: "Sin Foto", component: <SinFotoBO/>},
+        {id: "hero06", title: "Hero 06", component: <Hero06BO/>},
+        {id: "materiales", title: "Materiales", component: <MaterialesBO/>},
+        {id: "logosCarrusel", title: "Logos Carrusel", component: <LogosCarruselBO/>},
+        {id: "hero07", title: "Hero 07", component: <Hero07BO/>},
+        {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
+        {id: "testimonios03", title: "Testimonios 03", component: <Testimonios03BO/>},
 /*         {
           id: "bannerPrincipal02",
           title: "Banner Doble",

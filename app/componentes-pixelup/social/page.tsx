@@ -7,7 +7,8 @@ import LogosCarrusel from "@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarrus
 import LogosDinamicos from "@/components/PIXELUP/Marcas/LogosDinamicos/LogosDinamicos";
 import LogosFijos from "@/components/PIXELUP/Marcas/LogosFijos/LogosFijos";
 import Testimonios01 from "@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01";
-
+import Testimonios02 from "@/components/PIXELUP/Testimonios/Testimonios02/Testimonios02";
+import Testimonios03 from "@/components/PIXELUP/Testimonios/Testimonios03/Testimonios03";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportam
 
 
 
-export default async function marcas() {
+export default function social() {
     return (
       <>
               <div className="inline-flex items-center justify-center w-full">
@@ -30,6 +31,16 @@ export default async function marcas() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Testimonios 01</span>
 </div>
         <Testimonios01 />
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Testimonios 02</span>
+</div>
+        <Testimonios02 />
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Testimonios 03</span>
+</div>
+        <Testimonios03 />
 </>
     );
 }

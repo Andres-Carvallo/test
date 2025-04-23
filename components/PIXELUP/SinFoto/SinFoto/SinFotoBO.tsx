@@ -3,12 +3,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Loader from "@/components/common/Loader-t";
+import Link from "next/link";
+import { FaStore, FaHandshake, FaShieldAlt } from "react-icons/fa";
 
 // Definir interfaces para el tipado
 interface BoxContent {
   title: string;
   contentText: string;
-}
+} 
 
 interface ContentData {
   epigrafe: string;
@@ -17,6 +19,8 @@ interface ContentData {
   box1: BoxContent;
   box2: BoxContent;
   box3: BoxContent;
+  textoBoton: string;
+  linkBoton: string;
 }
 
 interface ApiResponse {
@@ -33,6 +37,47 @@ const SinFotoBO: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [showPreview, setShowPreview] = useState(false);
 
+  // Función de utilidad para formatear URLs
+  const formatURL = (url: string): string => {
+    // Si está vacío o es solo espacios en blanco, devolver string vacío
+    if (!url || url.trim() === "") return "";
+
+    let formattedURL = url.trim().toLowerCase();
+
+    // Si es una ruta interna que comienza con /, la devolvemos tal cual
+    if (formattedURL.startsWith("/")) return formattedURL;
+
+    // Si no tiene protocolo (http/https)
+    if (
+      !formattedURL.startsWith("http://") &&
+      !formattedURL.startsWith("https://")
+    ) {
+      // Si comienza con www., agregamos https://
+      if (formattedURL.startsWith("www.")) {
+        formattedURL = "https://" + formattedURL;
+      }
+      // Si no comienza con www., agregamos https://www.
+      else {
+        // Excluimos dominios comunes que no necesitan www
+        const noWWWDomains = [
+          "localhost",
+          "mail.",
+          "api.",
+          "app.",
+          "dev.",
+          "stage.",
+        ];
+        const shouldAddWWW = !noWWWDomains.some((domain) =>
+          formattedURL.startsWith(domain)
+        );
+
+        formattedURL = "https://" + (shouldAddWWW ? "www." : "") + formattedURL;
+      }
+    }
+
+    return formattedURL;
+  };
+
   // Estado para los datos del formulario
   const [formData, setFormData] = useState<ContentData>({
     epigrafe: "",
@@ -41,6 +86,8 @@ const SinFotoBO: React.FC = () => {
     box1: { title: "", contentText: "" },
     box2: { title: "", contentText: "" },
     box3: { title: "", contentText: "" },
+    textoBoton: "",
+    linkBoton: "",
   });
 
   const fetchData = async () => {
@@ -86,11 +133,17 @@ const SinFotoBO: React.FC = () => {
       const token = getCookie("AdminTokenAuth");
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
+      // Formatear el link del botón antes de enviar
+      const formattedLinkBoton = formatURL(formData.linkBoton);
+
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${ContentBlockId}?siteId=${siteId}`,
         {
           title: "SinFoto Content",
-          contentText: JSON.stringify(formData),
+          contentText: JSON.stringify({
+            ...formData,
+            linkBoton: formattedLinkBoton,
+          }),
         },
         {
           headers: {
@@ -167,95 +220,48 @@ const SinFotoBO: React.FC = () => {
         {showPreview && (
           <div className="mb-8 overflow-x-auto">
             <h3 className="font-medium text-gray-700 mb-4">Vista Previa:</h3>
-            <section id="propuesta-valor" className="pt-16 pb-8">
-              <div className="mx-auto px-4 md:px-8 max-w-7xl text-center">
-                <h2 className="text-xl md:text-3xl font-lora font-light text-[#10375d] mb-2">
-                  {formData.epigrafe}
-                </h2>
-                <p className="text-lg italic font-lora text-[#10375d] mb-8 max-w-3xl mx-auto">
-                  {formData.contenido}
-                </p>
+            <section className="py-12 bg-gradient-to-b from-white to-gray-50">
+              <div className="mx-auto px-4">
+                <div className="max-w-3xl mx-auto text-center">
+                  <h2 className="text-2xl font-bold text-[#EB4F5D] mt-2 mb-4">
+                    {formData.epigrafe}
+                  </h2>
+                  <p className="text-gray-600 mb-8">
+                    {formData.contenido}
+                  </p>
+                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[formData.box1, formData.box2, formData.box3].map((box, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col items-center text-center relative p-4"
-                    >
-                      <div className="mb-3">
-                        <svg
-                          className="w-8 h-8 text-[#10375d] stroke-current"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          {index === 0 && (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth={1}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="lucide lucide-star"
-                            >
-                              <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
-                            </svg>
-                          )}
-                          {index === 1 && (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth={1}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="lucide lucide-trending-up"
-                            >
-                              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-                              <polyline points="16 7 22 7 22 13" />
-                            </svg>
-                          )}
-                          {index === 2 && (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth={1}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="lucide lucide-truck"
-                            >
-                              <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
-                              <path d="M15 18H9" />
-                              <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
-                              <circle cx="17" cy="18" r="2" />
-                              <circle cx="7" cy="18" r="2" />
-                            </svg>
-                          )}
-                        </svg>
+                <div className="max-w-4xl mx-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+                    {/* Líneas separadoras */}
+                    <div className="hidden md:block absolute top-1/2 left-1/3 w-px h-16 bg-gray-200 transform -translate-y-1/2"></div>
+                    <div className="hidden md:block absolute top-1/2 left-2/3 w-px h-16 bg-gray-200 transform -translate-y-1/2"></div>
+
+                    {[formData.box1, formData.box2, formData.box3].map((box, index) => (
+                      <div key={index} className="flex flex-col items-center text-center p-4">
+                        <div className="bg-[#2F3C69]/10 rounded-full p-3 mb-4">
+                          {index === 0 && <FaHandshake className="text-2xl text-[#2F3C69]" />}
+                          {index === 1 && <FaShieldAlt className="text-2xl text-[#2F3C69]" />}
+                          {index === 2 && <FaStore className="text-2xl text-[#2F3C69]" />}
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                          {box.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          {box.contentText}
+                        </p>
                       </div>
-                      <h3 className="text-lg font-medium text-[#ca2b63] mb-2 font-lora">
-                        {box.title}
-                      </h3>
-                      <p className="text-sm text-[#10375d] leading-relaxed max-w-xs">
-                        {box.contentText}
-                      </p>
-                      {index < 2 && (
-                        <div className="hidden md:block absolute right-0 top-0 bottom-0 w-px bg-[#ca2b63] opacity-30 -mx-2"></div>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+
+                  <div className="text-center mt-8">
+                    <Link
+                      href={formData.linkBoton || '#'}
+                      className="inline-block bg-[#EB4F5D] text-white px-6 py-2 rounded-full text-sm hover:bg-[#EB4F5D]/90 transition-colors duration-300"
+                    >
+                      {formData.textoBoton || 'Texto del botón'}
+                    </Link>
+                  </div>
                 </div>
               </div>
             </section>
@@ -264,44 +270,65 @@ const SinFotoBO: React.FC = () => {
 
         {/* Formulario de edición */}
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Epígrafe
-              </label>
-              <input
-                type="text"
-                value={formData.epigrafe}
-                onChange={(e) => handleChange("epigrafe", e.target.value)}
-                className="mt-1 block w-full bg-gray-50 py-2 px-4 rounded-md border-gray-300 shadow-sm"
-                placeholder="Texto del epígrafe"
-              />
-            </div>
-{/*             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Título
-              </label>
-              <input
-                type="text"
-                value={formData.titulo}
-                onChange={(e) => handleChange("titulo", e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 py-2 px-4 shadow-sm"
-                placeholder="Título principal"
-              />
-            </div> */}
+          <div>
+            <h3 className="font-normal text-primary">
+              Epígrafe <span className="text-primary">*</span>
+            </h3>
+            <input
+              type="text"
+              value={formData.epigrafe}
+              onChange={(e) => handleChange("epigrafe", e.target.value)}
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
+              placeholder="Texto del epígrafe"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Texto Principal
-            </label>
+            <h3 className="font-normal text-primary">
+              Texto Principal <span className="text-primary">*</span>
+            </h3>
             <textarea
               value={formData.contenido}
               onChange={(e) => handleChange("contenido", e.target.value)}
-              className="mt-1 bg-gray-50 py-2 px-4 block w-full rounded-md border-gray-300 shadow-sm"
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
               rows={3}
               placeholder="Texto principal de la sección"
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-normal text-primary">
+                Texto del Botón <span className="text-primary">*</span>
+              </h3>
+              <input
+                type="text"
+                value={formData.textoBoton}
+                onChange={(e) => handleChange("textoBoton", e.target.value)}
+                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                style={{ borderRadius: "var(--radius)" }}
+                placeholder="Texto del botón"
+              />
+            </div>
+            <div>
+              <h3 className="font-normal text-primary">
+                Link del Botón <span className="text-primary">*</span>
+              </h3>
+              <input
+                type="text"
+                value={formData.linkBoton}
+                onChange={(e) => handleChange("linkBoton", e.target.value)}
+                onBlur={(e) => {
+                  const formattedLink = formatURL(e.target.value);
+                  handleChange("linkBoton", formattedLink);
+                }}
+                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                style={{ borderRadius: "var(--radius)" }}
+                placeholder="URL del botón"
+              />
+            </div>
           </div>
 
           {/* Boxes Forms */}
@@ -314,24 +341,26 @@ const SinFotoBO: React.FC = () => {
                   <h3 className="text-lg font-semibold mb-4">Box {boxNum}</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Título
-                      </label>
+                      <h3 className="font-normal text-primary">
+                        Título <span className="text-primary">*</span>
+                      </h3>
                       <input
                         type="text"
                         value={boxData.title}
                         onChange={(e) => handleChange("title", e.target.value, boxNum - 1)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-white py-2 px-4"
+                        className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                        style={{ borderRadius: "var(--radius)" }}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Contenido
-                      </label>
+                      <h3 className="font-normal text-primary">
+                        Contenido <span className="text-primary">*</span>
+                      </h3>
                       <textarea
                         value={boxData.contentText}
                         onChange={(e) => handleChange("contentText", e.target.value, boxNum - 1)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-white py-2 px-4"
+                        className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+                        style={{ borderRadius: "var(--radius)" }}
                         rows={3}
                       />
                     </div>

@@ -87,6 +87,11 @@ export const mainMenuConfig: MenuConfig = {
       path: "/contacto",
       isVisible: true,
     },
+    {
+      title: "Componentes",
+      path: "/componentes-pixelup",
+      isVisible: true,
+    },
   ],
 };
 
