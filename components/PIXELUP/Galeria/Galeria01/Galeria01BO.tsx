@@ -45,7 +45,7 @@ const GaleriaBO = () => {
   const fetchBannerCategoryHome = async () => {
     try {
       setLoading(true);
-      const bannerId = `${process.env.NEXT_PUBLIC_GALERIA_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_GALERIA01_ID}`;
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
       const BannersCategory = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${siteId}`
@@ -81,7 +81,7 @@ const GaleriaBO = () => {
   };
 
   const deleteSlider = async (id: any) => {
-    const bannerId = `${process.env.NEXT_PUBLIC_GALERIA_ID}`;
+    const bannerId = `${process.env.NEXT_PUBLIC_GALERIA01_ID}`;
     try {
       const token = getCookie("AdminTokenAuth");
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -117,7 +117,7 @@ const GaleriaBO = () => {
       return;
     }
 
-    const bannerId = `${process.env.NEXT_PUBLIC_GALERIA_ID}`;
+    const bannerId = `${process.env.NEXT_PUBLIC_GALERIA01_ID}`;
 
     try {
       const token = getCookie("AdminTokenAuth");

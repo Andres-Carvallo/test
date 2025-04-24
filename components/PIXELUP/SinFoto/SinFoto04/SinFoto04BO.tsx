@@ -11,10 +11,13 @@ interface BoxContent {
 }
 
 interface ContentData {
+  title: string;
   box1: BoxContent;
   box2: BoxContent;
   box3: BoxContent;
   box4: BoxContent;
+  box5: BoxContent;
+  box6: BoxContent;
 }
 
 interface ApiResponse {
@@ -26,17 +29,20 @@ interface ApiResponse {
   };
 }
 
-const SinFotoBO: React.FC = () => {
-  const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO02_CONTENTBLOCK || "";
+const SinFoto04BO: React.FC = () => {
+  const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO04_CONTENTBLOCK || "";
   const [loading, setLoading] = useState<boolean>(true);
   const [showPreview, setShowPreview] = useState(false);
 
   // Estado para los datos del formulario
   const [formData, setFormData] = useState<ContentData>({
+    title: "",
     box1: { title: "", contentText: "" },
     box2: { title: "", contentText: "" },
     box3: { title: "", contentText: "" },
     box4: { title: "", contentText: "" },
+    box5: { title: "", contentText: "" },
+    box6: { title: "", contentText: "" },
   });
 
   const fetchData = async () => {
@@ -165,58 +171,71 @@ const SinFotoBO: React.FC = () => {
             <h3 className="font-medium text-gray-700 mb-4">Vista Previa:</h3>
             <section className="py-16 bg-white">
               <div className="mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-                  {/* Separadores verticales */}
-                  <div className="hidden lg:block absolute left-1/4 top-4 bottom-4 w-px bg-[#F9AF2A]"></div>
-                  <div className="hidden lg:block absolute left-1/2 top-4 bottom-4 w-px bg-[#F9AF2A]"></div>
-                  <div className="hidden lg:block absolute left-3/4 top-4 bottom-4 w-px bg-[#F9AF2A]"></div>
-
-                  {[formData.box1, formData.box2, formData.box3, formData.box4].map((box, index) => (
-                    <div key={index} className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="bg-primary/10 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
+                <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
+                  {formData.title || "Título Principal"}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[formData.box1, formData.box2, formData.box3, formData.box4, formData.box5, formData.box6].map((box, index) => (
+                    <div key={index} className="bg-gray-50 p-8 rounded-2xl hover:shadow-xl transition-all duration-300">
+                      <div className="w-16 h-16 bg-[#F5A623]/10 rounded-full flex items-center justify-center mb-6">
                         <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-7 w-7 text-primary"
+                          className="w-8 h-8 text-[#F5A623]"
                           fill="none"
-                          viewBox="0 0 24 24"
                           stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
                           {index === 0 && (
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                              strokeWidth="2"
+                              d="M13 10V3L4 14h7v7l9-11h-7z"
                             />
                           )}
                           {index === 1 && (
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              strokeWidth="2"
+                              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                             />
                           )}
                           {index === 2 && (
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                              strokeWidth="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                             />
                           )}
                           {index === 3 && (
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              strokeWidth="2"
+                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          )}
+                          {index === 4 && (
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                            />
+                          )}
+                          {index === 5 && (
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"
                             />
                           )}
                         </svg>
                       </div>
-                      <h3 className="text-lg font-semibold mb-1">{box.title}</h3>
-                      <p className="text-gray-600 text-sm">{box.contentText}</p>
+                      <h3 className="text-xl font-bold mb-4">{box.title}</h3>
+                      <p className="text-gray-600">{box.contentText}</p>
                     </div>
                   ))}
                 </div>
@@ -227,9 +246,23 @@ const SinFotoBO: React.FC = () => {
 
         {/* Formulario de edición */}
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4">
+          {/* Título principal */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <h3 className="font-normal text-primary">
+              Título Principal <span className="text-primary">*</span>
+            </h3>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
+              required
+            />
+          </div>
+
           {/* Boxes Forms */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((boxNum) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((boxNum) => {
               const boxKey = `box${boxNum}` as keyof ContentData;
               const boxData = formData[boxKey] as BoxContent;
               return (
@@ -279,4 +312,4 @@ const SinFotoBO: React.FC = () => {
   );
 };
 
-export default SinFotoBO;
+export default SinFoto04BO;

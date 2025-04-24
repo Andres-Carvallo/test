@@ -2,7 +2,7 @@
 
 'use client';
 
-import Galeria from "@/components/PIXELUP/Galeria/Galeria";
+import Galeria01 from "@/components/PIXELUP/Galeria/Galeria01/Galeria01";
 import Hero01 from "@/components/PIXELUP/Hero/Hero01/Hero01";
 import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
@@ -15,7 +15,14 @@ import SinFoto03 from "@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03";
 import Hero06 from "@/components/PIXELUP/Hero/Hero06/Hero06";
 import Hero07 from "@/components/PIXELUP/Hero/Hero07/Hero07";
 import Materiales from "@/components/PIXELUP/SinFoto/Materiales/Materiales";
+import Ubicacion02 from "@/components/PIXELUP/Ubicacion/Ubicacion02/Ubicacion02";
 import Ubicacion from "@/components/PIXELUP/Ubicacion/Ubicacion";
+import Hero08 from "@/components/PIXELUP/Hero/Hero08/Hero08";
+import Hero09 from "@/components/PIXELUP/Hero/Hero09/Hero09";
+import SinFoto04 from "@/components/PIXELUP/SinFoto/SinFoto04/SinFoto04";
+import Galeria02 from "@/components/PIXELUP/Galeria/Galeria02/Galeria02";
+import Servicios01 from "@/components/PIXELUP/Servicios/Servicios01/Servicios01";
+import Servicios02 from "@/components/PIXELUP/Servicios/Servicios02/Servicios02";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -25,9 +32,14 @@ export default function hero() {
 
               <div className="inline-flex items-center justify-center w-full">
     <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
-    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Galería</span>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Galería 01</span>
 </div>
-<Galeria/>
+<Galeria01/>
+              <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Galería 02</span>
+</div>
+<Galeria02/>
               <div className="inline-flex items-center justify-center w-full">
     <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Hero 01</span>
@@ -66,6 +78,16 @@ export default function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Hero 07</span>
 </div>
 <Hero07/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Hero 08</span>
+</div>
+<Hero08/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Hero 09</span>
+</div>
+<Hero09/>
 
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
@@ -78,22 +100,21 @@ export default function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 01</span>
 </div>
         <SinFoto01/>
-        {/* <div className="inline-flex items-center justify-center w-full">
+         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 02</span>
 </div>
-        <SinFoto02           
-                  WelcomeData={{
-                    BannerId: process.env.NEXT_PUBLIC_SINFOTO02_CONTENTBLOCK || "",
-                    Box1Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX1_CONTENTBLOCK || "",
-                    Box2Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX2_CONTENTBLOCK || "",
-                    Box3Id: process.env.NEXT_PUBLIC_SINFOTO02_BOX3_CONTENTBLOCK || "",
-                  }}/> */}
+        <SinFoto02/>
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 03</span>
 </div>
         <SinFoto03/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 04  </span>
+</div>
+        <SinFoto04/>
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Materiales</span>
@@ -104,6 +125,21 @@ export default function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Ubicación</span>
 </div>
         <Ubicacion/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Ubicación 02 </span>
+</div>
+        <Ubicacion02/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Servicios 01 </span>
+</div>
+        <Servicios01/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Servicios 02 </span>
+</div>
+        <Servicios02/>
 
 </>
     );

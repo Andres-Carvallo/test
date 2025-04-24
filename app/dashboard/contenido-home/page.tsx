@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 
 
 const GaleriaBO = dynamic(
-  () => import("@/components/PIXELUP/Galeria/GaleriaBO"),
+  () => import("@/components/PIXELUP/Galeria/Galeria01/Galeria01BO"),
   { ssr: false }
 );
 // Importaciones dinámicas para evitar problemas de SSR
@@ -55,10 +55,7 @@ const SinFoto01BO = dynamic(
   () => import("@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01BO"),
   { ssr: false }
 );
-const SinFoto02BO = dynamic(
-  () => import("@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02BO"),
-  { ssr: false }
-);
+
 const Hero03BO = dynamic(
   () => import("@/components/PIXELUP/Hero/Hero03/Hero03BO"),
   { ssr: false }
@@ -76,10 +73,7 @@ const Colecciones02BO = dynamic(
     import("@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02BO"),
   { ssr: false }
 );
-const UbicacionBO = dynamic(
-  () => import("@/components/PIXELUP/Ubicacion/UbicacionBO"),
-  { ssr: false }
-);
+
 const Hero05BO = dynamic(
   () => import("@/components/PIXELUP/Hero/Hero05/Hero05BO"),
   { ssr: false }
@@ -128,9 +122,45 @@ const Testimonios01BO = dynamic(
   () => import("@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01BO"),
   { ssr: false }
 );
+const Colecciones01BO = dynamic(
+  () => import("@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01BO"),
+  { ssr: false }
+);
+const Ubicacion02BO = dynamic(
+  () => import("@/components/PIXELUP/Ubicacion/Ubicacion02/Ubicacion02BO"),
+  { ssr: false }
+);
+const Hero08BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero08/Hero08BO"),
+  { ssr: false }
+);
+const SinFoto02BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02BO"),
+  { ssr: false }
+);
+const Hero09BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero09/Hero09BO"),
+  { ssr: false }
+);
+const SinFoto04BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto04/SinFoto04BO"),
+  { ssr: false }
+);
 
 const Testimonios03BO = dynamic(
   () => import("@/components/PIXELUP/Testimonios/Testimonios03/Testimonios03BO"),
+  { ssr: false }
+);
+const Galeria02BO = dynamic(
+  () => import("@/components/PIXELUP/Galeria/Galeria02/Galeria02BO"),
+  { ssr: false }
+);
+const Servicios01BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios01/Servicios01BO"),
+  { ssr: false }
+);
+const Servicios02BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios02/Servicios02BO"),
   { ssr: false }
 );
 export default function BannerHome() {
@@ -165,15 +195,27 @@ export default function BannerHome() {
       <title>Content block - Home</title>
       {[
 /*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
- */        {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
-        {id: "galeria", title: "Galería", component: <GaleriaBO/>},
+ */     {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
+ {id: "sinFoto04", title: "Sin Foto 04", component: <SinFoto04BO/>},
+ {id: "galeria02", title: "Galería 02", component: <Galeria02BO/>},
+ {id: "ubicacion02", title: "Ubicación 02", component: <Ubicacion02BO/>},
+ {id: "servicios01", title: "Servicios 01", component: <Servicios01BO/>},
+ {id: "servicios02", title: "Servicios 02", component: <Servicios02BO/>},
+/*         
+
+{id: "galeria", title: "Galería", component: <GaleriaBO/>},
         {id: "sinFoto", title: "Sin Foto", component: <SinFotoBO/>},
+        {id: "sinFoto02", title: "Sin Foto 02", component: <SinFoto02BO/>},
         {id: "hero06", title: "Hero 06", component: <Hero06BO/>},
         {id: "materiales", title: "Materiales", component: <MaterialesBO/>},
         {id: "logosCarrusel", title: "Logos Carrusel", component: <LogosCarruselBO/>},
         {id: "hero07", title: "Hero 07", component: <Hero07BO/>},
         {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
         {id: "testimonios03", title: "Testimonios 03", component: <Testimonios03BO/>},
+        {id: "colecciones01", title: "Colecciones 01", component: <Colecciones01BO/>},
+        {id: "ubicacionContent", title: "Ubicación", component: <Ubicacion02BO/>},
+        {id: "hero08", title: "Hero 08", component: <Hero08BO/>},
+        {id: "hero09", title: "Hero 09", component: <Hero09BO/>}, */
 /*         {
           id: "bannerPrincipal02",
           title: "Banner Doble",
