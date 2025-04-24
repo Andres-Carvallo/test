@@ -179,6 +179,14 @@ const NavbarbannerBO = dynamic(
   () => import("@/components/PIXELUP/Navbar/Navbarbanner/NavbarbannerBO"),
   { ssr: false }
 );
+const Nosotros01BO = dynamic(
+  () => import("@/components/PIXELUP/Nosotros/Nosotros01/Nosotros01BO"),
+  { ssr: false }
+);
+const Servicios04BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios04/Servicios04BO"),
+  { ssr: false }
+);
 
 
 export default function BannerHome() {
@@ -216,14 +224,17 @@ export default function BannerHome() {
  */     {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
  {id: "sinFoto04", title: "Sin Foto 04", component: <SinFoto04BO/>},
  {id: "navbarbanner", title: "Navbar Banner", component: <NavbarbannerBO/>},
+ {id: "colecciones01", title: "Coleccion 01", component: <Colecciones01BO/>},
  {id: "colecciones02", title: "Coleccion 02", component: <Colecciones02BO/>},
  {id: "galeria02", title: "Galería 02", component: <Galeria02BO/>},
+ {id: "nosotros01", title: "Nosotros 01", component: <Nosotros01BO/>},
  {id: "sinFoto06", title: "Sin Foto 06", component: <SinFoto06BO/>},
  {id: "sinFoto07", title: "Sin Foto 07", component: <SinFoto07BO/>},
  {id: "ubicacion02", title: "Ubicación 02", component: <Ubicacion02BO/>},
  {id: "servicios01", title: "Servicios 01", component: <Servicios01BO/>},
  {id: "servicios02", title: "Servicios 02", component: <Servicios02BO/>},
  {id: "servicios03", title: "Servicios 03", component: <Servicios03BO/>},
+ {id: "servicios04", title: "Servicios 04", component: <Servicios04BO/>},
 /*         
 
 {id: "galeria", title: "Galería", component: <GaleriaBO/>},

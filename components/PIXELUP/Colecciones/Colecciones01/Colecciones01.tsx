@@ -86,7 +86,28 @@ function Colecciones06() {
                     {coleccion.title}
                   </h3>
                   <p className="text-gray-600 text-sm mb-6">
-                    {coleccion.bannerText || "Descubre nuestra exclusiva colección"}
+                    {(() => {
+                      let bannerText = "";
+                      
+                      try {
+                        // Intentar parsear el bannerText como JSON si es una cadena JSON
+                        if (coleccion.bannerText && coleccion.bannerText.startsWith('{')) {
+                          const config = JSON.parse(coleccion.bannerText);
+                          if (config.desktop && config.desktop.showBannerText) {
+                            bannerText = config.desktop.bannerText || "Sin descripción";
+                          }
+                        } else {
+                          // Si no es JSON, mostrar el texto original
+                          bannerText = coleccion.bannerText || "";
+                        }
+                      } catch (e) {
+                        // Si hay error al parsear, mantener el texto original
+                        console.error("Error al parsear el bannerText:", e);
+                        bannerText = coleccion.bannerText || "Sin descripción";
+                      }
+                      
+                      return bannerText;
+                    })()}
                   </p>
                   <Link 
                     href={`/tienda/colecciones/${slugify(coleccion.title)}`}

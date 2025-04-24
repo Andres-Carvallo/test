@@ -27,6 +27,8 @@ import Servicios03 from "@/components/PIXELUP/Servicios/Servicios03/Servicios03"
 import SinFoto05 from "@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05";
 import SinFoto06 from "@/components/PIXELUP/SinFoto/SinFoto06/SinFoto06";
 import SinFoto07 from "@/components/PIXELUP/SinFoto/SinFoto07/SinFoto07";
+import Nosotros01 from "@/components/PIXELUP/Nosotros/Nosotros01/Nosotros01";
+import Servicios04 from "@/components/PIXELUP/Servicios/Servicios04/Servicios04";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -160,6 +162,16 @@ export default function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Servicios 03 </span>
 </div>
         <Servicios03/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Servicios 04 </span>
+</div>
+        <Servicios04/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Nosotros 01 </span>
+</div>
+        <Nosotros01/>
 
 </>
     );

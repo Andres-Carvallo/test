@@ -7,9 +7,35 @@ import { slugify } from "@/app/utils/slugify";
 import { toast } from "react-hot-toast";
 import Select from "react-select";
 
+// Definir la interfaz para la configuración de visualización
+interface CollectionConfig {
+  id: string;
+  desktop: {
+    showTitle: boolean;
+    showBannerText: boolean;
+    showButton: boolean;
+    textAlignment: string;
+    bannerText: string;
+    title: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+  mobile: {
+    showTitle: boolean;
+    showBannerText: boolean;
+    showButton: boolean;
+    textAlignment: string;
+    bannerText: string;
+    title: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+} 
+
 const Colecciones01BO = () => {
   const [collections, setCollections] = useState<any[]>([]);
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  const [collectionConfigs, setCollectionConfigs] = useState<CollectionConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<any>(null);
@@ -41,6 +67,10 @@ const Colecciones01BO = () => {
       // Cargar las colecciones seleccionadas guardadas
       const savedCollections = await fetchSavedCollections();
       setSelectedCollections(savedCollections);
+      
+      // Cargar las configuraciones de las colecciones
+      const savedConfigs = await fetchCollectionConfigs();
+      setCollectionConfigs(savedConfigs);
     } catch (error) {
       console.error("Error fetching collections:", error);
       setError(error as Error);
@@ -67,6 +97,30 @@ const Colecciones01BO = () => {
       return response.data.contentBlock.contentText ? JSON.parse(response.data.contentBlock.contentText) : [];
     } catch (error) {
       console.error("Error fetching saved collections:", error);
+      return [];
+    }
+  };
+
+  const fetchCollectionConfigs = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const contentBlockId = process.env.NEXT_PUBLIC_COLECCIONES01_CONTENTBLOCK || "";
+      
+      if (!contentBlockId) return [];
+      
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${siteId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      return response.data.contentBlock.contentText ? JSON.parse(response.data.contentBlock.contentText) : [];
+    } catch (error) {
+      console.error("Error fetching collection configs:", error);
       return [];
     }
   };
@@ -185,6 +239,11 @@ const Colecciones01BO = () => {
     setHasChanges(true);
   };
 
+  // Función para obtener la configuración de una colección
+  const getCollectionConfig = (collectionId: string): CollectionConfig | undefined => {
+    return collectionConfigs.find(config => config.id === collectionId);
+  };
+
   if (loading) return <div>Cargando colecciones...</div>;
   if (error) return <div>Error al cargar las colecciones</div>;
 
@@ -255,49 +314,27 @@ const Colecciones01BO = () => {
               const indexB = selectedCollections.indexOf(b.id);
               return indexA - indexB;
             })
-            .map((collection, index) => (
-              <div
-                key={collection.id}
-                className="border rounded-lg overflow-hidden shadow-sm transition-all duration-300 border-primary/20 shadow-primary/20"
-              >
-                <div className="relative hidden md:block h-48">
-                  <img
-                    src={collection.previewImageUrl || "/carr/default.jpg"}
-                    alt={collection.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-sm">
-                    Orden: {index + 1}
-                  </div>
-                  <button
-                    onClick={() => handleCollectionToggle(collection.id)}
-                    className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
-                    title="Eliminar"
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      strokeWidth={2} 
-                      stroke="currentColor" 
-                      className="w-5 h-5"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <div className="p-4">
-                  <div className="flex justify-between items-center mb-2 md:hidden">
-                    <div className="bg-green-500 text-white px-2 py-1 rounded text-sm">
+            .map((collection, index) => {
+              // Obtener la configuración de la colección
+              const config = getCollectionConfig(collection.id);
+              
+              return (
+                <div
+                  key={collection.id}
+                  className="border rounded-lg overflow-hidden shadow-sm transition-all duration-300 border-primary/20 shadow-primary/20"
+                >
+                  <div className="relative hidden md:block h-48">
+                    <img
+                      src={collection.previewImageUrl || "/carr/default.jpg"}
+                      alt={collection.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-sm">
                       Orden: {index + 1}
                     </div>
                     <button
                       onClick={() => handleCollectionToggle(collection.id)}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                      className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
                       title="Eliminar"
                     >
                       <svg 
@@ -316,93 +353,141 @@ const Colecciones01BO = () => {
                       </svg>
                     </button>
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">{collection.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    {collection.bannerText || "Sin descripción"}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleMoveCollection(index, 'left')}
-                      disabled={index === 0}
-                      className={`flex-1 py-2 px-4 rounded font-semibold transition-colors ${
-                        index === 0
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                      }`}
-                      title="Mover a la izquierda"
-                    >
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto md:block hidden"
+                  <div className="p-4">
+                    <div className="flex justify-between items-center mb-2 md:hidden">
+                      <div className="bg-green-500 text-white px-2 py-1 rounded text-sm">
+                        Orden: {index + 1}
+                      </div>
+                      <button
+                        onClick={() => handleCollectionToggle(collection.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors"
+                        title="Eliminar"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" 
-                        />
-                      </svg>
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto block md:hidden"
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={2} 
+                          stroke="currentColor" 
+                          className="w-5 h-5"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <h3 className="font-semibold text-lg mb-2">{collection.title}</h3>
+                    <p className="text-gray-600 text-sm mb-4">
+                      {(() => {
+                        let bannerText = "Sin Descripción";
+                        
+                        try {
+                          // Intentar parsear el bannerText como JSON si es una cadena JSON
+                          if (collection.bannerText && collection.bannerText.startsWith('{')) {
+                            const config = JSON.parse(collection.bannerText);
+                            if (config.desktop && config.desktop.showBannerText) {
+                              bannerText = config.desktop.bannerText || "Sin descripción";
+                            }
+                          } else {
+                            // Si no es JSON, mostrar el texto original
+                            bannerText = collection.bannerText || "";
+                          }
+                        } catch (e) {
+                          // Si hay error al parsear, mantener el texto original
+                          console.error("Error al parsear el bannerText:", e);
+                          bannerText = collection.bannerText || "Sin descripción";
+                        }
+                        
+                        return bannerText;
+                      })()}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleMoveCollection(index, 'left')}
+                        disabled={index === 0}
+                        className={`flex-1 py-2 px-4 rounded font-semibold transition-colors ${
+                          index === 0
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                        }`}
+                        title="Mover a la izquierda"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M4.5 15.75l7.5-7.5 7.5 7.5" 
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleMoveCollection(index, 'right')}
-                      disabled={index === selectedCollections.length - 1}
-                      className={`flex-1 py-2 px-4 rounded font-semibold transition-colors ${
-                        index === selectedCollections.length - 1
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                      }`}
-                      title="Mover a la derecha"
-                    >
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto md:block hidden"
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={1.5} 
+                          stroke="currentColor" 
+                          className="w-6 h-6 mx-auto md:block hidden"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" 
+                          />
+                        </svg>
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={1.5} 
+                          stroke="currentColor" 
+                          className="w-6 h-6 mx-auto block md:hidden"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M4.5 15.75l7.5-7.5 7.5 7.5" 
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleMoveCollection(index, 'right')}
+                        disabled={index === selectedCollections.length - 1}
+                        className={`flex-1 py-2 px-4 rounded font-semibold transition-colors ${
+                          index === selectedCollections.length - 1
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-primary text-secondary hover:bg-secondary hover:text-primary"
+                        }`}
+                        title="Mover a la derecha"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" 
-                        />
-                      </svg>
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto block md:hidden"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M19.5 8.25l-7.5 7.5-7.5-7.5" 
-                        />
-                      </svg>
-                    </button>
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={1.5} 
+                          stroke="currentColor" 
+                          className="w-6 h-6 mx-auto md:block hidden"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" 
+                          />
+                        </svg>
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          strokeWidth={1.5} 
+                          stroke="currentColor" 
+                          className="w-6 h-6 mx-auto block md:hidden"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" 
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </div>
 
         <div className="mt-8 text-center">

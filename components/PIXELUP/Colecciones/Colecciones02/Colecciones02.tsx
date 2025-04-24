@@ -7,6 +7,8 @@ import { useAPI } from "@/app/Context/ProductTypeContext";
 import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import ProductCard04 from "../../ProductCards/ProductCards04/ProductCards04";
+import ProductCard05 from "../../ProductCards/ProductCards05/ProductCards05";
 
 interface Product {
   id: string;
@@ -17,11 +19,17 @@ interface Product {
   // Otros campos que puedan estar en el producto
 }
 
+interface CollectionWithProducts {
+  id: string;
+  title: string;
+  products: Product[];
+}
+
 function Colecciones02() {
   const [collections, setCollections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [collectionsWithProducts, setCollectionsWithProducts] = useState<CollectionWithProducts[]>([]);
   const [autoplay, setAutoplay] = useState(true);
   const { addToCartHandler } = useAPI();
 
@@ -134,53 +142,62 @@ function Colecciones02() {
 
         setCollections(validCollections);
 
-        // Si hay colecciones válidas, obtener los productos de la primera colección
+        // Si hay colecciones válidas, obtener los productos de cada colección
         if (validCollections.length > 0) {
-          const firstCollection = validCollections[0];
-          const collectionProductsResponse = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections/${firstCollection.id}?siteId=${siteid}`
-          );
-          
-          const collectionProducts = collectionProductsResponse.data.collection.products || [];
-          
-          // Filtrar productos activos y obtener stock
-          const activeProducts = collectionProducts.filter(
-            (product: any) => product.statusCode === "ACTIVE"
-          );
-          
-          const productsWithDetails = await Promise.all(
-            activeProducts.map(async (product: any) => {
-              let stock = null;
-              if (!product.hasVariations && product.skuId) {
-                stock = await fetchStockForVariation(
-                  product.id,
-                  product.skuId
-                );
-              }
+          const collectionsWithProductsData = await Promise.all(
+            validCollections.map(async (collection: any) => {
+              const collectionProductsResponse = await axios.get(
+                `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections/${collection.id}?siteId=${siteid}`
+              );
+              
+              const collectionProducts = collectionProductsResponse.data.collection.products || [];
+              
+              // Filtrar productos activos y obtener stock
+              const activeProducts = collectionProducts.filter(
+                (product: any) => product.statusCode === "ACTIVE"
+              );
+              
+              const productsWithDetails = await Promise.all(
+                activeProducts.map(async (product: any) => {
+                  let stock = null;
+                  if (!product.hasVariations && product.skuId) {
+                    stock = await fetchStockForVariation(
+                      product.id,
+                      product.skuId
+                    );
+                  }
 
-              if (product.hasVariations) {
-                const pricingRanges = await getPriceForVariableProduct(product);
-                return {
-                  ...product,
-                  pricingRanges: [pricingRanges],
-                  stock,
-                };
-              } else {
-                const priceData = await fetchPriceForProduct(
-                  product.id,
-                  product.skuId
-                );
-                const price = priceData?.skuPricings?.[0]?.unitPrice || null;
-                return {
-                  ...product,
-                  pricings: [{ amount: price }],
-                  stock,
-                };
-              }
+                  if (product.hasVariations) {
+                    const pricingRanges = await getPriceForVariableProduct(product);
+                    return {
+                      ...product,
+                      pricingRanges: [pricingRanges],
+                      stock,
+                    };
+                  } else {
+                    const priceData = await fetchPriceForProduct(
+                      product.id,
+                      product.skuId
+                    );
+                    const price = priceData?.skuPricings?.[0]?.unitPrice || null;
+                    return {
+                      ...product,
+                      pricings: [{ amount: price }],
+                      stock,
+                    };
+                  }
+                })
+              );
+              
+              return {
+                id: collection.id,
+                title: collection.title,
+                products: productsWithDetails
+              };
             })
           );
           
-          setProducts(productsWithDetails);
+          setCollectionsWithProducts(collectionsWithProductsData);
         }
       } catch (error) {
         console.error("Error fetching collections:", error);
@@ -313,103 +330,130 @@ function Colecciones02() {
     );
   };
 
-  const showArrows = products.length > 4;
-  const collectionTitle = collections.length > 0 ? collections[0].title : "Nuestras Colecciones";
-
   return (
     <div className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="text-sm uppercase tracking-wider text-gray-500">
-            Descubre
-          </span>
-          <h2 className="text-3xl md:text-4xl text-gray-800 font-bold mt-2">
-            {collectionTitle}
-          </h2>
-        </div>
-
-        {products.length > 0 ? (
-          <div className="relative">
-            <Carousel
-              swipeable={true}
-              draggable={true}
-              ssr={true}
-              showDots={true}
-              responsive={responsive}
-              infinite={true}
-              autoPlay={autoplay}
-              arrows={false}
-              autoPlaySpeed={10000}
-              keyBoardControl={true}
-              customTransition="all .5s"
-              transitionDuration={500}
-              containerClass="carousel-container relative"
-              removeArrowOnDeviceType={["tablet", "mobile"]}
-              dotListClass="custom-dot-list-style mt-12"
-              itemClass="px-2 mb-12"
-              customButtonGroup={showArrows ? <CustomButtonGroupAsArrows /> : undefined}
-              renderButtonGroupOutside={true}
-            >
-              {products.map((product: any) => (
-                <ProductCard01
-                  key={product.id}
-                  product={product}
-                  addToCartHandler={addToCartHandler}
-                  isOnSale={product.offers && product.offers.length > 0}
-                  stock={product.stock}
-                />
-              ))}
-            </Carousel>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {defaultCollections.map((coleccion) => (
-              <div
-                key={coleccion.id}
-                className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300"
-              >
-                <div className="flex flex-col md:flex-row h-[400px] md:h-[250px]">
-                  <div className="w-full md:w-1/2 h-full relative overflow-hidden">
-                    <img
-                      src={coleccion.previewImageUrl || "/carr/default.jpg"}
-                      alt={coleccion.title}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+        {collectionsWithProducts.length > 0 ? (
+          <>
+            {collectionsWithProducts.map((collectionData, index) => {
+              const showArrows = collectionData.products.length > 4;
+              
+              return (
+                <div key={collectionData.id} className="mb-16">
+                  <div className="text-center mb-12">
+                    <span className="text-sm uppercase tracking-wider text-gray-500">
+                      Descubre
+                    </span>
+                    <h2 className="text-3xl md:text-4xl text-gray-800 font-bold mt-2">
+                      {collectionData.title}
+                    </h2>
                   </div>
-                  <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center text-center bg-white">
-                    <h3 className="text-xl text-gray-800 font-bold mb-3">
-                      {coleccion.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-6">
-                      {coleccion.bannerText || "Descubre nuestra exclusiva colección"}
-                    </p>
-                    {coleccion.id.startsWith('default-') ? (
-                      <span className="bg-gray-200 text-gray-600 px-6 py-2 rounded text-sm font-bold cursor-not-allowed">
-                        {coleccion.buttonText}
-                      </span>
-                    ) : (
-                      <Link 
-                        href={`/tienda/colecciones/${slugify(coleccion.title)}`}
-                        className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
-                      >
-                        {coleccion.buttonText}
-                      </Link>
-                    )}
+
+                  <div className="relative">
+                    <Carousel
+                      swipeable={true}
+                      draggable={true}
+                      ssr={true}
+                      showDots={true}
+                      responsive={responsive}
+                      infinite={true}
+                      autoPlay={autoplay}
+                      arrows={false}
+                      autoPlaySpeed={10000}
+                      keyBoardControl={true}
+                      customTransition="all .5s"
+                      transitionDuration={500}
+                      containerClass="carousel-container relative"
+                      removeArrowOnDeviceType={["tablet", "mobile"]}
+                      dotListClass="custom-dot-list-style mt-12"
+                      itemClass="px-2 mb-12"
+                      customButtonGroup={showArrows ? <CustomButtonGroupAsArrows /> : undefined}
+                      renderButtonGroupOutside={true}
+                    >
+                      {collectionData.products.map((product: any) => (
+                        <ProductCard05
+                          key={product.id}
+                          product={product}
+                          addToCartHandler={addToCartHandler}
+                          isOnSale={product.offers && product.offers.length > 0}
+                          stock={product.stock}
+                        />
+                      ))}
+                    </Carousel>
+                  </div>
+
+                  <div className="text-center mt-8">
+                    <Link 
+                      href={`/tienda/colecciones/${slugify(collectionData.title)}`}
+                      className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
+                    >
+                      Ir a la Colección
+                    </Link>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              );
+            })}
+          </>
+        ) : (
+          <>
+            <div className="text-center mb-12">
+              <span className="text-sm uppercase tracking-wider text-gray-500">
+                Descubre
+              </span>
+              <h2 className="text-3xl md:text-4xl text-gray-800 font-bold mt-2">
+                Nuestras Colecciones
+              </h2>
+            </div>
 
-        <div className="text-center mt-12">
-          <Link 
-            href={products.length > 0 ? `/tienda/colecciones/${slugify(collections[0].title)}` : "/tienda/colecciones"}
-            className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
-          >
-            {products.length > 0 ? "Ir a la Colección" : "Ver Todas las Colecciones"}
-          </Link>
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {defaultCollections.map((coleccion) => (
+                <div
+                  key={coleccion.id}
+                  className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex flex-col md:flex-row h-[400px] md:h-[250px]">
+                    <div className="w-full md:w-1/2 h-full relative overflow-hidden">
+                      <img
+                        src={coleccion.previewImageUrl || "/carr/default.jpg"}
+                        alt={coleccion.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    </div>
+                    <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center text-center bg-white">
+                      <h3 className="text-xl text-gray-800 font-bold mb-3">
+                        {coleccion.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-6">
+                        {coleccion.bannerText || "Descubre nuestra exclusiva colección"}
+                      </p>
+                      {coleccion.id.startsWith('default-') ? (
+                        <span className="bg-gray-200 text-gray-600 px-6 py-2 rounded text-sm font-bold cursor-not-allowed">
+                          {coleccion.buttonText}
+                        </span>
+                      ) : (
+                        <Link 
+                          href={`/tienda/colecciones/${slugify(coleccion.title)}`}
+                          className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
+                        >
+                          {coleccion.buttonText}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link 
+                href="/tienda/colecciones"
+                className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
+              >
+                Ver Todas las Colecciones
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
