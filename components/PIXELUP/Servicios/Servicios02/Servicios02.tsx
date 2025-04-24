@@ -169,7 +169,7 @@ const Servicios02 = () => {
                   </div>
                   <div className="p-6">
                     <div className="mb-6">
-                      <p className="text-[#81C4BA] font-medium text-sm mb-4">
+                      <p className="text-primary font-medium text-sm mb-4">
                         {servicio.descripcion[0]}
                       </p>
 {/*                       <div className="text-gray-600">
@@ -209,15 +209,15 @@ const Servicios02 = () => {
                 </p>
                     <div className="flex items-center justify-between pt-4 border-t border-[#81C4BA]/10">
                       <div className="text-gray-600">
-                        <span className="text-[#81C4BA] font-medium block text-sm">
+                        <span className="text-primary font-medium block text-sm">
                           Valor
                         </span>
                         <span className="text-sm">{servicio.precio}</span>
                       </div>
 
                       <Link
-                        href="https://www.conectasitios.cl/pagina_sucursal/peluqueriacanina&petshop/MzA="
-                        className="bg-[#5B488E] text-white px-6 py-2 rounded hover:bg-[#1B9C84] transition-colors"
+                        href="https://www.pixelup.cl"
+                        className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/80 transition-colors"
                       >
                         Reservar
                       </Link>

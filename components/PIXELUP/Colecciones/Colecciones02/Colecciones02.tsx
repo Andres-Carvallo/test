@@ -3,11 +3,98 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { slugify } from "@/app/utils/slugify";
+import { useAPI } from "@/app/Context/ProductTypeContext";
+import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
+
+interface Product {
+  id: string;
+  skuId: string;
+  stock?: any;
+  pricingRanges?: any[];
+  pricings?: any[];
+  // Otros campos que puedan estar en el producto
+}
 
 function Colecciones02() {
   const [collections, setCollections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [autoplay, setAutoplay] = useState(true);
+  const { addToCartHandler } = useAPI();
+
+  const fetchStockForVariation = async (productId: string, skuId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/inventories?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+
+      const data = await response.json();
+
+      let stock = 0;
+
+      if (data.code === 0 && data.skuInventories.length > 0) {
+        stock = data.skuInventories.reduce(
+          (acc: number, inventory: any) => acc + inventory.quantity,
+          0
+        );
+      }
+
+      return stock;
+    } catch (error) {
+      console.error("Error fetching stock:", error);
+      return 0;
+    }
+  };
+
+  const fetchPriceForProduct = async (productId: string, skuId: string) => {
+    try {
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${siteId}`
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching price:", error);
+      return null;
+    }
+  };
+
+  const getPriceForVariableProduct = async (product: any) => {
+    try {
+      const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${product.id}/skus?siteId=${siteId}`
+      );
+      const data = await response.json();
+
+      if (data && data.skus && data.skus.length > 0) {
+        const prices = await Promise.all(
+          data.skus.map(async (sku: any) => {
+            const priceData = await fetchPriceForProduct(product.id, sku.id);
+            return priceData?.skuPricings?.[0]?.unitPrice || null;
+          })
+        );
+
+        const validPrices = prices.filter(
+          (price): price is number => price !== null
+        );
+        if (validPrices.length > 0) {
+          return {
+            minimumAmount: Math.min(...validPrices),
+            maximumAmount: Math.max(...validPrices),
+          };
+        }
+      }
+      return { minimumAmount: null, maximumAmount: null };
+    } catch (error) {
+      console.error("Error getting price for variable product:", error);
+      return { minimumAmount: null, maximumAmount: null };
+    }
+  };
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -46,6 +133,55 @@ function Colecciones02() {
           .filter(Boolean); // Eliminar las colecciones que no existen (null)
 
         setCollections(validCollections);
+
+        // Si hay colecciones válidas, obtener los productos de la primera colección
+        if (validCollections.length > 0) {
+          const firstCollection = validCollections[0];
+          const collectionProductsResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections/${firstCollection.id}?siteId=${siteid}`
+          );
+          
+          const collectionProducts = collectionProductsResponse.data.collection.products || [];
+          
+          // Filtrar productos activos y obtener stock
+          const activeProducts = collectionProducts.filter(
+            (product: any) => product.statusCode === "ACTIVE"
+          );
+          
+          const productsWithDetails = await Promise.all(
+            activeProducts.map(async (product: any) => {
+              let stock = null;
+              if (!product.hasVariations && product.skuId) {
+                stock = await fetchStockForVariation(
+                  product.id,
+                  product.skuId
+                );
+              }
+
+              if (product.hasVariations) {
+                const pricingRanges = await getPriceForVariableProduct(product);
+                return {
+                  ...product,
+                  pricingRanges: [pricingRanges],
+                  stock,
+                };
+              } else {
+                const priceData = await fetchPriceForProduct(
+                  product.id,
+                  product.skuId
+                );
+                const price = priceData?.skuPricings?.[0]?.unitPrice || null;
+                return {
+                  ...product,
+                  pricings: [{ amount: price }],
+                  stock,
+                };
+              }
+            })
+          );
+          
+          setProducts(productsWithDetails);
+        }
       } catch (error) {
         console.error("Error fetching collections:", error);
         setError(error as Error);
@@ -57,7 +193,35 @@ function Colecciones02() {
     fetchCollections();
   }, []);
 
-  if (loading) return <div>Cargando colecciones...</div>;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAutoplay(!autoplay);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [autoplay]);
+
+  if (loading) {
+    return (
+      <section className="bg-white dark:bg-gray-900 w-full">
+        <div className="container px-6 py-10 mx-auto animate-pulse">
+          <h1 className="w-48 h-2 mx-auto bg-gray-200 rounded-lg dark:bg-gray-700" />
+          <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+          <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg sm:w-80 dark:bg-gray-700" />
+          <div className="grid grid-cols-1 gap-8 mt-8 xl:mt-12 xl:gap-12 sm:grid-cols-2 xl:grid-cols-4 lg:grid-cols-3">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="w-full">
+                <div className="w-full h-64 bg-gray-300 rounded-lg dark:bg-gray-600" />
+                <h1 className="w-56 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+                <p className="w-24 h-2 mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (error) return <div>Error al cargar las colecciones</div>;
 
   // Crear colecciones por defecto si no hay ninguna
@@ -78,6 +242,80 @@ function Colecciones02() {
     }
   ] : collections;
 
+  const responsive = {
+    superLargeDesktop: {
+      breakpoint: { max: 4000, min: 3000 },
+      items: 4,
+    },
+    desktop: {
+      breakpoint: { max: 3000, min: 1024 },
+      items: 4,
+    },
+    tablet: {
+      breakpoint: { max: 1024, min: 464 },
+      items: 3,
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1,
+    },
+  };
+
+  const CustomButtonGroupAsArrows = ({
+    next,
+    previous,
+  }: {
+    next?: () => void;
+    previous?: () => void;
+  }) => {
+    return (
+      <div className="hidden absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
+        <button
+          className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
+          onClick={previous}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5 8.25 12l7.5-7.5"
+            />
+          </svg>
+        </button>
+
+        <button
+          className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
+          onClick={next}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m8.25 4.5 7.5 7.5-7.5 7.5"
+            />
+          </svg>
+        </button>
+      </div>
+    );
+  };
+
+  const showArrows = products.length > 4;
+  const collectionTitle = collections.length > 0 ? collections[0].title : "Nuestras Colecciones";
+
   return (
     <div className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
@@ -86,53 +324,90 @@ function Colecciones02() {
             Descubre
           </span>
           <h2 className="text-3xl md:text-4xl text-gray-800 font-bold mt-2">
-            Nuestras Colecciones
+            {collectionTitle}
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {defaultCollections.map((coleccion) => (
-            <div
-              key={coleccion.id}
-              className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300"
+
+        {products.length > 0 ? (
+          <div className="relative">
+            <Carousel
+              swipeable={true}
+              draggable={true}
+              ssr={true}
+              showDots={true}
+              responsive={responsive}
+              infinite={true}
+              autoPlay={autoplay}
+              arrows={false}
+              autoPlaySpeed={10000}
+              keyBoardControl={true}
+              customTransition="all .5s"
+              transitionDuration={500}
+              containerClass="carousel-container relative"
+              removeArrowOnDeviceType={["tablet", "mobile"]}
+              dotListClass="custom-dot-list-style mt-12"
+              itemClass="px-2 mb-12"
+              customButtonGroup={showArrows ? <CustomButtonGroupAsArrows /> : undefined}
+              renderButtonGroupOutside={true}
             >
-              <div className="flex flex-col md:flex-row h-[400px] md:h-[250px]">
-                <div className="w-full md:w-1/2 h-full relative overflow-hidden">
-                  <img
-                    src={coleccion.previewImageUrl || "/carr/default.jpg"}
-                    alt={coleccion.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                </div>
-                <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center text-center bg-white">
-                  <h3 className="text-xl text-gray-800 font-bold mb-3">
-                    {coleccion.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-6">
-                    {coleccion.bannerText || "Descubre nuestra exclusiva colección"}
-                  </p>
-                  {coleccion.id.startsWith('default-') ? (
-                    <span className="bg-gray-200 text-gray-600 px-6 py-2 rounded text-sm font-bold cursor-not-allowed">
-                      {coleccion.buttonText}
-                    </span>
-                  ) : (
-                    <Link 
-                      href={`/tienda/colecciones/${slugify(coleccion.title)}`}
-                      className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
-                    >
-                      {coleccion.buttonText}
-                    </Link>
-                  )}
+              {products.map((product: any) => (
+                <ProductCard01
+                  key={product.id}
+                  product={product}
+                  addToCartHandler={addToCartHandler}
+                  isOnSale={product.offers && product.offers.length > 0}
+                  stock={product.stock}
+                />
+              ))}
+            </Carousel>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {defaultCollections.map((coleccion) => (
+              <div
+                key={coleccion.id}
+                className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300"
+              >
+                <div className="flex flex-col md:flex-row h-[400px] md:h-[250px]">
+                  <div className="w-full md:w-1/2 h-full relative overflow-hidden">
+                    <img
+                      src={coleccion.previewImageUrl || "/carr/default.jpg"}
+                      alt={coleccion.title}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  </div>
+                  <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center text-center bg-white">
+                    <h3 className="text-xl text-gray-800 font-bold mb-3">
+                      {coleccion.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-6">
+                      {coleccion.bannerText || "Descubre nuestra exclusiva colección"}
+                    </p>
+                    {coleccion.id.startsWith('default-') ? (
+                      <span className="bg-gray-200 text-gray-600 px-6 py-2 rounded text-sm font-bold cursor-not-allowed">
+                        {coleccion.buttonText}
+                      </span>
+                    ) : (
+                      <Link 
+                        href={`/tienda/colecciones/${slugify(coleccion.title)}`}
+                        className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
+                      >
+                        {coleccion.buttonText}
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+
         <div className="text-center mt-12">
           <Link 
-            href="/tienda/colecciones"
+            href={products.length > 0 ? `/tienda/colecciones/${slugify(collections[0].title)}` : "/tienda/colecciones"}
             className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
           >
-            Ver Todas las Colecciones
+            {products.length > 0 ? "Ir a la Colección" : "Ver Todas las Colecciones"}
           </Link>
         </div>
       </div>

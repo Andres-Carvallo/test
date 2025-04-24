@@ -85,7 +85,7 @@ const navbarComponents = {
     { loading: NavLoadingComponent, ssr: true }
   ),
   NavbarBanner: dynamic(
-    () => import("@/components/PIXELUP/Navbar/NavbarBanner/NavbarBanner"),
+    () => import("@/components/PIXELUP/Navbar/Navbarbanner/Navbarbanner"),
     { loading: NavLoadingComponent, ssr: true }
   ),
 } as const;

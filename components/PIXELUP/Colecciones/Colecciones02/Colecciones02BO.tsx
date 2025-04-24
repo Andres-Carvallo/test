@@ -78,14 +78,17 @@ const Colecciones02BO = () => {
         activeCollections.some(collection => collection.id === id)
       );
 
-      // Si hay diferencias entre las colecciones guardadas y las válidas, actualizar el content block
-      if (validCollections.length !== savedCollectionIds.length) {
-        console.log('Se encontraron colecciones inválidas, actualizando...');
+      // Tomar solo la primera colección si hay más de una
+      const singleCollection = validCollections.length > 0 ? [validCollections[0]] : [];
+
+      // Si hay diferencias entre las colecciones guardadas y la única válida, actualizar el content block
+      if (singleCollection.length !== validCollections.length) {
+        console.log('Se encontraron colecciones adicionales, actualizando a una sola...');
         await axios.put(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${siteId}`,
           {
             title: "colecciones02",
-            contentText: JSON.stringify(validCollections),
+            contentText: JSON.stringify(singleCollection),
           },
           {
             headers: {
@@ -94,10 +97,10 @@ const Colecciones02BO = () => {
             },
           }
         );
-        toast.success("Se han actualizado las colecciones seleccionadas");
+        toast.success("Se ha actualizado a una sola colección seleccionada");
       }
 
-      return validCollections;
+      return singleCollection;
     } catch (error) {
       console.error("Error fetching saved collections:", error);
       return [];
@@ -106,31 +109,21 @@ const Colecciones02BO = () => {
 
   const handleCollectionChange = (selectedOption: any) => {
     if (selectedOption) {
-      if (selectedCollections.length >= 4) {
-        toast.error("Solo puedes seleccionar hasta 4 colecciones");
-        return;
-      }
-      handleCollectionToggle(selectedOption.value);
+      // Reemplazar la colección seleccionada en lugar de agregar
+      setSelectedCollections([selectedOption.value]);
       setSelectedCollection(null);
+      setHasChanges(true);
     }
   };
 
   const handleCollectionToggle = (collectionId: string) => {
-    let updatedCollections: string[];
-
+    // Si ya está seleccionada, la eliminamos
     if (selectedCollections.includes(collectionId)) {
-      // Remover la colección
-      updatedCollections = selectedCollections.filter(id => id !== collectionId);
+      setSelectedCollections([]);
     } else {
-      // Agregar la colección
-      if (selectedCollections.length >= 4) {
-        toast.error("Solo puedes seleccionar hasta 4 colecciones");
-        return;
-      }
-      updatedCollections = [...selectedCollections, collectionId];
+      // Si no está seleccionada, la agregamos (reemplazando cualquier otra)
+      setSelectedCollections([collectionId]);
     }
-
-    setSelectedCollections(updatedCollections);
     setHasChanges(true);
   };
 
@@ -183,41 +176,6 @@ const Colecciones02BO = () => {
     (collection) => !selectedCollections.includes(collection.id)
   );
 
-  const handleMoveCollection = (currentIndex: number, direction: 'left' | 'right') => {
-    const newIndex = direction === 'left' ? currentIndex - 1 : currentIndex + 1;
-    
-    if (newIndex < 0 || newIndex >= selectedCollections.length) {
-      return; // No hacer nada si el nuevo índice está fuera de los límites
-    }
-
-    // Obtener las colecciones en el orden actual
-    const orderedCollections = collections
-      .filter(collection => selectedCollections.includes(collection.id))
-      .sort((a, b) => {
-        const indexA = selectedCollections.indexOf(a.id);
-        const indexB = selectedCollections.indexOf(b.id);
-        return indexA - indexB;
-      });
-
-    // Obtener los IDs de las colecciones que queremos intercambiar
-    const collectionToMove = orderedCollections[currentIndex].id;
-    const collectionToSwapWith = orderedCollections[newIndex].id;
-
-    // Crear una nueva copia del array de IDs
-    const newOrder = [...selectedCollections];
-    
-    // Encontrar los índices reales en el array de selectedCollections
-    const actualCurrentIndex = selectedCollections.indexOf(collectionToMove);
-    const actualNewIndex = selectedCollections.indexOf(collectionToSwapWith);
-
-    // Intercambiar las posiciones usando los índices reales
-    [newOrder[actualCurrentIndex], newOrder[actualNewIndex]] = [newOrder[actualNewIndex], newOrder[actualCurrentIndex]];
-
-    // Actualizar el estado con el nuevo orden
-    setSelectedCollections(newOrder);
-    setHasChanges(true);
-  };
-
   if (loading) return <div>Cargando colecciones...</div>;
   if (error) return <div>Error al cargar las colecciones</div>;
 
@@ -225,10 +183,10 @@ const Colecciones02BO = () => {
     <section className="w-full py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-8 text-center">
-          Seleccionar Colecciones para Mostrar
+          Seleccionar Colección para Mostrar
         </h2>
         <p className="text-center mb-8 text-gray-600">
-          Selecciona hasta 4 colecciones para mostrar en la página principal
+          Selecciona una colección para mostrar en la página principal
         </p>
 
         <div className="mb-8">
@@ -283,12 +241,7 @@ const Colecciones02BO = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {collections
             .filter((collection) => selectedCollections.includes(collection.id))
-            .sort((a, b) => {
-              const indexA = selectedCollections.indexOf(a.id);
-              const indexB = selectedCollections.indexOf(b.id);
-              return indexA - indexB;
-            })
-            .map((collection, index) => (
+            .map((collection) => (
               <div
                 key={collection.id}
                 className="border rounded-lg overflow-hidden shadow-sm transition-all duration-300 border-primary/20 shadow-primary/20"
@@ -300,7 +253,7 @@ const Colecciones02BO = () => {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-sm">
-                    Orden: {index + 1}
+                    Colección seleccionada
                   </div>
                   <button
                     onClick={() => handleCollectionToggle(collection.id)}
@@ -326,7 +279,7 @@ const Colecciones02BO = () => {
                 <div className="p-4">
                   <div className="flex justify-between items-center mb-2 md:hidden">
                     <div className="bg-green-500 text-white px-2 py-1 rounded text-sm">
-                      Orden: {index + 1}
+                      Colección seleccionada
                     </div>
                     <button
                       onClick={() => handleCollectionToggle(collection.id)}
@@ -353,86 +306,6 @@ const Colecciones02BO = () => {
                   <p className="text-gray-600 text-sm mb-4">
                     {collection.bannerText || "Sin descripción"}
                   </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleMoveCollection(index, 'left')}
-                      disabled={index === 0}
-                      className={`flex-1 py-2 px-4 rounded font-semibold transition-colors ${
-                        index === 0
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                      }`}
-                      title="Mover a la izquierda"
-                    >
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto md:block hidden"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" 
-                        />
-                      </svg>
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto block md:hidden"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M4.5 15.75l7.5-7.5 7.5 7.5" 
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleMoveCollection(index, 'right')}
-                      disabled={index === selectedCollections.length - 1}
-                      className={`flex-1 py-2 px-4 rounded font-semibold transition-colors ${
-                        index === selectedCollections.length - 1
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-primary text-secondary hover:bg-secondary hover:text-primary"
-                      }`}
-                      title="Mover a la derecha"
-                    >
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto md:block hidden"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" 
-                        />
-                      </svg>
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        strokeWidth={1.5} 
-                        stroke="currentColor" 
-                        className="w-6 h-6 mx-auto block md:hidden"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M19.5 8.25l-7.5 7.5-7.5-7.5" 
-                        />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}
@@ -440,7 +313,7 @@ const Colecciones02BO = () => {
 
         <div className="mt-8 text-center">
           <p className="text-gray-600 mb-4">
-            Colecciones seleccionadas: {selectedCollections.length}/4
+            Colección seleccionada: {selectedCollections.length}/1
           </p>
           <button
             onClick={handleSaveChanges}

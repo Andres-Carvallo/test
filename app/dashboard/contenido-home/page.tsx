@@ -87,7 +87,7 @@ const Categoria01BO = dynamic(
   { ssr: false }
 );
 const SinFotoBO = dynamic(
-  () => import("@/components/PIXELUP/SinFoto/SinFoto/SinFotoBO"),
+  () => import("@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05BO"),
   { ssr: false }
 );
 const Categoria03BO = dynamic(
@@ -163,6 +163,24 @@ const Servicios02BO = dynamic(
   () => import("@/components/PIXELUP/Servicios/Servicios02/Servicios02BO"),
   { ssr: false }
 );
+const Servicios03BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios03/Servicios03BO"),
+  { ssr: false }
+);
+const SinFoto06BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto06/SinFoto06BO"),
+  { ssr: false }
+);
+const SinFoto07BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto07/SinFoto07BO"),
+  { ssr: false }
+);
+const NavbarbannerBO = dynamic(
+  () => import("@/components/PIXELUP/Navbar/Navbarbanner/NavbarbannerBO"),
+  { ssr: false }
+);
+
+
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
     {}
@@ -197,10 +215,15 @@ export default function BannerHome() {
 /*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
  */     {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
  {id: "sinFoto04", title: "Sin Foto 04", component: <SinFoto04BO/>},
+ {id: "navbarbanner", title: "Navbar Banner", component: <NavbarbannerBO/>},
+ {id: "colecciones02", title: "Coleccion 02", component: <Colecciones02BO/>},
  {id: "galeria02", title: "Galería 02", component: <Galeria02BO/>},
+ {id: "sinFoto06", title: "Sin Foto 06", component: <SinFoto06BO/>},
+ {id: "sinFoto07", title: "Sin Foto 07", component: <SinFoto07BO/>},
  {id: "ubicacion02", title: "Ubicación 02", component: <Ubicacion02BO/>},
  {id: "servicios01", title: "Servicios 01", component: <Servicios01BO/>},
  {id: "servicios02", title: "Servicios 02", component: <Servicios02BO/>},
+ {id: "servicios03", title: "Servicios 03", component: <Servicios03BO/>},
 /*         
 
 {id: "galeria", title: "Galería", component: <GaleriaBO/>},

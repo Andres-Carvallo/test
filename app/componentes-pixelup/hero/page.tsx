@@ -8,7 +8,7 @@ import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
 import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
 import Hero05 from "@/components/PIXELUP/Hero/Hero05/Hero05";
-import SinFoto from "@/components/PIXELUP/SinFoto/SinFoto/SinFoto";
+import SinFoto from "@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05";
 import SinFoto01 from "@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01";
 import SinFoto02 from "@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02";
 import SinFoto03 from "@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03";
@@ -23,6 +23,10 @@ import SinFoto04 from "@/components/PIXELUP/SinFoto/SinFoto04/SinFoto04";
 import Galeria02 from "@/components/PIXELUP/Galeria/Galeria02/Galeria02";
 import Servicios01 from "@/components/PIXELUP/Servicios/Servicios01/Servicios01";
 import Servicios02 from "@/components/PIXELUP/Servicios/Servicios02/Servicios02";
+import Servicios03 from "@/components/PIXELUP/Servicios/Servicios03/Servicios03";
+import SinFoto05 from "@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05";
+import SinFoto06 from "@/components/PIXELUP/SinFoto/SinFoto06/SinFoto06";
+import SinFoto07 from "@/components/PIXELUP/SinFoto/SinFoto07/SinFoto07";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -89,11 +93,7 @@ export default function hero() {
 </div>
 <Hero09/>
 
-        <div className="inline-flex items-center justify-center w-full">
-    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
-    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto</span>
-</div>
-<SinFoto/>
+
 
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
@@ -115,6 +115,21 @@ export default function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 04  </span>
 </div>
         <SinFoto04/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 05</span>
+</div>
+<SinFoto05/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 06</span>
+</div>
+<SinFoto06/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Sin Foto 07</span>
+</div>
+<SinFoto07/>
         <div className="inline-flex items-center justify-center w-full">
     <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Materiales</span>
@@ -140,6 +155,11 @@ export default function hero() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Servicios 02 </span>
 </div>
         <Servicios02/>
+        <div className="inline-flex items-center justify-center w-full">
+    <hr className="w-80 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Servicios 03 </span>
+</div>
+        <Servicios03/>
 
 </>
     );

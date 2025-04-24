@@ -32,8 +32,8 @@ interface ApiResponse {
   };
 }
 
-const SinFotoBO: React.FC = () => {
-  const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO_CONTENTBLOCK || "";
+const SinFoto05BO: React.FC = () => {
+  const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO05_CONTENTBLOCK || "";
   const [loading, setLoading] = useState<boolean>(true);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -383,4 +383,4 @@ const SinFotoBO: React.FC = () => {
   );
 };
 
-export default SinFotoBO;
+export default SinFoto05BO;
