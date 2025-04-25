@@ -105,16 +105,34 @@ const Servicios04 = () => {
               try {
                 const rawData = image.landingText;
                 const serviciosData = JSON.parse(rawData);
+                
+                console.log("🔍 Datos del servicio:", {
+                  titulo: image.title,
+                  rawData,
+                  serviciosData
+                });
 
+                // Extraer la descripción principal (primer elemento)
+                const descripcionPrincipal = serviciosData[0] || "SERVICIO PERSONALIZADO";
+                
+                // Extraer los servicios incluidos (elementos del medio)
+                // Excluimos el primer elemento (descripción) y el último (que parece ser un booleano)
+                const serviciosIncluidos = serviciosData.slice(1, -1);
+                
+                console.log("🔍 Servicios procesados:", {
+                  descripcionPrincipal,
+                  serviciosIncluidos
+                });
+                
                 return {
                   id: image.id,
                   titulo: image.title,
                   descripcion: [
-                    serviciosData[0] || "SERVICIO PERSONALIZADO",
-                    ...serviciosData.slice(1, -3)
+                    descripcionPrincipal,
+                    ...serviciosIncluidos
                   ],
-                  tiempo: serviciosData[serviciosData.length - 3] || "TIEMPO APROXIMADO DE ATENCIÓN DE 1:30 Hrs a 2:00 Hrs",
-                  precio: serviciosData[serviciosData.length - 2] || "Desde $25.000",
+                  tiempo: "TIEMPO APROXIMADO DE ATENCIÓN DE 1:30 Hrs a 2:00 Hrs",
+                  precio: "Desde $25.000",
                   imagen: image.mainImage?.url || "https://picsum.photos/seed/servicio1/800/600",
                   destacado: true
                 };
@@ -139,15 +157,32 @@ const Servicios04 = () => {
   }, []);
 
   const toggleServicio = (id: number) => {
+    console.log("Toggling servicio:", id);
     if (servicioExpandido === id) {
       setServicioExpandido(null);
     } else {
       setServicioExpandido(id);
+      
+      // Desplazamos la pantalla al panel de información después de que se renderice
+      setTimeout(() => {
+        const panelElement = document.getElementById(`panel-servicio-${id}`);
+        if (panelElement) {
+          panelElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100); // Pequeño retraso para asegurar que el panel ya se ha renderizado
     }
   };
 
   const toggleCarteraCompleta = () => {
     setMostrarCarteraCompleta(!mostrarCarteraCompleta);
+  };
+
+  // Función para determinar si un servicio está en la fila superior o inferior
+  const isServicioFilaSuperior = (id: number) => {
+    const servicio = serviciosData.find(s => s.id === id);
+    if (!servicio) return false;
+    const index = serviciosData.findIndex(s => s.id === id);
+    return index < 2;
   };
 
   return (
@@ -171,7 +206,7 @@ const Servicios04 = () => {
                     key={servicio.id}
                     className={`relative overflow-hidden cursor-pointer transition-all duration-300 ${
                       servicioExpandido === servicio.id
-                        ? "ring-4 ring-lime-500 z-10"
+                        ? "ring-4 ring-primary z-10"
                         : "hover:brightness-110"
                     }`}
                     style={{ height: "calc((100vh - 140px) / 2)" }}
@@ -240,27 +275,25 @@ const Servicios04 = () => {
           </div>
 
           {/* Panel de información para las primeras dos imágenes */}
-          {servicioExpandido !== null && servicioExpandido <= 2 && (
+          {servicioExpandido !== null && isServicioFilaSuperior(servicioExpandido) && (
             <div
               id={`panel-servicio-${servicioExpandido}`}
-              className="w-full bg-white p-8 overflow-hidden transition-all duration-500 transform origin-top border-t-4 border-lime-500 shadow-lg"
+              className="w-full p-8 overflow-hidden transition-all duration-500 transform origin-top border-t-4 shadow-lg"
             >
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
-                    <h3 className="text-3xl font-bold text-green-700 font-lilita-one">
+                    <h3 className="text-3xl font-bold text-primary font-lilita-one">
                       {serviciosData.find((s) => s.id === servicioExpandido)?.titulo || ""}
                     </h3>
-                    <span className="text-lime-600 font-medium">
-                      {serviciosData.find((s) => s.id === servicioExpandido)?.tiempo || ""}
-                    </span>
+
                   </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setServicioExpandido(null);
                     }}
-                    className="text-gray-700 hover:bg-lime-500 hover:text-white transition-all duration-300 bg-gray-100 p-2 rounded-full"
+                    className="text-gray-700 hover:bg-primary hover:text-white transition-all duration-300 bg-gray-100 p-2 rounded-full"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -280,11 +313,11 @@ const Servicios04 = () => {
                 </div>
 
                 <p className="text-gray-700 mb-6 max-w-4xl text-lg">
-                  {serviciosData.find((s) => s.id === servicioExpandido)?.descripcion[0] || ""}
+                {serviciosData.find((s) => s.id === servicioExpandido)?.descripcion[0] || ""}
                 </p>
 
                 <div className="mt-6">
-                  <h4 className="text-xl font-semibold text-green-600 mb-4">
+                  <h4 className="text-xl font-semibold text-primary/80 mb-4">
                     Servicios incluidos:
                   </h4>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -296,7 +329,7 @@ const Servicios04 = () => {
                           key={idx}
                           className="flex items-start bg-gray-50 p-3 rounded-lg hover:bg-lime-50 transition-colors"
                         >
-                          <span className="text-lime-500 mr-2 text-xl">•</span>
+                          <span className="text-primary mr-2 text-xl">•</span>
                           <span className="text-gray-700">{item}</span>
                         </li>
                       ))}
@@ -306,7 +339,7 @@ const Servicios04 = () => {
                 <div className="mt-8 flex justify-end">
                   <Link
                     href="https://www.pixelup.cl"
-                    className="px-8 py-4 bg-lime-600 hover:bg-lime-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg text-lg"
+                    className="px-8 py-4 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg text-lg"
                   >
                     Contáctanos
                   </Link>
@@ -331,7 +364,7 @@ const Servicios04 = () => {
                     key={servicio.id}
                     className={`relative overflow-hidden cursor-pointer transition-all duration-300 ${
                       servicioExpandido === servicio.id
-                        ? "ring-4 ring-lime-500 z-10"
+                        ? "ring-4 ring-primary z-10"
                         : "hover:brightness-110"
                     }`}
                     style={{ height: "calc((100vh - 80px) / 2)" }}
@@ -399,28 +432,26 @@ const Servicios04 = () => {
             )}
           </div>
 
-          {/* Panel de información para las segundas dos imágenes */}
-          {servicioExpandido !== null && servicioExpandido > 2 && (
+          {/* Panel de información para las imágenes de la fila inferior */}
+          {servicioExpandido !== null && !isServicioFilaSuperior(servicioExpandido) && (
             <div
               id={`panel-servicio-${servicioExpandido}`}
-              className="w-full bg-white p-8 overflow-hidden transition-all duration-500 transform origin-top border-t-4 border-lime-500 shadow-lg"
+              className="w-full p-8 overflow-hidden transition-all duration-500 transform origin-top border-t-4 shadow-lg"
             >
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
-                    <h3 className="text-3xl font-bold text-green-700 font-lilita-one">
+                    <h3 className="text-3xl font-bold text-primary font-lilita-one">
                       {serviciosData.find((s) => s.id === servicioExpandido)?.titulo || ""}
                     </h3>
-                    <span className="text-lime-600 font-medium">
-                      {serviciosData.find((s) => s.id === servicioExpandido)?.tiempo || ""}
-                    </span>
+
                   </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setServicioExpandido(null);
                     }}
-                    className="text-gray-700 hover:bg-lime-500 hover:text-white transition-all duration-300 bg-gray-100 p-2 rounded-full"
+                    className="text-gray-700 hover:bg-primary hover:text-white transition-all duration-300 bg-gray-100 p-2 rounded-full"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -440,11 +471,11 @@ const Servicios04 = () => {
                 </div>
 
                 <p className="text-gray-700 mb-6 max-w-4xl text-lg">
-                  {serviciosData.find((s) => s.id === servicioExpandido)?.descripcion[0] || ""}
+                {serviciosData.find((s) => s.id === servicioExpandido)?.descripcion[0] || ""}
                 </p>
 
                 <div className="mt-6">
-                  <h4 className="text-xl font-semibold text-green-600 mb-4">
+                  <h4 className="text-xl font-semibold text-primary/80 mb-4">
                     Servicios incluidos:
                   </h4>
                   <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -456,7 +487,7 @@ const Servicios04 = () => {
                           key={idx}
                           className="flex items-start bg-gray-50 p-3 rounded-lg hover:bg-lime-50 transition-colors"
                         >
-                          <span className="text-lime-500 mr-2 text-xl">•</span>
+                          <span className="text-primary mr-2 text-xl">•</span>
                           <span className="text-gray-700">{item}</span>
                         </li>
                       ))}
@@ -466,7 +497,7 @@ const Servicios04 = () => {
                 <div className="mt-8 flex justify-end">
                   <Link
                     href="https://www.pixelup.cl"
-                    className="px-8 py-4 bg-lime-600 hover:bg-lime-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg text-lg"
+                    className="px-8 py-4 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg text-lg"
                   >
                     Contáctanos
                   </Link>
@@ -479,7 +510,7 @@ const Servicios04 = () => {
         <div className="text-center mt-16 px-4">
           <button
             onClick={toggleCarteraCompleta}
-            className="inline-block px-8 py-3 bg-lime-600 hover:bg-lime-700 text-white rounded font-semibold transition-all shadow-md hover:shadow-lg"
+            className="inline-block px-8 py-3 bg-primary hover:bg-primary/80 text-white rounded font-semibold transition-all shadow-md hover:shadow-lg"
           >
             {mostrarCarteraCompleta
               ? "Ocultar Servicios"

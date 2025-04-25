@@ -28,12 +28,12 @@ const GaleriaBO = () => {
   );
 
   const [updatedSliderCategory, setUpdatedSliderCategory] = useState({
-    title: "Brizz",
-    landingText: "Brizz",
-    buttonLink: "Brizz",
-    buttonText: "Brizz",
+    title: "pixelup",
+    landingText: "pixelup",
+    buttonLink: "pixelup",
+    buttonText: "pixelup",
     orderNumber: 1,
-    mainImageLink: "Brizz",
+    mainImageLink: "pixelup",
     mainImage: {
       name: "",
       type: "",
@@ -142,12 +142,12 @@ const GaleriaBO = () => {
   };
   const resetSliderData = () => {
     setUpdatedSliderCategory({
-      title: "Brizz",
-      landingText: "Brizz",
-      buttonLink: "Brizz",
-      buttonText: "Brizz",
+      title: "pixelup",
+      landingText: "pixelup",
+      buttonLink: "pixelup",
+      buttonText: "pixelup",
       orderNumber: 1,
-      mainImageLink: "Brizz",
+      mainImageLink: "pixelup",
       mainImage: {
         name: "",
         type: "",

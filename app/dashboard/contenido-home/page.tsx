@@ -187,6 +187,10 @@ const Servicios04BO = dynamic(
   () => import("@/components/PIXELUP/Servicios/Servicios04/Servicios04BO"),
   { ssr: false }
 );
+const Testimonios04BO = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios04/Testimonios04BO"),
+  { ssr: false }
+);
 
 
 export default function BannerHome() {
@@ -222,6 +226,9 @@ export default function BannerHome() {
       {[
 /*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
  */     {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
+ {id: "testimonios03", title: "Testimonios 03", component: <Testimonios03BO/>},
+ {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
+ {id: "testimonios04", title: "Testimonios 04", component: <Testimonios04BO/>},
  {id: "sinFoto04", title: "Sin Foto 04", component: <SinFoto04BO/>},
  {id: "navbarbanner", title: "Navbar Banner", component: <NavbarbannerBO/>},
  {id: "colecciones01", title: "Coleccion 01", component: <Colecciones01BO/>},
@@ -245,7 +252,6 @@ export default function BannerHome() {
         {id: "logosCarrusel", title: "Logos Carrusel", component: <LogosCarruselBO/>},
         {id: "hero07", title: "Hero 07", component: <Hero07BO/>},
         {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
-        {id: "testimonios03", title: "Testimonios 03", component: <Testimonios03BO/>},
         {id: "colecciones01", title: "Colecciones 01", component: <Colecciones01BO/>},
         {id: "ubicacionContent", title: "Ubicación", component: <Ubicacion02BO/>},
         {id: "hero08", title: "Hero 08", component: <Hero08BO/>},
