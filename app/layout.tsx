@@ -24,6 +24,8 @@ import PopVisual from "@/components/Core/Popup/Popupvisual";
 import { useRouter, usePathname } from "next/navigation";
 import NextTopLoader from "nextjs-toploader";
 import { LogoProvider } from "@/context/LogoContext";
+import { getCookie } from "cookies-next";
+import { jwtDecode } from "jwt-decode";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -67,6 +69,7 @@ export default function RootLayout({
   const [siteStatus, setSiteStatus] = useState<string | null>(null);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -102,12 +105,34 @@ export default function RootLayout({
           setShowPopup(popupConfig.enabled && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard"));
         }
 
+        // Obtener el email del usuario si está autenticado
+        // Obtener el email del usuario si está autenticado
+        const adminToken = getCookie("AdminTokenAuth");
+        let userEmail = null;
+        if (adminToken) {
+          try {
+            const decodedToken = jwtDecode(adminToken.toString());
+            const userId = decodedToken.sub;
+            const userResponse = await axios.get(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userId}?siteId=${id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${adminToken}`,
+                },
+              }
+            );
+            userEmail = userResponse.data.user.email;
+          } catch (error) {
+            console.error("Error al obtener el email del usuario:", error);
+          }
+        }
+
         // Redireccionar según las condiciones
         if (
           !pathname.startsWith("/admin") &&
           !pathname.startsWith("/dashboard")
         ) {
-          if (siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE") {
+          if (userEmail !== "hola.pixelup@gmail.com" && siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE") {
             router.push("/subscription-pending");
           } else if (maintenanceConfig.enabled) {
             router.push("/mantenimiento");
