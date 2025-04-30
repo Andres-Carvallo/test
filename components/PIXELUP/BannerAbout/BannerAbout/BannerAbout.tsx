@@ -54,9 +54,9 @@ const BannerPrincipal = () => {
     },
   });
 
-  // Obtener los aspectos de las imágenes desde la configuración global específica para BannerTienda
-  const desktopAspect = globalConfig.bannerTiendaAspects.desktop;
-  const mobileAspect = globalConfig.bannerTiendaAspects.mobile;
+  // Obtener los aspectos de las imágenes desde la configuración global específica para BannerAbout
+  const desktopAspect = globalConfig.bannerAboutAspects.desktop;
+  const mobileAspect = globalConfig.bannerAboutAspects.mobile;
 
   // Estilos para la sombra del texto
   const shadowTextStyle = {
@@ -65,7 +65,7 @@ const BannerPrincipal = () => {
 
   const fetchBannerHome = async () => {
     try {
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNER_TIENDA_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_BANNER_ABOUT_ID}`;
 
       // Obtener datos del banner base
       const bannerResponse = await fetch(

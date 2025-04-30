@@ -2,11 +2,11 @@
 "use client";
 
 import BannerTienda from "../dashboard/tienda/page";
-import BannerAbout01 from "@/components/PIXELUP/BannerAbout/BannerAbout01/BannerAbout01";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Marquee from "react-fast-marquee";
 import { getCookie } from "cookies-next";
+import BannerAbout from "@/components/PIXELUP/BannerAbout/BannerAbout/BannerAbout";
 
 function Nosotros() {
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ function Nosotros() {
 
   return (
     <div className="">
-      <BannerAbout01 />
+      <BannerAbout/>
       <div className="bg-white min-h-[475px] text-[#333] font-[sans-serif] pt-16 pb-32">
         <div className=" justify-center items-center text-center gap-8">
           <div className="max-w-4xl mx-auto p-4 ">

@@ -105,10 +105,10 @@ export default async function Page() {
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Destacados01 text="Destacados" />
         </Suspense>
-        <Suspense fallback={<Banner />}>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Hero01 />
         </Suspense>
-        <Suspense fallback={<Banner />}>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Hero02 />
         </Suspense>
         <Suspense fallback={<Banner />}>

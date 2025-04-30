@@ -23,6 +23,14 @@ export const globalConfig: GlobalConfig = {
     desktop: "16/4",
     mobile: "3/2",
   },
+  bannerAboutAspects: {
+    desktop: "16/5",
+    mobile: "9/5",
+  },
+  bannerTiendaAspects: {
+    desktop: "16/4",
+    mobile: "3/2",
+  },
 };
 
 // **************************************************
@@ -150,6 +158,14 @@ export interface GlobalConfig {
     link: string;
   };
   bannerAspects: {
+    desktop: string;
+    mobile: string;
+  };
+  bannerAboutAspects: {
+    desktop: string;
+    mobile: string;
+  };
+  bannerTiendaAspects: {
     desktop: string;
     mobile: string;
   };
