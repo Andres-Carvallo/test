@@ -120,7 +120,7 @@ const Destacados01: React.FC<any> = ({
   if (loading) {
     return (
       <section className="bg-white dark:bg-gray-900 w-full">
-        <div className="container px-6 py-10 mx-auto animate-pulse">
+        <div className="px-6 py-10 mx-auto animate-pulse">
           <h1 className="w-48 h-2 mx-auto bg-gray-200 rounded-lg dark:bg-gray-700" />
 
           <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
@@ -148,7 +148,7 @@ const Destacados01: React.FC<any> = ({
   }
 
   return (
-    <section className="mb-12 mt-10 -mx-4">
+    <section className="mb-12 mt-10 ">
       <div className="text-center mb-8">
         <h4 className="font-montserrat text-md text-[#c6b3f1] uppercase tracking-wider mb-1">
           {text}
@@ -162,7 +162,7 @@ const Destacados01: React.FC<any> = ({
         </div>
       </div>
 
-      <div className="container mx-auto px-4">
+      <div className=" mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {displayedProducts.map((product: any) => (
             <ProductCardComponent

@@ -4,9 +4,9 @@ import axios from "axios";
 import Link from "next/link";
 import { slugify } from "@/app/utils/slugify";
 import { useAPI } from "@/app/Context/ProductTypeContext";
-import { getActiveComponents } from "@/app/config/GlobalConfig";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import { getActiveComponents } from "@/app/config/GlobalConfig";
 import ProductCard04 from "../../ProductCards/ProductCards04/ProductCards04";
 import ProductCard05 from "../../ProductCards/ProductCards05/ProductCards05";
 
@@ -16,20 +16,21 @@ interface Product {
   stock?: any;
   pricingRanges?: any[];
   pricings?: any[];
+  productTypes?: any[];
   // Otros campos que puedan estar en el producto
 }
 
-interface CollectionWithProducts {
+interface CategoryWithProducts {
   id: string;
-  title: string;
+  name: string;
   products: Product[];
 }
 
-function Colecciones02() {
-  const [collections, setCollections] = useState<any[]>([]);
+function DestacadosCat() {
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [collectionsWithProducts, setCollectionsWithProducts] = useState<CollectionWithProducts[]>([]);
+  const [categoriesWithProducts, setCategoriesWithProducts] = useState<CategoryWithProducts[]>([]);
   const [autoplay, setAutoplay] = useState(true);
   const { addToCartHandler } = useAPI();
   const { ProductCard } = getActiveComponents();
@@ -106,55 +107,79 @@ function Colecciones02() {
   };
 
   useEffect(() => {
-    const fetchCollections = async () => {
+    const fetchCategories = async () => {
       try {
         const siteid = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-        const contentBlockId = process.env.NEXT_PUBLIC_COLECCIONES02_CONTENTBLOCK;
+        const contentBlockId = process.env.NEXT_PUBLIC_DESTACADOS_CAT_CONTENTBLOCK;
 
-        // Primero, obtener todas las colecciones disponibles
-        const collectionsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections?pageNumber=1&pageSize=50&siteId=${siteid}`
+        console.log("Fetching categories with siteId:", siteid);
+        console.log("Content Block ID:", contentBlockId);
+
+        // Primero, obtener todas las categorías disponibles
+        const categoriesResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/product-types?pageNumber=1&pageSize=50&siteId=${siteid}`
         );
 
-        const allCollections = collectionsResponse.data.collections;
+        console.log("Categories response:", categoriesResponse.data);
 
-        // Luego, obtener las colecciones seleccionadas del content block
+        const allCategories = categoriesResponse.data.productTypes || [];
+        console.log("All categories:", allCategories);
+
+        // Luego, obtener las categorías seleccionadas del content block
         const contentBlockResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${siteid}`
         );
 
-        const selectedCollectionIds = contentBlockResponse.data.contentBlock.contentText 
+        console.log("Content block response:", contentBlockResponse.data);
+
+        const selectedCategoryIds = contentBlockResponse.data.contentBlock?.contentText 
           ? JSON.parse(contentBlockResponse.data.contentBlock.contentText)
           : [];
 
-        // Filtrar y mapear solo las colecciones que existen
-        const validCollections = selectedCollectionIds
-          .map((collectionId: string) => {
-            const collection = allCollections.find((c: any) => c.id === collectionId);
-            if (collection) {
+        console.log("Selected category IDs:", selectedCategoryIds);
+
+        // Filtrar y mapear solo las categorías que existen
+        const validCategories = selectedCategoryIds
+          .map((categoryId: string) => {
+            const category = allCategories.find((c: any) => c.id === categoryId);
+            if (category) {
               return {
-                ...collection,
-                buttonText: "Ver Colección"
+                ...category,
+                buttonText: "Ver Categoría"
               };
             }
             return null;
           })
-          .filter(Boolean); // Eliminar las colecciones que no existen (null)
+          .filter(Boolean); // Eliminar las categorías que no existen (null)
 
-        setCollections(validCollections);
+        console.log("Valid categories:", validCategories);
 
-        // Si hay colecciones válidas, obtener los productos de cada colección
-        if (validCollections.length > 0) {
-          const collectionsWithProductsData = await Promise.all(
-            validCollections.map(async (collection: any) => {
-              const collectionProductsResponse = await axios.get(
-                `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/collections/${collection.id}?siteId=${siteid}`
+        setCategories(validCategories);
+
+        // Si hay categorías válidas, obtener los productos de cada categoría
+        if (validCategories.length > 0) {
+          // Primero obtener todos los productos
+          const allProductsResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products?siteId=${siteid}&pageNumber=1&pageSize=1000`
+          );
+          
+          const allProducts = allProductsResponse.data.products || [];
+          console.log("Total products fetched:", allProducts.length);
+
+          const categoriesWithProductsData = await Promise.all(
+            validCategories.map(async (category: any) => {
+              console.log("Filtering products for category:", category.id);
+              
+              // Filtrar productos que pertenecen a esta categoría
+              const categoryProducts = allProducts.filter((product: any) => 
+                product.productTypes && 
+                product.productTypes.some((type: any) => type.id === category.id)
               );
               
-              const collectionProducts = collectionProductsResponse.data.collection.products || [];
+              console.log(`Products found for category ${category.id}:`, categoryProducts.length);
               
               // Filtrar productos activos y obtener stock
-              const activeProducts = collectionProducts.filter(
+              const activeProducts = categoryProducts.filter(
                 (product: any) => product.statusCode === "ACTIVE"
               );
               
@@ -191,24 +216,29 @@ function Colecciones02() {
               );
               
               return {
-                id: collection.id,
-                title: collection.title,
+                id: category.id,
+                name: category.name,
                 products: productsWithDetails
               };
             })
           );
           
-          setCollectionsWithProducts(collectionsWithProductsData);
+          console.log("Categories with products:", categoriesWithProductsData);
+          setCategoriesWithProducts(categoriesWithProductsData);
         }
       } catch (error) {
-        console.error("Error fetching collections:", error);
+        console.error("Error fetching categories:", error);
+        if (error instanceof Error) {
+          console.error("Error message:", error.message);
+          console.error("Error stack:", error.stack);
+        }
         setError(error as Error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCollections();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -222,7 +252,7 @@ function Colecciones02() {
   if (loading) {
     return (
       <section className="bg-white dark:bg-gray-900 w-full">
-        <div className=" px-6 py-10 mx-auto animate-pulse">
+        <div className="container px-6 py-10 mx-auto animate-pulse">
           <h1 className="w-48 h-2 mx-auto bg-gray-200 rounded-lg dark:bg-gray-700" />
           <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
           <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg sm:w-80 dark:bg-gray-700" />
@@ -240,25 +270,34 @@ function Colecciones02() {
     );
   }
 
-  if (error) return <div>Error al cargar las colecciones</div>;
+  if (error) {
+    console.error("Error state:", error);
+    return (
+      <div className="text-center py-8">
+        <h2 className="text-2xl font-bold text-red-600 mb-4">Error al cargar las categorías</h2>
+        <p className="text-gray-600">Por favor, intenta recargar la página o contacta con soporte si el problema persiste.</p>
+        <p className="text-sm text-gray-500 mt-2">Detalles del error: {error.message}</p>
+      </div>
+    );
+  }
 
-  // Crear colecciones por defecto si no hay ninguna
-  const defaultCollections = collections.length === 0 ? [
+  // Crear categorías por defecto si no hay ninguna
+  const defaultCategories = categories.length === 0 ? [
     {
       id: 'default-1',
-      title: 'Próximamente',
+      name: 'Próximamente',
       previewImageUrl: '/img/placeholder.webp',
-      bannerText: 'Nuevas colecciones en camino',
+      bannerText: 'Nuevas categorías en camino',
       buttonText: 'Próximamente'
     },
     {
       id: 'default-2',
-      title: 'Próximamente',
+      name: 'Próximamente',
       previewImageUrl: '/img/placeholder.webp',
-      bannerText: 'Nuevas colecciones en camino',
+      bannerText: 'Nuevas categorías en camino',
       buttonText: 'Próximamente'
     }
-  ] : collections;
+  ] : categories;
 
   const responsive = {
     superLargeDesktop: {
@@ -334,19 +373,19 @@ function Colecciones02() {
   return (
     <div className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
-        {collectionsWithProducts.length > 0 ? (
+        {categoriesWithProducts.length > 0 ? (
           <>
-            {collectionsWithProducts.map((collectionData, index) => {
-              const showArrows = collectionData.products.length > 4;
+            {categoriesWithProducts.map((categoryData, index) => {
+              const showArrows = categoryData.products.length > 4;
               
               return (
-                <div key={collectionData.id} className="mb-16">
+                <div key={categoryData.id} className="mb-16">
                   <div className="text-center mb-12">
                     <span className="text-sm uppercase tracking-wider text-gray-500">
                       Descubre
                     </span>
                     <h2 className="text-3xl md:text-4xl text-gray-800 font-bold mt-2">
-                      {collectionData.title}
+                      {categoryData.name}
                     </h2>
                   </div>
 
@@ -371,7 +410,7 @@ function Colecciones02() {
                       customButtonGroup={showArrows ? <CustomButtonGroupAsArrows /> : undefined}
                       renderButtonGroupOutside={true}
                     >
-                      {collectionData.products.map((product: any) => (
+                      {categoryData.products.map((product: any) => (
                         <ProductCard
                           key={product.id}
                           product={product}
@@ -385,10 +424,10 @@ function Colecciones02() {
 
                   <div className="text-center mt-8">
                     <Link 
-                      href={`/tienda/colecciones/${slugify(collectionData.title)}`}
-                      className="bg-primary font-light text-md text-white hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
+                      href={`/tienda?categoria=${slugify(categoryData.name)}`}
+                      className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
                     >
-                      Ir a la Colección
+                      Ir a la Categoría
                     </Link>
                   </div>
                 </div>
@@ -402,41 +441,41 @@ function Colecciones02() {
                 Descubre
               </span>
               <h2 className="text-3xl md:text-4xl text-gray-800 font-bold mt-2">
-                Nuestras Colecciones
+                Nuestras Categorías
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {defaultCollections.map((coleccion) => (
+              {defaultCategories.map((categoria) => (
                 <div
-                  key={coleccion.id}
+                  key={categoria.id}
                   className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300"
                 >
                   <div className="flex flex-col md:flex-row h-[400px] md:h-[250px]">
                     <div className="w-full md:w-1/2 h-full relative overflow-hidden">
                       <img
-                        src={coleccion.previewImageUrl || "/carr/default.jpg"}
-                        alt={coleccion.title}
+                        src={categoria.previewImageUrl || "/carr/default.jpg"}
+                        alt={categoria.name}
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
                     <div className="w-full md:w-1/2 p-6 flex flex-col justify-center items-center text-center bg-white">
                       <h3 className="text-xl text-gray-800 font-bold mb-3">
-                        {coleccion.title}
+                        {categoria.name}
                       </h3>
                       <p className="text-gray-600 text-sm mb-6">
-                        {coleccion.bannerText || "Descubre nuestra exclusiva colección"}
+                        {categoria.bannerText || "Descubre nuestra exclusiva categoría"}
                       </p>
-                      {coleccion.id.startsWith('default-') ? (
+                      {categoria.id.startsWith('default-') ? (
                         <span className="bg-gray-200 text-gray-600 px-6 py-2 rounded text-sm font-bold cursor-not-allowed">
-                          {coleccion.buttonText}
+                          {categoria.buttonText}
                         </span>
                       ) : (
                         <Link 
-                          href={`/tienda/colecciones/${slugify(coleccion.title)}`}
+                          href={`/tienda?categoria=${slugify(categoria.name)}`}
                           className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
                         >
-                          {coleccion.buttonText}
+                          {categoria.buttonText}
                         </Link>
                       )}
                     </div>
@@ -447,10 +486,10 @@ function Colecciones02() {
 
             <div className="text-center mt-12">
               <Link 
-                href="/tienda/colecciones"
+                href="/tienda"
                 className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
               >
-                Ver Todas las Colecciones
+                Ver Todas las Categorías
               </Link>
             </div>
           </>
@@ -460,4 +499,4 @@ function Colecciones02() {
   );
 }
 
-export default Colecciones02;
+export default DestacadosCat;

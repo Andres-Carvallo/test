@@ -191,6 +191,10 @@ const Testimonios04BO = dynamic(
   () => import("@/components/PIXELUP/Testimonios/Testimonios04/Testimonios04BO"),
   { ssr: false }
 );
+const DestacadosCatBO = dynamic(
+  () => import("@/components/PIXELUP/Destacados/DestacadosCat/DestacadosCatBO"),
+  { ssr: false }
+);
 
 
 export default function BannerHome() {
@@ -226,6 +230,7 @@ export default function BannerHome() {
       {[
 /*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
  */     {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
+ {id: "destacadosCat", title: "Destacados Cat", component: <DestacadosCatBO/>},
  {id: "testimonios03", title: "Testimonios 03", component: <Testimonios03BO/>},
  {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
  {id: "testimonios04", title: "Testimonios 04", component: <Testimonios04BO/>},
