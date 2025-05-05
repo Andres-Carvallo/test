@@ -2,9 +2,6 @@
 
 'use client';
 
-import LogosCarrusel from "@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarrusel";
-import LogosDinamicos from "@/components/PIXELUP/Marcas/LogosDinamicos/LogosDinamicos";
-import LogosFijos from "@/components/PIXELUP/Marcas/LogosFijos/LogosFijos";
 import Navbar01 from "@/components/PIXELUP/Navbar/Navbar01/Navbar01";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import Navbar03 from "@/components/PIXELUP/Navbar/Navbar03/Navbar03";
