@@ -14,7 +14,7 @@ export const globalConfig: GlobalConfig = {
   activeFooter: "Footer01",
   activeNavbar: "Navbar01",
   activeProductCard: "ProductCard02",
-  activeProductDetail: "ProductDetail03",
+  activeProductDetail: "ProductDetail01",
   whatsappButton: {
     isActive: true,
     link: process.env.NEXT_PUBLIC_WHATSAPP_LINK || "",

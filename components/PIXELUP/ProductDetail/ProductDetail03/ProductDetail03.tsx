@@ -580,6 +580,10 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   }, [currentAttributes, selectedAttributes, variations]);
 
   useEffect(() => {
+    updateDisabledAttributes();
+  }, [selectedAttributes, updateDisabledAttributes]);
+
+  useEffect(() => {
     const updateVariationAndPrice = () => {
       const matchingVariation = variations.find((variation) => {
         return Object.keys(selectedAttributes).every((key) => {
@@ -1107,19 +1111,24 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                     )}
                   </div>
                   <div className="flex gap-2">
-                    {values.map((value) => (
-                      <button
-                        key={value}
-                        onClick={() => handleAttributeChange(attributeName, value)}
-                        className={`px-3 py-1 min-w-[48px] h-12 flex items-center justify-center border rounded-lg ${
-                          selectedAttributes[attributeName] === value
-                            ? 'border-black bg-black text-white'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        {value}
-                      </button>
-                    ))}
+                    {values.map((value, index) => {
+                      const isDisabled = disabledAttributes[attributeName]?.[index] || false;
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleAttributeChange(attributeName, value)}
+                          className={`px-3 py-1 min-w-[48px] h-12 flex items-center justify-center border rounded-lg ${
+                            selectedAttributes[attributeName] === value
+                              ? 'border-black bg-black text-white'
+                              : isDisabled
+                              ? ' bg-gray-100 text-gray-400 border-2 border-dashed border-gray-300'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {value}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

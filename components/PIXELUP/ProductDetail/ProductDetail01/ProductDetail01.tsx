@@ -502,33 +502,30 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
 
   const updateDisabledAttributes = useCallback(() => {
     const disabledAttrs: { [key: string]: boolean[] } = {};
+    
     Object.keys(currentAttributes).forEach((attributeName) => {
-      disabledAttrs[attributeName] = currentAttributes[attributeName].map(
-        (value) => {
-          return !variations.some((variation) => {
-            const attributesMatch = Object.keys(selectedAttributes).every(
-              (key) => {
-                if (key === attributeName) {
-                  return true;
-                }
-                const attribute = variation.attributes.find(
-                  (attr) => attr.label === key
-                );
-                return attribute && attribute.value === selectedAttributes[key];
-              }
-            );
-
-            const attribute = variation.attributes.find(
-              (attr) => attr.label === attributeName
-            );
-            return attributesMatch && attribute && attribute.value === value;
+      disabledAttrs[attributeName] = currentAttributes[attributeName].map((value) => {
+        return !variations.some((variation) => {
+          const attributesMatch = Object.keys(selectedAttributes).every((key) => {
+            if (key === attributeName) {
+              return true;
+            }
+            const attribute = variation.attributes.find((attr) => attr.label === key);
+            return attribute && attribute.value === selectedAttributes[key];
           });
-        }
-      );
+
+          const attribute = variation.attributes.find((attr) => attr.label === attributeName);
+          return attributesMatch && attribute && attribute.value === value;
+        });
+      });
     });
 
     setDisabledAttributes(disabledAttrs);
   }, [currentAttributes, selectedAttributes, variations]);
+
+  useEffect(() => {
+    updateDisabledAttributes();
+  }, [selectedAttributes, updateDisabledAttributes]);
 
   useEffect(() => {
     console.log("Selected attributes changed:", selectedAttributes);
@@ -1147,11 +1144,9 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                           </h4>
                           <div className="flex flex-wrap gap-2 mt-2">
                             {attributeValues.map((value, index) => {
-                              const isDisabled =
-                                disabledAttributes[attributeName]?.[index] ||
-                                false;
                               const isSelected =
                                 selectedAttributes[attributeName] === value;
+                              const isDisabled = disabledAttributes[attributeName]?.[index];
 
                               return (
                                 <button
@@ -1159,14 +1154,14 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                                   onClick={() =>
                                     handleAttributeChange(attributeName, value)
                                   }
-                                  disabled={isDisabled}
                                   className={`px-4 py-2 rounded-lg border-2 transition-all ${
                                     isSelected
                                       ? "border-primary bg-primary text-white"
                                       : isDisabled
-                                      ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                      ? "border-gray-300 bg-gray-100 text-gray-400 border-2 border-dashed "
                                       : "border-gray-200 hover:border-primary"
                                   }`}
+                            /*       disabled={isDisabled} */
                                 >
                                   {value}
                                 </button>

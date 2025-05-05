@@ -545,33 +545,30 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
 
   const updateDisabledAttributes = useCallback(() => {
     const disabledAttrs: { [key: string]: boolean[] } = {};
+    
     Object.keys(currentAttributes).forEach((attributeName) => {
-      disabledAttrs[attributeName] = currentAttributes[attributeName].map(
-        (value) => {
-          return !variations.some((variation) => {
-            const attributesMatch = Object.keys(selectedAttributes).every(
-              (key) => {
-                if (key === attributeName) {
-                  return true;
-                }
-                const attribute = variation.attributes.find(
-                  (attr) => attr.label === key
-                );
-                return attribute && attribute.value === selectedAttributes[key];
-              }
-            );
-
-            const attribute = variation.attributes.find(
-              (attr) => attr.label === attributeName
-            );
-            return attributesMatch && attribute && attribute.value === value;
+      disabledAttrs[attributeName] = currentAttributes[attributeName].map((value) => {
+        return !variations.some((variation) => {
+          const attributesMatch = Object.keys(selectedAttributes).every((key) => {
+            if (key === attributeName) {
+              return true;
+            }
+            const attribute = variation.attributes.find((attr) => attr.label === key);
+            return attribute && attribute.value === selectedAttributes[key];
           });
-        }
-      );
+
+          const attribute = variation.attributes.find((attr) => attr.label === attributeName);
+          return attributesMatch && attribute && attribute.value === value;
+        });
+      });
     });
 
     setDisabledAttributes(disabledAttrs);
   }, [currentAttributes, selectedAttributes, variations]);
+
+  useEffect(() => {
+    updateDisabledAttributes();
+  }, [selectedAttributes, updateDisabledAttributes]);
 
   useEffect(() => {
     console.log("Selected attributes changed:", selectedAttributes);
@@ -1129,44 +1126,36 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
               {hasAttributes() && (
                 <div className="mt-4 border-t border-gray-100">
                   <div className="flex flex-col space-y-4 mt-2">
-                    {Object.entries(currentAttributes).map(
-                      ([attributeName, attributeValues]) => (
-                        <div key={attributeName}>
-                          <h4 className="text-primary font-semibold">
-                            {capitalizeFirstLetter(attributeName)}:
-                          </h4>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {attributeValues.map((value) => {
-                              const isSelected =
-                                selectedAttributes[attributeName] === value;
-                              const isDisabled =
-                                disabledAttributes[attributeName]?.[
-                                  attributeValues.indexOf(value)
-                                ];
+                    {Object.entries(currentAttributes).map(([attributeName, attributeValues]) => (
+                      <div key={attributeName}>
+                        <h4 className="text-primary font-semibold">
+                          {capitalizeFirstLetter(attributeName)}:
+                        </h4>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {attributeValues.map((value, index) => {
+                            const isSelected = selectedAttributes[attributeName] === value;
+                            const isDisabled = disabledAttributes[attributeName]?.[index];
 
-                              return (
-                                <button
-                                  key={value}
-                                  onClick={() =>
-                                    handleAttributeChange(attributeName, value)
-                                  }
-                                  className={`px-3 py-1 rounded ${
-                                    isSelected
-                                      ? "bg-primary text-white"
-                                      : isDisabled
-                                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                      : "bg-white text-gray-800 border hover:border-primary"
-                                  }`}
-                                  disabled={isDisabled}
-                                >
-                                  {capitalizeFirstLetter(value)}
-                                </button>
-                              );
-                            })}
-                          </div>
+                            return (
+                              <button
+                                key={value}
+                                onClick={() => handleAttributeChange(attributeName, value)}
+                                className={`px-3 py-1 rounded ${
+                                  isSelected
+                                    ? "bg-primary text-white"
+                                    : isDisabled
+                                    ? "bg-gray-200 text-gray-500 border-2 border-dashed border-gray-300"
+                                    : "bg-white text-gray-800 border hover:border-primary"
+                                }`}
+                                /* disabled={isDisabled} */
+                              >
+                                {capitalizeFirstLetter(value)}
+                              </button>
+                            );
+                          })}
                         </div>
-                      )
-                    )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
