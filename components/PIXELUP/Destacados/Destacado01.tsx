@@ -180,8 +180,8 @@ const Destacados01: React.FC<any> = ({
     previous?: () => void;
   }) => {
     return (
-      <div className="hidden absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
-        <button
+        <div className="hidden absolute inset-y-0 -left-12 -right-12 lg:flex items-center justify-between px-4 pointer-events-none">
+          <button
           className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
           onClick={previous}
         >
@@ -227,7 +227,7 @@ const Destacados01: React.FC<any> = ({
   const showArrows = products.length > 4;
 
   return (
-    <div className="container mx-auto m-8  max-w-6xl relative">
+    <div className="mx-auto m-8  max-w-6xl relative">
       <h1 className="text-center text-3xl font-semibold text-primary sm:text-4xl">
         {text}
       </h1>

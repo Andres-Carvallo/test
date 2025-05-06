@@ -751,8 +751,8 @@ const BannerPrincipal01BO: React.FC = () => {
       setMainImage(null);
       setMobileImage(null);
       setIsAddingImage(true);
+      // Solo abrimos el modal de imagen desktop primero
       fileInputRef.current?.click();
-      mobileFileInputRef.current?.click();
       setIsMainImageUploaded(false);
       setIsMobileImageUploaded(false);
     }
@@ -1026,7 +1026,7 @@ const BannerPrincipal01BO: React.FC = () => {
       {/* Panel de Vista Previa */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h3 className="text-lg font-medium text-gray-900">Vista Previa</h3>
+          <h3 className="text-lg font-medium text-gray-900">Vista Previa (referencial)</h3>
           
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
@@ -1690,7 +1690,7 @@ const BannerPrincipal01BO: React.FC = () => {
                 <span className="sr-only">Info</span>
                 <div>
                   <span className="font-medium"></span>{" "}
-                  ¿No sabes como bajarle el peso a tu imagen?
+                  ¿No sabes cómo bajarle el peso a tu imagen?
                   <div className="">
                     <button 
                       onClick={handleOpenPesoImagenModal} 

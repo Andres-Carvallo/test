@@ -35,10 +35,12 @@ export default function Productos() {
           text="Tipo de Producto 1 - Detalle 1"
           ProductCardComponent={ProductCard01}
         />
-        <Destacados01 
+                <Destacados01 
           text="Tipo de Producto 2 - Detalle 2"
           ProductCardComponent={ProductCard02}
         />
+                <DestacadosCat/>
+
         <Destacados01 
           text="Tipo de Producto 3 - Detalle 3"
           ProductCardComponent={ProductCard03}
@@ -53,7 +55,7 @@ export default function Productos() {
         />
         <Destacados02/>
         <Destacados03/>
-        <DestacadosCat/>
+
       </>
     );
 }
