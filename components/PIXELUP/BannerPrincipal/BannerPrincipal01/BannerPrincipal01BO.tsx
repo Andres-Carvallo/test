@@ -1120,10 +1120,10 @@ const BannerPrincipal01BO: React.FC = () => {
                 {skeletonLoading ? (
                   <SkeletonLoader />
                 ) : (
-                  <div className={`relative overflow-hidden ${
+                  <div className={`relative w-full h-full ${
                     previewMode === "mobile" 
-                      ? `aspect-[${mobileAspect}] h-full` 
-                      : `aspect-[${desktopAspect}] h-full`
+                      ? `aspect-[${mobileAspect}]` 
+                      : `aspect-[${desktopAspect}]`
                   }`}>
                     {displayConfig.fullBannerLink &&
                       displayConfig.fullBannerLinkUrl && (
@@ -1141,7 +1141,7 @@ const BannerPrincipal01BO: React.FC = () => {
                             : mainImage || formData.mainImage?.url
                         }
                         alt="Banner Image"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                       {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
                         formData.title !== DEFAULT_TITLE ||
