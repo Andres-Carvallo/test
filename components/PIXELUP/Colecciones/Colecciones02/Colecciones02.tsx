@@ -287,7 +287,7 @@ function Colecciones02() {
     previous?: () => void;
   }) => {
     return (
-      <div className="hidden absolute inset-y-0 lg:-left-5 lg:-right-5 lg:flex items-center justify-between px-4 pointer-events-none">
+      <div className="hidden absolute inset-y-0 -left-12 -right-12 lg:flex items-center justify-between px-4 pointer-events-none">
         <button
           className="text-gray-900 rounded-full h-10 w-10 flex items-center justify-center pointer-events-auto hover:transform hover:scale-125"
           onClick={previous}
