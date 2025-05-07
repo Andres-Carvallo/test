@@ -13,7 +13,7 @@ import type { ComponentType } from "react";
 export const globalConfig: GlobalConfig = {
   activeFooter: "Footer01",
   activeNavbar: "Navbar01",
-  activeProductCard: "ProductCard02",
+  activeProductCard: "ProductCard05",
   activeProductDetail: "ProductDetail01",
   whatsappButton: {
     isActive: true,
@@ -43,7 +43,8 @@ type ProductCardType =
   | "ProductCard01"
   | "ProductCard02"
   | "ProductCard03"
-  | "ProductCard04";
+  | "ProductCard04"
+  | "ProductCard05";
 type ProductDetailType = "ProductDetail01" | "ProductDetail02" | "ProductDetail03";
 
 // **************************************************
@@ -121,6 +122,11 @@ const productCardComponents = {
   ProductCard04: dynamic(
     () =>
       import("@/components/PIXELUP/ProductCards/ProductCards04/ProductCards04"),
+    { loading: LoadingComponent, ssr: true }
+  ),
+  ProductCard05: dynamic(
+    () =>
+      import("@/components/PIXELUP/ProductCards/ProductCards05/ProductCards05"),
     { loading: LoadingComponent, ssr: true }
   ),
 } as const;

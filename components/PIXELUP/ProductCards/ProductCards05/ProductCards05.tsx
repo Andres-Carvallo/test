@@ -69,21 +69,21 @@ const ProductCard05: React.FC<ProductCardProps> = ({
         const minPrecioPorCuota = cuotasEnabled ? Math.ceil(minOfferPrice / numeroCuotas) : 0;
 
         return (
-          <div className="flex items-center gap-2">
-            <p className="font-montserrat text-sm text-gray-400 line-through">
+          <div className="flex flex-col">
+            <span className="line-through text-gray-500 text-xs md:text-sm">
               {minNormalPrice === maxNormalPrice
                 ? `$${minNormalPrice.toLocaleString("es-CL")}`
                 : `$${Math.min(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")} - $${Math.max(minNormalPrice, maxNormalPrice).toLocaleString("es-CL")}`
               }
-            </p>
-            <p className="font-montserrat text-sm font-semibold text-red-600">
+            </span>
+            <span className="text-red-600 text-sm md:text-base">
               {minOfferPrice === maxOfferPrice
                 ? `$${minOfferPrice.toLocaleString("es-CL")}`
                 : `$${Math.min(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")} - $${Math.max(minOfferPrice, maxOfferPrice).toLocaleString("es-CL")}`
               }
-            </p>
+            </span>
             {cuotasEnabled && numeroCuotas > 0 && (
-              <span className="text-xs text-green-500 mt-1">
+              <span className="text-[10px] md:text-xs text-green-500 mt-1">
                 En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
               </span>
             )}
@@ -99,14 +99,14 @@ const ProductCard05: React.FC<ProductCardProps> = ({
 
         return (
           <div className="flex flex-col">
-            <p className="font-montserrat text-sm text-gray-500">
+            <span className="text-sm md:text-base">
               {minPrice === maxPrice
                 ? `$${minPrice.toLocaleString("es-CL")}`
                 : `$${Math.min(minPrice, maxPrice).toLocaleString("es-CL")} - $${Math.max(minPrice, maxPrice).toLocaleString("es-CL")}`
               }
-            </p>
+            </span>
             {cuotasEnabled && numeroCuotas > 0 && (
-              <span className="text-xs text-green-500 mt-1">
+              <span className="text-[10px] md:text-xs text-green-500 mt-1">
                 En {numeroCuotas} cuotas desde ${minPrecioPorCuota.toLocaleString("es-CL")}
               </span>
             )}
@@ -124,16 +124,14 @@ const ProductCard05: React.FC<ProductCardProps> = ({
       if (offerPrice) {
         return (
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <p className="font-montserrat text-sm text-gray-400 line-through">
-                ${normalPrice.toLocaleString("es-CL")}
-              </p>
-              <p className="font-montserrat text-sm font-semibold text-red-600">
-                ${offerPrice.toLocaleString("es-CL")}
-              </p>
-            </div>
+            <span className="line-through text-gray-500 text-xs md:text-sm">
+              ${normalPrice.toLocaleString("es-CL")}
+            </span>
+            <span className="text-red-600 text-sm md:text-base">
+              ${offerPrice.toLocaleString("es-CL")}
+            </span>
             {cuotasEnabled && numeroCuotas > 0 && (
-              <span className="text-xs text-green-500 mt-1">
+              <span className="text-[10px] md:text-xs text-green-500 mt-1">
                 En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
               </span>
             )}
@@ -144,9 +142,9 @@ const ProductCard05: React.FC<ProductCardProps> = ({
       if (normalPrice > 0) {
         return (
           <div className="flex flex-col">
-            <p className="font-montserrat text-sm text-gray-500">${normalPrice.toLocaleString("es-CL")}</p>
+            <span className="text-sm md:text-base">${normalPrice.toLocaleString("es-CL")}</span>
             {cuotasEnabled && numeroCuotas > 0 && (
-              <span className="text-xs text-green-500 mt-1">
+              <span className="text-[10px] md:text-xs text-green-500 mt-1">
                 En {numeroCuotas} cuotas de ${precioPorCuota.toLocaleString("es-CL")}
               </span>
             )}
@@ -167,66 +165,68 @@ const ProductCard05: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="min-w-[200px] sm:min-w-[250px] mt-4">
-      <div className="bg-gray-50 aspect-square relative group overflow-hidden">
-        <Link href={`/tienda/productos/${slugify(product.name)}`}>
+    <section className="mt-4"> 
+      <div className="bg-gray-50 aspect-square relative group overflow-hidden rounded-lg hover:shadow-lg transition-all duration-300">
+        <Link
+          href={`/tienda/productos/${slugify(product.name)}`}
+          className="block w-full h-full"
+        >
           <img
             src={product.mainImageUrl}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
+          {/* Overlay con botón de ver detalle */}
+          <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+            <span className="font-poiret cursor-pointer text-white text-sm md:text-lg border-b border-white hover:border-white transition-colors">
+              VER DETALLE
+            </span>
+          </div>
         </Link>
-        
+
         {/* Etiquetas de producto */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {product.productTypes && product.productTypes.length > 0 && (
-            <div className="bg-[#c6b3f1] text-white px-3 py-1 font-montserrat text-md">
+        <div className="absolute top-2 md:top-4 left-2 md:left-4 flex flex-col gap-1 md:gap-2 z-10">
+           {product.productTypes && product.productTypes.length > 0 && (
+            <div className="bg-muted text-white px-2 md:px-3 py-0.5 md:py-1 font-montserrat text-xs md:text-md">
               {product.productTypes[0].name}
             </div>
-          )}
+          )} 
           {isOnSale && (
-            <div className="bg-red-500 text-white px-3 py-1 font-montserrat text-md">
+            <div className="bg-red-500 text-white px-2 md:px-3 py-0.5 md:py-1 font-montserrat text-xs md:text-md">
               En Oferta
             </div>
           )}
         </div>
-        
-        {/* Overlay con botón de ver detalle */}
-        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-          <Link
-            href={`/tienda/productos/${slugify(product.name)}`}
-            className="font-poiret cursor-pointer text-white text-lg border-b border-white hover:border-white transition-colors"
-          >
-            VER DETALLE
-          </Link>
-        </div>
       </div>
-      
-      <div className="p-4 flex justify-between items-center">
-        <div className="text-left">
-          <h3 className="font-montserrat text-sm font-medium text-gray-700 truncate max-w-[8ch]  md:max-w-[18ch]">
-            {product.name}
-          </h3>
+
+      <div className="p-2 md:p-4 flex justify-between items-start">
+        <div className="text-left flex-1 mr-2">
+          <Link href={`/tienda/productos/${slugify(product.name)}`}>
+            <h3 className="font-montserrat text-xs md:text-sm font-medium text-gray-700 truncate max-w-[12ch] md:max-w-[18ch] hover:text-primary transition-colors">
+              {product.name}
+            </h3>
+          </Link>
           {renderPrice()}
         </div>
-        
+
         {product.hasVariations || stock === 0 ? (
           <div
-            className="bg-[#FFC4C7] p-1.5 cursor-pointer"
+            className="bg-primary p-1 md:p-1.5 cursor-pointer flex-shrink-0"
             data-tooltip-id="cart-tooltip"
             data-tooltip-content="Ver más"
           >
             <Link href={`/tienda/productos/${slugify(product.name)}`}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="white"
                 strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                className="md:w-5 md:h-5"
               >
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -235,22 +235,22 @@ const ProductCard05: React.FC<ProductCardProps> = ({
           </div>
         ) : (
           <div
-            className="bg-[#FFC4C7] p-1.5 cursor-pointer"
+            className="bg-primary p-1 md:p-1.5 cursor-pointer flex-shrink-0"
             data-tooltip-id="cart-tooltip"
             data-tooltip-content="Agregar al carrito"
             onClick={handleButtonClick}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="white"
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-shopping-cart-icon lucide-shopping-cart"
+              className="md:w-5 md:h-5"
             >
               <circle cx="8" cy="21" r="1" />
               <circle cx="19" cy="21" r="1" />
@@ -259,7 +259,7 @@ const ProductCard05: React.FC<ProductCardProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 
