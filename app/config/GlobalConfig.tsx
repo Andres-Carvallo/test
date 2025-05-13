@@ -38,7 +38,7 @@ export const globalConfig: GlobalConfig = {
 // **************************************************
 
 type FooterType = "Footer01" | "Footer02" | "Footer03";
-type NavbarType = "Navbar01" | "Navbar02" | "NavbarBanner";
+type NavbarType = "Navbar01" | "Navbar02";
 type ProductCardType =
   | "ProductCard01"
   | "ProductCard02"
@@ -91,10 +91,6 @@ const navbarComponents = {
   ),
   Navbar02: dynamic(
     () => import("@/components/PIXELUP/Navbar/Navbar02/Navbar02"),
-    { loading: NavLoadingComponent, ssr: true }
-  ),
-  NavbarBanner: dynamic(
-    () => import("@/components/PIXELUP/Navbar/Navbarbanner/Navbarbanner"),
     { loading: NavLoadingComponent, ssr: true }
   ),
 } as const;

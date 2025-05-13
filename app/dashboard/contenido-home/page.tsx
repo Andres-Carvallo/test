@@ -175,10 +175,10 @@ const SinFoto07BO = dynamic(
   () => import("@/components/PIXELUP/SinFoto/SinFoto07/SinFoto07BO"),
   { ssr: false }
 );
-const NavbarbannerBO = dynamic(
+/* const NavbarbannerBO = dynamic(
   () => import("@/components/PIXELUP/Navbar/Navbarbanner/NavbarbannerBO"),
   { ssr: false }
-);
+); */
 const Nosotros01BO = dynamic(
   () => import("@/components/PIXELUP/Nosotros/Nosotros01/Nosotros01BO"),
   { ssr: false }
@@ -235,8 +235,8 @@ export default function BannerHome() {
  {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
  {id: "testimonios04", title: "Testimonios 04", component: <Testimonios04BO/>},
  {id: "sinFoto04", title: "Sin Foto 04", component: <SinFoto04BO/>},
- {id: "navbarbanner", title: "Navbar Banner", component: <NavbarbannerBO/>},
- {id: "colecciones01", title: "Coleccion 01", component: <Colecciones01BO/>},
+/*  {id: "navbarbanner", title: "Navbar Banner", component: <NavbarbannerBO/>},
+ */ {id: "colecciones01", title: "Coleccion 01", component: <Colecciones01BO/>},
  {id: "colecciones02", title: "Coleccion 02", component: <Colecciones02BO/>},
  {id: "galeria02", title: "Galería 02", component: <Galeria02BO/>},
  {id: "nosotros01", title: "Nosotros 01", component: <Nosotros01BO/>},
