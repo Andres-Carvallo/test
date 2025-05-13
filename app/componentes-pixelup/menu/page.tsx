@@ -6,8 +6,8 @@ import Navbar01 from "@/components/PIXELUP/Navbar/Navbar01/Navbar01";
 import Navbar02 from "@/components/PIXELUP/Navbar/Navbar02/Navbar02";
 import Navbar03 from "@/components/PIXELUP/Navbar/Navbar03/Navbar03";
 import Navbar04 from "@/components/PIXELUP/Navbar/Navbar04/Navbar04";
-import Navbarbanner from "@/components/PIXELUP/Navbar/Navbarbanner/Navbarbanner";
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
+/* import Navbarbanner from "@/components/PIXELUP/Navbar/Navbarbanner/Navbarbanner";
+ */const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const revalidate = 60; // Revalida cada 60 segundos
