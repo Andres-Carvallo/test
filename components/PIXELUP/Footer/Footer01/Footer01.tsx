@@ -16,7 +16,7 @@ export default function Footer() {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [collections, setCollections] = useState<any[]>([]);
-  const { logoUrl } = useLogo();
+  const { logo } = useLogo();
 
   // Filtrar los enlaces del menú que son visibles
   const menuItems = mainMenuConfig.showInFooter
@@ -88,7 +88,7 @@ export default function Footer() {
             <img
               alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               className="h-40 object-cover mb-6"
-              src={logoUrl || process.env.NEXT_PUBLIC_LOGO_COLOR}
+              src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
             <p className="text-secondary text-center lg:text-left mt-4 max-w-xs">
               {process.env.NEXT_PUBLIC_DESCRIPCION_TIENDA ||
