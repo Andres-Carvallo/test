@@ -2,9 +2,26 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
 
+interface LogoImage {
+  url: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
+interface LogoData {
+  mainImage: LogoImage;
+  title: string;
+  landingText: string;
+  buttonText: string;
+  buttonLink: string;
+  mainImageLink: string;
+  orderNumber: number;
+}
+
 interface LogoContextType {
-  logoUrl: string;
-  setLogoUrl: (url: string) => void;
+  logo: LogoData | null;
+  setLogo: (logo: LogoData | null) => void;
   refreshLogo: () => Promise<void>;
 }
 
@@ -23,7 +40,7 @@ interface LogoProviderProps {
 }
 
 export const LogoProvider: React.FC<LogoProviderProps> = ({ children }) => {
-  const [logoUrl, setLogoUrl] = useState<string>('/logo-w.png');
+  const [logo, setLogo] = useState<LogoData | null>(null);
 
   const fetchLogo = async () => {
     try {
@@ -41,8 +58,8 @@ export const LogoProvider: React.FC<LogoProviderProps> = ({ children }) => {
         }
       );
 
-      if (response.data.bannerImage && response.data.bannerImage.mainImage) {
-        setLogoUrl(response.data.bannerImage.mainImage.url);
+      if (response.data.bannerImage) {
+        setLogo(response.data.bannerImage);
       }
     } catch (error) {
       console.error('Error al obtener el logo:', error);
@@ -58,7 +75,7 @@ export const LogoProvider: React.FC<LogoProviderProps> = ({ children }) => {
   };
 
   return (
-    <LogoContext.Provider value={{ logoUrl, setLogoUrl, refreshLogo }}>
+    <LogoContext.Provider value={{ logo, setLogo, refreshLogo }}>
       {children}
     </LogoContext.Provider>
   );

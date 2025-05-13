@@ -219,6 +219,11 @@ const LogoEdit: React.FC = () => {
     setImage(null);
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormDataHero({ ...formDataHero, [name]: value });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -246,161 +251,164 @@ const LogoEdit: React.FC = () => {
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full px-4 py-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-      >
-        <span className="text-xl font-medium text-black">Cambiar Logo Principal</span>
-        <svg
-          className={`w-5 h-5 ml-2 -mr-1 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path
-            fillRule="evenodd"
-            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
+    <section
+      id="banner"
+      className="w-full"
+    >
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        Cambiar Logo Principal
+      </h2>        </div>
 
-      {isOpen && (
-        <div className="absolute z-10 w-full mt-2 bg-white rounded-md shadow-lg">
-          <div className="p-4">
-            
-            {logoData && (
-              <div className="flex flex-col items-center py-4">
-                <div className="mb-4">
-                  <img
-                    src={logoData[0].mainImage.url}
-                    alt="Logo Principal"
-                    className="w-[150px] h-[150px] object-contain border border-gray-200 rounded-md"
-                  />
-                </div>
-                <p className="text-sm text-gray-500 mb-2">
-                  Este es el logo actual que se muestra en el sitio web
-                </p>
-                <div
-                className="mb-4 flex items-center rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800  "
-                role="alert"
+        {logoData && (
+          <div className="flex flex-col items-center py-4">
+            <div className="mb-4">
+              <img
+                src={logoData[0].mainImage.url}
+                alt="Logo Principal"
+                className="w-[150px] h-[150px] object-contain border border-gray-200 rounded-md"
+              />
+            </div>
+            <p className="text-sm text-gray-500 mb-2">
+              Este es el logo actual que se muestra en el sitio web
+            </p>
+            <div
+              className="mb-4 flex items-center rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800"
+              role="alert"
+            >
+              <svg
+                className="me-3 inline h-4 w-4 shrink-0"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
-                <svg
-                  className="me-3 inline h-4 w-4 shrink-0"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                </svg>
-                <span className="sr-only">Info</span>
-                <div>
-                  <span className="font-medium"></span>{" "}
-                  Recuerda subir un archivo PNG para que el logo se vea correctamente.
-                </div>
-              </div>
-              </div>
-              
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
+              </svg>
+              <span className="sr-only">Info</span>
               <div>
-                <label htmlFor="mainImage" className="block text-sm font-medium text-gray-700">
-                  Subir nuevo logo
-                </label>
-                <div className="mt-1 flex items-center">
-                  <input
-                    type="file"
-                    id="mainImage"
-                    accept="image/*"
-                    onChange={(e) => handleImageChange(e, setMainImageLogo, "mainImage")}
-                    className="hidden"
-                  />
-                  {mainImageLogo ? (
-                    <div>
-                      <div className="relative mt-2 h-[150px] rounded-lg object-contain overflow-hidden">
-                        <img
-                          src={mainImageLogo}
-                          alt="Preview"
-                          className="w-full h-full object-contain"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleClearImage(setMainImageLogo)}
-                          className="absolute top-0 right-0 bg-red-500 hover:bg-red-700 text-white rounded-full p-1 m-1 text-xs"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-6 h-6"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <label
-                      htmlFor="mainImage"
-                      className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed cursor-pointer w-full z-10 flex-1"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      <div className="flex flex-col justify-center items-center">
-                        <svg
-                          className="w-12 h-12 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
-                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-semibold">Subir Imagen</span>
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          PNG, JPG o Webp (800x800px)
-                        </p>
-                      </div>
-                    </label>
-                  )}
-                </div>
+                <span className="font-medium"></span>{" "}
+                Recuerda subir un archivo PNG para que el logo se vea correctamente.
               </div>
-
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Guardar Cambios
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="px-4 mx-auto">
+          <input
+            type="number"
+            name="orderNumber"
+            value={formDataHero.orderNumber}
+            onChange={handleChange}
+            className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
+          />
+
+          <div>
+            <input
+              type="file"
+              accept="image/*"
+              id="mainImage"
+              className="hidden"
+              onChange={(e) => handleImageChange(e, setMainImageLogo, "mainImage")}
+            />
+            {mainImageLogo ? (
+              <div className="flex flex-col items-center mt-3 relative">
+                <h4 className="font-normal text-primary text-center text-slate-600 w-full">
+                  Tu logo{" "}
+                  <span className="text-dark">
+                    {formDataHero.mainImage?.name || "logo.png"}
+                  </span>{" "}
+                  ya ha sido cargado.
+                  <br /> Actualiza para ver los cambios.
+                </h4>
+
+                <button
+                  className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full text-xs mt-4"
+                  onClick={() => handleClearImage(setMainImageLogo)}
+                >
+                  <span className="self-center">Seleccionar otra Imagen</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h3 className="font-normal text-primary">
+                  Logo <span className="text-primary">*</span>
+                </h3>
+                <label
+                  htmlFor="mainImage"
+                  className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
+                >
+                  <div className="flex flex-col justify-center items-center">
+                    <svg
+                      className="w-12 h-12 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold">Subir Logo</span>
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      PNG, JPG o Webp (800x800px)
+                    </p>
+                  </div>
+                </label>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6"
+            style={{ borderRadius: "var(--radius)" }}
+          >
+            <svg
+              aria-hidden="true"
+              role="status"
+              className={`inline w-4 h-4 me-3 text-white animate-spin ${
+                loading ? "block" : "hidden"
+              }`}
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="#E5E7EB"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentColor"
+              />
+            </svg>
+            {loading ? "Cargando..." : "Actualizar Logo"}
+          </button>
+        </form>
+      </div>
+    </section>
   );
 };
 

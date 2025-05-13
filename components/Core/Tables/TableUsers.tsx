@@ -112,7 +112,7 @@ const TableUsers = () => {
                 </th>
                 <th
                   scope="col"
-                  className="py-4 px-4 font-medium text-primary dark:text-white"
+                  className="py-4 px-4 font-medium text-secondary"
                 >
                   Acciones
                 </th>

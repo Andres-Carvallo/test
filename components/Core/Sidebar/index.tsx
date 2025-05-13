@@ -10,6 +10,7 @@ import { deleteCookie, getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import axios from "axios";
+import { useLogo } from "@/context/LogoContext";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -28,6 +29,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const token = getCookie("AdminTokenAuth")?.toString();
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [menuEnabled, setMenuEnabled] = useState<boolean>(true);
+  const { logo } = useLogo();
 
   useEffect(() => {
     if (!token) {
@@ -450,10 +452,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   }`}
                 >
                   <img
-                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
-                    alt={
-                      process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
-                    }
+                    src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                    alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
                     className="w-8 h-8 object-contain"
                   />
                 </div>
@@ -469,10 +469,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   }`}
                 >
                   <img
-                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
-                    alt={
-                      process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
-                    }
+                    src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                    alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"}
                     className={`object-contain ${
                       isExpanded || isHovered || sidebarOpen
                         ? "w-40 lg:w-60 scale-110"
@@ -643,7 +641,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="1.5"
+                      stroke-width="1.5" 
                       stroke="currentColor"
                       className="size-5"
                     >
@@ -658,7 +656,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                       />
                     </svg>
-                    Configuración
+                    Usuarios
                   </Link>
                 </li>
                 <li>

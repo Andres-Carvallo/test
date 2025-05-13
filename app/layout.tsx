@@ -76,16 +76,47 @@ export default function RootLayout({
   useEffect(() => {
     const checkSiteStatus = async () => {
       try {
-        // Verificar estado de suscripción
         const id = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         const siteResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/sites/${id}`
         );
         setSiteStatus(siteResponse.data.site.statusCode);
 
-        // Verificar estado de mantenimiento
-        const contentBlockId =
-          process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
+        if (!pathname.startsWith("/admin") && !pathname.startsWith("/dashboard")) {
+          const adminToken = getCookie("AdminTokenAuth");
+          let userEmail = null;
+          
+          if (adminToken) {
+            try {
+              const decodedToken = jwtDecode(adminToken.toString());
+              const userId = decodedToken.sub;
+              const userResponse = await axios.get(
+                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userId}?siteId=${id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${adminToken}`,
+                  },
+                }
+              );
+              userEmail = userResponse.data.user.email;
+            } catch (error) {
+              console.error("Error al obtener el email del usuario:", error);
+            }
+          }
+
+          if (userEmail !== "hola.pixelup@gmail.com" && siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE") {
+            router.push("/subscription-pending");
+          }
+        }
+      } catch (error) {
+        console.error("Error al verificar estado del sitio:", error);
+      }
+    };
+
+    const checkMaintenanceMode = async () => {
+      try {
+        const id = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+        const contentBlockId = process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
         const maintenanceResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${id}`
         );
@@ -95,7 +126,17 @@ export default function RootLayout({
         );
         setIsMaintenanceMode(maintenanceConfig.enabled || false);
 
-        // Verificar estado del popup
+        if (maintenanceConfig.enabled && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard")) {
+          router.push("/mantenimiento");
+        }
+      } catch (error) {
+        console.error("Error al verificar modo mantenimiento:", error);
+      }
+    };
+
+    const checkPopupStatus = async () => {
+      try {
+        const id = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
         const popupContentBlockId = process.env.NEXT_PUBLIC_POPUP_CONTENTBLOCK;
         if (popupContentBlockId) {
           const popupResponse = await axios.get(
@@ -104,48 +145,26 @@ export default function RootLayout({
           const popupConfig = JSON.parse(popupResponse.data.contentBlock.contentText || '{"enabled": false}');
           setShowPopup(popupConfig.enabled && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard"));
         }
-
-        // Obtener el email del usuario si está autenticado
-        // Obtener el email del usuario si está autenticado
-        const adminToken = getCookie("AdminTokenAuth");
-        let userEmail = null;
-        if (adminToken) {
-          try {
-            const decodedToken = jwtDecode(adminToken.toString());
-            const userId = decodedToken.sub;
-            const userResponse = await axios.get(
-              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userId}?siteId=${id}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${adminToken}`,
-                },
-              }
-            );
-            userEmail = userResponse.data.user.email;
-          } catch (error) {
-            console.error("Error al obtener el email del usuario:", error);
-          }
-        }
-
-        // Redireccionar según las condiciones
-        if (
-          !pathname.startsWith("/admin") &&
-          !pathname.startsWith("/dashboard")
-        ) {
-          if (userEmail !== "hola.pixelup@gmail.com" && siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE") {
-            router.push("/subscription-pending");
-          } else if (maintenanceConfig.enabled) {
-            router.push("/mantenimiento");
-          }
-        }
       } catch (error) {
-        setError(error as Error);
+        console.error("Error al verificar estado del popup:", error);
+      }
+    };
+
+    const initializeChecks = async () => {
+      try {
+        await Promise.all([
+          checkSiteStatus(),
+          checkMaintenanceMode(),
+          checkPopupStatus()
+        ]);
+      } catch (error) {
+        console.error("Error en las verificaciones iniciales:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkSiteStatus();
+    initializeChecks();
   }, [router, pathname]);
 
   return (

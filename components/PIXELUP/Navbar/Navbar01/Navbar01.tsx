@@ -25,9 +25,9 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [productosIniciales, setProductosIniciales] = useState([]);
   const pathname = usePathname();
-  const { logoUrl } = useLogo();
+  const { logo } = useLogo();
 
-  const Logo = logoUrl || process.env.NEXT_PUBLIC_LOGO_COLOR;
+  const Logo = logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR;
   const AdminToken = getCookie("AdminTokenAuth");
   const ClientToken = getCookie("ClientTokenAuth");
   const [loading, setLoading] = useState(true);

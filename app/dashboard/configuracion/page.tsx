@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import Mantenimiento from "@/components/Core/Mantenimiento/Mantenimiento";
 import LogoEdit from "@/components/Core/LogoEdit/LogoEdit";
 export const metadata: Metadata = {
-  title: "CRUD de Usuarios | PixelUP",
+  title: "Configuración | PixelUP",
   description: "PixelUP",
   // other metadata
 };
@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 const UsuariosPage = () => {
   return (
     <section className="p-4 md:p-10">
-      <Breadcrumb pageName="Usuarios" />
+      <Breadcrumb pageName="Configuración" />
 
-{/*       <div className="flex flex-col gap-4 md:gap-10">
+      <div className="flex flex-col gap-4 md:gap-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
           <MenuOpcion/>
           <Mantenimiento/>
@@ -24,11 +24,11 @@ const UsuariosPage = () => {
       </div>
       <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10">
       <LogoEdit/>
-      </div> */}
-
-      <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10 min-h-screen">
-        <TableUsers />
       </div>
+
+{/*       <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10 min-h-screen">
+        <TableUsers />
+      </div> */}
     </section>
   );
 };
