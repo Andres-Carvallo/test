@@ -9,49 +9,50 @@ body {
 @layer base {
 
   :root  {
-    --background: 224 100% 100%;
-    --foreground: 224 5% 10%;
-    --card: 224 50% 100%;
-    --card-foreground: 224 5% 15%;
-    --popover: 224 100% 100%;
-    --popover-foreground: 224 100% 10%;
-    --primary: 224 52% 31%;
+    --background: 302 100% 100%;
+    --foreground: 302 5% 10%;
+    --card: 302 50% 100%;
+    --card-foreground: 302 5% 15%;
+    --popover: 302 100% 100%;
+    --popover-foreground: 302 100% 10%;
+    --primary: 302 24% 56%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 224 30% 90%;
+    --secondary: 302 30% 90%;
     --secondary-foreground: 0 0% 0%;
-    --muted: 186 30% 95%;
-    --muted-foreground: 224 5% 40%;
-    --accent: 186 30% 90%;
-    --accent-foreground: 224 5% 15%;
+    --muted: 264 30% 95%;
+    --muted-foreground: 302 5% 40%;
+    --accent: 264 30% 90%;
+    --accent-foreground: 302 5% 15%;
     --destructive: 0 100% 50%;
-    --destructive-foreground: 224 5% 100%;
-    --border: 224 30% 82%;
-    --input: 224 30% 50%;
-    --ring: 224 52% 31%;
+    --destructive-foreground: 302 5% 100%;
+    --border: 302 30% 82%;
+    --input: 302 30% 50%;
+    --ring: 302 24% 56%;
     --radius: 0.5rem;
   }
   .dark  {
-    --background: 224 50% 10%;
-    --foreground: 224 5% 100%;
-    --card: 224 50% 10%;
-    --card-foreground: 224 5% 100%;
-    --popover: 224 50% 5%;
-    --popover-foreground: 224 5% 100%;
-    --primary: 224 52% 31%;
+    --background: 302 50% 10%;
+    --foreground: 302 5% 100%;
+    --card: 302 50% 10%;
+    --card-foreground: 302 5% 100%;
+    --popover: 302 50% 5%;
+    --popover-foreground: 302 5% 100%;
+    --primary: 302 24% 56%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 224 30% 20%;
+    --secondary: 302 30% 20%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 186 30% 25%;
-    --muted-foreground: 224 5% 65%;
-    --accent: 186 30% 25%;
-    --accent-foreground: 224 5% 95%;
+    --muted: 264 30% 25%;
+    --muted-foreground: 302 5% 65%;
+    --accent: 264 30% 25%;
+    --accent-foreground: 302 5% 95%;
     --destructive: 0 100% 50%;
-    --destructive-foreground: 224 5% 100%;
-    --border: 224 30% 50%;
-    --input: 224 30% 50%;
-    --ring: 224 52% 31%;
+    --destructive-foreground: 302 5% 100%;
+    --border: 302 30% 50%;
+    --input: 302 30% 50%;
+    --ring: 302 24% 56%;
     --radius: 0.5rem;
   }
+  
   
 }
 
@@ -242,3 +243,9 @@ ol {
 .animate-leave {
   animation: leave 0.3s ease-in forwards;
 }
+
+
+.grecaptcha-badge {
+  bottom: 130px !important;
+}
+
