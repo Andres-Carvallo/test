@@ -27,6 +27,7 @@ import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
 import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
+import FeedRRSS from "@/components/PIXELUP/FeedRRSS/FeedRRSS";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -129,9 +130,9 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <Ubicacion />
         </Suspense>
-        <Suspense fallback={<Banner />}>
+{/*         <Suspense fallback={<Banner />}>
           <FeedInstagram />
-        </Suspense>
+        </Suspense> */}
 
         {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
@@ -155,6 +156,9 @@ export default async function Page() {
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase02 />
         </Suspense> */}
+        <Suspense fallback={<Banner />}>
+          <FeedRRSS />
+        </Suspense>
         <DynamicFooter />
 
         {/* <DiscountModal /> */}
