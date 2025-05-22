@@ -60,13 +60,27 @@ export default function Navbar() {
     if (pathname === path) return true;
 
     // Caso especial para la tienda
-    if (path === "/tienda" && pathname.startsWith("/tienda/") && !pathname.includes("/tienda/colecciones")) return true;
+    if (
+      path === "/tienda" &&
+      pathname.startsWith("/tienda/") &&
+      !pathname.includes("/tienda/colecciones")
+    )
+      return true;
 
     // Caso especial para colecciones
-    if (path.includes("/colecciones") && pathname.includes("/tienda/colecciones")) return true;
+    if (
+      path.includes("/colecciones") &&
+      pathname.includes("/tienda/colecciones")
+    )
+      return true;
 
     // Verificar si es una subruta (para otros casos)
-    if (path !== "/" && pathname.startsWith(path) && !pathname.includes("/tienda/colecciones")) return true;
+    if (
+      path !== "/" &&
+      pathname.startsWith(path) &&
+      !pathname.includes("/tienda/colecciones")
+    )
+      return true;
 
     return false;
   };
@@ -165,7 +179,6 @@ export default function Navbar() {
               {menuItems.map((item, index) => {
                 // Si es un menú desplegable de colecciones
                 if (item.isDropdown && item.dropdownType === "collections") {
-                  
                   return (
                     <li
                       key={index}
@@ -204,48 +217,49 @@ export default function Navbar() {
                             : "opacity-0 invisible"
                         }`}
                       >
-                        {filteredCollections.length > 0 && filteredCollections.map((collection) => {
-                          const collectionPath = `/tienda/colecciones/${slugify(
-                            collection.title
-                          )}`;
-                          return (
-                            <li
-                              key={collection.id}
-                              className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 ${
-                                pathname === collectionPath
-                                  ? "bg-gray-100 dark:bg-gray-600"
-                                  : ""
-                              }`}
-                            >
-                              <Link
-                                href={collectionPath}
-                                className={`flex items-center px-4 py-2 text-sm ${hoverColorClass} ${
+                        {filteredCollections.length > 0 &&
+                          filteredCollections.map((collection) => {
+                            const collectionPath = `/tienda/colecciones/${slugify(
+                              collection.title
+                            )}`;
+                            return (
+                              <li
+                                key={collection.id}
+                                className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 ${
                                   pathname === collectionPath
-                                    ? `${activeColorClass} font-medium`
+                                    ? "bg-gray-100 dark:bg-gray-600"
                                     : ""
                                 }`}
                               >
-                                <span className="mr-2">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="size-3"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                                    />
-                                  </svg>
-                                </span>
-                                {collection.title}
-                              </Link>
-                            </li>
-                          );
-                        })}
+                                <Link
+                                  href={collectionPath}
+                                  className={`flex items-center px-4 py-2 text-sm ${hoverColorClass} ${
+                                    pathname === collectionPath
+                                      ? `${activeColorClass} font-medium`
+                                      : ""
+                                  }`}
+                                >
+                                  <span className="mr-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth={1.5}
+                                      stroke="currentColor"
+                                      className="size-3"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                      />
+                                    </svg>
+                                  </span>
+                                  {collection.title}
+                                </Link>
+                              </li>
+                            );
+                          })}
                       </ul>
                     </li>
                   );

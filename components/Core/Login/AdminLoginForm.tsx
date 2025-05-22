@@ -17,15 +17,15 @@ function AdminLoginForm() {
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('adminLoginAttempts');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("adminLoginAttempts");
       return saved ? parseInt(saved) : 0;
     }
     return 0;
   });
   const [lockoutTime, setLockoutTime] = useState<number | null>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('adminLockoutTime');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("adminLockoutTime");
       const time = saved ? parseInt(saved) : null;
       return time && time > Date.now() ? time : null;
     }
@@ -33,18 +33,18 @@ function AdminLoginForm() {
   });
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   useEffect(() => {
-    if (typeof window !== 'undefined' && loginAttempts > 0) {
-      localStorage.setItem('adminLoginAttempts', loginAttempts.toString());
-    } else if (typeof window !== 'undefined') {
-      localStorage.removeItem('adminLoginAttempts');
+    if (typeof window !== "undefined" && loginAttempts > 0) {
+      localStorage.setItem("adminLoginAttempts", loginAttempts.toString());
+    } else if (typeof window !== "undefined") {
+      localStorage.removeItem("adminLoginAttempts");
     }
   }, [loginAttempts]);
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (lockoutTime) {
-        localStorage.setItem('adminLockoutTime', lockoutTime.toString());
+        localStorage.setItem("adminLockoutTime", lockoutTime.toString());
       } else {
-        localStorage.removeItem('adminLockoutTime');
+        localStorage.removeItem("adminLockoutTime");
       }
     }
   }, [lockoutTime]);
@@ -54,13 +54,13 @@ function AdminLoginForm() {
       timer = setInterval(() => {
         const remaining = Math.ceil((lockoutTime - Date.now()) / 1000);
         setRemainingSeconds(remaining);
-        
+
         if (Date.now() > lockoutTime) {
           setLockoutTime(null);
           setLoginAttempts(0);
           setRemainingSeconds(0);
-          localStorage.removeItem('adminLockoutTime');
-          localStorage.removeItem('adminLoginAttempts');
+          localStorage.removeItem("adminLockoutTime");
+          localStorage.removeItem("adminLoginAttempts");
         }
       }, 1000);
     }
@@ -69,7 +69,7 @@ function AdminLoginForm() {
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSecs = seconds % 60;
-    return `${minutes}:${remainingSecs.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSecs.toString().padStart(2, "0")}`;
   };
 
   const togglePasswordVisibility = () => {
@@ -81,7 +81,11 @@ function AdminLoginForm() {
     setError("");
 
     if (lockoutTime && lockoutTime > Date.now()) {
-      setError(`Error: Has excedido el número máximo de intentos. Por favor, espera ${formatTime(remainingSeconds)}`);
+      setError(
+        `Error: Has excedido el número máximo de intentos. Por favor, espera ${formatTime(
+          remainingSeconds
+        )}`
+      );
       setLoading(false);
       return;
     }
@@ -96,7 +100,7 @@ function AdminLoginForm() {
       setRecaptchaToken(token);
 
       const data = {
-        email: e.target[0].value,
+        email: e.target[0].value.toLowerCase(),
         password: e.target[1].value,
         recaptchaToken: token,
       };
@@ -112,7 +116,7 @@ function AdminLoginForm() {
           maxAge: 18000,
         });
         setLoginAttempts(0);
-        
+
         // Obtener la URL de redirección guardada
         const redirectUrl = getCookie("redirectAfterLogin")?.toString();
         if (redirectUrl) {
@@ -131,9 +135,15 @@ function AdminLoginForm() {
       if (newAttempts >= 5) {
         const lockoutEndTime = Date.now() + 5 * 60 * 1000; // 5 minutos
         setLockoutTime(lockoutEndTime);
-        setError(`Error: Has excedido el número máximo de intentos. Por favor, espera ${formatTime(300)}`);
+        setError(
+          `Error: Has excedido el número máximo de intentos. Por favor, espera ${formatTime(
+            300
+          )}`
+        );
       } else {
-        setError("Error de inicio de sesión. Por favor, verifica tus credenciales.");
+        setError(
+          "Error de inicio de sesión. Por favor, verifica tus credenciales."
+        );
       }
     } finally {
       setLoading(false);

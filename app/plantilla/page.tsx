@@ -27,79 +27,14 @@ import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
 import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
-const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
-export const revalidate = 60; // Revalida cada 60 segundos
-
-export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
-
-async function fetchBannerData() {
-  const bannerId = process.env.NEXT_PUBLIC_SEO_BANNER_ID;
-  const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-  );
-  return response.data.banner;
-}
-
-export const metadata = async () => {
-  const defaultSeoData = {
-    title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
-    description: "Una nueva plataforma para emprendedores y Pymes!",
-    ogImage: "http://pixelup.cl/img/avatardefault.jpg",
-    keywords: "pixelup, pixelup.cl, pixelup.cl, pixelup.cl, pixelup.cl",
-  };
-
-  try {
-    const bannerImage = await fetchBannerData();
-    return {
-      title: bannerImage.images[0].title,
-      description: bannerImage.images[0].landingText,
-      ogImage: bannerImage.images[0].mainImage.url,
-      keywords: bannerImage.images[0].buttonText,
-      openGraph: {
-        title: bannerImage.images[0].title,
-        description: bannerImage.images[0].landingText,
-        images: [
-          {
-            url: bannerImage.images[0].mainImage.url,
-            width: 800,
-            height: 600,
-            alt: bannerImage.images[0].title,
-          },
-        ],
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching banner data:", error);
-    return {
-      title: defaultSeoData.title,
-      description: defaultSeoData.description,
-      openGraph: {
-        title: defaultSeoData.title,
-        description: defaultSeoData.description,
-        images: [
-          {
-            url: defaultSeoData.ogImage,
-            width: 800,
-            height: 600,
-            alt: defaultSeoData.title,
-          },
-        ],
-      },
-    };
-  }
-};
 
 export default async function Page() {
   try {
-    const seoData = await metadata();
-
     return (
       <>
         <MarqueeTOP />
         <DynamicNavbar />
-        
+
         <Suspense fallback={<Banner />}>
           <Ubicacion />
         </Suspense>

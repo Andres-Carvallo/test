@@ -61,7 +61,6 @@ const Parallax: React.FC = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      console.log("Datos del banner recibidos:", response.data.banner);
       setBannerData(response.data.banner);
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
@@ -266,8 +265,6 @@ const Parallax: React.FC = () => {
 
   const currentImage = bannerData.images[currentIndex];
   const multipleImages = bannerData.images.length > 1;
-
-  console.log("Link del botón Ver detalles:", currentImage.mainImageLink);
 
   return (
     <section

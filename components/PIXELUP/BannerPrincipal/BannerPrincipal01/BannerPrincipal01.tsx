@@ -110,7 +110,6 @@ const BannerPrincipal01: React.FC = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      console.log("Datos del banner recibidos:", response.data.banner);
       setBannerData(response.data.banner);
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
@@ -316,8 +315,6 @@ const BannerPrincipal01: React.FC = () => {
   const currentImage = bannerData.images[currentIndex];
   const multipleImages = bannerData.images.length > 1;
 
-  console.log("Link del botón Ver detalles:", currentImage.mainImageLink);
-
   return (
     <section
       className={`relative overflow-hidden w-full`}
@@ -328,10 +325,12 @@ const BannerPrincipal01: React.FC = () => {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Contenedor de imágenes */}
-      <div className={`absolute inset-0 w-full`}
+      <div
+        className={`absolute inset-0 w-full`}
         style={{
           aspectRatio: isMobile ? mobileAspect : desktopAspect,
-        }}>
+        }}
+      >
         {bannerData.images.map((image, index) => {
           const config = parseDisplayConfig(image.landingText);
           const imageToShow =
@@ -408,19 +407,17 @@ const BannerPrincipal01: React.FC = () => {
       <div className="relative h-full z-20">
         <div className="h-full mx-auto px-14 sm:px-20 md:px-20 lg:px-24">
           <div
-            className={`flex flex-col justify-center h-full ${
-              (() => {
-                const config = parseDisplayConfig(currentImage.landingText);
-                switch (config.contentAlignment) {
-                  case "center":
-                    return "items-center text-center mx-auto";
-                  case "right":
-                    return "items-end text-right ml-auto";
-                  default:
-                    return "items-start text-left";
-                }
-              })()
-            } max-w-2xl`}
+            className={`flex flex-col justify-center h-full ${(() => {
+              const config = parseDisplayConfig(currentImage.landingText);
+              switch (config.contentAlignment) {
+                case "center":
+                  return "items-center text-center mx-auto";
+                case "right":
+                  return "items-end text-right ml-auto";
+                default:
+                  return "items-start text-left";
+              }
+            })()} max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
               <span className="text-white text-xs sm:text-sm uppercase tracking-widest mb-2 sm:mb-4 drop-shadow-md">

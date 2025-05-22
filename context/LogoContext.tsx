@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
-import { getCookie } from 'cookies-next';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import axios from "axios";
+import { getCookie } from "cookies-next";
 
 interface LogoImage {
   url: string;
@@ -30,7 +36,7 @@ const LogoContext = createContext<LogoContextType | undefined>(undefined);
 export const useLogo = () => {
   const context = useContext(LogoContext);
   if (context === undefined) {
-    throw new Error('useLogo debe ser usado dentro de un LogoProvider');
+    throw new Error("useLogo debe ser usado dentro de un LogoProvider");
   }
   return context;
 };
@@ -44,25 +50,27 @@ export const LogoProvider: React.FC<LogoProviderProps> = ({ children }) => {
 
   const fetchLogo = async () => {
     try {
-      const token = getCookie('AdminTokenAuth');
+      const token = getCookie("AdminTokenAuth");
       const bannerId = `${process.env.NEXT_PUBLIC_LOGOEDIT_ID}`;
       const bannerImageId = `${process.env.NEXT_PUBLIC_LOGOEDIT_IMGID}`;
 
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
-
-      if (response.data.bannerImage) {
-        setLogo(response.data.bannerImage);
+      if (
+        response.data.banner &&
+        response.data.banner.images &&
+        response.data.banner.images[0]
+      ) {
+        setLogo(response.data.banner.images[0]);
       }
     } catch (error) {
-      console.error('Error al obtener el logo:', error);
+      console.error("Error al obtener el logo:", error);
     }
   };
 
@@ -81,4 +89,4 @@ export const LogoProvider: React.FC<LogoProviderProps> = ({ children }) => {
   );
 };
 
-export default LogoContext; 
+export default LogoContext;

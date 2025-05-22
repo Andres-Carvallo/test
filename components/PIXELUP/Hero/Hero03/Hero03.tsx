@@ -5,8 +5,8 @@ import Link from "next/link";
 import axios from "axios";
 
 interface ServiciosContentProps {
-  servicioUno: any;  /* mujer */
-  servicioDos: any; /* empresa */
+  servicioUno: any /* mujer */;
+  servicioDos: any /* empresa */;
 }
 
 const Hero03: React.FC = () => {
@@ -28,7 +28,6 @@ const Hero03: React.FC = () => {
         const responseDos = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${process.env.NEXT_PUBLIC_SERVICIO_DOS_ID}?siteId=${siteId}`
         );
-        console.log(responseUno);
         setServicioUno(responseUno.data.banner.images[0]);
         setServicioDos(responseDos.data.banner.images[0]);
       } catch (error) {
@@ -79,7 +78,7 @@ const Hero03: React.FC = () => {
             ¿Que ofrecemos?
           </h2>
           <p className="text-gray-600 max-w-2xl mt-6 mx-4">
-          Conoce los servicios que ofrecemos para ti y tu negocio.
+            Conoce los servicios que ofrecemos para ti y tu negocio.
           </p>
         </div>
 
@@ -173,7 +172,7 @@ const ServiciosContent: React.FC<ServiciosContentProps> = ({
             Servicio Dos
           </h4>
           <h3 className="text-2xl font-bold text-dark mb-4">
-                {servicioDos?.title || ""}
+            {servicioDos?.title || ""}
           </h3>
           <div
             className="text-gray-600 mb-8 text-lg leading-relaxed"
