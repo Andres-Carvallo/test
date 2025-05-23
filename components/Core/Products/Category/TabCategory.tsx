@@ -35,7 +35,7 @@ const Tabs: React.FC<TabsProps> = ({ handleCloseModal, fetchData }) => {
             }`}
             onClick={() => handleTabChange("edit")}
           >
-            Editar Categoría
+              Editar / Borrar Categoría
           </button>
         </div>
         <div className=" bg-white rounded ">

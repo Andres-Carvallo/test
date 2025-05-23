@@ -485,7 +485,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     }
                     className={`object-contain ${
                       isExpanded || isHovered || sidebarOpen
-                        ? "w-40 lg:w-60 scale-110"
+                        ? "w-40 lg:w-60 scale-110" /* lg:w-32 mt-4 */
                         : "w-60 scale-100"
                     } transition-transform duration-300`}
                   />
