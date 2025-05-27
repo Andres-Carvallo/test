@@ -55,18 +55,41 @@ function CheckoutPago() {
     maxAttempts: number = 5
   ): Promise<boolean> => {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const orderResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      const orderData = await orderResponse.json();
+      try {
+        const orderResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        const orderData = await orderResponse.json();
 
-      if (orderData.order.totals.discountAmount === expectedDiscountAmount) {
-        setOrderDetail(orderData.order);
-        return true;
+        if (orderData.code === 0) {
+          // Si estamos aplicando un descuento, verificamos que exista en discountCoupons
+          if (expectedDiscountAmount > 0) {
+            if (
+              orderData.order.discountCoupons &&
+              orderData.order.discountCoupons.length > 0
+            ) {
+              setOrderDetail(orderData.order);
+              return true;
+            }
+          }
+          // Si estamos eliminando un descuento, verificamos que no exista en discountCoupons
+          else {
+            if (
+              !orderData.order.discountCoupons ||
+              orderData.order.discountCoupons.length === 0
+            ) {
+              setOrderDetail(orderData.order);
+              return true;
+            }
+          }
+        }
+
+        // Esperar 500ms entre intentos
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error("Error al verificar el estado del descuento:", error);
+        return false;
       }
-
-      // Esperar 500ms entre intentos
-      await new Promise((resolve) => setTimeout(resolve, 500));
     }
     return false;
   };
