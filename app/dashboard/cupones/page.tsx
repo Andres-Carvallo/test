@@ -131,19 +131,30 @@ function CuponForm() {
     }
   };
 
-  const formatDateToChileanTime = (isoDateString: string) => {
-    const date = new Date(isoDateString);
+  const formatDate = (dateString: any) => {
+    const date = new Date(dateString);
+    // Ajustar la fecha para evitar problemas de zona horaria
+    const fechaUTC = new Date(
+      date.getTime() + date.getTimezoneOffset() * 60000
+    );
+    const dia = fechaUTC.getDate().toString().padStart(2, "0");
+    const mes = (fechaUTC.getMonth() + 1).toString().padStart(2, "0");
+    const año = fechaUTC.getFullYear();
+    return `${dia}-${mes}-${año}`;
+  };
 
-    const timezoneOffset = -4 * 60;
-    const adjustedDate = new Date(date.getTime() + timezoneOffset * 60 * 1000);
-
-    const day = adjustedDate.getDate().toString().padStart(2, "0");
-    const month = (adjustedDate.getMonth() + 1).toString().padStart(2, "0");
-    const year = adjustedDate.getFullYear();
-    const hours = adjustedDate.getHours().toString().padStart(2, "0");
-    const minutes = adjustedDate.getMinutes().toString().padStart(2, "0");
-
-    return `${day}-${month}-${year} ${hours}:${minutes}`;
+  const formatDateTime = (dateString: any) => {
+    const date = new Date(dateString);
+    // Ajustar la fecha para evitar problemas de zona horaria
+    const fechaUTC = new Date(
+      date.getTime() + date.getTimezoneOffset() * 60000
+    );
+    const dia = fechaUTC.getDate().toString().padStart(2, "0");
+    const mes = (fechaUTC.getMonth() + 1).toString().padStart(2, "0");
+    const año = fechaUTC.getFullYear();
+    const horas = fechaUTC.getHours().toString().padStart(2, "0");
+    const minutos = fechaUTC.getMinutes().toString().padStart(2, "0");
+    return `${dia}-${mes}-${año} ${horas}:${minutos}`;
   };
 
   const handleSubmit = async (e: any) => {
@@ -393,10 +404,10 @@ function CuponForm() {
                   </td>
                   <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
                     <div className="text-sm text-gray-900">
-                      {formatDateToChileanTime(cupon.creationDate)}
+                      Inicio: {formatDate(cupon.creationDate)}
                     </div>
                     <div className="text-sm text-gray-900">
-                      {formatDateToChileanTime(cupon.expirationDate)}
+                      Fin: {formatDate(cupon.expirationDate)}
                     </div>
                   </td>
                   <td className="px-6 py-4 md:whitespace-nowrap hidden md:table-cell">
@@ -467,131 +478,141 @@ function CuponForm() {
             onSubmit={(e) => handleSubmit(e)}
             className="space-y-4"
           >
-            <div>
-              <label
-                htmlFor="code"
-                className="              block"
-              >
-                <h3 className="font-normal text-primary">Código:</h3>
-                <input
-                  type="text"
-                  id="code"
-                  value={code}
-                  onChange={handleCodeChange}
-                  placeholder="Ingresa el código..."
-                  className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
-                  style={{ borderRadius: "var(--radius)" }}
-                  required
-                />
-              </label>
-              {codeError && <p className="text-red-500">{codeError}</p>}
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="hasFreeShipping"
-                checked={hasFreeShipping}
-                onChange={handleFreeShippingChange}
-                className="mr-2"
-              />
-              <label
-                htmlFor="hasFreeShipping"
-                className="uppercase"
-              >
-                Envío gratis
-              </label>
-            </div>
-
-            <div>
-              <label
-                htmlFor="type"
-                className="block"
-              >
-                <h3 className="font-normal text-primary">Tipo de descuento:</h3>
-                <select
-                  id="type"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="bg-white shadow py-3 block w-full border border-dark/50 p-1 mt-2"
-                  style={{ borderRadius: "var(--radius)" }}
-                >
-                  <option value="FIXED_AMOUNT">Monto Fijo</option>
-                  <option value="PERCENTAGE">Porcentaje</option>
-                </select>
-              </label>
-            </div>
-
-            {type === "FIXED_AMOUNT" && (
+            {/* Fila 1: Tipo de descuento y código */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label
-                  htmlFor="amount"
+                  htmlFor="type"
                   className="block"
                 >
-                  <h3 className="font-normal text-primary">Monto:</h3>
+                  <h3 className="font-normal text-primary">Tipo de descuento:</h3>
+                  <select
+                    id="type"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className={`shadow py-3 block w-full border border-dark/50 p-1 mt-2 ${
+                      editingCuponId !== null ? "bg-gray-200 cursor-not-allowed" : "bg-white"
+                    }`}
+                    style={{ borderRadius: "var(--radius)" }}
+                    disabled={editingCuponId !== null}
+                  >
+                    <option value="FIXED_AMOUNT">Monto Fijo</option>
+                    <option value="PERCENTAGE">Porcentaje</option>
+                  </select>
+                </label>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="code"
+                  className="block"
+                >
+                  <h3 className="font-normal text-primary">Código:</h3>
                   <input
-                    type="number"
-                    id="amount"
-                    value={amount !== null ? amount.toString() : ""}
-                    onChange={handleAmountChange}
-                    onInput={(e) => {
-                      const input = e.target as HTMLInputElement;
-                      input.value = input.value.replace(/[^0-9]/g, ""); // Filtra caracteres no numéricos
-                    }}
-                    placeholder="Ingrese el monto..."
+                    type="text"
+                    id="code"
+                    value={code}
+                    onChange={handleCodeChange}
+                    placeholder="Ingresa el código..."
                     className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
                     style={{ borderRadius: "var(--radius)" }}
                     required
                   />
                 </label>
-                {amountError && <p className="text-red-500">{amountError}</p>}
+                {codeError && <p className="text-red-500">{codeError}</p>}
               </div>
-            )}
+            </div>
 
-            {type === "PERCENTAGE" && (
+            {/* Fila 2: Monto y Fecha de expiración */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                {type === "FIXED_AMOUNT" && (
+                  <div>
+                    <label
+                      htmlFor="amount"
+                      className="block"
+                    >
+                      <h3 className="font-normal text-primary">Monto:</h3>
+                      <input
+                        type="number"
+                        id="amount"
+                        value={amount !== null ? amount.toString() : ""}
+                        onChange={handleAmountChange}
+                        onInput={(e) => {
+                          const input = e.target as HTMLInputElement;
+                          input.value = input.value.replace(/[^0-9]/g, "");
+                        }}
+                        placeholder="Ingrese el monto..."
+                        className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                        style={{ borderRadius: "var(--radius)" }}
+                        required
+                      />
+                    </label>
+                    {amountError && <p className="text-red-500">{amountError}</p>}
+                  </div>
+                )}
+
+                {type === "PERCENTAGE" && (
+                  <div>
+                    <label
+                      htmlFor="percentage"
+                      className="block"
+                    >
+                      <h3 className="font-normal text-primary">Porcentaje:</h3>
+                      <input
+                        type="number"
+                        id="percentage"
+                        value={percentage !== null ? percentage.toString() : ""}
+                        onChange={handlePercentageChange}
+                        placeholder="Ingrese número de porcentaje..."
+                        className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
+                        style={{ borderRadius: "var(--radius)" }}
+                        required
+                      />
+                      {percentageError && (
+                        <p className="text-red-500">{percentageError}</p>
+                      )}
+                    </label>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label
-                  htmlFor="percentage"
+                  htmlFor="expirationDate"
                   className="block"
                 >
-                  <h3 className="font-normal text-primary">Porcentaje:</h3>
+                  <h3 className="font-normal text-primary">
+                    Fecha de expiración:
+                  </h3>
                   <input
-                    type="number"
-                    id="percentage"
-                    value={percentage !== null ? percentage.toString() : ""}
-                    onChange={handlePercentageChange}
-                    placeholder="Ingrese número de porcentaje..."
+                    type="date"
+                    id="expirationDate"
+                    value={expirationDate}
+                    onChange={handleExpirationDateChange}
                     className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
                     style={{ borderRadius: "var(--radius)" }}
                     required
                   />
-                  {percentageError && (
-                    <p className="text-red-500">{percentageError}</p>
+                  {expirationDateError && (
+                    <p className="text-red-500">{expirationDateError}</p>
                   )}
                 </label>
               </div>
-            )}
+            </div>
 
+            {/* Fila 3: Envío gratis */}
             <div>
-              <label
-                htmlFor="expirationDate"
-                className="block"
-              >
-                <h3 className="font-normal text-primary">
-                  Fecha de expiración:
-                </h3>
+              <label className="relative inline-flex items-center cursor-pointer">
                 <input
-                  type="date"
-                  id="expirationDate"
-                  value={expirationDate}
-                  onChange={handleExpirationDateChange}
-                  className="shadow py-3 block w-full border border-dark/50 p-1 mt-2"
-                  style={{ borderRadius: "var(--radius)" }}
-                  required
+                  type="checkbox"
+                  id="hasFreeShipping"
+                  checked={hasFreeShipping}
+                  onChange={handleFreeShippingChange}
+                  className="sr-only peer"
                 />
-                {expirationDateError && (
-                  <p className="text-red-500">{expirationDateError}</p>
-                )}
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                <span className="ml-3 text-sm font-medium text-gray-900 uppercase">Envío gratis</span>
               </label>
             </div>
 
