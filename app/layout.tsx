@@ -196,7 +196,7 @@ export default function RootLayout({
         />
         <link
           rel="canonical"
-          href={`${process.env.NEXT_PUBLIC_BASE_URL}${pathname}`}
+          href={`${typeof window !== 'undefined' ? window.location.origin : ''}${pathname}`}
         />
 
         <meta
