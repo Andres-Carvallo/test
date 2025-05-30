@@ -11,6 +11,7 @@ import { jwtDecode } from "jwt-decode";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import axios from "axios";
 import { useLogo } from "@/context/LogoContext";
+import LogoEdit from "../LogoEdit/LogoEdit";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -25,6 +26,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [userDataInfo, setUserDataInfo] = useState<UserData>();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isLogoEditOpen, setIsLogoEditOpen] = useState(false);
   const router = useRouter();
   const token = getCookie("AdminTokenAuth")?.toString();
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
@@ -474,21 +476,47 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       : "opacity-0"
                   }`}
                 >
-                  <img
-                    src={
-                      logo?.mainImage?.url ||
-                      process.env.NEXT_PUBLIC_LOGO ||
-                      "Logo Principal"
-                    }
-                    alt={
-                      process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
-                    }
-                    className={`object-contain ${
-                      isExpanded || isHovered || sidebarOpen
-                        ? "w-40 lg:w-60 scale-110" /* lg:w-32 mt-4 */
-                        : "w-60 scale-100"
-                    } transition-transform duration-300`}
-                  />
+                  <div className="relative">
+                    <img
+                      src={
+                        logo?.mainImage?.url ||
+                        process.env.NEXT_PUBLIC_LOGO ||
+                        "Logo Principal"
+                      }
+                      alt={
+                        process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
+                      }
+                      className={`object-contain ${
+                        isExpanded || isHovered || sidebarOpen
+                          ? "w-40 lg:w-60 scale-110"
+                          : "w-60 scale-100"
+                      } transition-transform duration-300`}
+                    />
+                    {(isExpanded || isHovered || sidebarOpen) && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsLogoEditOpen(true);
+                        }}
+                        className="absolute bottom-0 right-0 bg-white text-black p-1 rounded-full shadow-lg hover:bg-secondary transition-colors duration-300"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </Link>
@@ -701,6 +729,37 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           )}
         </div>
       </aside>
+
+      {/* Agregar el modal de edición de logo */}
+      {isLogoEditOpen && (
+        <div className="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Editar Logo</h2>
+              <button
+                onClick={() => setIsLogoEditOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <LogoEdit onClose={() => setIsLogoEditOpen(false)} />
+          </div>
+        </div>
+      )}
     </>
   );
 };

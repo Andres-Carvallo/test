@@ -23,7 +23,11 @@ interface UpdatedData {
   };
 }
 
-const LogoEdit: React.FC = () => {
+interface LogoEditProps {
+  onClose?: () => void;
+}
+
+const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
   const [logoData, setLogoData] = useState<any | null>(null);
   const [mainImageLogo, setMainImageLogo] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -150,8 +154,10 @@ const LogoEdit: React.FC = () => {
       // Actualizar el logo en el contexto global
       await refreshLogo();
       
-      // Cerrar el dropdown después de guardar
-      setIsOpen(false);
+      // Cerrar el modal después de guardar
+      if (onClose) {
+        onClose();
+      }
     } catch (error) {
       console.error("Error al actualizar el logo:", error);
     } finally {
