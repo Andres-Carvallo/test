@@ -34,7 +34,7 @@ export const sidebarLinks: SidebarLink[] = [
   {
     title: "Configuración",
     path: "/dashboard/configuracion",
-    isVisible: true,
+    isVisible: false,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
