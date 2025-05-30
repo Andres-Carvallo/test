@@ -189,10 +189,14 @@ export default function RootLayout({
       lang="es"
       className="light"
     >
-      <Head>
+      <head>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
+        />
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_BASE_URL}${pathname}`}
         />
 
         <meta
@@ -224,7 +228,7 @@ export default function RootLayout({
           property="og:type"
           content="website"
         />
-      </Head>
+      </head>
       <body
         className={` ${robotoMono.variable} ${kalam.variable} ${oswald.variable} ${lato.variable} ${montserrat.variable} ${poppins.variable} `}
       >
