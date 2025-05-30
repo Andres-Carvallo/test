@@ -23,7 +23,7 @@ import GoogleAnalytics from "@/components/Core/Google/Analytics";
 import PopVisual from "@/components/Core/Popup/Popupvisual";
 import { useRouter, usePathname } from "next/navigation";
 import NextTopLoader from "nextjs-toploader";
-import { LogoProvider } from "@/context/LogoContext";
+import { LogoProvider, useLogo } from "@/context/LogoContext";
 import { getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
@@ -58,6 +58,23 @@ const oswald = Oswald({
   weight: "400",
   variable: "--font-oswald",
 });
+
+const DynamicFavicon = () => {
+  const { logo } = useLogo();
+
+  useEffect(() => {
+    if (logo?.mainImage?.url) {
+      // Crear un elemento link para el favicon
+      const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link') as HTMLLinkElement;
+      link.type = 'image/x-icon';
+      link.rel = 'shortcut icon';
+      link.href = logo.mainImage.url;
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+  }, [logo]);
+
+  return null;
+};
 
 export default function RootLayout({
   children,
@@ -219,6 +236,7 @@ export default function RootLayout({
             <NavbarProvider>
               <LogoProvider>
                 <APIContextProvider SiteId={SiteId}>
+                  <DynamicFavicon />
                   <Toaster />
                   <NextTopLoader showSpinner={false}/>
                   <div className="md:min-h-screen ">{children}</div>

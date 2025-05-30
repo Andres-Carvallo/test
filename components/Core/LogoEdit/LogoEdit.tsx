@@ -232,11 +232,11 @@ const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div role="status">
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div role="status" className="flex flex-col items-center gap-4">
           <svg
             aria-hidden="true"
-            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600"
+            className="w-8 h-8 text-gray-200 animate-spin fill-primary"
             viewBox="0 0 100 101"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -250,7 +250,7 @@ const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
               fill="currentFill"
             />
           </svg>
-          <span className="sr-only">Cargando...</span>
+          <span className="text-sm text-gray-500">Cargando...</span>
         </div>
       </div>
     );

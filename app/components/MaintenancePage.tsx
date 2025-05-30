@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useLogo } from '@/context/LogoContext';
 
 export const getMaintenanceStatus = async () => {
   try {
@@ -23,6 +24,7 @@ export const getMaintenanceStatus = async () => {
 
 const MaintenancePage = () => {
   const [maintenanceMessage, setMaintenanceMessage] = useState<string>('Estamos realizando mejoras en el sitio. Volveremos pronto.');
+  const { logo } = useLogo();
 
   useEffect(() => {
     const fetchMaintenanceMessage = async () => {
@@ -37,7 +39,7 @@ const MaintenancePage = () => {
     <div className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center">
       <div className="text-center text-white p-8 max-w-lg">
         <img
-          src={process.env.NEXT_PUBLIC_LOGO || '/logo-default.png'}
+          src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO || '/logo-default.png'}
           alt="Ícono de mantenimiento"
           className="w-60 mx-auto"
         />
