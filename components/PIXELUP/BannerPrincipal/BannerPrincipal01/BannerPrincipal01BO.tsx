@@ -1109,6 +1109,15 @@ const BannerPrincipal01BO: React.FC = () => {
         </div>
         {isPreviewVisible && (
           <div>
+            {/* Mensaje de alerta informativa */}
+            <div className="p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Este es un preview referencial, por lo cual algunos elementos pueden no quedar correctamente organizados.</span>
+              </div>
+            </div>
             <div
               className={`transition-all duration-300 ease-in-out ${
                 previewMode === "mobile" 
@@ -1225,6 +1234,7 @@ const BannerPrincipal01BO: React.FC = () => {
                 )}
               </div>
             </div>
+
             {/* Controles de Navegación */}
             {bannerData.length > 1 && !isAddingImage && (
               <div className="flex items-center justify-between p-4 border-t border-gray-100">
