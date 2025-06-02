@@ -330,6 +330,7 @@ const SinFoto05BO: React.FC = () => {
               />
             </div>
           </div>
+          
 
           {/* Boxes Forms */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
