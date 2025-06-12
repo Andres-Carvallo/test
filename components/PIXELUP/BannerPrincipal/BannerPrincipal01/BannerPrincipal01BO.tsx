@@ -372,7 +372,7 @@ const BannerPrincipal01BO: React.FC = () => {
       setMobileImage(null);
       setMobileFileName(null);
       setIsMobileImageUploaded(false);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         mobileImage: {
           url: "",
@@ -380,20 +380,20 @@ const BannerPrincipal01BO: React.FC = () => {
           type: "",
           size: null,
           data: "",
-        }
+        },
       }));
       // Reiniciar el input de archivo mobile
       if (mobileFileInputRef.current) {
-        mobileFileInputRef.current.value = '';
+        mobileFileInputRef.current.value = "";
         // Forzar un nuevo evento de cambio
-        const event = new Event('change', { bubbles: true });
+        const event = new Event("change", { bubbles: true });
         mobileFileInputRef.current.dispatchEvent(event);
       }
     } else {
       setMainImage(null);
       setFileName(null);
       setIsMainImageUploaded(false);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         mainImage: {
           url: "",
@@ -401,13 +401,13 @@ const BannerPrincipal01BO: React.FC = () => {
           type: "",
           size: null,
           data: "",
-        }
+        },
       }));
       // Reiniciar el input de archivo desktop
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
         // Forzar un nuevo evento de cambio
-        const event = new Event('change', { bubbles: true });
+        const event = new Event("change", { bubbles: true });
         fileInputRef.current.dispatchEvent(event);
       }
     }
@@ -779,11 +779,13 @@ const BannerPrincipal01BO: React.FC = () => {
   };
 
   const SkeletonLoader = () => (
-    <div className={`relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10 ${
-      previewMode === "mobile" 
-        ? "aspect-[9/16] w-full" 
-        : "aspect-[12/9] w-full"
-    }`}>
+    <div
+      className={`relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10 ${
+        previewMode === "mobile"
+          ? "aspect-[9/16] w-full"
+          : "aspect-[12/9] w-full"
+      }`}
+    >
       <div className="absolute inset-0 w-full h-full bg-gray-100 animate-pulse" />
       <div className="min-h-[300px] relative z-20 h-full max-w-6xl mx-auto flex flex-col justify-center items-center text-center text-white p-6">
         <div className="w-1/2 h-6 bg-gray-500 animate-pulse mb-2 rounded"></div>
@@ -1026,8 +1028,10 @@ const BannerPrincipal01BO: React.FC = () => {
       {/* Panel de Vista Previa */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h3 className="text-lg font-medium text-gray-900">Vista Previa (referencial)</h3>
-          
+          <h3 className="text-lg font-medium text-gray-900">
+            Vista Previa (referencial)
+          </h3>
+
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
               <button
@@ -1110,18 +1114,35 @@ const BannerPrincipal01BO: React.FC = () => {
         {isPreviewVisible && (
           <div>
             {/* Mensaje de alerta informativa */}
-            <div className="p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400" role="alert">
+            <div
+              className="p-4 mb-4 text-sm text-blue-800 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400"
+              role="alert"
+            >
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
                 </svg>
-                <span>Este es un preview referencial, por lo cual algunos elementos pueden no quedar correctamente organizados.</span>
+                <span>
+                  Este es un preview referencial, por lo cual algunos elementos
+                  pueden no quedar correctamente organizados.
+                </span>
               </div>
             </div>
             <div
               className={`transition-all duration-300 ease-in-out ${
-                previewMode === "mobile" 
-                  ? "max-w-auto mx-auto" 
+                previewMode === "mobile"
+                  ? "max-w-auto mx-auto"
                   : "max-w-auto mx-auto"
               }`}
             >
@@ -1129,11 +1150,13 @@ const BannerPrincipal01BO: React.FC = () => {
                 {skeletonLoading ? (
                   <SkeletonLoader />
                 ) : (
-                  <div className={`relative w-full h-full ${
-                    previewMode === "mobile" 
-                      ? `aspect-[${mobileAspect}]` 
-                      : `aspect-[${desktopAspect}]`
-                  }`}>
+                  <div
+                    className={`relative w-full h-full ${
+                      previewMode === "mobile"
+                        ? `aspect-[${mobileAspect}]`
+                        : `aspect-[${desktopAspect}]`
+                    }`}
+                  >
                     {displayConfig.fullBannerLink &&
                       displayConfig.fullBannerLinkUrl && (
                         <Link
@@ -1150,7 +1173,11 @@ const BannerPrincipal01BO: React.FC = () => {
                             : mainImage || formData.mainImage?.url
                         }
                         alt="Banner Image"
-                        className="w-full h-full object-contain"
+                        className={`w-full h-full ${
+                          previewMode === "mobile"
+                            ? "object-contain"
+                            : "object-cover"
+                        }`}
                       />
                       {(formData.buttonLink !== DEFAULT_BUTTON_LINK ||
                         formData.title !== DEFAULT_TITLE ||
@@ -1160,76 +1187,144 @@ const BannerPrincipal01BO: React.FC = () => {
                             displayConfig.showValue)) ||
                         displayConfig.showButton1 ||
                         displayConfig.showButton2) && (
-                        <div className="absolute inset-0 bg-black/20" />
+                        <div
+                          className="absolute inset-0 bg-black"
+                          style={{
+                            opacity: 0.4,
+                            transition:
+                              "opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)",
+                          }}
+                        />
                       )}
                     </div>
 
-                    <div className="relative h-full  mx-auto px-20 md:px-24 ">
-                      <div
-                        className={`flex flex-col justify-center h-full ${(() => {
-                          switch (displayConfig.contentAlignment) {
-                            case "center":
-                              return "items-center text-center mx-auto";
-                            case "right":
-                              return "items-end text-right ml-auto";
-                            default:
-                              return "items-start text-left";
-                          }
-                        })()} max-w-2xl`}
-                      >
-                        {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
-                          <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
-                            {formData.buttonLink}
-                          </span>
-                        )}
-
-                        {formData.title !== DEFAULT_TITLE && (
-                          <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
-                            {formData.title}
-                          </h2>
-                        )}
-
-                        {displayConfig.showText && displayConfig.text && (
-                          <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
-                            {displayConfig.text}
-                          </p>
-                        )}
-
-                        {/* Mostrar precio y valor según la configuración */}
-                        <div className="flex items-center gap-4 mb-8">
-                          {displayConfig.showPrice && buttonTextData.price && (
-                            <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                              {buttonTextData.price}
+                    {previewMode === "mobile" ? (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div
+                          className={`flex flex-col justify-center w-full max-w-[500px] h-full mx-auto px-3 ${(() => {
+                            switch (displayConfig.contentAlignment) {
+                              case "center":
+                                return "items-center text-center mx-auto";
+                              case "right":
+                                return "items-end text-right ml-auto";
+                              default:
+                                return "items-start text-left";
+                            }
+                          })()}`}
+                        >
+                          {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
+                            <span className="text-white text-xs uppercase tracking-widest mb-2 drop-shadow-md">
+                              {formData.buttonLink}
                             </span>
                           )}
-                          {displayConfig.showValue && buttonTextData.value && (
-                            <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
-                              {buttonTextData.value}
-                            </span>
+                          {formData.title !== DEFAULT_TITLE && (
+                            <h2 className="text-6xl text-white font-light mb-4 leading-10 drop-shadow-md">
+                              {formData.title}
+                            </h2>
                           )}
-                        </div>
-
-                        {/* Mostrar botones según la configuración */}
-                        <div className="flex flex-wrap gap-4">
-                          {displayConfig.showButton1 && (
-                            <a
-                              href={displayConfig.button1Link}
-                              className="bg-primary/60  text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
-                            >
-                              {displayConfig.button1Text}
-                            </a>
+                          {displayConfig.showText && displayConfig.text && (
+                            <p className="text-white text-base mb-4 leading-relaxed drop-shadow-md">
+                              {displayConfig.text}
+                            </p>
                           )}
-                          {displayConfig.showButton2 && (
-                            <a
-                              href={displayConfig.button2Link}
-                              className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
-                            >
-                              {displayConfig.button2Text}
-                            </a>
-                          )}
+                          <div className="flex items-center gap-2 mb-4">
+                            {displayConfig.showPrice &&
+                              buttonTextData.price && (
+                                <span className="bg-white/5 backdrop-blur-sm text-white px-2 py-1 rounded text-xs drop-shadow-md">
+                                  {buttonTextData.price}
+                                </span>
+                              )}
+                            {displayConfig.showValue &&
+                              buttonTextData.value && (
+                                <span className="bg-white/5 backdrop-blur-sm text-white px-2 py-1 rounded text-xs drop-shadow-md">
+                                  {buttonTextData.value}
+                                </span>
+                              )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {displayConfig.showButton1 && (
+                              <a
+                                href={displayConfig.button1Link}
+                                className="bg-primary/60 text-white px-4 py-2 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md text-xs"
+                              >
+                                {displayConfig.button1Text}
+                              </a>
+                            )}
+                            {displayConfig.showButton2 && (
+                              <a
+                                href={displayConfig.button2Link}
+                                className="bg-white/5 text-white border border-white/20 px-4 py-2 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md text-xs"
+                              >
+                                {displayConfig.button2Text}
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className={`relative h-full mx-auto px-20 md:px-24`}>
+                        <div
+                          className={`flex flex-col justify-center h-full ${(() => {
+                            switch (displayConfig.contentAlignment) {
+                              case "center":
+                                return "items-center text-center mx-auto";
+                              case "right":
+                                return "items-end text-right ml-auto";
+                              default:
+                                return "items-start text-left";
+                            }
+                          })()} max-w-2xl`}
+                        >
+                          {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
+                            <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+                              {formData.buttonLink}
+                            </span>
+                          )}
+                          {formData.title !== DEFAULT_TITLE && (
+                            <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+                              {formData.title}
+                            </h2>
+                          )}
+                          {displayConfig.showText && displayConfig.text && (
+                            <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                              {displayConfig.text}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 mb-8">
+                            {displayConfig.showPrice &&
+                              buttonTextData.price && (
+                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                                  {buttonTextData.price}
+                                </span>
+                              )}
+                            {displayConfig.showValue &&
+                              buttonTextData.value && (
+                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                                  {buttonTextData.value}
+                                </span>
+                              )}
+                          </div>
+                          <div className="flex flex-wrap gap-4">
+                            {displayConfig.showButton1 && (
+                              <a
+                                href={displayConfig.button1Link}
+                                className="bg-primary/60 text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                              >
+                                {displayConfig.button1Text}
+                              </a>
+                            )}
+                            {displayConfig.showButton2 && (
+                              <a
+                                href={displayConfig.button2Link}
+                                className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
+                              >
+                                {displayConfig.button2Text}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1699,11 +1794,11 @@ const BannerPrincipal01BO: React.FC = () => {
                 </svg>
                 <span className="sr-only">Info</span>
                 <div>
-                  <span className="font-medium"></span>{" "}
-                  ¿No sabes cómo bajarle el peso a tu imagen?
+                  <span className="font-medium"></span> ¿No sabes cómo bajarle
+                  el peso a tu imagen?
                   <div className="">
-                    <button 
-                      onClick={handleOpenPesoImagenModal} 
+                    <button
+                      onClick={handleOpenPesoImagenModal}
                       className="text-blue-500 hover:text-blue-600"
                     >
                       Haz click aquí
@@ -1967,7 +2062,10 @@ const BannerPrincipal01BO: React.FC = () => {
                   image={mainImage || ""}
                   crop={cropDesktop}
                   zoom={zoomDesktop}
-                  aspect={parseFloat(desktopAspect.split('/')[0]) / parseFloat(desktopAspect.split('/')[1])}
+                  aspect={
+                    parseFloat(desktopAspect.split("/")[0]) /
+                    parseFloat(desktopAspect.split("/")[1])
+                  }
                   onCropChange={setCropDesktop}
                   onZoomChange={setZoomDesktop}
                   onCropComplete={(croppedArea, croppedAreaPixels) =>
@@ -2056,7 +2154,10 @@ const BannerPrincipal01BO: React.FC = () => {
                   image={mobileImage || ""}
                   crop={cropMobile}
                   zoom={zoomMobile}
-                  aspect={parseFloat(mobileAspect.split('/')[0]) / parseFloat(mobileAspect.split('/')[1])}
+                  aspect={
+                    parseFloat(mobileAspect.split("/")[0]) /
+                    parseFloat(mobileAspect.split("/")[1])
+                  }
                   onCropChange={setCropMobile}
                   onZoomChange={setZoomMobile}
                   onCropComplete={(croppedArea, croppedAreaPixels) =>
@@ -2227,9 +2328,9 @@ const BannerPrincipal01BO: React.FC = () => {
       )}
 
       {/* Modal de Peso de Imagen */}
-      <ModalPesoImagen 
-        showModal={isPesoImagenModalOpen} 
-        onClose={() => setIsPesoImagenModalOpen(false)} 
+      <ModalPesoImagen
+        showModal={isPesoImagenModalOpen}
+        onClose={() => setIsPesoImagenModalOpen(false)}
       />
     </div>
   );
