@@ -130,9 +130,9 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <Ubicacion />
         </Suspense>
-{/*         <Suspense fallback={<Banner />}>
+         <Suspense fallback={<Banner />}>
           <FeedInstagram />
-        </Suspense> */}
+        </Suspense> 
 
         {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
@@ -155,7 +155,7 @@ export default async function Page() {
         </Suspense>
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase02 />
-        </Suspense> */}
+        </Suspense> *
         <Suspense fallback={<Banner />}>
           <FeedRRSS />
         </Suspense>
