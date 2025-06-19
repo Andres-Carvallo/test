@@ -95,7 +95,7 @@ export default function Testimonios04() {
   if (!testimonios.length) return null;
 
   return (
-    <section className="py-16 relative">
+    <section className="py-16 relative" style={{ borderRadius: "var(--radius)" }}>
       {/* Imagen de fondo */}
       <div className="absolute inset-0 w-full h-full">
         <img
@@ -103,14 +103,14 @@ export default function Testimonios04() {
           alt="Fondo de testimonios"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-[#2C4F3F]/40"></div>
+        <div className="absolute inset-0 bg-primary/40"></div>
       </div>
 
-      <div className="container mx-auto px-4 md:px-8 max-w-7xl relative z-10">
+      <div className=" mx-auto px-4 md:px-8 max-w-7xl relative z-10">
         <div className="max-w-3xl">
           {/* Carrusel de Testimonios */}
           <div className="relative">
-            <div className="bg-white rounded-2xl shadow-xl p-10 md:p-14">
+            <div className="bg-white rounded-2xl shadow-xl p-10 md:p-14" style={{ borderRadius: "var(--radius)" }}>
               <div className="mb-6">
                 <svg
                   className="w-12 h-12 text-primary"
@@ -138,7 +138,7 @@ export default function Testimonios04() {
                   <div className="flex justify-end gap-2 mt-6">
                     <button 
                       onClick={prevSlide}
-                      className="w-10 h-10 rounded-full bg-[#F5F2EB] flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                      className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
                     >
                       <svg
                         className="w-6 h-6"
@@ -156,7 +156,7 @@ export default function Testimonios04() {
                     </button>
                     <button 
                       onClick={nextSlide}
-                      className="w-10 h-10 rounded-full bg-[#F5F2EB] flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                        className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
                     >
                       <svg
                         className="w-6 h-6"

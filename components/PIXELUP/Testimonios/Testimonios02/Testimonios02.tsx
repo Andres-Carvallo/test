@@ -109,7 +109,7 @@ export default function Testimonios01() {
   if (!testimonios.length) return null;
 
   return (
-    <section className="py-20 bg-white">
+      <section className="py-20 bg-white" style={{ borderRadius: "var(--radius)" }}>
       <div className="mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -133,9 +133,10 @@ export default function Testimonios01() {
                   <div
                     key={`${currentIndex}-${idx}`}
                     className="bg-gray-100 p-6 md:p-8 rounded-2xl select-none"
+                    style={{ borderRadius: "var(--radius)" }}
                   >
                     <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-                      <div className="w-10 h-10 md:w-12 md:h-12 bg-[#F9AF2A] rounded-full flex items-center justify-center text-lg md:text-xl font-bold text-white">
+                      <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-full flex items-center justify-center text-lg md:text-xl font-bold text-white">
                         {testimonio.nombre.split(' ').map(n => n[0]).join('').toUpperCase()}
                       </div>
                       <div>
@@ -154,7 +155,7 @@ export default function Testimonios01() {
                         <svg
                           key={i}
                           xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 md:h-5 md:w-5 text-[#F9AF2A]"
+                          className="h-4 w-4 md:h-5 md:w-5 text-primary"
                           viewBox="0 0 20 20"
                           fill="currentColor"
                         >
@@ -174,7 +175,7 @@ export default function Testimonios01() {
                     onClick={() => goToSlide(index)}
                     className={`w-2.5 h-2.5 rounded-full transition-all ${
                       Math.floor(currentIndex / visibleCount) === index
-                        ? "bg-[#F9AF2A]"
+                        ? "bg-primary"
                         : "bg-gray-300"
                     }`}
                   />

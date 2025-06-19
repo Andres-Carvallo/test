@@ -237,13 +237,13 @@ const Testimonios03: React.FC = () => {
   }
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-white" style={{ borderRadius: "var(--radius)" }}>
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-16">
-          <span className="text-[#81C4BA] text-sm uppercase tracking-widest">
+          <span className="text-primary text-sm uppercase tracking-widest">
             Testimonios
           </span>
-          <h2 className="text-4xl font-light text-[#5B488E] mt-4">
+          <h2 className="text-4xl font-light text-primary mt-4">
             Lo que dicen nuestros clientes
           </h2>
           <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
@@ -257,7 +257,7 @@ const Testimonios03: React.FC = () => {
             <div className="absolute -left-4 lg:-left-8 top-1/2 -translate-y-1/2 flex justify-between items-center w-[calc(100%+32px)] lg:w-[calc(100%+64px)]">
               <button
                 onClick={prevSlide}
-                className="w-12 h-12 bg-[#5B488E]/5 rounded shadow-lg flex items-center justify-center text-[#81C4BA] hover:text-[#1B9C84] transition-colors z-10"
+                className="w-12 h-12 bg-primary/5 rounded shadow-lg flex items-center justify-center text-primary hover:text-primary transition-colors z-10"
               >
                 <svg
                   className="w-6 h-6"
@@ -275,7 +275,7 @@ const Testimonios03: React.FC = () => {
               </button>
               <button
                 onClick={nextSlide}
-                className="w-12 h-12 bg-[#5B488E]/5 rounded shadow-lg flex items-center justify-center text-[#81C4BA] hover:text-[#1B9C84] transition-colors z-10"
+                className="w-12 h-12 bg-primary/5 rounded shadow-lg flex items-center justify-center text-primary hover:text-primary transition-colors z-10"
               >
                 <svg
                   className="w-6 h-6"
@@ -304,21 +304,22 @@ const Testimonios03: React.FC = () => {
                 key={`${currentIndex}-${index}`}
                 className="my-8 group relative bg-white p-4 shadow-lg transform md:hover:-rotate-2 transition-all duration-300 snap-center"
                 style={{
+                  borderRadius: "var(--radius)",
                   boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
                   minWidth: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : 'auto',
                 }}
               >
                 {/* Contenedor de la foto estilo Polaroid */}
-                <div className="relative bg-white">
+                <div className="relative bg-white" style={{ borderRadius: "var(--radius)" }}>
                   <div className="relative pt-[100%]">
                     <div className="absolute inset-0 p-3">
-                      <div className="relative w-full h-full overflow-hidden">
+                      <div className="relative w-full h-full overflow-hidden" style={{ borderRadius: "var(--radius)" }}>
                         <img
                           src={image.mainImage.url}
                           alt={image.title}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" style={{ borderRadius: "var(--radius)" }}>
                           <div className="absolute bottom-0 inset-x-0 p-2">
                             <p className="text-white font-medium text-center">
                               {image.title}
@@ -334,9 +335,9 @@ const Testimonios03: React.FC = () => {
                 </div>
 
                 {/* Testimonio en una "nota adhesiva" */}
-                <div className="mt-4 bg-[#5B488E]/5 p-4 rounded-lg transform -rotate-1">
+                <div className="mt-4 bg-primary/5 p-4 rounded-lg transform -rotate-1" style={{ borderRadius: "var(--radius)" }}>
                   <svg
-                    className="w-6 h-6 text-[#81C4BA] mb-2"
+                    className="w-6 h-6 text-primary mb-2"
                     fill="currentColor"
                     viewBox="0 0 24 24"
                   >
@@ -349,7 +350,7 @@ const Testimonios03: React.FC = () => {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <svg
                         key={star}
-                        className="w-4 h-4 text-[#81C4BA]"
+                        className="w-4 h-4 text-primary"
                         fill="currentColor"
                         viewBox="0 0 24 24"
                       >
@@ -360,7 +361,7 @@ const Testimonios03: React.FC = () => {
                 </div>
 
                 {/* Cinta adhesiva decorativa */}
-                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-4 bg-[#5B488E]/10 transform -rotate-3" />
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-4 bg-primary/10 transform -rotate-3" />
               </div>
             ))}
           </div>
@@ -373,8 +374,8 @@ const Testimonios03: React.FC = () => {
                   onClick={() => goToSlide(index)}
                   className={`h-1.5 rounded transition-all duration-300 ${
                     Math.floor(currentIndex / visibleCount) === index
-                      ? "w-8 bg-[#5B488E]"
-                      : "w-4 bg-[#5B488E]/20 md:hover:bg-[#5B488E]/40"
+                      ? "w-8 bg-primary"
+                      : "w-4 bg-primary/20 md:hover:bg-primary/40"
                   }`}
                 />
               ))}
