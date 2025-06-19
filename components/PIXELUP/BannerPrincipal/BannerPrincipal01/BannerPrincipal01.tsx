@@ -36,6 +36,8 @@ interface DisplayConfig {
   contentAlignment: "left" | "center" | "right";
   fullBannerLink: boolean;
   fullBannerLinkUrl: string;
+  baseTypography: string;
+  titleTypography: string;
 }
 
 interface BannerData {
@@ -195,6 +197,8 @@ const BannerPrincipal01: React.FC = () => {
           contentAlignment: parsed.contentAlignment || "left",
           fullBannerLink: parsed.fullBannerLink ?? false,
           fullBannerLinkUrl: parsed.fullBannerLinkUrl || "#",
+          baseTypography: parsed.baseTypography || "montserrat",
+          titleTypography: parsed.titleTypography || "montserrat",
         };
       }
       return {
@@ -211,6 +215,8 @@ const BannerPrincipal01: React.FC = () => {
         contentAlignment: "left",
         fullBannerLink: false,
         fullBannerLinkUrl: "#",
+        baseTypography: "montserrat",
+        titleTypography: "montserrat",
       };
     } catch {
       return {
@@ -227,6 +233,8 @@ const BannerPrincipal01: React.FC = () => {
         contentAlignment: "left",
         fullBannerLink: false,
         fullBannerLinkUrl: "#",
+        baseTypography: "montserrat",
+        titleTypography: "montserrat",
       };
     }
   };
@@ -433,13 +441,21 @@ const BannerPrincipal01: React.FC = () => {
             })()} max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-              <span className="text-white text-[10px] sm:text-sm uppercase tracking-widest  sm:mb-4 drop-shadow-md">
+              <span
+                className={`text-white text-[10px] sm:text-sm uppercase tracking-widest sm:mb-4 drop-shadow-md font-${
+                  parseDisplayConfig(currentImage.landingText).baseTypography
+                }`}
+              >
                 {currentImage.buttonLink}
               </span>
             )}
 
             {currentImage.title !== DEFAULT_TITLE && (
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl text-white font-light mb-2 sm:mb-6 leading-tight drop-shadow-md">
+              <h2
+                className={`text-3xl sm:text-4xl md:text-5xl lg:text-7xl text-white font-light mb-2 sm:mb-6 leading-tight drop-shadow-md font-${
+                  parseDisplayConfig(currentImage.landingText).titleTypography
+                }`}
+              >
                 {currentImage.title}
               </h2>
             )}
@@ -447,7 +463,11 @@ const BannerPrincipal01: React.FC = () => {
             {/* Texto descriptivo */}
             {parseDisplayConfig(currentImage.landingText).showText &&
               parseDisplayConfig(currentImage.landingText).text && (
-                <p className="text-white text-[0.9rem] sm:text-lg md:text-xl mb-6 sm:mb-8 leading-tight drop-shadow-md">
+                <p
+                  className={`text-white text-[0.9rem] sm:text-lg md:text-xl mb-6 sm:mb-8 leading-tight drop-shadow-md font-${
+                    parseDisplayConfig(currentImage.landingText).baseTypography
+                  }`}
+                >
                   {parseDisplayConfig(currentImage.landingText).text}
                 </p>
               )}
@@ -458,13 +478,23 @@ const BannerPrincipal01: React.FC = () => {
               <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
                 {parseDisplayConfig(currentImage.landingText).showPrice &&
                   parseButtonTextData(currentImage.buttonText).price && (
-                    <span className="bg-white/5 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md">
+                    <span
+                      className={`bg-white/5 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md font-${
+                        parseDisplayConfig(currentImage.landingText)
+                          .baseTypography
+                      }`}
+                    >
                       {parseButtonTextData(currentImage.buttonText).price}
                     </span>
                   )}
                 {parseDisplayConfig(currentImage.landingText).showValue &&
                   parseButtonTextData(currentImage.buttonText).value && (
-                    <span className="bg-white/5 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md">
+                    <span
+                      className={`bg-white/5 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md font-${
+                        parseDisplayConfig(currentImage.landingText)
+                          .baseTypography
+                      }`}
+                    >
                       {parseButtonTextData(currentImage.buttonText).value}
                     </span>
                   )}
@@ -481,7 +511,7 @@ const BannerPrincipal01: React.FC = () => {
                     <Link
                       href={config.button1Link}
                       target="_self"
-                      className="bg-primary/60 text-white px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                      className={`bg-primary/60 text-white px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-primary transition-all cursor-pointer drop-shadow-md font-${config.baseTypography}`}
                     >
                       {config.button1Text}
                     </Link>
@@ -490,7 +520,7 @@ const BannerPrincipal01: React.FC = () => {
                     <Link
                       href={config.button2Link}
                       target="_self"
-                      className="relative inline-block bg-white/5 text-white border border-white/20 px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
+                      className={`relative inline-block bg-white/5 text-white border border-white/20 px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20 font-${config.baseTypography}`}
                     >
                       {config.button2Text}
                     </Link>

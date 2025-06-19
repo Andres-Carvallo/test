@@ -20,6 +20,12 @@ import { globalConfig } from "@/app/config/GlobalConfig";
 import { validateImage } from "@/utils/imageValidation";
 import { FaQuestionCircle } from "react-icons/fa";
 
+interface FontOption {
+  value: string;
+  label: string;
+  className: string;
+}
+
 interface BannerImage {
   id: string;
   title: string;
@@ -56,6 +62,8 @@ interface DisplayConfig {
   isMobileVersion: boolean;
   desktopImageId?: string;
   mobileImageId?: string;
+  baseTypography: string; // Nueva propiedad para tipografía base
+  titleTypography: string; // Nueva propiedad para tipografía del título
 }
 
 // Modificar la interfaz BannerData
@@ -148,6 +156,8 @@ const BannerPrincipal01BO: React.FC = () => {
     fullBannerLink: false,
     fullBannerLinkUrl: "",
     isMobileVersion: false,
+    baseTypography: "montserrat", // Valor por defecto
+    titleTypography: "montserrat", // Valor por defecto
   });
 
   // Agregar constantes para valores por defecto
@@ -159,9 +169,26 @@ const BannerPrincipal01BO: React.FC = () => {
     EPIGRAPH: 25, // Epígrafe - texto corto
     TITLE: 30, // Título - texto medio
     DESCRIPTION: 100, // Descripción - texto largo
-    BUTTON1_TEXT: 10, // Botón 1 - texto corto
-    BUTTON2_TEXT: 10, // Botón 2 - texto corto
+    BUTTON1_TEXT: 9, // Botón 1 - texto corto
+    BUTTON2_TEXT: 9, // Botón 2 - texto corto
   } as const;
+
+  // Función para obtener el límite de caracteres de un botón
+  const getButtonTextLimit = (buttonNumber: 1 | 2) => {
+    const isButton1Active = displayConfig.showButton1;
+    const isButton2Active = displayConfig.showButton2;
+
+    // Si solo hay un botón activo, permitir 18 caracteres
+    if (
+      (buttonNumber === 1 && isButton1Active && !isButton2Active) ||
+      (buttonNumber === 2 && isButton2Active && !isButton1Active)
+    ) {
+      return 18;
+    }
+
+    // Si ambos botones están activos o ninguno, mantener el límite de 9
+    return 9;
+  };
 
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
@@ -799,6 +826,8 @@ const BannerPrincipal01BO: React.FC = () => {
         fullBannerLink: false,
         fullBannerLinkUrl: "",
         isMobileVersion: false,
+        baseTypography: "montserrat",
+        titleTypography: "montserrat",
       });
 
       // Establecer la configuración inicial del botón
@@ -843,19 +872,35 @@ const BannerPrincipal01BO: React.FC = () => {
     });
   };
 
+  // Función para verificar si hay texto de botón que excede el límite actual
+  const hasButtonTextExceedingLimit = () => {
+    const button1Limit = getButtonTextLimit(1);
+    const button2Limit = getButtonTextLimit(2);
+
+    return (
+      (displayConfig.showButton1 &&
+        displayConfig.button1Text.length > button1Limit) ||
+      (displayConfig.showButton2 &&
+        displayConfig.button2Text.length > button2Limit)
+    );
+  };
+
   // Función para verificar si el botón "Crear Banner" debe estar bloqueado
   const isCreateBannerDisabled = () => {
     if (loading) return true; // Siempre bloquear cuando está cargando
-
-    if (!isAddingImage) return false; // Solo validar cuando estamos agregando un nuevo banner
 
     // Si hay errores de validación en desktop o mobile, bloquear el botón
     if (imageValidationError.desktop || imageValidationError.mobile) {
       return true;
     }
 
-    // Si no hay imagen desktop cargada, bloquear el botón
-    if (!isMainImageUploaded) {
+    // Solo validar imagen cuando se está agregando un nuevo banner
+    if (isAddingImage && !isMainImageUploaded) {
+      return true;
+    }
+
+    // Si hay texto de botón que excede el límite actual, bloquear el botón
+    if (hasButtonTextExceedingLimit()) {
       return true;
     }
 
@@ -945,6 +990,8 @@ const BannerPrincipal01BO: React.FC = () => {
           fullBannerLink: parsed.fullBannerLink ?? false,
           fullBannerLinkUrl: fullBannerLinkUrl,
           isMobileVersion: parsed.isMobileVersion ?? false,
+          baseTypography: parsed.baseTypography || "montserrat",
+          titleTypography: parsed.titleTypography || "montserrat",
         };
       }
       return {
@@ -962,6 +1009,8 @@ const BannerPrincipal01BO: React.FC = () => {
         fullBannerLink: false,
         fullBannerLinkUrl: "",
         isMobileVersion: false,
+        baseTypography: "montserrat",
+        titleTypography: "montserrat",
       };
     } catch {
       return {
@@ -979,6 +1028,8 @@ const BannerPrincipal01BO: React.FC = () => {
         fullBannerLink: false,
         fullBannerLinkUrl: "",
         isMobileVersion: false,
+        baseTypography: "montserrat",
+        titleTypography: "montserrat",
       };
     }
   };
@@ -1113,6 +1164,19 @@ const BannerPrincipal01BO: React.FC = () => {
     e.stopPropagation(); // Detener la propagación del evento
     setIsPesoImagenModalOpen(true);
   };
+
+  const fontOptions: FontOption[] = [
+    { value: "montserrat", label: "Montserrat", className: "font-montserrat" },
+    { value: "poppins", label: "Poppins", className: "font-poppins" },
+    {
+      value: "roboto-mono",
+      label: "Roboto Mono",
+      className: "font-roboto-mono",
+    },
+    { value: "kalam", label: "Kalam", className: "font-kalam" },
+    { value: "lato", label: "Lato", className: "font-lato" },
+    { value: "oswald", label: "Oswald", className: "font-oswald" },
+  ];
 
   if (loading) {
     return (
@@ -1330,30 +1394,40 @@ const BannerPrincipal01BO: React.FC = () => {
                           })()}`}
                         >
                           {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
-                            <span className="text-white text-xs uppercase tracking-widest mb-2 drop-shadow-md">
+                            <span
+                              className={`text-white text-xs uppercase tracking-widest mb-2 drop-shadow-md font-${displayConfig.baseTypography}`}
+                            >
                               {formData.buttonLink}
                             </span>
                           )}
                           {formData.title !== DEFAULT_TITLE && (
-                            <h2 className="text-6xl text-white font-light mb-4 leading-[55px] drop-shadow-md">
+                            <h2
+                              className={`text-6xl text-white font-light mb-4 leading-[55px] drop-shadow-md font-${displayConfig.titleTypography}`}
+                            >
                               {formData.title}
                             </h2>
                           )}
                           {displayConfig.showText && displayConfig.text && (
-                            <p className="text-white text-base mb-4 leading-relaxed drop-shadow-md">
+                            <p
+                              className={`text-white text-base mb-4 leading-relaxed drop-shadow-md font-${displayConfig.baseTypography}`}
+                            >
                               {displayConfig.text}
                             </p>
                           )}
                           <div className="flex items-center gap-2 mb-4">
                             {displayConfig.showPrice &&
                               buttonTextData.price && (
-                                <span className="bg-white/5 backdrop-blur-sm text-white px-2 py-1 rounded text-xs drop-shadow-md">
+                                <span
+                                  className={`bg-white/5 backdrop-blur-sm text-white px-2 py-1 rounded text-xs drop-shadow-md font-${displayConfig.baseTypography}`}
+                                >
                                   {buttonTextData.price}
                                 </span>
                               )}
                             {displayConfig.showValue &&
                               buttonTextData.value && (
-                                <span className="bg-white/5 backdrop-blur-sm text-white px-2 py-1 rounded text-xs drop-shadow-md">
+                                <span
+                                  className={`bg-white/5 backdrop-blur-sm text-white px-2 py-1 rounded text-xs drop-shadow-md font-${displayConfig.baseTypography}`}
+                                >
                                   {buttonTextData.value}
                                 </span>
                               )}
@@ -1362,7 +1436,7 @@ const BannerPrincipal01BO: React.FC = () => {
                             {displayConfig.showButton1 && (
                               <a
                                 href={displayConfig.button1Link}
-                                className="bg-primary/60 text-white px-4 py-2 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md text-xs"
+                                className={`bg-primary/60 text-white px-4 py-2 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md text-md font-${displayConfig.baseTypography}`}
                               >
                                 {displayConfig.button1Text}
                               </a>
@@ -1370,7 +1444,7 @@ const BannerPrincipal01BO: React.FC = () => {
                             {displayConfig.showButton2 && (
                               <a
                                 href={displayConfig.button2Link}
-                                className="bg-white/5 text-white border border-white/20 px-4 py-2 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md text-xs"
+                                className={`bg-white/5 text-white border border-white/20 px-4 py-2 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md text-md font-${displayConfig.baseTypography}`}
                               >
                                 {displayConfig.button2Text}
                               </a>
@@ -1393,30 +1467,40 @@ const BannerPrincipal01BO: React.FC = () => {
                           })()} max-w-2xl`}
                         >
                           {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
-                            <span className="text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+                            <span
+                              className={`text-white text-sm uppercase tracking-widest mb-4 drop-shadow-md font-${displayConfig.baseTypography}`}
+                            >
                               {formData.buttonLink}
                             </span>
                           )}
                           {formData.title !== DEFAULT_TITLE && (
-                            <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+                            <h2
+                              className={`text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md font-${displayConfig.titleTypography}`}
+                            >
                               {formData.title}
                             </h2>
                           )}
                           {displayConfig.showText && displayConfig.text && (
-                            <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                            <p
+                              className={`text-white text-lg md:text-xl leading-relaxed drop-shadow-md font-${displayConfig.baseTypography}`}
+                            >
                               {displayConfig.text}
                             </p>
                           )}
                           <div className="flex items-center gap-4 mb-8">
                             {displayConfig.showPrice &&
                               buttonTextData.price && (
-                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                                <span
+                                  className={`bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md font-${displayConfig.baseTypography}`}
+                                >
                                   {buttonTextData.price}
                                 </span>
                               )}
                             {displayConfig.showValue &&
                               buttonTextData.value && (
-                                <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                                <span
+                                  className={`bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md font-${displayConfig.baseTypography}`}
+                                >
                                   {buttonTextData.value}
                                 </span>
                               )}
@@ -1425,7 +1509,7 @@ const BannerPrincipal01BO: React.FC = () => {
                             {displayConfig.showButton1 && (
                               <a
                                 href={displayConfig.button1Link}
-                                className="bg-primary/60 text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                                className={`bg-primary/60 text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md font-${displayConfig.baseTypography}`}
                               >
                                 {displayConfig.button1Text}
                               </a>
@@ -1433,7 +1517,7 @@ const BannerPrincipal01BO: React.FC = () => {
                             {displayConfig.showButton2 && (
                               <a
                                 href={displayConfig.button2Link}
-                                className="bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md"
+                                className={`bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md font-${displayConfig.baseTypography}`}
                               >
                                 {displayConfig.button2Text}
                               </a>
@@ -1551,6 +1635,8 @@ const BannerPrincipal01BO: React.FC = () => {
                   ? "Error en la validación de imagen. Verifica que la imagen no supere 5MB y sea un formato válido."
                   : !isMainImageUploaded
                   ? "Debes seleccionar una imagen para crear el banner."
+                  : hasButtonTextExceedingLimit()
+                  ? "El texto de uno o ambos botones excede el límite permitido. Reduce el texto o desactiva un botón."
                   : "Procesando..."
                 : ""
             }
@@ -1600,6 +1686,53 @@ const BannerPrincipal01BO: React.FC = () => {
               Contenido
             </h3>
             <div className="space-y-4">
+              {/* Controles de tipografía */}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-700 mb-2 block">
+                    Tipografía del título
+                  </label>
+                  <select
+                    value={displayConfig.titleTypography}
+                    onChange={(e) =>
+                      updateDisplayConfig({ titleTypography: e.target.value })
+                    }
+                    className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  >
+                    {fontOptions.map((option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-700 mb-2 block">
+                    Tipografía base (epígrafe, descripción, botones)
+                  </label>
+                  <select
+                    value={displayConfig.baseTypography}
+                    onChange={(e) =>
+                      updateDisplayConfig({ baseTypography: e.target.value })
+                    }
+                    className="w-full text-sm p-2 border border-gray-200 rounded-md"
+                  >
+                    {fontOptions.map((option) => (
+                      <option
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {/* Controles de alineación */}
               <div>
                 <label className="text-sm text-gray-700 mb-2 block">
@@ -2172,14 +2305,19 @@ const BannerPrincipal01BO: React.FC = () => {
                   onChange={(e) => {
                     const limitedValue = validateAndLimitCharacters(
                       e.target.value,
-                      CHARACTER_LIMITS.BUTTON1_TEXT
+                      getButtonTextLimit(1)
                     );
                     setDisplayConfig((prev) => ({
                       ...prev,
                       button1Text: limitedValue,
                     }));
                   }}
-                  className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
+                  className={`w-full text-sm p-2 border rounded-md mb-2 ${
+                    displayConfig.showButton1 &&
+                    displayConfig.button1Text.length > getButtonTextLimit(1)
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
+                  }`}
                   placeholder="Texto del botón"
                   disabled={!displayConfig.showButton1}
                 />
@@ -2188,20 +2326,30 @@ const BannerPrincipal01BO: React.FC = () => {
                     <span
                       className={`text-xs ${getCharacterCountClass(
                         displayConfig.button1Text.length,
-                        CHARACTER_LIMITS.BUTTON1_TEXT
+                        getButtonTextLimit(1)
                       )}`}
                     >
-                      {displayConfig.button1Text.length}/
-                      {CHARACTER_LIMITS.BUTTON1_TEXT} caracteres
+                      {displayConfig.button1Text.length}/{getButtonTextLimit(1)}{" "}
+                      caracteres
                     </span>
                     {displayConfig.button1Text.length >=
-                      CHARACTER_LIMITS.BUTTON1_TEXT && (
+                      getButtonTextLimit(1) && (
                       <span className="text-xs text-red-500">
                         Límite alcanzado
                       </span>
                     )}
                   </div>
                 )}
+                {displayConfig.showButton1 &&
+                  displayConfig.button1Text.length > getButtonTextLimit(1) && (
+                    <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+                      ⚠️ El texto excede el límite de {getButtonTextLimit(1)}{" "}
+                      caracteres.
+                      {displayConfig.showButton2
+                        ? " Reduce el texto o desactiva el Botón 2 para permitir hasta 18 caracteres."
+                        : " Reduce el texto para continuar."}
+                    </div>
+                  )}
                 <input
                   type="text"
                   value={displayConfig.button1Link}
@@ -2238,14 +2386,19 @@ const BannerPrincipal01BO: React.FC = () => {
                   onChange={(e) => {
                     const limitedValue = validateAndLimitCharacters(
                       e.target.value,
-                      CHARACTER_LIMITS.BUTTON2_TEXT
+                      getButtonTextLimit(2)
                     );
                     setDisplayConfig((prev) => ({
                       ...prev,
                       button2Text: limitedValue,
                     }));
                   }}
-                  className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
+                  className={`w-full text-sm p-2 border rounded-md mb-2 ${
+                    displayConfig.showButton2 &&
+                    displayConfig.button2Text.length > getButtonTextLimit(2)
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
+                  }`}
                   placeholder="Texto del botón"
                   disabled={!displayConfig.showButton2}
                 />
@@ -2254,20 +2407,30 @@ const BannerPrincipal01BO: React.FC = () => {
                     <span
                       className={`text-xs ${getCharacterCountClass(
                         displayConfig.button2Text.length,
-                        CHARACTER_LIMITS.BUTTON2_TEXT
+                        getButtonTextLimit(2)
                       )}`}
                     >
-                      {displayConfig.button2Text.length}/
-                      {CHARACTER_LIMITS.BUTTON2_TEXT} caracteres
+                      {displayConfig.button2Text.length}/{getButtonTextLimit(2)}{" "}
+                      caracteres
                     </span>
                     {displayConfig.button2Text.length >=
-                      CHARACTER_LIMITS.BUTTON2_TEXT && (
+                      getButtonTextLimit(2) && (
                       <span className="text-xs text-red-500">
                         Límite alcanzado
                       </span>
                     )}
                   </div>
                 )}
+                {displayConfig.showButton2 &&
+                  displayConfig.button2Text.length > getButtonTextLimit(2) && (
+                    <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+                      ⚠️ El texto excede el límite de {getButtonTextLimit(2)}{" "}
+                      caracteres.
+                      {displayConfig.showButton1
+                        ? " Reduce el texto o desactiva el Botón 1 para permitir hasta 18 caracteres."
+                        : " Reduce el texto para continuar."}
+                    </div>
+                  )}
                 <input
                   type="text"
                   value={displayConfig.button2Link}
