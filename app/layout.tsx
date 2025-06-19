@@ -64,15 +64,19 @@ const oswald = Oswald({
 
 const DynamicFavicon = () => {
   const { logo } = useLogo();
-  
+
   // Función utilitaria para calcular dimensiones del favicon
-  const calculateFaviconDimensions = (imgWidth: number, imgHeight: number, canvasSize: number) => {
+  const calculateFaviconDimensions = (
+    imgWidth: number,
+    imgHeight: number,
+    canvasSize: number
+  ) => {
     const imgAspectRatio = imgWidth / imgHeight;
     const padding = canvasSize * 0.1; // 10% de padding
-    const availableSize = canvasSize - (padding * 2);
-    
+    const availableSize = canvasSize - padding * 2;
+
     let drawWidth, drawHeight, offsetX, offsetY;
-    
+
     if (imgAspectRatio > 1) {
       // Imagen horizontal: ajustar al ancho disponible con padding
       drawWidth = availableSize;
@@ -86,7 +90,7 @@ const DynamicFavicon = () => {
       offsetX = (canvasSize - drawWidth) / 2;
       offsetY = padding;
     }
-    
+
     // Asegurar que la imagen no sea más pequeña que el espacio disponible
     if (drawWidth < availableSize && drawHeight < availableSize) {
       const scale = availableSize / Math.max(drawWidth, drawHeight);
@@ -95,110 +99,121 @@ const DynamicFavicon = () => {
       offsetX = (canvasSize - drawWidth) / 2;
       offsetY = (canvasSize - drawHeight) / 2;
     }
-    
+
     return { drawWidth, drawHeight, offsetX, offsetY };
   };
-  
+
   // Función utilitaria para crear favicon
   const createFavicon = (img: HTMLImageElement, size: number): string => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) return '';
-    
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) return "";
+
     canvas.width = size;
     canvas.height = size;
-    
+
     // Limpiar el canvas con fondo transparente
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    const { drawWidth, drawHeight, offsetX, offsetY } = calculateFaviconDimensions(img.width, img.height, size);
-    
+
+    const { drawWidth, drawHeight, offsetX, offsetY } =
+      calculateFaviconDimensions(img.width, img.height, size);
+
     // Aplicar suavizado para mejor calidad
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-    
+    ctx.imageSmoothingQuality = "high";
+
     // Dibujar la imagen centrada y escalada
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-    
-    return canvas.toDataURL('image/png');
+
+    return canvas.toDataURL("image/png");
   };
-  
+
   useEffect(() => {
     if (logo?.mainImage?.url) {
       const processFavicon = async () => {
         try {
           // Crear una imagen para cargar el logo
           const img = new Image();
-          img.crossOrigin = 'anonymous';
-          
+          img.crossOrigin = "anonymous";
+
           img.onload = () => {
             // Tamaños estándar para favicons
             const faviconSizes = [16, 32, 48, 64, 128];
-            
-            faviconSizes.forEach(size => {
+
+            faviconSizes.forEach((size) => {
               const faviconDataUrl = createFavicon(img, size);
-              
+
               if (faviconDataUrl) {
                 // Crear o actualizar el link del favicon
                 const linkId = `favicon-${size}`;
                 let link = document.getElementById(linkId) as HTMLLinkElement;
-                
+
                 if (!link) {
-                  link = document.createElement('link') as HTMLLinkElement;
+                  link = document.createElement("link") as HTMLLinkElement;
                   link.id = linkId;
-                  link.rel = 'icon';
-                  link.type = 'image/png';
-                  document.getElementsByTagName('head')[0].appendChild(link);
+                  link.rel = "icon";
+                  link.type = "image/png";
+                  document.getElementsByTagName("head")[0].appendChild(link);
                 }
-                
+
                 link.href = faviconDataUrl;
               }
             });
-            
+
             // También crear un favicon genérico para compatibilidad
             const genericFaviconUrl = createFavicon(img, 32);
-            
+
             if (genericFaviconUrl) {
               // Actualizar el favicon genérico
-              let genericLink = document.querySelector("link[rel='shortcut icon']") as HTMLLinkElement;
+              let genericLink = document.querySelector(
+                "link[rel='shortcut icon']"
+              ) as HTMLLinkElement;
               if (!genericLink) {
-                genericLink = document.createElement('link') as HTMLLinkElement;
-                genericLink.rel = 'shortcut icon';
-                genericLink.type = 'image/png';
-                document.getElementsByTagName('head')[0].appendChild(genericLink);
+                genericLink = document.createElement("link") as HTMLLinkElement;
+                genericLink.rel = "shortcut icon";
+                genericLink.type = "image/png";
+                document
+                  .getElementsByTagName("head")[0]
+                  .appendChild(genericLink);
               }
               genericLink.href = genericFaviconUrl;
             }
           };
-          
+
           img.onerror = () => {
             // Si falla el procesamiento, usar la imagen original
-            const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link') as HTMLLinkElement;
-            link.type = 'image/x-icon';
-            link.rel = 'shortcut icon';
+            const link =
+              (document.querySelector(
+                "link[rel*='icon']"
+              ) as HTMLLinkElement) ||
+              (document.createElement("link") as HTMLLinkElement);
+            link.type = "image/x-icon";
+            link.rel = "shortcut icon";
             link.href = logo.mainImage.url;
-            
+
             if (!document.querySelector("link[rel*='icon']")) {
-              document.getElementsByTagName('head')[0].appendChild(link);
+              document.getElementsByTagName("head")[0].appendChild(link);
             }
           };
-          
+
           img.src = logo.mainImage.url;
         } catch (error) {
-          console.error('Error al procesar el favicon:', error);
+          console.error("Error al procesar el favicon:", error);
           // Fallback a la imagen original
-          const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link') as HTMLLinkElement;
-          link.type = 'image/x-icon';
-          link.rel = 'shortcut icon';
+          const link =
+            (document.querySelector("link[rel*='icon']") as HTMLLinkElement) ||
+            (document.createElement("link") as HTMLLinkElement);
+          link.type = "image/x-icon";
+          link.rel = "shortcut icon";
           link.href = logo.mainImage.url;
-          
+
           if (!document.querySelector("link[rel*='icon']")) {
-            document.getElementsByTagName('head')[0].appendChild(link);
+            document.getElementsByTagName("head")[0].appendChild(link);
           }
         }
       };
-      
+
       processFavicon();
     }
   }, [logo]);
@@ -209,7 +224,7 @@ const DynamicFavicon = () => {
 // Componente para ocultar contenido hasta que se carguen los colores
 const ColorLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isColorLoaded } = useColor();
-  
+
   if (!isColorLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -217,7 +232,7 @@ const ColorLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
     );
   }
-  
+
   return <>{children}</>;
 };
 
@@ -244,10 +259,13 @@ export default function RootLayout({
         );
         setSiteStatus(siteResponse.data.site.statusCode);
 
-        if (!pathname.startsWith("/admin") && !pathname.startsWith("/dashboard")) {
+        if (
+          !pathname.startsWith("/admin") &&
+          !pathname.startsWith("/dashboard")
+        ) {
           const adminToken = getCookie("AdminTokenAuth");
           let userEmail = null;
-          
+
           if (adminToken) {
             try {
               const decodedToken = jwtDecode(adminToken.toString());
@@ -266,7 +284,10 @@ export default function RootLayout({
             }
           }
 
-          if (userEmail !== "hola.pixelup@gmail.com" && siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE") {
+          if (
+            userEmail !== "hola.pixelup@gmail.com" &&
+            siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE"
+          ) {
             router.push("/subscription-pending");
           }
         }
@@ -278,7 +299,8 @@ export default function RootLayout({
     const checkMaintenanceMode = async () => {
       try {
         const id = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-        const contentBlockId = process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
+        const contentBlockId =
+          process.env.NEXT_PUBLIC_MANTENIMIENTO_CONTENTBLOCK;
         const maintenanceResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${id}`
         );
@@ -288,7 +310,11 @@ export default function RootLayout({
         );
         setIsMaintenanceMode(maintenanceConfig.enabled || false);
 
-        if (maintenanceConfig.enabled && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard")) {
+        if (
+          maintenanceConfig.enabled &&
+          !pathname.startsWith("/admin") &&
+          !pathname.startsWith("/dashboard")
+        ) {
           router.push("/mantenimiento");
         }
       } catch (error) {
@@ -304,8 +330,14 @@ export default function RootLayout({
           const popupResponse = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${popupContentBlockId}?siteId=${id}`
           );
-          const popupConfig = JSON.parse(popupResponse.data.contentBlock.contentText || '{"enabled": false}');
-          setShowPopup(popupConfig.enabled && !pathname.startsWith("/admin") && !pathname.startsWith("/dashboard"));
+          const popupConfig = JSON.parse(
+            popupResponse.data.contentBlock.contentText || '{"enabled": false}'
+          );
+          setShowPopup(
+            popupConfig.enabled &&
+              !pathname.startsWith("/admin") &&
+              !pathname.startsWith("/dashboard")
+          );
         }
       } catch (error) {
         console.error("Error al verificar estado del popup:", error);
@@ -317,7 +349,7 @@ export default function RootLayout({
         await Promise.all([
           checkSiteStatus(),
           checkMaintenanceMode(),
-          checkPopupStatus()
+          checkPopupStatus(),
         ]);
       } catch (error) {
         console.error("Error en las verificaciones iniciales:", error);
@@ -341,7 +373,9 @@ export default function RootLayout({
         />
         <link
           rel="canonical"
-          href={`${typeof window !== 'undefined' ? window.location.origin : ''}${pathname}`}
+          href={`${
+            typeof window !== "undefined" ? window.location.origin : ""
+          }${pathname}`}
         />
 
         <meta
@@ -360,11 +394,7 @@ export default function RootLayout({
           name="publisher"
           content="PixelUP"
         />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-          sizes="any"
-        />
+
         <meta
           name="robots"
           content="index, follow"
@@ -390,7 +420,7 @@ export default function RootLayout({
                       <DynamicFavicon />
                       <DynamicColorStyles />
                       <Toaster />
-                      <NextTopLoader showSpinner={false}/>
+                      <NextTopLoader showSpinner={false} />
                       <ColorLoader>
                         <div className="md:min-h-screen ">{children}</div>
                       </ColorLoader>

@@ -16,7 +16,6 @@ const InstagramEmbed = ({ url }: { url: string }) => (
     height="470"
     frameBorder="0"
     scrolling="no"
-    allowTransparency={true}
   ></iframe>
 );
 
