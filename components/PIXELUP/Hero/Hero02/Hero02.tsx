@@ -73,7 +73,7 @@ const Hero02: React.FC= () => {
         />
         <a
           href={currentImage.buttonLink}
-          className="text-blue-500 hover:underline text-right"
+          className="text-primary hover:underline text-right"
         >
           {currentImage.buttonText}
         </a>

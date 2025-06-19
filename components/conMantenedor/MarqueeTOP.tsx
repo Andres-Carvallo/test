@@ -36,7 +36,7 @@ function MarqueeTOP() {
   }, []); // Debería ejecutarse solo en el montaje inicial
   return (
     <section className="w-full">
-      <div className="bg-primary font-medium text-white px-8 py-2 font-sans uppercase flex items-center justify-between">
+      <div className="bg-primary font-medium text-white px-8 py-2 font-sans flex items-center justify-between">
         {/* Marquee - centro */}
         <div className="flex-1 text-sm">
           <Marquee

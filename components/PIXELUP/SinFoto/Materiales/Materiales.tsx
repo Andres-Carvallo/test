@@ -51,7 +51,7 @@ function Materiales() {
   const displayedMaterials = showAll ? materialsList : materialsList.slice(0, 8);
 
   return (
-    <section className="w-full">
+    <section className="w-full bg-white">
 
       {/* Listado de Materiales */}
       <div className="container mx-auto px-4 py-8">
@@ -63,7 +63,7 @@ function Materiales() {
           {displayedMaterials.map((material, index) => (
             <div 
               key={index}
-              className="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-all duration-300"
+                className="bg-gray-50 p-6 shadow-md hover:shadow-xl transition-all duration-300" style={{ borderRadius: "var(--radius)" }}
             >
               <p className="text-center text-gray-700 font-medium">
                 {material}
@@ -77,7 +77,7 @@ function Materiales() {
           <div className="flex justify-center mt-8">
             <button 
               onClick={() => setShowAll(!showAll)}
-              className="bg-primary text-white px-6 py-3 rounded-full shadow-md hover:bg-primary/90 transition-all duration-300 flex items-center gap-2"
+              className="bg-primary text-white px-6 py-3 shadow-md hover:bg-primary/90 transition-all duration-300 flex items-center gap-2" style={{ borderRadius: "var(--radius)" }}
             >
               {showAll ? (
                 <>

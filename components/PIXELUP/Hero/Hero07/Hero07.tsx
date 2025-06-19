@@ -59,17 +59,18 @@ const Hero07: React.FC = () => {
         src="https://www.youtube.com/iframe_api"
         strategy="beforeInteractive"
       />
-      <section className="py-16 bg-white">
+      <section className="py-16">
         <div className="mx-auto px-8 max-w-[90%]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             {/* Columna de Texto */}
             <div className="space-y-6">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-4xl font-bold    mb-4">
                 {contentData.title}
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
-                {contentData.paragraph}
-              </p>
+              <div 
+                className="text-lg mb-6"
+                dangerouslySetInnerHTML={{ __html: contentData.paragraph }}
+              />
               <div className="space-y-4">
                 {contentData.listItems.map((item, index) => (
                   <div key={index} className="flex items-center gap-3">
@@ -87,13 +88,14 @@ const Hero07: React.FC = () => {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-gray-700">{item}</span>
+                    <span className="">{item}</span>
                   </div>
                 ))}
               </div>
               <a 
                 href={contentData.buttonLink}
-                className="mt-8 bg-[#F9AF2A] text-dark px-8 py-3 rounded-md hover:bg-[#F9AF2A]/50 transition-colors inline-flex items-center gap-2"
+                className="mt-8 bg-primary text-white px-8 py-3 rounded-md hover:bg-primary/50 transition-colors inline-flex items-center gap-2"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 {contentData.buttonText}
                 <svg
@@ -114,7 +116,7 @@ const Hero07: React.FC = () => {
             </div>
 
             {/* Columna de Video */}
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-xl">
+            <div className="relative aspect-video rounded-xl overflow-hidden shadow-xl" style={{ borderRadius: "var(--radius)" }}>
               <iframe
                 className="absolute top-0 left-0 w-full h-full"
                 src={`${contentData.videoUrl}?autoplay=1&mute=1&playlist=${contentData.videoUrl.split('/').pop()}&rel=0&modestbranding=1&controls=0&showinfo=0&enablejsapi=1`}

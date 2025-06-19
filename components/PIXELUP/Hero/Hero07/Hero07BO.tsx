@@ -3,6 +3,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Loader from "@/components/common/Loader-t";
+import { toast } from "react-hot-toast";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 // Definir interfaces para el tipado
 interface BoxContent {
@@ -144,9 +147,11 @@ const Hero07BO: React.FC = () => {
         });
 
         await fetchData();
+        toast.success("Sección actualizada exitosamente");
       }
     } catch (error) {
       console.error("Error al actualizar datos:", error);
+      toast.error("Error al actualizar la sección. Por favor, intente nuevamente.");
     } finally {
       setLoading(false);
     }
@@ -161,6 +166,23 @@ const Hero07BO: React.FC = () => {
       [field]: value,
     }));
   };
+
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      ['clean']
+    ],
+  };
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'link'
+  ];
 
   if (loading) {
     return <Loader />;
@@ -191,9 +213,10 @@ const Hero07BO: React.FC = () => {
                     <h2 className="text-4xl font-bold text-gray-900 mb-4">
                       {formData.title}
                     </h2>
-                    <p className="text-lg text-gray-600 mb-6">
-                      {formData.paragraph}
-                    </p>
+                    <div 
+                      className="text-lg text-gray-600 mb-6"
+                      dangerouslySetInnerHTML={{ __html: formData.paragraph }}
+                    />
                     <div className="space-y-4">
                       {formData.listItems.map((item, index) => (
                         <div key={index} className="flex items-center gap-3">
@@ -215,7 +238,7 @@ const Hero07BO: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                    <button className="mt-8 bg-[#F9AF2A] text-dark px-8 py-3 rounded-md hover:bg-[#F9AF2A]/50 transition-colors inline-flex items-center gap-2">
+                    <button className="mt-8 bg-black text-white px-8 py-3 rounded-md hover:bg-black/50 transition-colors inline-flex items-center gap-2">
                       {formData.buttonText}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -271,34 +294,44 @@ const Hero07BO: React.FC = () => {
               <h3 className="font-normal text-primary">
                 Párrafo <span className="text-primary">*</span>
               </h3>
-              <textarea
-                value={formData.paragraph}
-                onChange={(e) => handleChange("paragraph", e.target.value)}
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-                rows={4}
-                required
-              />
+              <div className="mt-2 mb-4">
+                <ReactQuill
+                  value={formData.paragraph}
+                  onChange={(content) => handleChange("paragraph", content)}
+                  modules={modules}
+                  formats={formats}
+                  className="h-48 mb-12"
+                />
+              </div>
             </div>
 
             <div>
               <h3 className="font-normal text-primary mb-2">
                 Elementos de la lista <span className="text-primary">*</span>
               </h3>
-              {formData.listItems.map((item, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  value={item}
-                  onChange={(e) => {
-                    const newListItems = [...formData.listItems];
-                    newListItems[index] = e.target.value;
-                    setFormData(prev => ({ ...prev, listItems: newListItems }));
-                  }}
-                  className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
-                  placeholder={`Elemento ${index + 1}`}
-                  required
-                />
-              ))}
+              <textarea
+                value={formData.listItems.join('\n')}
+                onChange={(e) => {
+                  const items = e.target.value.split('\n');
+                  setFormData(prev => ({ ...prev, listItems: items }));
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const textarea = e.target as HTMLTextAreaElement;
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const value = textarea.value;
+                    const newValue = value.substring(0, start) + '\n' + value.substring(end);
+                    const items = newValue.split('\n');
+                    setFormData(prev => ({ ...prev, listItems: items }));
+                  }
+                }}
+                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
+                placeholder="Ingrese cada elemento en una nueva línea"
+                rows={4}
+                required
+              />
             </div>
 
             <div>

@@ -111,10 +111,10 @@ export default function Ubicacion02() {
   }
 
   return (
-    <section className="py-12 md:pb-24 bg-gradient-to-br from-[#10375D]/5 to-white">
+    <section className="py-12 md:pb-24 bg-gray-100">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
-          <span className="text-[#f64b85] text-sm uppercase tracking-widest inline-block mb-3">
+          <span className="text-primary text-sm uppercase tracking-widest inline-block mb-3">
             {content.additionalData.subtitle}
           </span>
           <h2 className="text-2xl lg:text-3xl font-light text-primary   mb-4">
@@ -128,7 +128,7 @@ export default function Ubicacion02() {
 
         <div className="grid lg:grid-cols-5 gap-8 lg:gap-16 items-start">
           <div className="lg:col-span-3 relative">
-            <div className="relative h-[420px] rounded-lg overflow-hidden shadow-xl">
+            <div className="relative h-[420px] overflow-hidden shadow-xl" style={{ borderRadius: "var(--radius)" }}>
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3329.0467969066423!2d-70.6483321!3d-33.4378305!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzPCsDI2JzE2LjIiUyA3MMKwMzgnNTQuMCJX!5e0!3m2!1ses!2scl!4v1629308000000!5m2!1ses!2scl"
                 width="100%"
@@ -138,15 +138,15 @@ export default function Ubicacion02() {
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               ></iframe>
-              <div className="absolute inset-0 pointer-events-none shadow-inner rounded-lg" />
+              <div className="absolute inset-0 pointer-events-none shadow-inner" style={{ borderRadius: "var(--radius)" }} />
             </div>
           </div>
 
           <div className="lg:col-span-2 space-y-6">
             <div className="grid gap-4 lg:gap-6">
-              <div className="bg-white/80 backdrop-blur-sm p-4 lg:p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="bg-white/80 backdrop-blur-sm p-4 lg:p-6 shadow-sm hover:shadow-md transition-all duration-300" style={{ borderRadius: "var(--radius)" }}>
                 <div className="flex items-start gap-3 lg:gap-4">
-                  <div className="p-2 lg:p-3 bg-[#10375D]/10 rounded-xl">
+                  <div className="p-2 lg:p-3 bg-primary/10 rounded-xl">
                     <svg
                       className="w-6 h-6 text-primary"
                       fill="none"
@@ -168,7 +168,7 @@ export default function Ubicacion02() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#f64b85] mb-1 text-sm lg:text-base">
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">
                       Dirección
                     </h3>
                     <p className="text-gray-600 text-sm lg:text-base">
@@ -181,9 +181,9 @@ export default function Ubicacion02() {
                 </div>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-sm p-4 lg:p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="bg-white/80 backdrop-blur-sm p-4 lg:p-6 shadow-sm hover:shadow-md transition-all duration-300" style={{ borderRadius: "var(--radius)" }}>
                 <div className="flex items-start gap-3 lg:gap-4">
-                  <div className="p-2 lg:p-3 bg-[#10375D]/10 rounded-xl">
+                  <div className="p-2 lg:p-3 bg-primary/10 rounded-xl">
                     <svg
                       className="w-6 h-6 text-primary"
                       fill="none"
@@ -199,7 +199,7 @@ export default function Ubicacion02() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#f64b85] mb-1 text-sm lg:text-base">
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">
                       Horario de Atención
                     </h3>
                     <p className="text-gray-600 text-sm lg:text-base">
@@ -212,9 +212,9 @@ export default function Ubicacion02() {
                 </div>
               </div>
 
-              <div className="bg-white/80 backdrop-blur-sm p-4 lg:p-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="bg-white/80 backdrop-blur-sm p-4 lg:p-6 shadow-sm hover:shadow-md transition-all duration-300" style={{ borderRadius: "var(--radius)" }}>
                 <div className="flex items-start gap-3 lg:gap-4">
-                  <div className="p-2 lg:p-3 bg-[#10375D]/10 rounded-xl">
+                  <div className="p-2 lg:p-3 bg-primary/10 rounded-xl">
                     <svg
                       className="w-6 h-6 text-primary"
                       fill="none"
@@ -230,13 +230,13 @@ export default function Ubicacion02() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#f64b85] mb-1 text-sm lg:text-base">
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">
                       Contacto
                     </h3>
-                    <p className="text-[#484554] text-sm lg:text-base">
+                    <p className="text-gray-600 text-sm lg:text-base">
                       {content.additionalData.contact.phone}
                     </p>
-                    <p className="text-[#484554] text-sm lg:text-base">
+                    <p className="text-gray-600 text-sm lg:text-base">
                       {content.additionalData.contact.email}
                     </p>
                   </div>

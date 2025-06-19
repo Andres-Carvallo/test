@@ -62,11 +62,11 @@ const SinFoto06: React.FC = () => {
   }
 
   return (
-    <section className="py-12 sm:py-20 bg-gray-100 overflow-hidden">
+    <section className="py-12 sm:py-20 bg-white overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12 items-start">
           <div className="relative col-span-1 lg:col-span-2">
-            <div className="relative bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+            <div className="relative bg-white p-6 sm:p-8 shadow-lg" style={{ borderRadius: "var(--radius)" }}>
               <div className="space-y-4">
                 <div className="border-b pb-4 sm:pb-6">
                   <img
@@ -76,10 +76,10 @@ const SinFoto06: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <span className="text-[#EB4F5D] font-semibold text-sm sm:text-base block">
+                  <span className="text-primary font-semibold text-sm sm:text-base block">
                     {contentData.epigrafe}
                   </span>
-                  <h2 className="text-lg sm:text-xl font-bold text-[#2F3C69]">
+                  <h2 className="text-lg sm:text-xl font-bold text-primary">
                     {contentData.titulo}
                   </h2>
                 </div>
@@ -88,8 +88,9 @@ const SinFoto06: React.FC = () => {
                 </span>
                 <span className="flex">
                 <Link
-                  href={contentData.botonLink}
-                  className="inline-flex items-center space-x-2 bg-[#EB4F5D] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-[#EB4F5D]/90 transition-colors text-sm sm:text-base"
+                  href={contentData.botonLink}  
+                  className="inline-flex items-center space-x-2 bg-primary text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors text-sm sm:text-base"
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   <span>{contentData.botonTexto}</span>
                   <svg
@@ -112,8 +113,8 @@ const SinFoto06: React.FC = () => {
           </div>
           <div className="relative col-span-1">
             <div className="grid grid-cols-1 gap-4">
-              <div className="bg-white shadow-lg p-4 sm:p-6 rounded-xl">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2F3C69] rounded-lg flex items-center justify-center mb-3 sm:mb-4">
+              <div className="bg-white shadow-lg p-4 sm:p-6" style={{ borderRadius: "var(--radius)" }}>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center mb-3 sm:mb-4">
                   <svg
                     className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                     fill="none"
@@ -135,8 +136,8 @@ const SinFoto06: React.FC = () => {
                   {contentData.tiempoTexto}
                 </p>
               </div>
-              <div className="bg-white shadow-lg p-4 sm:p-6 rounded-xl">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#2F3C69] rounded-lg flex items-center justify-center mb-3 sm:mb-4">
+              <div className="bg-white shadow-lg p-4 sm:p-6 " style={{ borderRadius: "var(--radius)" }}>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary rounded-lg flex items-center justify-center mb-3 sm:mb-4">
                   <svg
                     className="w-5 h-5 sm:w-6 sm:h-6 text-white"
                     fill="none"

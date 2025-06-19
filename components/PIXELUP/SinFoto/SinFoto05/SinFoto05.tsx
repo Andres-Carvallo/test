@@ -62,10 +62,10 @@ const SinFoto05: React.FC = () => {
   }
 
   return (
-    <section className="py-12 ">
+    <section className="py-12 bg-white">
       <div className="mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-[#EB4F5D] mt-2 mb-4">
+          <h2 className="text-2xl font-bold text-primary mt-2 mb-4">
             {contentData.epigrafe}
           </h2>
           <p className="text-gray-600 mb-8">
@@ -81,8 +81,8 @@ const SinFoto05: React.FC = () => {
 
             {/* Asesoría Personalizada */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="bg-[#2F3C69]/10 rounded-full p-3 mb-4">
-                <FaHandshake className="text-2xl text-[#2F3C69]" />
+              <div className="bg-primary/10 rounded-full p-3 mb-4">
+                <FaHandshake className="text-2xl text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 {contentData.box1.title}
@@ -94,8 +94,8 @@ const SinFoto05: React.FC = () => {
 
             {/* Garantía y Servicio */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="bg-[#2F3C69]/10 rounded-full p-3 mb-4">
-                <FaShieldAlt className="text-2xl text-[#2F3C69]" />
+              <div className="bg-primary/10 rounded-full p-3 mb-4">
+                <FaShieldAlt className="text-2xl text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 {contentData.box2.title}
@@ -107,8 +107,8 @@ const SinFoto05: React.FC = () => {
 
             {/* Despacho Gratuito */}
             <div className="flex flex-col items-center text-center p-4">
-              <div className="bg-[#2F3C69]/10 rounded-full p-3 mb-4">
-                <FaStore className="text-2xl text-[#2F3C69]" />
+              <div className="bg-primary/10 rounded-full p-3 mb-4">
+                <FaStore className="text-2xl text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 {contentData.box3.title}
@@ -122,7 +122,8 @@ const SinFoto05: React.FC = () => {
           <div className="text-center mt-8">
             <Link
               href={contentData.linkBoton || '#'}
-              className="inline-block bg-[#EB4F5D] text-white px-6 py-2 rounded-full text-sm hover:bg-[#EB4F5D]/90 transition-colors duration-300"
+              className="inline-block bg-primary text-white px-6 py-2 text-sm hover:bg-primary/90 transition-colors duration-300"
+              style={{ borderRadius: "var(--radius)" }}
             >
               {contentData.textoBoton || 'Conoce más sobre nosotros'}
             </Link>

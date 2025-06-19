@@ -73,7 +73,7 @@ const Hero06: React.FC = () => {
                   {bannerData[0].title || "Nuestra Historia"}
                 </h2>
                 <div className="grid md:grid-cols-2 gap-4 md:gap-8 items-center">
-                  <div className="relative h-[250px] md:h-[350px] rounded-xl overflow-hidden shadow-lg transform hover:scale-[1.02] transition-transform duration-300">
+                  <div className="relative h-[250px] md:h-[350px] overflow-hidden shadow-lg transform hover:scale-[1.02] transition-transform duration-300" style={{ borderRadius: "var(--radius)" }}  >
                     <img
                       src={bannerData[0].mainImage.url}
                       alt="Historia de la empresa"
@@ -96,10 +96,10 @@ const Hero06: React.FC = () => {
 
               {/* Misión y Visión */}
               <div className="grid md:grid-cols-2 gap-6 md:gap-12">
-                <div className="bg-white p-6 md:p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-[#F5A623]/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                <div className="bg-white p-6 md:p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1" style={{ borderRadius: "var(--radius)" }}>
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
                     <svg
-                      className="w-6 h-6 md:w-8 md:h-8 text-[#F5A623]"
+                      className="w-6 h-6 md:w-8 md:h-8 text-primary"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -125,10 +125,10 @@ const Hero06: React.FC = () => {
                     })()}
                   </p>
                 </div>
-                <div className="bg-white p-6 md:p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-[#F5A623]/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                <div className="bg-white p-6 md:p-10 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1" style={{ borderRadius: "var(--radius)" }}>
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
                     <svg
-                      className="w-6 h-6 md:w-8 md:h-8 text-[#F5A623]"
+                      className="w-6 h-6 md:w-8 md:h-8 text-primary"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

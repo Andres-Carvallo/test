@@ -127,7 +127,7 @@ function Hero09() {
             {/* Columna de Imágenes */}
             <div className="grid grid-cols-2 gap-4 relative">
               {bannerImages.map((image, index) => (
-                <div key={image.id} className="relative z-10">
+                <div key={image.id} className="relative z-10" style={{ borderRadius: "var(--radius)" }}>
                   <img
                     src={image.mainImage.url}
                     alt={`Proyecto personalizado ${index + 1}`}
@@ -138,7 +138,7 @@ function Hero09() {
               {/* Imágenes de respaldo si no hay suficientes */}
               {bannerImages.length < 4 &&
                 Array.from({ length: 4 - bannerImages.length }).map((_, index) => (
-                  <div key={`default-${index}`} className="relative z-10">
+                  <div key={`default-${index}`} className="relative z-10" style={{ borderRadius: "var(--radius)" }}>
                     <img
                       src={`/cubico/${index + 1}.webp`}
                       alt={`Proyecto personalizado ${bannerImages.length + index + 1}`}
@@ -146,7 +146,7 @@ function Hero09() {
                     />
                   </div>
                 ))}
-              <div className="absolute inset-0 bg-[#F9AF2A]/10 -z-10 transform rotate-6 rounded-lg"></div>
+              <div className="absolute inset-0 bg-primary/10 -z-10 transform rotate-6 rounded-lg"></div>
             </div>
 
             {/* Columna de Texto */}
@@ -185,7 +185,8 @@ function Hero09() {
               <div className="pt-6">
                 <button
                   onClick={() => window.open(content.buttonLink, "_blank")}
-                  className="bg-[#F9AF2A] text-dark px-8 py-4 rounded-lg hover:bg-[#F9AF2A]/80 transition-colors inline-flex items-center gap-3 font-semibold"
+                  className="bg-primary text-white px-8 py-4 rounded-lg hover:bg-primary/90 transition-colors inline-flex items-center gap-3 font-semibold"
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   {parsedContent.buttonText || "Contacta con nosotros"}
                   <svg

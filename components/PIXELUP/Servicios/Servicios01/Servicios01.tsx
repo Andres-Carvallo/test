@@ -210,7 +210,7 @@ const Servicios01 = () => {
   }
 
   return (
-    <section id="servicios" className="py-24 bg-[#81C4BA]/10">
+    <section id="servicios" className="py-24 bg-gray-100">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
           <span className="text-primary uppercase tracking-wider font-bold text-sm mb-4 block">
@@ -228,7 +228,7 @@ const Servicios01 = () => {
           {servicios.map((servicio, index) => (
             <div
               key={servicio.id}
-              className="bg-white rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="bg-white overflow-hidden group hover:shadow-xl transition-all duration-300 hover:scale-105" style={{ borderRadius: "var(--radius)" }}
             >
               <div className="relative h-64">
                 <img
@@ -266,7 +266,7 @@ const Servicios01 = () => {
                 <div className="mt-6">
                   <Link
                     href={process.env.NEXT_PUBLIC_WHATSAPP_LINK || ""}
-                    className="mt-8 w-full bg-primary text-white px-4 py-3 rounded-xl hover:bg-primary/80 transition duration-300 flex items-center justify-center font-medium"
+                    className="mt-8 w-full bg-primary text-white px-4 py-3 hover:bg-primary/80 transition duration-300 flex items-center justify-center font-medium" style={{ borderRadius: "var(--radius)" }}
                   >
                     <FaWhatsapp className="mr-2" />
                     Consultar

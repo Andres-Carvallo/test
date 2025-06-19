@@ -160,7 +160,7 @@ function Hero04() {
                 {content.title}
               </h3>
               <div
-                className="text-[#718878] leading-relaxed mb-6"
+                className="text-black leading-relaxed mb-6"
                 dangerouslySetInnerHTML={{ __html: content.landingText }}
               />
             </div>
@@ -170,7 +170,7 @@ function Hero04() {
                 Mi Misión
               </h4>
               <div
-                className="text-[#718878] leading-relaxed"
+                className="text-black leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: content.buttonLink }}
               />
             </div>
@@ -198,7 +198,8 @@ function Hero04() {
 
             <button
               onClick={() => handleWhatsAppClick("general")}
-              className="w-full bg-secondary px-8 py-4 rounded-full hover:bg-[#8BA888] transition duration-300 flex items-center justify-center mt-8"
+              className="w-full bg-primary px-8 py-4 text-white hover:bg-primary/90 transition duration-300 flex items-center justify-center mt-8"
+              style={{ borderRadius: "var(--radius)" }}
             >
               <span className="mr-2">Comienza tu viaje conmigo</span>
               <span>→</span>

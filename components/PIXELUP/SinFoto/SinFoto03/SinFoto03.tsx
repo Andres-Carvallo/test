@@ -45,7 +45,7 @@ const SinFoto03: React.FC<{}> = ({}) => {
   }, []);
 
   return (
-    <section className="bg-gray-100 py-12">
+    <section className="bg-white py-12">
       <div className=" mt-20 mb-10 px-4 sm:px-10 md:px-20 lg:px-52">
         <div className="w-full mx-auto">
           <div className="space-y-2 text-center">
@@ -64,7 +64,7 @@ const SinFoto03: React.FC<{}> = ({}) => {
                   key={index}
                   className="mb-4 w-full h-full"
                 >
-                  <div className="flex flex-col p-4 bg-secondary rounded-xl duration-100 lg:hover:scale-105 h-full">
+                  <div className="flex flex-col p-4 bg-primary/10 duration-100 lg:hover:scale-105 h-full" style={{ borderRadius: "var(--radius)" }}>
                     <h3 className="text-base font-sans font-semibold py-4  text-left">
                       {banner?.title}
                     </h3>
