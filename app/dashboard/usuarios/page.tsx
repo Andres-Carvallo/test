@@ -4,6 +4,8 @@ import MenuOpcion from "@/components/Core/MenuOpcion/MenuOpcion";
 import { Metadata } from "next";
 import Mantenimiento from "@/components/Core/Mantenimiento/Mantenimiento";
 import LogoEdit from "@/components/Core/LogoEdit/LogoEdit";
+import Tipografia from "@/components/Core/Tipografia/Tipografia";
+import Color from "@/components/Core/Color/Color";
 export const metadata: Metadata = {
   title: "CRUD de Usuarios | PixelUP",
   description: "PixelUP",
@@ -19,12 +21,17 @@ const UsuariosPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
           <MenuOpcion/>
           <Mantenimiento/>
-          
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
+        <Tipografia/>
+        <Color/>
+        </div>
+
       </div>
       <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10">
       <LogoEdit/>
       </div> 
+
 
       <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10 min-h-screen">
         <TableUsers />

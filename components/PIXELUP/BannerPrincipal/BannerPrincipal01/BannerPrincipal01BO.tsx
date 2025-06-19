@@ -782,8 +782,8 @@ const BannerPrincipal01BO: React.FC = () => {
     <div
       className={`relative font-sans before:absolute before:w-full before:h-full before:inset-0 before:bg-black before:opacity-30 before:z-10 ${
         previewMode === "mobile"
-          ? "aspect-[9/16] w-full"
-          : "aspect-[12/9] w-full"
+          ? `aspect-[${mobileAspect}] w-full`
+          : `aspect-[${desktopAspect}] w-full`
       }`}
     >
       <div className="absolute inset-0 w-full h-full bg-gray-100 animate-pulse" />

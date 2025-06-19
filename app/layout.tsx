@@ -18,6 +18,8 @@ import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import Head from "next/head";
 import { NavbarProvider } from "./Context/NavbarContext";
 import { AuthProvider } from "./Context/AuthContext";
+import { TypographyProvider } from "@/context/TypographyContext";
+import { ColorProvider } from "@/context/ColorContext";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import GoogleAnalytics from "@/components/Core/Google/Analytics";
 import PopVisual from "@/components/Core/Popup/Popupvisual";
@@ -26,6 +28,7 @@ import NextTopLoader from "nextjs-toploader";
 import { LogoProvider, useLogo } from "@/context/LogoContext";
 import { getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
+import DynamicColorStyles from "@/components/Core/Color/DynamicColorStyles";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -239,13 +242,18 @@ export default function RootLayout({
           <RevalidationProvider>
             <NavbarProvider>
               <LogoProvider>
-                <APIContextProvider SiteId={SiteId}>
-                  <DynamicFavicon />
-                  <Toaster />
-                  <NextTopLoader showSpinner={false}/>
-                  <div className="md:min-h-screen ">{children}</div>
-                  {showPopup && <PopVisual />}
-                </APIContextProvider>
+                <TypographyProvider>
+                  <ColorProvider>
+                    <APIContextProvider SiteId={SiteId}>
+                      <DynamicFavicon />
+                      <DynamicColorStyles />
+                      <Toaster />
+                      <NextTopLoader showSpinner={false}/>
+                      <div className="md:min-h-screen ">{children}</div>
+                      {showPopup && <PopVisual />}
+                    </APIContextProvider>
+                  </ColorProvider>
+                </TypographyProvider>
               </LogoProvider>
             </NavbarProvider>
           </RevalidationProvider>
