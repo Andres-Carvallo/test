@@ -48,40 +48,44 @@ const BannerPrincipal01: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isTablet, setIsTablet] = useState<boolean>(false);
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">(
     "left"
   );
 
   // Obtener los aspectos de las imágenes desde la configuración global
-  const desktopAspect = globalConfig.bannerAspects.desktop;
-  const mobileAspect = globalConfig.bannerAspects.mobile;
+  const desktopAspect = globalConfig.bannerPrincipalAspects.desktop;
+  const mobileAspect = globalConfig.bannerPrincipalAspects.mobile;
+  const tabletAspect = globalConfig.bannerPrincipalAspects.tablet;
 
   // Agregar constantes para valores por defecto
   const DEFAULT_TITLE = "Banner";
   const DEFAULT_BUTTON_LINK = "#";
 
-  // Detectar si es mobile con debounce para mejor rendimiento
+  // Detectar el tipo de dispositivo con debounce para mejor rendimiento
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+    const checkDeviceType = () => {
+      const width = window.innerWidth;
+      setIsMobile(width <= 850);
+      setIsTablet(width > 850 && width <= 1560);
     };
 
     // Función con debounce para evitar múltiples actualizaciones
     let timeoutId: NodeJS.Timeout;
-    const debouncedCheckMobile = () => {
+    const debouncedCheckDevice = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(checkMobile, 100);
+      timeoutId = setTimeout(checkDeviceType, 100);
     };
 
     // Verificar inmediatamente al cargar
-    checkMobile();
+    checkDeviceType();
 
     // Agregar listener con debounce
-    window.addEventListener("resize", debouncedCheckMobile);
+    window.addEventListener("resize", debouncedCheckDevice);
 
     // Cleanup
     return () => {
-      window.removeEventListener("resize", debouncedCheckMobile);
+      window.removeEventListener("resize", debouncedCheckDevice);
       clearTimeout(timeoutId);
     };
   }, []);
@@ -284,6 +288,13 @@ const BannerPrincipal01: React.FC = () => {
     );
   };
 
+  // Función para obtener el aspect ratio según el dispositivo
+  const getCurrentAspectRatio = () => {
+    if (isMobile) return mobileAspect;
+    if (isTablet) return tabletAspect;
+    return desktopAspect;
+  };
+
   if (loading) {
     return (
       <div
@@ -319,7 +330,7 @@ const BannerPrincipal01: React.FC = () => {
     <section
       className={`relative overflow-hidden w-full`}
       style={{
-        aspectRatio: isMobile ? mobileAspect : desktopAspect,
+        aspectRatio: getCurrentAspectRatio(),
       }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -328,11 +339,13 @@ const BannerPrincipal01: React.FC = () => {
       <div
         className={`absolute inset-0 w-full`}
         style={{
-          aspectRatio: isMobile ? mobileAspect : desktopAspect,
+          aspectRatio: getCurrentAspectRatio(),
         }}
       >
         {bannerData.images.map((image, index) => {
           const config = parseDisplayConfig(image.landingText);
+
+          // Lógica simplificada: mobile usa mobileImage, tablet y desktop usan mainImage
           const imageToShow =
             isMobile && image.mobileImage?.url
               ? image.mobileImage
@@ -378,7 +391,7 @@ const BannerPrincipal01: React.FC = () => {
 
               {shouldShowOverlay(image) && index === currentIndex && (
                 <div
-                  className="absolute inset-0 bg-black/30"
+                  className="absolute inset-0 bg-black/50"
                   style={{
                     pointerEvents: "none",
                     transition: "opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)",
@@ -420,13 +433,13 @@ const BannerPrincipal01: React.FC = () => {
             })()} max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-              <span className="text-white text-xs sm:text-sm uppercase tracking-widest mb-2 sm:mb-4 drop-shadow-md">
+              <span className="text-white text-[10px] sm:text-sm uppercase tracking-widest  sm:mb-4 drop-shadow-md">
                 {currentImage.buttonLink}
               </span>
             )}
 
             {currentImage.title !== DEFAULT_TITLE && (
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl text-white font-light mb-4 sm:mb-6 leading-tight drop-shadow-md">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl text-white font-light mb-2 sm:mb-6 leading-tight drop-shadow-md">
                 {currentImage.title}
               </h2>
             )}
@@ -434,7 +447,7 @@ const BannerPrincipal01: React.FC = () => {
             {/* Texto descriptivo */}
             {parseDisplayConfig(currentImage.landingText).showText &&
               parseDisplayConfig(currentImage.landingText).text && (
-                <p className="text-white text-base sm:text-lg md:text-xl mb-6 sm:mb-8 leading-relaxed drop-shadow-md">
+                <p className="text-white text-[0.9rem] sm:text-lg md:text-xl mb-6 sm:mb-8 leading-tight drop-shadow-md">
                   {parseDisplayConfig(currentImage.landingText).text}
                 </p>
               )}

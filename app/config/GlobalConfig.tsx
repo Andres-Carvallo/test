@@ -19,6 +19,11 @@ export const globalConfig: GlobalConfig = {
     isActive: true,
     link: process.env.NEXT_PUBLIC_WHATSAPP_LINK || "",
   },
+  bannerPrincipalAspects: {
+    desktop: "16/5",
+    tablet: "16/6",
+    mobile: "3/2",
+  },
   bannerAspects: {
     desktop: "16/4",
     mobile: "3/2",
@@ -45,7 +50,10 @@ type ProductCardType =
   | "ProductCard03"
   | "ProductCard04"
   | "ProductCard05";
-type ProductDetailType = "ProductDetail01" | "ProductDetail02" | "ProductDetail03";
+type ProductDetailType =
+  | "ProductDetail01"
+  | "ProductDetail02"
+  | "ProductDetail03";
 
 // **************************************************
 // ************** Componentes de Carga **************
@@ -133,15 +141,24 @@ const productCardComponents = {
 
 const productDetailComponents = {
   ProductDetail01: dynamic(
-    () => import("@/components/PIXELUP/ProductDetail/ProductDetail01/ProductDetail01"),
+    () =>
+      import(
+        "@/components/PIXELUP/ProductDetail/ProductDetail01/ProductDetail01"
+      ),
     { loading: LoadingComponent, ssr: true }
   ),
   ProductDetail02: dynamic(
-    () => import("@/components/PIXELUP/ProductDetail/ProductDetail02/ProductDetail02"),
+    () =>
+      import(
+        "@/components/PIXELUP/ProductDetail/ProductDetail02/ProductDetail02"
+      ),
     { loading: LoadingComponent, ssr: true }
   ),
   ProductDetail03: dynamic(
-    () => import("@/components/PIXELUP/ProductDetail/ProductDetail03/ProductDetail03"),
+    () =>
+      import(
+        "@/components/PIXELUP/ProductDetail/ProductDetail03/ProductDetail03"
+      ),
     { loading: LoadingComponent, ssr: true }
   ),
 } as const;
@@ -158,6 +175,11 @@ export interface GlobalConfig {
   whatsappButton: {
     isActive: boolean;
     link: string;
+  };
+  bannerPrincipalAspects: {
+    desktop: string;
+    tablet: string;
+    mobile: string;
   };
   bannerAspects: {
     desktop: string;
@@ -181,6 +203,7 @@ export function getActiveComponents() {
   const Footer = footerComponents[globalConfig.activeFooter];
   const Navbar = navbarComponents[globalConfig.activeNavbar];
   const ProductCard = productCardComponents[globalConfig.activeProductCard];
-  const ProductDetail = productDetailComponents[globalConfig.activeProductDetail];
+  const ProductDetail =
+    productDetailComponents[globalConfig.activeProductDetail];
   return { Footer, Navbar, ProductCard, ProductDetail };
 }
