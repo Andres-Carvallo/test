@@ -24,12 +24,13 @@ const UsuariosPage = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
         <Tipografia/>
-        <Color/>
+        <LogoEdit/>
         </div>
-
+        <Color/>
+        
       </div>
       <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10">
-      <LogoEdit/>
+   
       </div> 
 
 

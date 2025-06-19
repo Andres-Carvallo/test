@@ -251,223 +251,228 @@ const Color: React.FC = () => {
               </div>
             </div>
           )}
-          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Configuración de Color */}
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between min-h-[2rem] mb-4">
-                <label className="text-lg font-medium text-gray-700">
-                  Color principal del sitio
-                </label>
-                {hasColorChanges && (
-                  <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
-                    Cambios pendientes
-                  </span>
-                )}
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Seleccionar color
+            <div className="flex flex-col h-full justify-between">
+              <div>
+                <div className="flex items-center justify-between min-h-[2rem] mb-4">
+                  <label className="text-lg font-medium text-gray-700">
+                    Color principal del sitio
                   </label>
-                  <select
-                    value={useCustomColor ? "custom" : selectedColor}
-                    onChange={(e) => handleColorChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    {colorOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                    <option value="custom">Color personalizado (Hex)</option>
-                  </select>
+                  {hasColorChanges && (
+                    <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                      Cambios pendientes
+                    </span>
+                  )}
                 </div>
-
-                {useCustomColor && (
+                
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Color hexadecimal
+                      Seleccionar color
                     </label>
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="text"
-                        value={customHexColor}
-                        onChange={(e) => handleHexColorChange(e.target.value)}
-                        placeholder="#FF0000"
-                        className={`flex-1 px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
-                          customHexColor !== "#" && !isValidHex(customHexColor) 
-                            ? 'border-red-500' 
-                            : 'border-gray-300'
-                        }`}
-                      />
-                      <div 
-                        className="w-10 h-10 rounded border border-gray-300"
-                        style={{ 
-                          backgroundColor: isValidHex(customHexColor) ? customHexColor : 'transparent' 
-                        }}
-                      ></div>
-                    </div>
-                    {customHexColor !== "#" && !isValidHex(customHexColor) && (
-                      <p className="text-sm text-red-600 mt-1">
-                        Formato inválido. Usa formato hexadecimal (ej: #FF0000)
-                      </p>
-                    )}
+                    <select
+                      value={useCustomColor ? "custom" : selectedColor}
+                      onChange={(e) => handleColorChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      {colorOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                      <option value="custom">Color personalizado (Hex)</option>
+                    </select>
                   </div>
-                )}
-                
-                <div className="mt-4 p-4 bg-white border border-gray-200 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Vista previa del color:
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-8 h-8 rounded-full border border-gray-300"
-                        style={{ 
-                          backgroundColor: `hsl(${getCurrentColorOption().primaryColor})` 
-                        }}
-                      ></div>
-                      <span className="text-sm text-gray-600">
-                        Color primario: {getCurrentColorOption().label}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-8 h-8 rounded-full border border-gray-300"
-                        style={{ 
-                          backgroundColor: `hsl(${getCurrentColorOption().secondaryColor})` 
-                        }}
-                      ></div>
-                      <span className="text-sm text-gray-600">
-                        Color secundario
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-8 h-8 rounded-full border border-gray-300"
-                        style={{ 
-                          backgroundColor: `hsl(${getCurrentColorOption().accentColor})` 
-                        }}
-                      ></div>
-                      <span className="text-sm text-gray-600">
-                        Color de acento
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="flex pt-4">
-                  <button
-                    onClick={handleUpdateColor}
-                    disabled={!hasColorChanges || isUpdating || (useCustomColor && !isValidHex(customHexColor))}
-                    className={`w-full px-6 py-2 rounded-md font-medium transition-colors ${
-                      hasColorChanges && !isUpdating && (!useCustomColor || isValidHex(customHexColor))
-                        ? 'bg-primary text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary/20'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    {isUpdating ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Actualizando...
+                  {useCustomColor && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Color hexadecimal
+                      </label>
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="text"
+                          value={customHexColor}
+                          onChange={(e) => handleHexColorChange(e.target.value)}
+                          placeholder="#FF0000"
+                          className={`flex-1 px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${
+                            customHexColor !== "#" && !isValidHex(customHexColor) 
+                              ? 'border-red-500' 
+                              : 'border-gray-300'
+                          }`}
+                        />
+                        <div 
+                          className="w-10 h-10 rounded border border-gray-300"
+                          style={{ 
+                            backgroundColor: isValidHex(customHexColor) ? customHexColor : 'transparent' 
+                          }}
+                        ></div>
                       </div>
-                    ) : (
-                      'Actualizar color'
-                    )}
-                  </button>
+                      {customHexColor !== "#" && !isValidHex(customHexColor) && (
+                        <p className="text-sm text-red-600 mt-1">
+                          Formato inválido. Usa formato hexadecimal (ej: #FF0000)
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="mt-4 p-4 bg-white border border-gray-200 rounded-md">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                      Vista previa del color:
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-8 h-8 rounded-full border border-gray-300"
+                          style={{ 
+                            backgroundColor: `hsl(${getCurrentColorOption().primaryColor})` 
+                          }}
+                        ></div>
+                        <span className="text-sm text-gray-600">
+                          Color primario: {getCurrentColorOption().label}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-8 h-8 rounded-full border border-gray-300"
+                          style={{ 
+                            backgroundColor: `hsl(${getCurrentColorOption().secondaryColor})` 
+                          }}
+                        ></div>
+                        <span className="text-sm text-gray-600">
+                          Color secundario
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-8 h-8 rounded-full border border-gray-300"
+                          style={{ 
+                            backgroundColor: `hsl(${getCurrentColorOption().accentColor})` 
+                          }}
+                        ></div>
+                        <span className="text-sm text-gray-600">
+                          Color de acento
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div className="flex pt-4">
+                <button
+                  onClick={handleUpdateColor}
+                  disabled={!hasColorChanges || isUpdating || (useCustomColor && !isValidHex(customHexColor))}
+                  className={`w-full px-6 py-2 rounded-md font-medium transition-colors ${
+                    hasColorChanges && !isUpdating && (!useCustomColor || isValidHex(customHexColor))
+                      ? 'bg-primary text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary/20'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {isUpdating ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Actualizando...
+                    </div>
+                  ) : (
+                    'Actualizar color'
+                  )}
+                </button>
               </div>
             </div>
           </div>
 
           {/* Configuración de Border Radius */}
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-            <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between min-h-[2rem] mb-4">
-                <label className="text-lg font-medium text-gray-700">
-                  Border Radius del sitio
-                </label>
-                {hasRadiusChanges && (
-                  <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
-                    Cambios pendientes
-                  </span>
-                )}
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Seleccionar border radius
+            <div className="flex flex-col h-full justify-between">
+              <div>
+                <div className="flex items-center justify-between min-h-[2rem] mb-4">
+                  <label className="text-lg font-medium text-gray-700">
+                    Border Radius del sitio
                   </label>
-                  <select
-                    value={selectedRadius}
-                    onChange={(e) => handleRadiusChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    {radiusOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  {hasRadiusChanges && (
+                    <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                      Cambios pendientes
+                    </span>
+                  )}
                 </div>
                 
-                <div className="mt-4 p-4 bg-white border border-gray-200 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
-                    Vista previa del border radius:
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-16 h-12 bg-primary"
-                        style={{ 
-                          borderRadius: getCurrentRadiusOption().radius 
-                        }}
-                      ></div>
-                      <span className="text-sm text-gray-600">
-                        {getCurrentRadiusOption().label} ({getCurrentRadiusOption().radius})
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <button 
-                        className="px-4 py-2 bg-primary text-white"
-                        style={{ 
-                          borderRadius: getCurrentRadiusOption().radius 
-                        }}
-                      >
-                        Botón de ejemplo
-                      </button>
-                      <span className="text-sm text-gray-600">
-                        Botón con {getCurrentRadiusOption().label.toLowerCase()}
-                      </span>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Seleccionar border radius
+                    </label>
+                    <select
+                      value={selectedRadius}
+                      onChange={(e) => handleRadiusChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      {radiusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="mt-4 p-4 bg-white border border-gray-200 rounded-md">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                      Vista previa del border radius:
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-16 h-12 bg-primary"
+                          style={{ 
+                            borderRadius: getCurrentRadiusOption().radius 
+                          }}
+                        ></div>
+                        <span className="text-sm text-gray-600">
+                          {getCurrentRadiusOption().label} ({getCurrentRadiusOption().radius})
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <button 
+                          className="px-4 py-2 bg-primary text-white"
+                          style={{ 
+                            borderRadius: getCurrentRadiusOption().radius 
+                          }}
+                        >
+                          Botón de ejemplo
+                        </button>
+                        <span className="text-sm text-gray-600">
+                          Botón con {getCurrentRadiusOption().label.toLowerCase()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex pt-4">
-                  <button
-                    onClick={handleUpdateRadius}
-                    disabled={!hasRadiusChanges || isUpdatingRadius}
-                    className={`w-full px-6 py-2 rounded-md font-medium transition-colors ${
-                      hasRadiusChanges && !isUpdatingRadius
-                        ? 'bg-primary text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary/20'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    {isUpdatingRadius ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Actualizando...
-                      </div>
-                    ) : (
-                      'Actualizar border radius'
-                    )}
-                  </button>
-                </div>
+              <div className="flex pt-4">
+                <button
+                  onClick={handleUpdateRadius}
+                  disabled={!hasRadiusChanges || isUpdatingRadius}
+                  className={`w-full px-6 py-2 rounded-md font-medium transition-colors ${
+                    hasRadiusChanges && !isUpdatingRadius
+                      ? 'bg-primary text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary/20'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  {isUpdatingRadius ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Actualizando...
+                    </div>
+                  ) : (
+                    'Actualizar border radius'
+                  )}
+                </button>
               </div>
             </div>
+          </div>
           </div>
         </div>
       ) : (

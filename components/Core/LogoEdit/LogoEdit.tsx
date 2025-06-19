@@ -31,8 +31,7 @@ const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
   const [logoData, setLogoData] = useState<any | null>(null);
   const [mainImageLogo, setMainImageLogo] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [formDataHero, setFormDataHero] = useState<any>({
     title: "Logo Principal",
     landingText: "Logo Principal",
@@ -42,20 +41,6 @@ const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
     orderNumber: 1,
   });
   const { refreshLogo } = useLogo();
-
-  // Cerrar el dropdown cuando se hace clic fuera de él
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const fetchLogoData = async () => {
     try {
@@ -102,7 +87,7 @@ const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setLoading(true);
+      setIsUpdating(true);
       const token = getCookie("AdminTokenAuth");
       const bannerId = `${process.env.NEXT_PUBLIC_LOGOEDIT_ID}`;
       const bannerImageId = `${process.env.NEXT_PUBLIC_LOGOEDIT_IMGID}`;
@@ -161,7 +146,7 @@ const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
     } catch (error) {
       console.error("Error al actualizar el logo:", error);
     } finally {
-      setLoading(false);
+      setIsUpdating(false);
     }
   };
 
@@ -230,191 +215,160 @@ const LogoEdit: React.FC<LogoEditProps> = ({ onClose }) => {
     setFormDataHero({ ...formDataHero, [name]: value });
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div role="status" className="flex flex-col items-center gap-4">
-          <svg
-            aria-hidden="true"
-            className="w-8 h-8 text-gray-200 animate-spin fill-primary"
-            viewBox="0 0 100 101"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-              fill="currentColor"
-            />
-            <path
-              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-              fill="currentFill"
-            />
-          </svg>
-          <span className="text-sm text-gray-500">Cargando...</span>
-        </div>
-      </div>
-    );
-  }
+  const hasChanges = mainImageLogo !== null;
 
   return (
-    <section
-      id="banner"
-      className="w-full"
-    >
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Cambiar Logo Principal
-      </h2>        </div>
-
-        {logoData && (
-          <div className="flex flex-col items-center py-4">
-            <div className="mb-4">
-              <img
-                src={logoData[0].mainImage.url}
-                alt="Logo Principal"
-                className="w-[150px] h-[150px] object-contain border border-gray-200 rounded-md"
-              />
-            </div>
-            <p className="text-sm text-gray-500 mb-2">
-              Este es el logo actual que se muestra en el sitio web
-            </p>
-            <div
-              className="mb-4 flex items-center rounded-lg bg-yellow-50 p-4 text-sm text-yellow-800"
-              role="alert"
-            >
-              <svg
-                className="me-3 inline h-4 w-4 shrink-0"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-              </svg>
-              <span className="sr-only">Info</span>
-              <div>
-                <span className="font-medium"></span>{" "}
-                Recuerda subir un archivo PNG para que el logo se vea correctamente.
-              </div>
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="px-4 mx-auto">
-          <input
-            type="number"
-            name="orderNumber"
-            value={formDataHero.orderNumber}
-            onChange={handleChange}
-            className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-          />
-
-          <div>
-            <input
-              type="file"
-              accept="image/*"
-              id="mainImage"
-              className="hidden"
-              onChange={(e) => handleImageChange(e, setMainImageLogo, "mainImage")}
-            />
-            {mainImageLogo ? (
-              <div className="flex flex-col items-center mt-3 relative">
-                <h4 className="font-normal text-primary text-center text-slate-600 w-full">
-                  Tu logo{" "}
-                  <span className="text-dark">
-                    {formDataHero.mainImage?.name || "logo.png"}
-                  </span>{" "}
-                  ya ha sido cargado.
-                  <br /> Actualiza para ver los cambios.
-                </h4>
-
-                <button
-                  className="bg-red-500 gap-4 flex item-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-full text-xs mt-4"
-                  onClick={() => handleClearImage(setMainImageLogo)}
-                >
-                  <span className="self-center">Seleccionar otra Imagen</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ) : (
-              <div>
-                <h3 className="font-normal text-primary">
-                  Logo <span className="text-primary">*</span>
-                </h3>
-                <label
-                  htmlFor="mainImage"
-                  className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
-                >
-                  <div className="flex flex-col justify-center items-center">
-                    <svg
-                      className="w-12 h-12 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold">Subir Logo</span>
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG o Webp (800x800px)
-                    </p>
-                  </div>
+    <div className="p-8 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        Configuración del Logo Principal
+      </h2>
+      {!loading ? (
+        <div className="space-y-6">
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between min-h-[2rem] mb-4">
+                <label className="text-lg font-medium text-gray-700">
+                  Logo del sitio
                 </label>
+                {hasChanges && (
+                  <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                    Cambios pendientes
+                  </span>
+                )}
               </div>
-            )}
-          </div>
+              
+              <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {logoData && (
+                  <div className="mt-4 p-4 bg-white border border-gray-200 rounded-md h-full">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                      Logo actual:
+                    </h3>
+                    <div className="flex flex-col items-center h-full">
+                      <img
+                        src={logoData[0].mainImage.url}
+                        alt="Logo Principal"
+                        className="w-[150px] h-[150px] object-contain rounded-md"
+                      />
+                      <p className="text-sm text-gray-500 mt-2">
+                        Este es el logo actual que se muestra en el sitio web
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="shadow bg-primary hover:bg-secondary w-full uppercase text-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap mt-6"
-            style={{ borderRadius: "var(--radius)" }}
-          >
-            <svg
-              aria-hidden="true"
-              role="status"
-              className={`inline w-4 h-4 me-3 text-white animate-spin ${
-                loading ? "block" : "hidden"
-              }`}
-              viewBox="0 0 100 101"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="#E5E7EB"
-              />
-              <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentColor"
-              />
-            </svg>
-            {loading ? "Cargando..." : "Actualizar Logo"}
-          </button>
-        </form>
-      </div>
-    </section>
+                <div className="mt-4 p-4 bg-white border border-gray-200 rounded-md h-full flex flex-col">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Subir nuevo logo:
+                  </h3>
+                  <div className="flex-1 flex flex-col">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="mainImage"
+                      className="hidden"
+                      onChange={(e) => handleImageChange(e, setMainImageLogo, "mainImage")}
+                    />
+                    {mainImageLogo ? (
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <h4 className="font-normal text-primary text-center text-slate-600 w-full mb-2">
+                          Tu logo{" "}
+                          <span className="text-dark">
+                            {formDataHero.mainImage?.name || "logo.png"}
+                          </span>{" "}
+                          ya ha sido cargado.
+                          <br /> Actualiza para ver los cambios.
+                        </h4>
+
+                        <button
+                          className="bg-red-500 gap-2 flex items-center justify-center px-4 py-2 hover:bg-red-700 text-white rounded-md text-xs"
+                          onClick={() => handleClearImage(setMainImageLogo)}
+                        >
+                          <span>Seleccionar otra imagen</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-4 h-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col">
+                        <label
+                          htmlFor="mainImage"
+                          className="border-primary shadow flex flex-col bg-white justify-center items-center border border-dashed rounded-lg cursor-pointer w-full h-full z-10"
+                        >
+                          <div className="flex flex-col justify-center items-center">
+                            <svg
+                              className="w-12 h-12 text-gray-400"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                              <span className="font-semibold">Subir Logo</span>
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              PNG, JPG o Webp (800x800px)
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+
+              </div>
+              <div className="mt-4">
+
+
+                <div className="flex pt-4">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!hasChanges || isUpdating}
+                    className={`w-full px-6 py-2 rounded-md font-medium transition-colors ${
+                      hasChanges && !isUpdating
+                        ? 'bg-primary text-white hover:bg-primary/90 focus:ring-2 focus:ring-primary/20'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {isUpdating ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Actualizando...
+                      </div>
+                    ) : (
+                      'Actualizar logo'
+                    )}
+                  </button>
+                </div>
+                </div>
+                
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      )}
+    </div>
   );
 };
 
