@@ -64,15 +64,142 @@ const oswald = Oswald({
 
 const DynamicFavicon = () => {
   const { logo } = useLogo();
-
+  
+  // Función utilitaria para calcular dimensiones del favicon
+  const calculateFaviconDimensions = (imgWidth: number, imgHeight: number, canvasSize: number) => {
+    const imgAspectRatio = imgWidth / imgHeight;
+    const padding = canvasSize * 0.1; // 10% de padding
+    const availableSize = canvasSize - (padding * 2);
+    
+    let drawWidth, drawHeight, offsetX, offsetY;
+    
+    if (imgAspectRatio > 1) {
+      // Imagen horizontal: ajustar al ancho disponible con padding
+      drawWidth = availableSize;
+      drawHeight = drawWidth / imgAspectRatio;
+      offsetX = padding;
+      offsetY = (canvasSize - drawHeight) / 2;
+    } else {
+      // Imagen vertical o cuadrada: ajustar al alto disponible con padding
+      drawHeight = availableSize;
+      drawWidth = drawHeight * imgAspectRatio;
+      offsetX = (canvasSize - drawWidth) / 2;
+      offsetY = padding;
+    }
+    
+    // Asegurar que la imagen no sea más pequeña que el espacio disponible
+    if (drawWidth < availableSize && drawHeight < availableSize) {
+      const scale = availableSize / Math.max(drawWidth, drawHeight);
+      drawWidth *= scale;
+      drawHeight *= scale;
+      offsetX = (canvasSize - drawWidth) / 2;
+      offsetY = (canvasSize - drawHeight) / 2;
+    }
+    
+    return { drawWidth, drawHeight, offsetX, offsetY };
+  };
+  
+  // Función utilitaria para crear favicon
+  const createFavicon = (img: HTMLImageElement, size: number): string => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return '';
+    
+    canvas.width = size;
+    canvas.height = size;
+    
+    // Limpiar el canvas con fondo transparente
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const { drawWidth, drawHeight, offsetX, offsetY } = calculateFaviconDimensions(img.width, img.height, size);
+    
+    // Aplicar suavizado para mejor calidad
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Dibujar la imagen centrada y escalada
+    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    
+    return canvas.toDataURL('image/png');
+  };
+  
   useEffect(() => {
     if (logo?.mainImage?.url) {
-      // Crear un elemento link para el favicon
-      const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link') as HTMLLinkElement;
-      link.type = 'image/x-icon';
-      link.rel = 'shortcut icon';
-      link.href = logo.mainImage.url;
-      document.getElementsByTagName('head')[0].appendChild(link);
+      const processFavicon = async () => {
+        try {
+          // Crear una imagen para cargar el logo
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          
+          img.onload = () => {
+            // Tamaños estándar para favicons
+            const faviconSizes = [16, 32, 48, 64, 128];
+            
+            faviconSizes.forEach(size => {
+              const faviconDataUrl = createFavicon(img, size);
+              
+              if (faviconDataUrl) {
+                // Crear o actualizar el link del favicon
+                const linkId = `favicon-${size}`;
+                let link = document.getElementById(linkId) as HTMLLinkElement;
+                
+                if (!link) {
+                  link = document.createElement('link') as HTMLLinkElement;
+                  link.id = linkId;
+                  link.rel = 'icon';
+                  link.type = 'image/png';
+                  document.getElementsByTagName('head')[0].appendChild(link);
+                }
+                
+                link.href = faviconDataUrl;
+              }
+            });
+            
+            // También crear un favicon genérico para compatibilidad
+            const genericFaviconUrl = createFavicon(img, 32);
+            
+            if (genericFaviconUrl) {
+              // Actualizar el favicon genérico
+              let genericLink = document.querySelector("link[rel='shortcut icon']") as HTMLLinkElement;
+              if (!genericLink) {
+                genericLink = document.createElement('link') as HTMLLinkElement;
+                genericLink.rel = 'shortcut icon';
+                genericLink.type = 'image/png';
+                document.getElementsByTagName('head')[0].appendChild(genericLink);
+              }
+              genericLink.href = genericFaviconUrl;
+            }
+          };
+          
+          img.onerror = () => {
+            // Si falla el procesamiento, usar la imagen original
+            const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link') as HTMLLinkElement;
+            link.type = 'image/x-icon';
+            link.rel = 'shortcut icon';
+            link.href = logo.mainImage.url;
+            
+            if (!document.querySelector("link[rel*='icon']")) {
+              document.getElementsByTagName('head')[0].appendChild(link);
+            }
+          };
+          
+          img.src = logo.mainImage.url;
+        } catch (error) {
+          console.error('Error al procesar el favicon:', error);
+          // Fallback a la imagen original
+          const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link') as HTMLLinkElement;
+          link.type = 'image/x-icon';
+          link.rel = 'shortcut icon';
+          link.href = logo.mainImage.url;
+          
+          if (!document.querySelector("link[rel*='icon']")) {
+            document.getElementsByTagName('head')[0].appendChild(link);
+          }
+        }
+      };
+      
+      processFavicon();
     }
   }, [logo]);
 

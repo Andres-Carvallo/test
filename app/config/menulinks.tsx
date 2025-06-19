@@ -15,7 +15,7 @@ const SHOW_SOCIAL_IN_FOOTER = true;
 // Configuración de colores del menú
 // Usa solo el nombre del color y la intensidad, sin el prefijo "text-" o "hover:"
 // Ejemplos: "red-500", "blue-600", "green-400", etc.
-const MENU_COLOR = "green-500";
+const MENU_COLOR = "primary";
 const MENU_ACTIVE_FONT_WEIGHT = "font-bold";
 
 // Interfaces
