@@ -87,7 +87,7 @@ export default function Footer() {
           <div className="lg:col-span-4 flex flex-col items-center lg:items-start">
             <img
               alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-              className="h-40 object-cover mb-6"
+              className="h-40 object-fit object-contain mb-6 max-w-[150px] md:max-w-[250px]"
               src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
             <p className="text-secondary text-center lg:text-left mt-4 max-w-xs">

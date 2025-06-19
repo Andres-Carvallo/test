@@ -9,7 +9,7 @@ const LOGO_CENTERED = false;
 const SHOW_MAIN_MENU_IN_NAVBAR = true;
 const SHOW_MAIN_MENU_IN_FOOTER = true;
 
-const SHOW_SOCIAL_IN_NAVBAR = false;
+const SHOW_SOCIAL_IN_NAVBAR = true;
 const SHOW_SOCIAL_IN_FOOTER = true;
 
 // Configuración de colores del menú
@@ -103,7 +103,7 @@ export const socialConfig: SocialConfig = {
     {
       platform: "Facebook",
       url: process.env.NEXT_PUBLIC_FACEBOOK || "",
-      isVisible: false,
+      isVisible: true,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"

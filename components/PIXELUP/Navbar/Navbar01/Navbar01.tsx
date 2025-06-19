@@ -299,7 +299,7 @@ export default function Navbar() {
             <div className="flex-shrink-0 pr-4">
               <Link href="/">
                 <img
-                  className="w-auto max-h-16"
+                  className="w-auto max-h-16 max-w-[100px] object-contain"
                   src={Logo}
                   alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
                 />
@@ -560,27 +560,6 @@ export default function Navbar() {
                 )}
               </div>
             )}
-
-            <li
-              className={
-                pathname ===
-                "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-                  ? `${activeColorClass} ${activeFontWeight}`
-                  : ""
-              }
-            >
-              <Link
-                href="/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-                className={`${hoverColorClass} text-base font-medium uppercase ${
-                  pathname ===
-                  "/tienda/colecciones/e2b1263f-7cd3-42b9-b08a-8d26e59d91d8"
-                    ? activeColorClass
-                    : ""
-                }`}
-              >
-                PROMOCIONES
-              </Link>
-            </li>
           </ul>
 
           <div className="w-full py-4 flex flex-col items-center">

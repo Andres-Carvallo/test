@@ -4,6 +4,14 @@ import ProductGridShop from "@/components/Core/ProductGridHome/ProductGridShop";
 import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
 
+// Metadatos para SEO
+export const metadata = {
+  title: "Tienda - Productos y Ofertas",
+  description:
+    "Explora nuestra amplia selección de productos con las mejores ofertas. Envío a domicilio y retiro en tienda disponible.",
+  keywords: "tienda, productos, ofertas, envío, retiro en tienda",
+};
+
 // Componente del servidor para la carga inicial
 async function fetchInitialData(searchParams: {
   [key: string]: string | undefined;
@@ -46,8 +54,7 @@ export default async function Tienda({
 
   return (
     <RevalidationProvider>
-      <title>Tienda</title>
-      <div className="w-full">
+      <div className="w-full min-h-screen bg-gray-50">
         <BannerTienda01 />
         <ProductGridShop
           initialProducts={initialData.products}

@@ -130,10 +130,10 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <Ubicacion />
         </Suspense>
-         <Suspense fallback={<Banner />}>
+        <Suspense fallback={<Banner />}>
           <FeedInstagram />
-        </Suspense> 
-
+        </Suspense>
+        <DynamicFooter />
         {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
@@ -162,6 +162,7 @@ export default async function Page() {
         <DynamicFooter />
 
         {/* <DiscountModal /> */}
+
         <WhatsAppButton />
       </>
     );
