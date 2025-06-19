@@ -3,9 +3,11 @@ import { useColor } from "@/context/ColorContext";
 import { useEffect } from "react";
 
 const DynamicColorStyles: React.FC = () => {
-  const { currentColor, getColorValues, currentRadius, radiusOptions } = useColor();
+  const { currentColor, getColorValues, currentRadius, radiusOptions, isColorLoaded } = useColor();
 
   useEffect(() => {
+    if (!isColorLoaded) return;
+    
     const colorValues = getColorValues(currentColor);
     if (!colorValues) return;
 
@@ -17,9 +19,11 @@ const DynamicColorStyles: React.FC = () => {
     root.style.setProperty('--dynamic-secondary', colorValues.secondary);
     root.style.setProperty('--dynamic-accent', colorValues.accent);
 
-  }, [currentColor, getColorValues]);
+  }, [currentColor, getColorValues, isColorLoaded]);
 
   useEffect(() => {
+    if (!isColorLoaded) return;
+    
     // Aplicar el border-radius dinámicamente
     const root = document.documentElement;
     const radiusOption = radiusOptions.find(option => option.value === currentRadius);
@@ -27,7 +31,7 @@ const DynamicColorStyles: React.FC = () => {
     if (radiusOption) {
       root.style.setProperty('--dynamic-radius', radiusOption.radius);
     }
-  }, [currentRadius, radiusOptions]);
+  }, [currentRadius, radiusOptions, isColorLoaded]);
 
   return null; // Este componente no renderiza nada visual
 };

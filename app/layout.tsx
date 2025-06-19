@@ -19,7 +19,7 @@ import Head from "next/head";
 import { NavbarProvider } from "./Context/NavbarContext";
 import { AuthProvider } from "./Context/AuthContext";
 import { TypographyProvider } from "@/context/TypographyContext";
-import { ColorProvider } from "@/context/ColorContext";
+import { ColorProvider, useColor } from "@/context/ColorContext";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import GoogleAnalytics from "@/components/Core/Google/Analytics";
 import PopVisual from "@/components/Core/Popup/Popupvisual";
@@ -206,6 +206,21 @@ const DynamicFavicon = () => {
   return null;
 };
 
+// Componente para ocultar contenido hasta que se carguen los colores
+const ColorLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isColorLoaded } = useColor();
+  
+  if (!isColorLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -376,7 +391,9 @@ export default function RootLayout({
                       <DynamicColorStyles />
                       <Toaster />
                       <NextTopLoader showSpinner={false}/>
-                      <div className="md:min-h-screen ">{children}</div>
+                      <ColorLoader>
+                        <div className="md:min-h-screen ">{children}</div>
+                      </ColorLoader>
                       {showPopup && <PopVisual />}
                     </APIContextProvider>
                   </ColorProvider>

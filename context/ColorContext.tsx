@@ -13,6 +13,7 @@ interface ColorContextType {
   radiusOptions: RadiusOption[];
   hexToHsl: (hex: string) => string;
   isValidHex: (hex: string) => boolean;
+  isColorLoaded: boolean;
 }
 
 interface ColorOption {
@@ -36,6 +37,13 @@ interface ColorValues {
 }
 
 const colorOptions: ColorOption[] = [
+  {
+    value: "black",
+    label: "Negro",
+    primaryColor: "0 0% 0%",
+    secondaryColor: "0 0% 20%",
+    accentColor: "0 0% 40%"
+  },
   {
     value: "purple",
     label: "Púrpura",
@@ -115,8 +123,9 @@ interface ColorProviderProps {
 }
 
 export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
-  const [currentColor, setCurrentColor] = useState<string>("purple");
+  const [currentColor, setCurrentColor] = useState<string>("black");
   const [currentRadius, setCurrentRadius] = useState<string>("soft");
+  const [isColorLoaded, setIsColorLoaded] = useState<boolean>(false);
 
   useEffect(() => {
     fetchColorConfig();
@@ -150,13 +159,16 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
       const validColors = colorOptions.map(option => option.value);
       if (validColors.includes(color) || isValidHex(color)) {
         setCurrentColor(color);
+        setIsColorLoaded(true);
       } else {
-        console.warn(`Valor inválido en content block: "${color}". Se usará Púrpura por defecto.`);
-        setCurrentColor("purple");
+        console.warn(`Valor inválido en content block: "${color}". Se usará Negro por defecto.`);
+        setCurrentColor("black");
+        setIsColorLoaded(true);
       }
     } catch (error) {
       console.error("Error al obtener la configuración de color:", error);
       // Mantener el color por defecto en caso de error
+      setIsColorLoaded(true);
     }
   };
 
@@ -272,7 +284,8 @@ export const ColorProvider: React.FC<ColorProviderProps> = ({ children }) => {
     setCurrentRadius,
     radiusOptions,
     hexToHsl,
-    isValidHex
+    isValidHex,
+    isColorLoaded
   };
 
   return (
