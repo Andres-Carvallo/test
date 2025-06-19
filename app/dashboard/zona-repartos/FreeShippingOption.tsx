@@ -52,10 +52,29 @@ const FreeShippingOption: React.FC<any> = ({}) => {
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // Usar una expresión regular para permitir solo números y evitar negativos
-    const numericValue = value.replace(/[^0-9]/g, ""); // Solo permite números positivos
-
+    const numericValue = value.replace(/[^0-9]/g, "");
     setNewValue(numericValue);
+  };
+  const updateContentBlock = async (value: string | null) => {
+    try {
+      const contentBlockId = process.env.NEXT_PUBLIC_MONTOENVIOGRATIS_CONTENTBLOCK;
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          title: "Monto Envío Gratis",
+          contentText: value || "",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error updating content block:", error);
+      toast.error("Error al actualizar el content block de envío gratis.");
+    }
   };
 
   const handleToggleChange = async (checked: boolean) => {
@@ -78,9 +97,8 @@ const FreeShippingOption: React.FC<any> = ({}) => {
             },
           }
         );
-        toast.success(
-          "Envío gratis sin monto mínimo configurado exitosamente."
-        );
+        await updateContentBlock(null);
+        toast.success("Envío gratis sin monto mínimo configurado exitosamente.");
         setFreeShippingOption((prev) => ({
           id: prev ? prev.id : "",
           value: null,
@@ -112,6 +130,7 @@ const FreeShippingOption: React.FC<any> = ({}) => {
           },
         }
       );
+      await updateContentBlock(valueToSend);
       toast.success("Configuración de envío gratis actualizada exitosamente.");
       setFreeShippingOption((prev) => ({
         id: prev ? prev.id : "",

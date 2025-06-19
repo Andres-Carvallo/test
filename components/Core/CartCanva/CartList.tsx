@@ -215,7 +215,7 @@ function CartList({
                       />
                     </svg>
                   </span>
-                  <small className="px-2 text-primary self-center">
+                  <small className="px-2 text-black self-center">
                     Disponible para Delivery
                   </small>
                 </div>
@@ -263,7 +263,7 @@ function CartList({
                       />
                     </svg>
                   </span>
-                  <small className="px-2 text-primary self-center">
+                  <small className="px-2 text-black self-center">
                     Disponible para Retiro
                   </small>
                 </div>
