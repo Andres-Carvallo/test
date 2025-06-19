@@ -10,12 +10,37 @@ import {
   FiList,
   FiPackage,
 } from "react-icons/fi";
+import Link from "next/link";
 
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
 import Loader from "@/components/common/Loader-t";
 import { getActiveComponents } from "@/app/config/GlobalConfig";
+
+// Función para obtener el precio de un producto
+const getProductPrice = (product: any) => {
+  if (product.offers && product.offers.length > 0) {
+    return product.offers[0].amount;
+  } else if (
+    product.hasVariations &&
+    product.variations &&
+    product.variations.length > 0
+  ) {
+    const prices = product.variations.map((variation: any) => {
+      if (variation.offers && variation.offers.length > 0) {
+        return variation.offers[0].amount;
+      }
+      return variation.pricings?.[0]?.amount || Infinity;
+    });
+    return Math.min(...prices);
+  } else if (product.pricings && product.pricings.length > 0) {
+    return product.pricings[0].amount;
+  } else if (product.pricingRanges && product.pricingRanges.length > 0) {
+    return product.pricingRanges[0].minimumAmount;
+  }
+  return 0;
+};
 
 interface ProductGridShopProps {
   initialProducts: any[];
@@ -160,30 +185,6 @@ const ProductGridShop = ({
       }
     }
     setPage(1);
-  };
-
-  // Función para obtener el precio de un producto
-  const getProductPrice = (product: any) => {
-    if (product.offers && product.offers.length > 0) {
-      return product.offers[0].amount;
-    } else if (
-      product.hasVariations &&
-      product.variations &&
-      product.variations.length > 0
-    ) {
-      const prices = product.variations.map((variation: any) => {
-        if (variation.offers && variation.offers.length > 0) {
-          return variation.offers[0].amount;
-        }
-        return variation.pricings?.[0]?.amount || Infinity;
-      });
-      return Math.min(...prices);
-    } else if (product.pricings && product.pricings.length > 0) {
-      return product.pricings[0].amount;
-    } else if (product.pricingRanges && product.pricingRanges.length > 0) {
-      return product.pricingRanges[0].minimumAmount;
-    }
-    return 0;
   };
 
   // Función para verificar si un producto tiene ofertas
@@ -699,24 +700,31 @@ const ProductGridShop = ({
               className={`${
                 filters.viewMode === "grid"
                   ? `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${filters.columns} xl:grid-cols-${filters.columns} gap-6`
-                  : "product-list-view"
+                  : "product-list-view space-y-4"
               }`}
             >
               {paginatedProducts.length > 0 ? (
                 paginatedProducts.map((product: any) => (
                   <div
                     key={product.id}
-                    className={`flex justify-center ${
-                      filters.viewMode === "list" ? "product-list-item" : ""
-                    }`}
+                    className="flex justify-center"
                   >
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      addToCartHandler={addToCartHandler}
-                      isOnSale={hasProductOffers(product)}
-                      stock={product.stock}
-                    />
+                    {filters.viewMode === "list" ? (
+                      <ProductCardList
+                        product={product}
+                        addToCartHandler={addToCartHandler}
+                        isOnSale={hasProductOffers(product)}
+                        stock={product.stock}
+                      />
+                    ) : (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        addToCartHandler={addToCartHandler}
+                        isOnSale={hasProductOffers(product)}
+                        stock={product.stock}
+                      />
+                    )}
                   </div>
                 ))
               ) : (
@@ -802,6 +810,167 @@ const FilterSection = ({
         {isOpen ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
       </button>
       {isOpen && <div className="filter-transition">{children}</div>}
+    </div>
+  );
+};
+
+// Componente para vista de lista
+const ProductCardList = ({
+  product,
+  addToCartHandler,
+  isOnSale,
+  stock,
+}: {
+  product: any;
+  addToCartHandler: any;
+  isOnSale: boolean;
+  stock: number | null;
+}) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = product.mainImageUrl;
+    img.onload = () => {
+      setImageLoaded(true);
+      setIsLoading(false);
+    };
+    img.onerror = () => {
+      setIsLoading(false);
+    };
+  }, [product.mainImageUrl]);
+
+  const price = getProductPrice(product);
+  const needsVariantSelection = product.hasVariations || stock === 0;
+
+  return (
+    <div className="product-list-item">
+      {/* Imagen pequeña a la izquierda */}
+      <div className="product-image">
+        {isLoading && (
+          <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg"></div>
+        )}
+        {imageLoaded && (
+          <img
+            src={product.mainImageUrl}
+            alt={product.name}
+            loading="lazy"
+          />
+        )}
+      </div>
+
+      {/* Información del producto en el centro */}
+      <div className="product-info">
+        <h3 className="product-title">{product.name}</h3>
+
+        {/* Categorías */}
+        {product.productTypes && product.productTypes.length > 0 && (
+          <div className="product-categories">
+            {product.productTypes.slice(0, 2).map((type: any) => (
+              <span
+                key={type.id}
+                className="product-category"
+              >
+                {type.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Precio */}
+        <div className="product-price">
+          {isOnSale && <span className="product-sale-badge">En Oferta</span>}
+          <span>${price.toLocaleString("es-CL")}</span>
+        </div>
+      </div>
+
+      {/* Botones de acción a la derecha */}
+      <div className="product-actions">
+        {/* Botón ver detalles - siempre visible */}
+        <Link
+          href={`/tienda/productos/${slugify(product.name)}`}
+          className="action-button view"
+          title="Ver detalles"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle
+              cx="11"
+              cy="11"
+              r="8"
+            ></circle>
+            <line
+              x1="21"
+              y1="21"
+              x2="16.65"
+              y2="16.65"
+            ></line>
+          </svg>
+        </Link>
+
+        {/* Mostrar botón de agregar al carrito solo si NO necesita selección de variantes */}
+        {!needsVariantSelection && (
+          <button
+            onClick={() => addToCartHandler(product.skuId, 1)}
+            className="action-button primary"
+            title="Agregar al carrito"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+              />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+          </button>
+        )}
+
+        {/* Mostrar botón de ver más opciones solo si necesita selección de variantes */}
+        {needsVariantSelection && (
+          <Link
+            href={`/tienda/productos/${slugify(product.name)}`}
+            className="action-button primary"
+            title="Ver más opciones"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </Link>
+        )}
+      </div>
     </div>
   );
 };

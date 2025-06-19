@@ -27,6 +27,7 @@ Se ha implementado una versión completamente renovada de la tienda con un dise�
 - **Selector de Columnas**: Elegir entre 2, 3, 4, 5 o 6 columnas en modo grid
 - **Productos por Página**: Configurar entre 6, 12, 24, 48 o 96 productos por página
 - **Controles Organizados**: Interfaz clara con etiquetas descriptivas
+- **Vista de Lista Mejorada**: Layout horizontal con imagen pequeña, información centralizada y botones de acción
 
 ### 📱 Experiencia Móvil
 
@@ -99,6 +100,14 @@ interface Product {
 - **Número de Columnas**: 2, 3, 4, 5 o 6 columnas (solo en modo grid)
 - **Productos por Página**: 6, 12, 24, 48 o 96 productos
 
+### 7. Vista de Lista Mejorada
+
+- **Layout Horizontal**: Imagen pequeña (80x80px) a la izquierda
+- **Información Centralizada**: Nombre, categorías y precio en el centro
+- **Botones de Acción**: Lupa para ver detalles y carrito/plus para agregar
+- **Responsive**: Se adapta a móviles cambiando a layout vertical
+- **Efectos Visuales**: Hover effects y transiciones suaves
+
 ## Componentes Principales
 
 ### ProductGridShop
@@ -112,6 +121,13 @@ interface Product {
 - Componente reutilizable para secciones de filtros
 - Colapsable/expandible
 - Iconos de flecha para indicar estado
+
+### ProductCardList
+
+- Componente especializado para la vista de lista
+- Layout horizontal optimizado para mostrar más información
+- Manejo de estados de carga de imágenes
+- Botones de acción contextuales según el tipo de producto
 
 ## Estilos CSS
 
