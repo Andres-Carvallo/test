@@ -776,7 +776,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
 
   const handleAddToCart = () => {
     if (!areAllAttributesSelected() && hasVariations) {
-      toast.error("Debe seleccionar todos los atributos.");
+      toast.error("Selecciona Variación para agregar al carrito.");
       return;
     }
 
@@ -1136,8 +1136,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
               {/* Botón de agregar al carrito */}
               <button
                 onClick={handleAddToCart}
-                disabled={!areAllAttributesSelected() || isOutOfStock}
-                className="w-full bg-primary text-secondary py-4 rounded-lg font-medium disabled:bg-gray-200 disabled:text-white"
+                className="w-full bg-primary text-secondary py-4 rounded-lg font-medium hover:bg-secondary hover:text-primary"
               >
                 {isOutOfStock ? 'Agotado' : 'Agregar al carrito'}
               </button>

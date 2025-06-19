@@ -789,7 +789,7 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
 
   const handleAddToCart = () => {
     if (!areAllAttributesSelected() && hasVariations) {
-      toast.error("Debe seleccionar todos los atributos.");
+      toast.error("Selecciona Variación para agregar al carrito.");
       return;
     }
 
@@ -1172,21 +1172,12 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
                       style={{
                         borderRadius: "var(--radius)",
                       }}
-                      className={`md:max-w-96 w-full h-16 px-6 py-2 text-[0.8rem] md:text-md font-semibold bg-primary text-white hover:text-black hover:border hover:border-black hover:bg-transparent ${
-                        hasVariations &&
-                        (!attributeSelected || !areAllAttributesSelected())
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : ""
-                      }`}
-                      disabled={
-                        hasVariations &&
-                        (!attributeSelected || !areAllAttributesSelected())
-                      }
+                      className="md:max-w-96 w-full h-16 px-6 py-2 text-[0.8rem] md:text-md font-semibold bg-primary text-white hover:text-black hover:border hover:border-black hover:bg-transparent"
                     >
                       {hasVariations &&
                       (!attributeSelected || !areAllAttributesSelected())
-                        ? "Selecciona todas las Variaciones"
-                        : "Añadir al Carrito"}
+                        ? "Agregar al Carrito"
+                        : "Agregar al Carrito"}
                     </button>
                   </>
                 )}
