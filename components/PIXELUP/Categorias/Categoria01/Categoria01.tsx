@@ -66,7 +66,7 @@ const Categoria01 = () => {
                         alt="Colección Diosa Madre"
                         className="absolute inset-0 h-full w-full object-cover object-center transition duration-200 group-hover:scale-110"
                       />
-                      <div className="relative w-full text-center bg-white rounded-xl p-2 font-bold ">
+                      <div className="relative w-full text-center bg-white rounded-xl p-2 font-bold " style={{ borderRadius: "var(--radius)" }}>
                         <h3 className="text-xl text-dark">{banner.title}</h3>
                         <p className="mt-1 text-sm text-black hidden">
                           {banner.landingText}

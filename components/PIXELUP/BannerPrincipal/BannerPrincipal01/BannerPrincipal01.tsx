@@ -512,6 +512,7 @@ const BannerPrincipal01: React.FC = () => {
                       href={config.button1Link}
                       target="_self"
                       className={`bg-primary/60 text-white px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-primary transition-all cursor-pointer drop-shadow-md font-${config.baseTypography}`}
+                      style={{ borderRadius: "var(--radius)" }}
                     >
                       {config.button1Text}
                     </Link>
@@ -521,6 +522,7 @@ const BannerPrincipal01: React.FC = () => {
                       href={config.button2Link}
                       target="_self"
                       className={`relative inline-block bg-white/5 text-white border border-white/20 px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20 font-${config.baseTypography}`}
+                      style={{ borderRadius: "var(--radius)" }}
                     >
                       {config.button2Text}
                     </Link>

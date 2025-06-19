@@ -188,7 +188,7 @@ export default function NavbarBanner() {
     <div>
       <section
         id="inicio"
-        className="py-20 bg-[#F5F7F2]"
+        className="py-20 bg-white"
       >
         {loading ? (
           // Skeleton loader
@@ -206,22 +206,23 @@ export default function NavbarBanner() {
         ) : (
           <div className="container mx-auto px-6">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-4xl font-kalam text-[#4A6741] mb-8 text-center">
-                <span className="text-sm uppercase tracking-[0.3em] block mb-3 text-[#8BA888] font-montserrat">
+              <h2 className="text-4xl font-kalam text-primary mb-8 text-center">
+                <span className="text-sm uppercase tracking-[0.3em] block mb-3 text-primary font-montserrat">
                   {bannerData?.images[0]?.buttonLink}
                 </span>
                 {bannerData?.images[0]?.title}
               </h2>
               <div className="text-center mb-12 max-w-3xl mx-auto">
                 <div
-                  className="text-[#718878] text-lg leading-relaxed editortexto mb-12"
+                  className="text-black text-lg leading-relaxed editortexto mb-12"
                   dangerouslySetInnerHTML={{
                     __html: bannerData?.images[0]?.landingText,
                   }}
                 />
                 <button
                   onClick={() => handleWhatsAppClick("consulta")}
-                  className="bg-[#6B8E4E] text-white px-8 py-3 rounded-full hover:bg-[#8BA888] transition duration-300 shadow-md hover:shadow-lg font-montserrat text-sm tracking-wider uppercase"
+                  className="bg-primary text-white px-8 py-3 rounded-full hover:bg-primary/90 transition duration-300 shadow-md hover:shadow-lg font-montserrat text-sm tracking-wider uppercase"
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   {bannerData?.images[0]?.buttonText}
                 </button>

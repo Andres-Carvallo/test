@@ -70,7 +70,8 @@ const BannerPrincipal02: React.FC = () => {
             <h2 className="text-4xl font-bold mb-4">{image.landingText}</h2>
             <Link 
               href={image.buttonLink || '#'} 
-              className="bg-white text-black px-8 py-3 uppercase text-sm tracking-wider hover:bg-black hover:text-white transition-colors duration-300"
+              className="bg-white text-black px-8 py-3 uppercase text-sm tracking-wider hover:bg-primary hover:text-white transition-colors duration-300 "
+              style={{ borderRadius: "var(--radius)" }}
             >
               {image.buttonText || '#'} 
             </Link>

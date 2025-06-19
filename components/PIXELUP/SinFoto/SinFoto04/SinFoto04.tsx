@@ -67,10 +67,10 @@ const SinFoto04: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {[contentData.box1, contentData.box2, contentData.box3, contentData.box4, contentData.box5, contentData.box6].map((box, index) => (
-              <div key={index} className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl hover:shadow-xl transition-all duration-300">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-[#F5A623]/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
+                  <div key={index} className="bg-gray-50 p-6 md:p-8 rounded-xl md:rounded-2xl hover:shadow-xl transition-all duration-300" style={{ borderRadius: "var(--radius)" }}>
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 md:mb-6">
                   <svg
-                    className="w-6 h-6 md:w-8 md:h-8 text-[#F5A623]"
+                    className="w-6 h-6 md:w-8 md:h-8 text-primary"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

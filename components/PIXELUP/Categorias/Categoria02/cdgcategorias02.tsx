@@ -75,7 +75,7 @@ const Categoria02: React.FC<Categoria02Props> = ({ Categoria02Data }) => {
 {/*                     <p className="text-gray-200 mb-2 text-base">
                     {getDefaultBanner(index).title} 
                     </p> */}
-                    <button className="bg-white text-black px-8 py-3 rounded font-bold transition-all duration-300 hover:bg-primary hover:text-white">
+                    <button className="bg-white text-black px-8 py-3 rounded font-bold transition-all duration-300 hover:bg-primary hover:text-white" style={{ borderRadius: "var(--radius)" }}>
                       Explorar Categoría
                     </button>
                   </div>
@@ -86,7 +86,7 @@ const Categoria02: React.FC<Categoria02Props> = ({ Categoria02Data }) => {
         </div>
       )}
               <div className="text-center mt-12">
-          <Link href="/tienda" className="bg-primary font-light text-md  text-white hover:scale-105 px-8 py-2 rounded  transition-all">
+          <Link href="/tienda" className="bg-primary font-light text-md  text-white hover:scale-105 px-8 py-2 rounded  transition-all" style={{ borderRadius: "var(--radius)" }}>
             Ir a la Tienda
           </Link>
         </div>

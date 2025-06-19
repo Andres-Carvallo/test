@@ -193,20 +193,22 @@ export default function PropuestaValor() {
                 href="https://lafuentedebelleza.site.agendapro.com/cl/sucursal/105579"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#D4AF37] text-white px-8 py-4 rounded-md hover:bg-[#B4941F] transition-colors text-center"
+                className="bg-primary text-white px-8 py-4 rounded-md hover:bg-primary/90 transition-colors text-center"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 Agenda tu hora
               </Link>
               <a
                 href={`tel:${additionalData.phoneNumber}`}
-                className="border-2 border-[#D4AF37] text-[#D4AF37] px-8 py-4 rounded-md hover:bg-[#D4AF37] hover:text-white transition-colors"
+                className="border-2 border-primary text-primary px-8 py-4 rounded-md hover:bg-primary hover:text-white transition-colors"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 {additionalData.phoneNumber}
               </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-8">
               <div className="bg-white p-4 rounded-lg shadow-lg">
-                <p className="text-[#D4AF37] font-serif text-xl">
+                <p className="text-primary font-serif text-xl">
                   {additionalData.stats.stat1.value}
                 </p>
                 <p className="text-gray-600">
@@ -214,7 +216,7 @@ export default function PropuestaValor() {
                 </p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-lg">
-                <p className="text-[#D4AF37] font-serif text-xl">
+                <p className="text-primary font-serif text-xl">
                   {additionalData.stats.stat2.value}
                 </p>
                 <p className="text-gray-600">
@@ -234,10 +236,10 @@ export default function PropuestaValor() {
               }}
             />
             <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-lg shadow-lg">
-              <p className="text-[#D4AF37] font-serif">Contacto</p>
+              <p className="text-primary font-serif">Contacto</p>
               <a
                 href={`mailto:${additionalData.email}`}
-                className="text-gray-600 hover:text-[#D4AF37] transition-colors"
+                className="text-gray-600 hover:text-primary transition-colors"
               >
                 {additionalData.email}
               </a>

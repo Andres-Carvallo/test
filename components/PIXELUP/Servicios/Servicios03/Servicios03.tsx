@@ -55,7 +55,7 @@ export default function Servicios03() {
   }, []);
 
   return (
-    <section className="py-24 bg-[#FAF7F2]">
+    <section className="py-24 bg-gray-100">
       <div className="mx-6 px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-primary font-sans text-xs uppercase tracking-widest mb-3 block">
@@ -74,12 +74,12 @@ export default function Servicios03() {
             {servicios.map((servicio, index) => (
               <div
                 key={index}
-                className="group relative overflow-hidden rounded-xl aspect-[3/4] cursor-pointer"
+                className="group relative overflow-hidden aspect-[3/4] cursor-pointer" style={{ borderRadius: "var(--radius)" }}
               >
                 <img
                   src={servicio.imagen}
                   alt={servicio.nombre}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" style={{ borderRadius: "var(--radius)" }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -100,7 +100,7 @@ export default function Servicios03() {
                       </ul>
                       <button
                         onClick={() => handleAgendarClick(servicio.nombre)}
-                        className="mt-4 text-primary hover:text-white transition-colors"
+                        className="mt-4 text-primary hover:text-white transition-colors" style={{ borderRadius: "var(--radius)" }}
                       >
                         Agendar &rarr;
                       </button>

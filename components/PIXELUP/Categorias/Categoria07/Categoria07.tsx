@@ -57,7 +57,7 @@ const Categoria07 = () => {
                 const banner = getOrderedBanners()[index];
                 return (
                   <Link key={index} href={banner.buttonLink}>
-                    <div className="relative h-[300px] md:h-[400px] group overflow-hidden rounded">
+                    <div className="relative h-[300px] md:h-[400px] group overflow-hidden rounded" style={{ borderRadius: "var(--radius)" }}>
                       <img
                         src={banner.mainImage.url}
                         alt={banner.title}
@@ -71,11 +71,11 @@ const Categoria07 = () => {
                         <p className="text-white/90 text-sm lg:text-base mb-4 max-w-md">
                           {banner.landingText}
                         </p>
-                        <button className="bg-transparent border border-white/50 hover:bg-white hover:text-stone-900 text-white py-2 px-6 rounded backdrop-blur-sm transition-all duration-300">
+                        <button className="bg-transparent border border-white/50 hover:bg-white hover:text-stone-900 text-white py-2 px-6 backdrop-blur-sm transition-all duration-300" style={{ borderRadius: "var(--radius)" }}>
                           Ver más
                         </button>
                       </div>
-                    </div>
+                    </div>  
                   </Link>
                 );
               })}
@@ -84,10 +84,10 @@ const Categoria07 = () => {
             {/* Contenedor inferior - 3 categorías pequeñas (orden 3, 4 y 5) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[2, 3, 4].map((index) => {
-                const banner = getOrderedBanners()[index];
+                const banner = getOrderedBanners()[index];  
                 return (
                   <Link key={index} href={banner.buttonLink}>
-                    <div className="relative h-[250px] group overflow-hidden rounded">
+                    <div className="relative h-[250px] group overflow-hidden rounded" style={{ borderRadius: "var(--radius)" }}>
                       <img
                         src={banner.mainImage.url}
                         alt={banner.title}
@@ -101,7 +101,7 @@ const Categoria07 = () => {
                         <p className="text-white/80 text-sm mb-4">
                           {banner.landingText}
                         </p>
-                        <button className="text-sm bg-transparent border border-white/50 hover:bg-white hover:text-stone-900 text-white py-1.5 px-4 rounded backdrop-blur-sm transition-all duration-300">
+                        <button className="text-sm bg-transparent border border-white/50 hover:bg-white hover:text-stone-900 text-white py-1.5 px-4 backdrop-blur-sm transition-all duration-300" style={{ borderRadius: "var(--radius)" }}>
                           Ver más
                         </button>
                       </div>

@@ -139,7 +139,7 @@ const ServiciosContent: React.FC<ServiciosContentProps> = ({
           />
           <div className="flex gap-4 items-center">
             <Link href="/servicios/uno">
-              <button className="rounded-none text-lg bg-primary px-8 py-3 text-white duration-300 ease-in-out hover:bg-primary/90">
+              <button className="rounded-none text-lg bg-primary px-8 py-3 text-white duration-300 ease-in-out hover:bg-primary/90" style={{ borderRadius: "var(--radius)" }}>
                 Saber más
               </button>
             </Link>
@@ -183,7 +183,7 @@ const ServiciosContent: React.FC<ServiciosContentProps> = ({
           />
           <div className="flex gap-4 items-center">
             <Link href="/servicios/dos">
-              <button className="rounded-none text-lg bg-primary px-8 py-3 text-white duration-300 ease-in-out hover:bg-primary/90">
+              <button className="rounded-none text-lg bg-primary px-8 py-3 text-white duration-300 ease-in-out hover:bg-primary/90" style={{ borderRadius: "var(--radius)" }}>
                 Saber más
               </button>
             </Link>

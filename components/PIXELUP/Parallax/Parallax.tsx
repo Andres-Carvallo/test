@@ -377,6 +377,7 @@ const Parallax: React.FC = () => {
                     <Link
                       href={config.button1Link}
                       target="_self"
+                      style={{ borderRadius: "var(--radius)" }}
                       className="w-full sm:w-auto text-center bg-primary/60 text-white px-6 sm:px-8 py-3 sm:py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md text-sm sm:text-base"
                     >
                       {config.button1Text}
@@ -386,6 +387,7 @@ const Parallax: React.FC = () => {
                     <Link
                       href={config.button2Link}
                       target="_self"
+                      style={{ borderRadius: "var(--radius)" }}
                       className="w-full sm:w-auto text-center relative inline-block bg-white/5 text-white border border-white/20 px-6 sm:px-8 py-3 sm:py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20 text-sm sm:text-base"
                     >
                       {config.button2Text}

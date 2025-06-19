@@ -71,7 +71,7 @@ function Colecciones06() {
           {collections.map((coleccion) => (
             <div
               key={coleccion.id}
-              className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300"
+              className="group relative cursor-pointer overflow-hidden rounded bg-white shadow-sm hover:shadow-xl transition-all duration-300" style={{ borderRadius: "var(--radius)" }}
             >
               <div className="flex flex-col md:flex-row h-[400px] md:h-[250px]">
                 <div className="w-full md:w-1/2 h-full relative overflow-hidden">
@@ -111,7 +111,7 @@ function Colecciones06() {
                   </p>
                   <Link 
                     href={`/tienda/colecciones/${slugify(coleccion.title)}`}
-                    className="bg-black text-white px-6 py-2 rounded text-sm font-bold hover:bg-[#eea83b] transition-colors hover:text-black"
+                    className="bg-black text-white px-6 py-2 text-sm font-bold hover:bg-primary/80 transition-colors hover:text-white" style={{ borderRadius: "var(--radius)" }}
                   >
                     {coleccion.buttonText}
                   </Link>
@@ -124,7 +124,7 @@ function Colecciones06() {
           <div className="text-center mt-12">
             <Link 
               href="/tienda/colecciones"
-              className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
+              className="bg-primary font-light text-md text-white hover:scale-105 px-8 py-2 hover:bg-primary/80 transition-all inline-block" style={{ borderRadius: "var(--radius)" }}
             >
               Ver Todas las Colecciones
             </Link>

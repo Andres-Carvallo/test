@@ -302,6 +302,7 @@ const Nosotros01: React.FC = () => {
                 className="group bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl text-center"
                 style={{
                   boxShadow: "0 3px 10px rgba(0,0,0,0.1)",
+                  borderRadius: "var(--radius)",
                   minWidth: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : 'auto',
                 }}
               >

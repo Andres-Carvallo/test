@@ -425,7 +425,7 @@ function DestacadosCat() {
                   <div className="text-center mt-8">
                     <Link 
                       href={`/tienda?categoria=${slugify(categoryData.name)}`}
-                      className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
+                      className="bg-primary font-light text-md text-white hover:scale-105 px-8 py-2 hover:bg-primary/80 transition-all inline-block" style={{ borderRadius: "var(--radius)" }}
                     >
                       Ir a la Categoría
                     </Link>
@@ -487,7 +487,7 @@ function DestacadosCat() {
             <div className="text-center mt-12">
               <Link 
                 href="/tienda"
-                className="bg-[#eea83b] font-light text-md text-black hover:scale-105 px-8 py-2 rounded hover:bg-dark-green transition-all inline-block"
+                  className="bg-primary font-light text-md text-white hover:scale-105 px-8 py-2 hover:bg-primary/80 transition-all inline-block" style={{ borderRadius: "var(--radius)" }}
               >
                 Ver Todas las Categorías
               </Link>

@@ -113,7 +113,7 @@ function Galeria02() {
       <div className="bg-white py-24">
         <div className="mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12">
-            <div className="aspect-video w-full rounded-2xl overflow-hidden">
+            <div className="aspect-video w-full overflow-hidden" style={{ borderRadius: "var(--radius)" }}>
               {content.buttonLink && (
                 <>
                   <iframe
@@ -124,6 +124,7 @@ function Galeria02() {
                     allowFullScreen
                     loading="lazy"
                     id="youtube-player"
+                  
                   />
                   <script
                     dangerouslySetInnerHTML={{
@@ -152,6 +153,7 @@ function Galeria02() {
                 <div
                   key={image.id}
                   className="relative rounded-xl overflow-hidden shadow-lg h-[250px] hover:shadow-2xl transition-all duration-300 group"
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   <img
                     src={image.mainImage.url}
@@ -165,6 +167,7 @@ function Galeria02() {
                   <div
                     key={`default-${index}`}
                     className="relative rounded-xl overflow-hidden shadow-lg h-[250px] hover:shadow-2xl transition-all duration-300 group"
+                    style={{ borderRadius: "var(--radius)" }}
                   >
                     <img
                       src={`/cubico/${bannerImages.length + index + 1}.webp`}

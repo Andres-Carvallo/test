@@ -149,7 +149,7 @@ const Servicios02 = () => {
               {serviciosData.map((servicio) => (
                 <div
                   key={servicio.id}
-                  className="bg-[#5B488E]/5 rounded-lg overflow-hidden border border-[#81C4BA]/10 hover:shadow-xl transition-all duration-300"
+                  className="bg-primary/10 overflow-hidden border border-primary/10 hover:shadow-xl transition-all duration-300" style={{ borderRadius: "var(--radius)" }}
                 >
                 
                   <div className="relative h-64">
@@ -184,9 +184,9 @@ const Servicios02 = () => {
                             key={index}
                             className="flex items-start gap-3"
                           >
-                            <div className="w-5 h-5 rounded bg-[#5B488E]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <div className="w-5 h-5 rounded bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                               <svg
-                                className="w-3 h-3 text-[#81C4BA]"
+                                className="w-3 h-3 text-primary"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -207,7 +207,7 @@ const Servicios02 = () => {
                     <p className="text-gray-500 text-sm italic mt-4">
                   {servicio.tiempo}
                 </p>
-                    <div className="flex items-center justify-between pt-4 border-t border-[#81C4BA]/10">
+                    <div className="flex items-center justify-between pt-4 border-t border-primary/10">
                       <div className="text-gray-600">
                         <span className="text-primary font-medium block text-sm">
                           Valor
@@ -217,7 +217,7 @@ const Servicios02 = () => {
 
                       <Link
                         href="https://www.pixelup.cl"
-                        className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/80 transition-colors"
+                        className="bg-primary text-white px-6 py-2 hover:bg-primary/80 transition-colors" style={{ borderRadius: "var(--radius)" }}
                       >
                         Reservar
                       </Link>

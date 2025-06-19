@@ -63,12 +63,12 @@ const SinFoto: React.FC = () => {
       <div className="mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative">
           {/* Separadores verticales */}
-          <div className="hidden lg:block absolute left-1/4 top-4 bottom-4 w-px bg-[#F9AF2A]"></div>
-          <div className="hidden lg:block absolute left-1/2 top-4 bottom-4 w-px bg-[#F9AF2A]"></div>
-          <div className="hidden lg:block absolute left-3/4 top-4 bottom-4 w-px bg-[#F9AF2A]"></div>
+            <div className="hidden lg:block absolute left-1/4 top-4 bottom-4 w-px bg-primary"></div>
+          <div className="hidden lg:block absolute left-1/2 top-4 bottom-4 w-px bg-primary"></div>
+          <div className="hidden lg:block absolute left-3/4 top-4 bottom-4 w-px bg-primary"></div>
 
           {[contentData.box1, contentData.box2, contentData.box3, contentData.box4].map((box, index) => (
-            <div key={index} className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
+            <div key={index} className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors" style={{ borderRadius: "var(--radius)" }}>
               <div className="bg-primary/10 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
