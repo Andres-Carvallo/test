@@ -197,7 +197,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         className=""
       >
         {isLoading && (
-          <div className="w-40 md:w-52 h-52 md:h-72 bg-gray-300 animate-pulse rounded-lg"></div>
+          <div className="w-40 md:w-52 h-52 md:h-72 bg-gray-300 animate-pulse rounded-lg" style={{ borderRadius: "var(--radius)" }}></div>
         )}
         {imageLoaded && (
           <img

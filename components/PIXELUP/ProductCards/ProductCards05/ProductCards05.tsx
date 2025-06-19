@@ -187,12 +187,12 @@ const ProductCard05: React.FC<ProductCardProps> = ({
         {/* Etiquetas de producto */}
         <div className="absolute top-2 md:top-4 left-2 md:left-4 flex flex-col gap-1 md:gap-2 z-10">
            {product.productTypes && product.productTypes.length > 0 && (
-            <div className="bg-muted text-white px-2 md:px-3 py-0.5 md:py-1 font-montserrat text-xs md:text-md">
+            <div className="bg-primary text-white px-2 md:px-3 py-0.5 md:py-1 font-montserrat text-xs md:text-md" style={{ borderRadius: "var(--radius)" }}>
               {product.productTypes[0].name}
             </div>
           )} 
           {isOnSale && (
-            <div className="bg-red-500 text-white px-2 md:px-3 py-0.5 md:py-1 font-montserrat text-xs md:text-md">
+            <div className="bg-red-500 text-white px-2 md:px-3 py-0.5 md:py-1 font-montserrat text-xs md:text-md" style={{ borderRadius: "var(--radius)" }}>
               En Oferta
             </div>
           )}
@@ -214,6 +214,7 @@ const ProductCard05: React.FC<ProductCardProps> = ({
             className="bg-primary p-1 md:p-1.5 cursor-pointer flex-shrink-0"
             data-tooltip-id="cart-tooltip"
             data-tooltip-content="Ver más"
+            style={{ borderRadius: "var(--radius)" }}
           >
             <Link href={`/tienda/productos/${slugify(product.name)}`}>
               <svg
@@ -239,6 +240,7 @@ const ProductCard05: React.FC<ProductCardProps> = ({
             data-tooltip-id="cart-tooltip"
             data-tooltip-content="Agregar al carrito"
             onClick={handleButtonClick}
+            style={{ borderRadius: "var(--radius)" }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

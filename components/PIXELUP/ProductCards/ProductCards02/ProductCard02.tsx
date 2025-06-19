@@ -175,13 +175,13 @@ const ProductCard02: React.FC<ProductCardProps> = ({
   };
 
   return (
-    <div className="w-full my-4 bg-white shadow-md duration-500 lg:hover:scale-105 md:hover:shadow-xl rounded-xl relative">
+    <div className="w-full my-4 bg-white shadow-md duration-500 lg:hover:scale-105 md:hover:shadow-xl relative" style={{ borderRadius: "var(--radius)" }}>
       {isOnSale && (
-        <span className="absolute top-2 right-2 bg-red-700 text-white text-[14px] rounded py-1 px-2">
+        <span className="absolute top-2 right-2 bg-red-700 text-white text-[14px] rounded py-1 px-2" style={{ borderRadius: "var(--radius)" }}>
           En Oferta
         </span>
       )}
-      <div className="group block overflow-hidden rounded-xl">
+      <div className="group block overflow-hidden rounded-xl" style={{ borderRadius: "var(--radius)" }}>
         <Link href={`/tienda/productosv1/${slugify(product.name)}`}>
           <img
             src={product.mainImageUrl}
@@ -234,7 +234,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
               ) : (
                 <button
                   onClick={handleButtonClick}
-                  className="text-primary hover:text-secondary hover:bg-primary rounded-full p-2"
+                  className="text-primary hover:text-secondary hover:bg-primary rounded-full p-2" style={{ borderRadius: "var(--radius)" }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

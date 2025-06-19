@@ -89,7 +89,7 @@ const Destacados01: React.FC<any> = ({
   if (loading) {
     return (
       <section className="bg-white dark:bg-gray-900 w-full ">
-        <div className="container px-6 py-10 mx-auto animate-pulse">
+        <div className=" px-6 py-10 mx-auto animate-pulse">
           <h1 className="w-48 h-2 mx-auto bg-gray-200 rounded-lg dark:bg-gray-700" />
           <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg dark:bg-gray-700" />
           <p className="w-64 h-2 mx-auto mt-4 bg-gray-200 rounded-lg sm:w-80 dark:bg-gray-700" />
@@ -231,8 +231,8 @@ const Destacados01: React.FC<any> = ({
           </Carousel>
         </div>
         <div className="mt-6 flex items-center justify-center">
-          <Link
-            className="px-4 cursor-pointer py-2 mt-2 tracking-wide text-secondary capitalize transition-colors duration-300 transform bg-primary hover:scale-105 rounded"
+          <Link 
+            className="px-4 cursor-pointer py-2 mt-2 tracking-wide text-secondary capitalize transition-colors duration-300 transform bg-primary hover:scale-105" style={{ borderRadius: "var(--radius)" }}
             href="/tienda/"
           >
             Ir a Tienda
