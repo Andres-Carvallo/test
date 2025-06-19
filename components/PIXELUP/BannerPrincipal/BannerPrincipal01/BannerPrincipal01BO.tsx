@@ -154,6 +154,15 @@ const BannerPrincipal01BO: React.FC = () => {
   const DEFAULT_TITLE = "Banner";
   const DEFAULT_BUTTON_LINK = "#";
 
+  // Constantes para límites de caracteres por campo
+  const CHARACTER_LIMITS = {
+    EPIGRAPH: 25, // Epígrafe - texto corto
+    TITLE: 30, // Título - texto medio
+    DESCRIPTION: 100, // Descripción - texto largo
+    BUTTON1_TEXT: 10, // Botón 1 - texto corto
+    BUTTON2_TEXT: 10, // Botón 2 - texto corto
+  } as const;
+
   const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
@@ -164,6 +173,15 @@ const BannerPrincipal01BO: React.FC = () => {
     useState<BannerImage | null>(null);
   const [relatedDesktopImage, setRelatedDesktopImage] =
     useState<BannerImage | null>(null);
+
+  // Agregar estado para rastrear errores de validación de imagen
+  const [imageValidationError, setImageValidationError] = useState<{
+    desktop: boolean;
+    mobile: boolean;
+  }>({
+    desktop: false,
+    mobile: false,
+  });
 
   // Obtener los aspectos de las imágenes desde la configuración global
   const desktopAspect = globalConfig.bannerAspects.desktop;
@@ -261,7 +279,18 @@ const BannerPrincipal01BO: React.FC = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Limpiar error de validación previo
+      setImageValidationError((prev) => ({
+        ...prev,
+        [isMobile ? "mobile" : "desktop"]: false,
+      }));
+
       if (!validateImage(file)) {
+        // Marcar error de validación
+        setImageValidationError((prev) => ({
+          ...prev,
+          [isMobile ? "mobile" : "desktop"]: true,
+        }));
         return;
       }
 
@@ -285,6 +314,12 @@ const BannerPrincipal01BO: React.FC = () => {
         }
       };
       reader.readAsDataURL(file);
+    } else {
+      // Si no hay archivo seleccionado, marcar como error
+      setImageValidationError((prev) => ({
+        ...prev,
+        [isMobile ? "mobile" : "desktop"]: true,
+      }));
     }
   };
 
@@ -344,6 +379,11 @@ const BannerPrincipal01BO: React.FC = () => {
         setMobileImage(base64);
         setIsMobileImageUploaded(true);
         setIsMobileModalOpen(false);
+        // Limpiar error de validación cuando se carga exitosamente
+        setImageValidationError((prev) => ({
+          ...prev,
+          mobile: false,
+        }));
       } else {
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -352,6 +392,11 @@ const BannerPrincipal01BO: React.FC = () => {
         setMainImage(base64);
         setIsMainImageUploaded(true);
         setIsDesktopModalOpen(false);
+        // Limpiar error de validación cuando se carga exitosamente
+        setImageValidationError((prev) => ({
+          ...prev,
+          desktop: false,
+        }));
       }
     } catch (error) {
       console.error("Error al recortar/comprimir la imagen:", error);
@@ -372,6 +417,11 @@ const BannerPrincipal01BO: React.FC = () => {
       setMobileImage(null);
       setMobileFileName(null);
       setIsMobileImageUploaded(false);
+      // Marcar error de validación cuando se cancela la imagen
+      setImageValidationError((prev) => ({
+        ...prev,
+        mobile: true,
+      }));
       setFormData((prev) => ({
         ...prev,
         mobileImage: {
@@ -393,6 +443,11 @@ const BannerPrincipal01BO: React.FC = () => {
       setMainImage(null);
       setFileName(null);
       setIsMainImageUploaded(false);
+      // Marcar error de validación cuando se cancela la imagen
+      setImageValidationError((prev) => ({
+        ...prev,
+        desktop: true,
+      }));
       setFormData((prev) => ({
         ...prev,
         mainImage: {
@@ -675,6 +730,11 @@ const BannerPrincipal01BO: React.FC = () => {
       setIsAddingImage(false);
       setIsMainImageUploaded(false);
       setIsMobileImageUploaded(false);
+      // Limpiar errores de validación al cancelar
+      setImageValidationError({
+        desktop: false,
+        mobile: false,
+      });
     } else {
       // Inicializar con valores por defecto para el nuevo banner
       const initialLandingText = JSON.stringify({
@@ -755,6 +815,11 @@ const BannerPrincipal01BO: React.FC = () => {
       fileInputRef.current?.click();
       setIsMainImageUploaded(false);
       setIsMobileImageUploaded(false);
+      // Limpiar errores de validación al iniciar
+      setImageValidationError({
+        desktop: false,
+        mobile: false,
+      });
     }
   };
 
@@ -776,6 +841,58 @@ const BannerPrincipal01BO: React.FC = () => {
 
       return newData;
     });
+  };
+
+  // Función para verificar si el botón "Crear Banner" debe estar bloqueado
+  const isCreateBannerDisabled = () => {
+    if (loading) return true; // Siempre bloquear cuando está cargando
+
+    if (!isAddingImage) return false; // Solo validar cuando estamos agregando un nuevo banner
+
+    // Si hay errores de validación en desktop o mobile, bloquear el botón
+    if (imageValidationError.desktop || imageValidationError.mobile) {
+      return true;
+    }
+
+    // Si no hay imagen desktop cargada, bloquear el botón
+    if (!isMainImageUploaded) {
+      return true;
+    }
+
+    return false;
+  };
+
+  // Función para verificar si el botón "Borrar Banner" debe estar bloqueado
+  const isDeleteBannerDisabled = () => {
+    if (loading) return true; // Siempre bloquear cuando está cargando
+
+    // Solo mostrar y habilitar si hay más de 1 banner Y no estamos en modo de agregar
+    if (bannerData.length <= 1 || isAddingImage) {
+      return true;
+    }
+
+    return false;
+  };
+
+  // Funciones para validar y limitar caracteres
+  const validateAndLimitCharacters = (text: string, limit: number): string => {
+    return text.length > limit ? text.slice(0, limit) : text;
+  };
+
+  const getCharacterCount = (text: string, limit: number) => {
+    return {
+      current: text.length,
+      limit,
+      remaining: limit - text.length,
+      isOverLimit: text.length > limit,
+    };
+  };
+
+  const getCharacterCountClass = (current: number, limit: number) => {
+    const percentage = (current / limit) * 100;
+    if (percentage >= 90) return "text-red-500";
+    if (percentage >= 75) return "text-yellow-500";
+    return "text-gray-500";
   };
 
   const SkeletonLoader = () => (
@@ -1218,7 +1335,7 @@ const BannerPrincipal01BO: React.FC = () => {
                             </span>
                           )}
                           {formData.title !== DEFAULT_TITLE && (
-                            <h2 className="text-6xl text-white font-light mb-4 leading-10 drop-shadow-md">
+                            <h2 className="text-6xl text-white font-light mb-4 leading-[55px] drop-shadow-md">
                               {formData.title}
                             </h2>
                           )}
@@ -1399,7 +1516,21 @@ const BannerPrincipal01BO: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsDeleteModalOpen(true)}
-              className="py-2 px-4 rounded bg-red-700 hover:bg-red-700 text-white font-medium text-sm"
+              disabled={isDeleteBannerDisabled()}
+              className={`py-2 px-4 rounded text-white font-medium text-sm ${
+                isDeleteBannerDisabled()
+                  ? "bg-gray-400 cursor-not-allowed opacity-50"
+                  : "bg-red-700 hover:bg-red-700"
+              }`}
+              title={
+                isDeleteBannerDisabled()
+                  ? isAddingImage
+                    ? "No puedes borrar mientras estás creando un banner"
+                    : bannerData.length <= 1
+                    ? "Necesitas al menos 2 banners para poder borrar"
+                    : "Procesando..."
+                  : ""
+              }
             >
               Borrar Banner
             </button>
@@ -1408,8 +1539,21 @@ const BannerPrincipal01BO: React.FC = () => {
           <button
             type="submit"
             form="bannerForm"
-            disabled={loading}
-            className="py-2 px-4 rounded bg-primary hover:bg-secondary text-white font-medium text-sm flex items-center justify-center"
+            disabled={isCreateBannerDisabled()}
+            className={`py-2 px-4 rounded text-white font-medium text-sm flex items-center justify-center ${
+              isCreateBannerDisabled()
+                ? "bg-gray-400 cursor-not-allowed opacity-50"
+                : "bg-primary hover:bg-secondary"
+            }`}
+            title={
+              isCreateBannerDisabled()
+                ? imageValidationError.desktop || imageValidationError.mobile
+                  ? "Error en la validación de imagen. Verifica que la imagen no supere 5MB y sea un formato válido."
+                  : !isMainImageUploaded
+                  ? "Debes seleccionar una imagen para crear el banner."
+                  : "Procesando..."
+                : ""
+            }
           >
             {loading && (
               <svg
@@ -1625,11 +1769,39 @@ const BannerPrincipal01BO: React.FC = () => {
                       ? ""
                       : formData.buttonLink
                   }
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const limitedValue = validateAndLimitCharacters(
+                      e.target.value,
+                      CHARACTER_LIMITS.EPIGRAPH
+                    );
+                    setFormData((prev) => ({
+                      ...prev,
+                      buttonLink: limitedValue || DEFAULT_BUTTON_LINK,
+                    }));
+                  }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ingresa el epígrafe"
                   disabled={formData.buttonLink === DEFAULT_BUTTON_LINK}
                 />
+                {formData.buttonLink !== DEFAULT_BUTTON_LINK && (
+                  <div className="flex justify-between items-center mt-1">
+                    <span
+                      className={`text-xs ${getCharacterCountClass(
+                        formData.buttonLink.length,
+                        CHARACTER_LIMITS.EPIGRAPH
+                      )}`}
+                    >
+                      {formData.buttonLink.length}/{CHARACTER_LIMITS.EPIGRAPH}{" "}
+                      caracteres
+                    </span>
+                    {formData.buttonLink.length >=
+                      CHARACTER_LIMITS.EPIGRAPH && (
+                      <span className="text-xs text-red-500">
+                        Límite alcanzado
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1647,11 +1819,38 @@ const BannerPrincipal01BO: React.FC = () => {
                   type="text"
                   name="title"
                   value={formData.title === DEFAULT_TITLE ? "" : formData.title}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const limitedValue = validateAndLimitCharacters(
+                      e.target.value,
+                      CHARACTER_LIMITS.TITLE
+                    );
+                    setFormData((prev) => ({
+                      ...prev,
+                      title: limitedValue || DEFAULT_TITLE,
+                    }));
+                  }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md"
                   placeholder="Ingresa el título"
                   disabled={formData.title === DEFAULT_TITLE}
                 />
+                {formData.title !== DEFAULT_TITLE && (
+                  <div className="flex justify-between items-center mt-1">
+                    <span
+                      className={`text-xs ${getCharacterCountClass(
+                        formData.title.length,
+                        CHARACTER_LIMITS.TITLE
+                      )}`}
+                    >
+                      {formData.title.length}/{CHARACTER_LIMITS.TITLE}{" "}
+                      caracteres
+                    </span>
+                    {formData.title.length >= CHARACTER_LIMITS.TITLE && (
+                      <span className="text-xs text-red-500">
+                        Límite alcanzado
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1671,16 +1870,19 @@ const BannerPrincipal01BO: React.FC = () => {
                   name="landingText"
                   value={displayConfig.text}
                   onChange={(e) => {
-                    const newText = e.target.value;
+                    const limitedValue = validateAndLimitCharacters(
+                      e.target.value,
+                      CHARACTER_LIMITS.DESCRIPTION
+                    );
                     setDisplayConfig((prev) => ({
                       ...prev,
-                      text: newText,
+                      text: limitedValue,
                     }));
                     setFormData((prev) => ({
                       ...prev,
                       landingText: JSON.stringify({
                         ...displayConfig,
-                        text: newText,
+                        text: limitedValue,
                       }),
                     }));
                   }}
@@ -1689,6 +1891,25 @@ const BannerPrincipal01BO: React.FC = () => {
                   placeholder="Ingresa la descripción"
                   disabled={!displayConfig.showText}
                 />
+                {displayConfig.showText && (
+                  <div className="flex justify-between items-center mt-1">
+                    <span
+                      className={`text-xs ${getCharacterCountClass(
+                        displayConfig.text.length,
+                        CHARACTER_LIMITS.DESCRIPTION
+                      )}`}
+                    >
+                      {displayConfig.text.length}/{CHARACTER_LIMITS.DESCRIPTION}{" "}
+                      caracteres
+                    </span>
+                    {displayConfig.text.length >=
+                      CHARACTER_LIMITS.DESCRIPTION && (
+                      <span className="text-xs text-red-500">
+                        Límite alcanzado
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1743,11 +1964,19 @@ const BannerPrincipal01BO: React.FC = () => {
                   ) : (
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-3 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                      className={`border-2 border-dashed rounded-lg p-3 transition-colors cursor-pointer bg-white ${
+                        imageValidationError.desktop
+                          ? "border-red-300 hover:border-red-400 bg-red-50"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
                     >
                       <div className="flex flex-col items-center">
                         <svg
-                          className="w-12 h-8 text-gray-400 mb-4"
+                          className={`w-12 h-8 mb-4 ${
+                            imageValidationError.desktop
+                              ? "text-red-400"
+                              : "text-gray-400"
+                          }`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1759,9 +1988,22 @@ const BannerPrincipal01BO: React.FC = () => {
                             d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                           />
                         </svg>
-                        <p className="text-sm text-gray-500">
-                          Subir imagen Desktop (PNG, JPG, GIF)
+                        <p
+                          className={`text-sm ${
+                            imageValidationError.desktop
+                              ? "text-red-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {imageValidationError.desktop
+                            ? "Error: Imagen no válida o muy pesada"
+                            : "Subir imagen Desktop (PNG, JPG, GIF)"}
                         </p>
+                        {imageValidationError.desktop && (
+                          <p className="text-xs text-red-500 mt-1">
+                            Máximo 5MB, formatos: PNG, JPG, WebP
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1857,11 +2099,19 @@ const BannerPrincipal01BO: React.FC = () => {
                   ) : (
                     <div
                       onClick={() => mobileFileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-3 hover:border-gray-400 transition-colors cursor-pointer bg-white"
+                      className={`border-2 border-dashed rounded-lg p-3 transition-colors cursor-pointer bg-white ${
+                        imageValidationError.mobile
+                          ? "border-red-300 hover:border-red-400 bg-red-50"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
                     >
                       <div className="flex flex-col items-center">
                         <svg
-                          className="w-12 h-8 text-gray-400 mb-4"
+                          className={`w-12 h-8 mb-4 ${
+                            imageValidationError.mobile
+                              ? "text-red-400"
+                              : "text-gray-400"
+                          }`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1873,9 +2123,22 @@ const BannerPrincipal01BO: React.FC = () => {
                             d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                           />
                         </svg>
-                        <p className="text-sm text-gray-500">
-                          Subir imagen Mobile (PNG, JPG, GIF)
+                        <p
+                          className={`text-sm ${
+                            imageValidationError.mobile
+                              ? "text-red-600"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {imageValidationError.mobile
+                            ? "Error: Imagen no válida o muy pesada"
+                            : "Subir imagen Mobile (PNG, JPG, GIF)"}
                         </p>
+                        {imageValidationError.mobile && (
+                          <p className="text-xs text-red-500 mt-1">
+                            Máximo 5MB, formatos: PNG, JPG, WebP
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1907,15 +2170,38 @@ const BannerPrincipal01BO: React.FC = () => {
                   type="text"
                   value={displayConfig.button1Text}
                   onChange={(e) => {
+                    const limitedValue = validateAndLimitCharacters(
+                      e.target.value,
+                      CHARACTER_LIMITS.BUTTON1_TEXT
+                    );
                     setDisplayConfig((prev) => ({
                       ...prev,
-                      button1Text: e.target.value,
+                      button1Text: limitedValue,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
                   placeholder="Texto del botón"
                   disabled={!displayConfig.showButton1}
                 />
+                {displayConfig.showButton1 && (
+                  <div className="flex justify-between items-center mb-2">
+                    <span
+                      className={`text-xs ${getCharacterCountClass(
+                        displayConfig.button1Text.length,
+                        CHARACTER_LIMITS.BUTTON1_TEXT
+                      )}`}
+                    >
+                      {displayConfig.button1Text.length}/
+                      {CHARACTER_LIMITS.BUTTON1_TEXT} caracteres
+                    </span>
+                    {displayConfig.button1Text.length >=
+                      CHARACTER_LIMITS.BUTTON1_TEXT && (
+                      <span className="text-xs text-red-500">
+                        Límite alcanzado
+                      </span>
+                    )}
+                  </div>
+                )}
                 <input
                   type="text"
                   value={displayConfig.button1Link}
@@ -1950,15 +2236,38 @@ const BannerPrincipal01BO: React.FC = () => {
                   type="text"
                   value={displayConfig.button2Text}
                   onChange={(e) => {
+                    const limitedValue = validateAndLimitCharacters(
+                      e.target.value,
+                      CHARACTER_LIMITS.BUTTON2_TEXT
+                    );
                     setDisplayConfig((prev) => ({
                       ...prev,
-                      button2Text: e.target.value,
+                      button2Text: limitedValue,
                     }));
                   }}
                   className="w-full text-sm p-2 border border-gray-200 rounded-md mb-2"
                   placeholder="Texto del botón"
                   disabled={!displayConfig.showButton2}
                 />
+                {displayConfig.showButton2 && (
+                  <div className="flex justify-between items-center mb-2">
+                    <span
+                      className={`text-xs ${getCharacterCountClass(
+                        displayConfig.button2Text.length,
+                        CHARACTER_LIMITS.BUTTON2_TEXT
+                      )}`}
+                    >
+                      {displayConfig.button2Text.length}/
+                      {CHARACTER_LIMITS.BUTTON2_TEXT} caracteres
+                    </span>
+                    {displayConfig.button2Text.length >=
+                      CHARACTER_LIMITS.BUTTON2_TEXT && (
+                      <span className="text-xs text-red-500">
+                        Límite alcanzado
+                      </span>
+                    )}
+                  </div>
+                )}
                 <input
                   type="text"
                   value={displayConfig.button2Link}
