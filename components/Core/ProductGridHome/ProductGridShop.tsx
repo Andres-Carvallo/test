@@ -55,7 +55,6 @@ interface FilterState {
   priceRange: { min: number | null; max: number | null };
   hasOffers: boolean | null;
   deliveryType: string[];
-  viewMode: "grid" | "list";
   sortBy: string;
   columns: number;
   productsPerPage: number;
@@ -85,7 +84,6 @@ const ProductGridShop = ({
     priceRange: { min: null, max: null },
     hasOffers: null,
     deliveryType: [],
-    viewMode: "grid",
     sortBy: "nameAsc",
     columns: 3,
     productsPerPage: 6,
@@ -322,7 +320,6 @@ const ProductGridShop = ({
       priceRange: { min: null, max: null },
       hasOffers: null,
       deliveryType: [],
-      viewMode: "grid",
       sortBy: "nameAsc",
       columns: 3,
       productsPerPage: 6,
@@ -378,22 +375,23 @@ const ProductGridShop = ({
       <div className="w-full max-w-7xl mx-auto px-4 pt-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           {/* Botón para abrir sidebar en móvil */}
-          <div className="lg:hidden">
+          <div className="lg:hidden order-2 lg:order-1 bg-primary">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="mobile-filter-button flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all duration-200"
+              className="mobile-filter-button w-full flex items-center justify-center gap-2 px-4 py-2 text-white transition-all duration-200 "
+              style={{ borderRadius: "var(--radius)" }}
             >
               <FiFilter />
-              Filtros
+              Filtros y Ordenamiento
             </button>
           </div>
 
           {/* Información de resultados */}
-          <div className="flex-1">
+          <div className="flex-1 order-1 lg:order-2">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Nuestra Tienda
             </h1>
-            <p className="product-counter text-sm text-gray-600 inline-block">
+            <p className="product-counter text-sm text-gray-600 inline-block w-full max-w-sm">
               <FiPackage className="product-counter-icon" />
               Mostrando {paginatedProducts.length} de {sortedProducts.length}{" "}
               productos
@@ -401,51 +399,23 @@ const ProductGridShop = ({
           </div>
 
           {/* Controles de vista y ordenamiento */}
-          <div className="view-controls flex flex-col sm:flex-row gap-4">
-            {/* Grupo de controles de vista */}
-            <div className="view-control-group">
-              <span className="view-control-label">Vista:</span>
-              <button
-                onClick={() => handleFilterChange("viewMode", "grid")}
-                className={`p-2 rounded transition-colors ${
-                  filters.viewMode === "grid"
-                    ? "bg-primary text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-                title="Vista en cuadrícula"
-              >
-                <FiGrid size={16} />
-              </button>
-              <button
-                onClick={() => handleFilterChange("viewMode", "list")}
-                className={`p-2 rounded transition-colors ${
-                  filters.viewMode === "list"
-                    ? "bg-primary text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-                title="Vista en lista"
-              >
-                <FiList size={16} />
-              </button>
-            </div>
-
+          <div className="hidden view-controls lg:flex flex-col sm:flex-row gap-4 lg:order-3">
             {/* Selector de columnas (solo visible en modo grid) */}
-            {filters.viewMode === "grid" && (
-              <div className="view-control-group">
-                <span className="view-control-label">Columnas:</span>
-                <select
-                  value={filters.columns}
-                  onChange={(e) =>
-                    handleFilterChange("columns", parseInt(e.target.value))
-                  }
-                  className="config-selector px-3 py-2 text-sm focus:outline-none"
-                >
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                  <option value={4}>4</option>
-                </select>
-              </div>
-            )}
+            <div className="view-control-group">
+              <span className="view-control-label">Columnas:</span>
+              <select
+                value={filters.columns}
+                onChange={(e) =>
+                  handleFilterChange("columns", parseInt(e.target.value))
+                }
+                className="config-selector px-3 py-2 text-sm focus:outline-none"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+              </select>
+            </div>
 
             {/* Selector de productos por página */}
             <div className="view-control-group">
@@ -459,6 +429,7 @@ const ProductGridShop = ({
                   )
                 }
                 className="config-selector px-3 py-2 text-sm focus:outline-none"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 <option value={6}>6</option>
                 <option value={8}>8</option>
@@ -473,6 +444,7 @@ const ProductGridShop = ({
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange("sortBy", e.target.value)}
                 className="config-selector px-4 py-2 text-sm focus:outline-none"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 <option value="nameAsc">Nombre A - Z</option>
                 <option value="nameDesc">Nombre Z - A</option>
@@ -503,7 +475,7 @@ const ProductGridShop = ({
             )}
 
             {/* Sidebar */}
-            <div className="shop-filters-sidebar fixed lg:relative left-0 top-0 h-full lg:h-auto w-80 lg:w-64 bg-white border-r border-gray-200 lg:border-r-0 lg:border-b lg:border-gray-200 lg:pb-6 overflow-y-auto">
+            <div className="shop-filters-sidebar fixed lg:relative left-0 top-0 h-full lg:h-auto w-full sm:w-80 lg:w-64 bg-white border-r border-gray-200 lg:border-r-0 lg:border-b lg:border-gray-200 lg:pb-6 overflow-y-auto">
               <div className="p-6">
                 {/* Header del sidebar */}
                 <div className="flex items-center justify-between mb-6">
@@ -512,16 +484,88 @@ const ProductGridShop = ({
                   </h2>
                   <button
                     onClick={() => setIsSidebarOpen(false)}
-                    className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="lg:hidden p-2 hover:bg-gray-100  transition-colors bg-primary text-white"
+                    style={{ borderRadius: "var(--radius)" }}
                   >
                     <FiX size={20} />
                   </button>
                 </div>
 
+                {/* Controles de vista en móvil */}
+                <div className="lg:hidden border-b border-gray-200 pb-4 mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3">
+                    Opciones de Vista
+                  </h3>
+                  <div className="view-controls flex flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                      {/* Selector de columnas (solo visible en modo grid) */}
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="view-control-label">Columnas:</span>
+                        <select
+                          value={filters.columns}
+                          onChange={(e) =>
+                            handleFilterChange(
+                              "columns",
+                              parseInt(e.target.value)
+                            )
+                          }
+                          className="config-selector w-full px-3 py-2 text-sm focus:outline-none"
+                          style={{ borderRadius: "var(--radius)" }}
+                        >
+                          <option value={2}>2</option>
+                          <option value={3}>3</option>
+                          <option value={4}>4</option>
+                        </select>
+                      </div>
+
+                      {/* Selector de productos por página */}
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="view-control-label">Por página:</span>
+                        <select
+                          value={filters.productsPerPage}
+                          onChange={(e) =>
+                            handleFilterChange(
+                              "productsPerPage",
+                              parseInt(e.target.value)
+                            )
+                          }
+                          className="config-selector w-full px-3 py-2 text-sm focus:outline-none"
+                          style={{ borderRadius: "var(--radius)" }}
+                        >
+                          <option value={6}>6</option>
+                          <option value={8}>8</option>
+                          <option value={12}>12</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Ordenamiento */}
+                    <div className="flex flex-col items-start gap-1 w-full">
+                      <span className="view-control-label">Ordenar:</span>
+                      <select
+                        value={filters.sortBy}
+                        onChange={(e) =>
+                          handleFilterChange("sortBy", e.target.value)
+                        }
+                        className="config-selector w-full px-4 py-2 text-sm focus:outline-none"
+                        style={{ borderRadius: "var(--radius)" }}
+                      >
+                        <option value="nameAsc">Nombre A - Z</option>
+                        <option value="nameDesc">Nombre Z - A</option>
+                        <option value="asc">Precio: Menor a Mayor</option>
+                        <option value="desc">Precio: Mayor a Menor</option>
+                        <option value="featured">Recomendados</option>
+                        <option value="offerDesc">Mayor Descuento</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Botón limpiar filtros */}
                 <button
                   onClick={clearAllFilters}
-                  className="clear-filters-button w-full mb-6 px-4 py-2 text-sm text-gray-600 rounded-lg"
+                  className="clear-filters-button w-full mb-6 px-4 py-2 text-sm text-gray-600 "
+                  style={{ borderRadius: "var(--radius)" }}
                 >
                   Limpiar todos los filtros
                 </button>
@@ -555,7 +599,8 @@ const ProductGridShop = ({
                               );
                             }
                           }}
-                          className="custom-checkbox w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+                          className="custom-checkbox w-4 h-4 text-primary border-gray-300  focus:ring-primary/20"
+                          style={{ borderRadius: "var(--radius)" }}
                         />
                         <span className="text-sm text-gray-700">
                           {category.name}
@@ -583,6 +628,7 @@ const ProductGridShop = ({
                           })
                         }
                         className="price-range-input w-full px-3 py-2 text-sm focus:outline-none"
+                        style={{ borderRadius: "var(--radius)" }}
                       />
                       <input
                         type="number"
@@ -598,6 +644,7 @@ const ProductGridShop = ({
                           })
                         }
                         className="price-range-input w-full px-3 py-2 text-sm focus:outline-none"
+                        style={{ borderRadius: "var(--radius)" }}
                       />
                     </div>
                     <div className="text-xs text-gray-500">
@@ -657,7 +704,8 @@ const ProductGridShop = ({
                             );
                           }
                         }}
-                        className="custom-checkbox w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+                        className="custom-checkbox w-4 h-4 text-primary border-gray-300  focus:ring-primary/20"
+                        style={{ borderRadius: "var(--radius)" }}
                       />
                       <span className="text-sm text-gray-700">
                         Envío a domicilio
@@ -682,7 +730,8 @@ const ProductGridShop = ({
                             );
                           }
                         }}
-                        className="custom-checkbox w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/20"
+                        className="custom-checkbox w-4 h-4 text-primary border-gray-300  focus:ring-primary/20"
+                        style={{ borderRadius: "var(--radius)" }}
                       />
                       <span className="text-sm text-gray-700">
                         Retiro en tienda
@@ -698,11 +747,7 @@ const ProductGridShop = ({
           <div className="flex-1">
             {/* Grid de productos */}
             <div
-              className={`${
-                filters.viewMode === "grid"
-                  ? `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${filters.columns} xl:grid-cols-${filters.columns} gap-6`
-                  : "product-list-view space-y-4"
-              }`}
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-${filters.columns} xl:grid-cols-${filters.columns} gap-6`}
             >
               {paginatedProducts.length > 0 ? (
                 paginatedProducts.map((product: any) => (
@@ -710,28 +755,22 @@ const ProductGridShop = ({
                     key={product.id}
                     className="flex justify-center"
                   >
-                    {filters.viewMode === "list" ? (
-                      <ProductCardList
-                        product={product}
-                        addToCartHandler={addToCartHandler}
-                        isOnSale={hasProductOffers(product)}
-                        stock={product.stock}
-                      />
-                    ) : (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        addToCartHandler={addToCartHandler}
-                        isOnSale={hasProductOffers(product)}
-                        stock={product.stock}
-                      />
-                    )}
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      addToCartHandler={addToCartHandler}
+                      isOnSale={hasProductOffers(product)}
+                      stock={product.stock}
+                    />
                   </div>
                 ))
               ) : (
                 <div className="empty-state col-span-full py-12 text-center">
                   <div className="max-w-md mx-auto">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div
+                      className="w-16 h-16 bg-gray-100  flex items-center justify-center mx-auto mb-4"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
                       <FiX
                         size={24}
                         className="text-gray-400"
@@ -745,7 +784,8 @@ const ProductGridShop = ({
                     </p>
                     <button
                       onClick={clearAllFilters}
-                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                      className="px-4 py-2 bg-primary text-white  hover:bg-primary/90 transition-colors"
+                      style={{ borderRadius: "var(--radius)" }}
                     >
                       Limpiar filtros
                     </button>
@@ -766,7 +806,7 @@ const ProductGridShop = ({
                           ? handlePageChange(pageNum)
                           : undefined
                       }
-                      className={`pagination-button px-4 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                      className={`pagination-button px-4 py-2 text-sm border  transition-all duration-200 ${
                         pageNum === page
                           ? "bg-primary text-white border-primary"
                           : pageNum === "..."
@@ -774,6 +814,7 @@ const ProductGridShop = ({
                           : "bg-white hover:bg-gray-50 border-gray-300"
                       }`}
                       disabled={pageNum === "..."}
+                      style={{ borderRadius: "var(--radius)" }}
                     >
                       {pageNum}
                     </button>
@@ -805,173 +846,13 @@ const FilterSection = ({
     <div className="border-b border-gray-200 pb-4 mb-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="filter-section-header flex items-center justify-between w-full text-left mb-3 p-2 rounded"
+        className="filter-section-header flex items-center justify-between w-full text-left mb-3 p-2 "
+        style={{ borderRadius: "var(--radius)" }}
       >
         <h3 className="text-sm font-medium text-gray-900">{title}</h3>
         {isOpen ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
       </button>
       {isOpen && <div className="filter-transition">{children}</div>}
-    </div>
-  );
-};
-
-// Componente para vista de lista
-const ProductCardList = ({
-  product,
-  addToCartHandler,
-  isOnSale,
-  stock,
-}: {
-  product: any;
-  addToCartHandler: any;
-  isOnSale: boolean;
-  stock: number | null;
-}) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = product.mainImageUrl;
-    img.onload = () => {
-      setImageLoaded(true);
-      setIsLoading(false);
-    };
-    img.onerror = () => {
-      setIsLoading(false);
-    };
-  }, [product.mainImageUrl]);
-
-  const price = getProductPrice(product);
-  const needsVariantSelection = product.hasVariations || stock === 0;
-
-  return (
-    <div className="product-list-item">
-      {/* Imagen pequeña a la izquierda */}
-      <div className="product-image">
-        {isLoading && (
-          <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg"></div>
-        )}
-        {imageLoaded && (
-          <img
-            src={product.mainImageUrl}
-            alt={product.name}
-            loading="lazy"
-          />
-        )}
-      </div>
-
-      {/* Información del producto en el centro */}
-      <div className="product-info">
-        <h3 className="product-title">{product.name}</h3>
-
-        {/* Categorías */}
-        {product.productTypes && product.productTypes.length > 0 && (
-          <div className="product-categories">
-            {product.productTypes.slice(0, 2).map((type: any) => (
-              <span
-                key={type.id}
-                className="product-category"
-              >
-                {type.name}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Precio */}
-        <div className="product-price">
-          {isOnSale && <span className="product-sale-badge">En Oferta</span>}
-          <span>${price.toLocaleString("es-CL")}</span>
-        </div>
-      </div>
-
-      {/* Botones de acción a la derecha */}
-      <div className="product-actions">
-        {/* Botón ver detalles - siempre visible */}
-        <Link
-          href={`/tienda/productos/${slugify(product.name)}`}
-          className="action-button view"
-          title="Ver detalles"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle
-              cx="11"
-              cy="11"
-              r="8"
-            ></circle>
-            <line
-              x1="21"
-              y1="21"
-              x2="16.65"
-              y2="16.65"
-            ></line>
-          </svg>
-        </Link>
-
-        {/* Mostrar botón de agregar al carrito solo si NO necesita selección de variantes */}
-        {!needsVariantSelection && (
-          <button
-            onClick={() => addToCartHandler(product.skuId, 1)}
-            className="action-button primary"
-            title="Agregar al carrito"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-              <line
-                x1="3"
-                y1="6"
-                x2="21"
-                y2="6"
-              />
-              <path d="M16 10a4 4 0 0 1-8 0" />
-            </svg>
-          </button>
-        )}
-
-        {/* Mostrar botón de ver más opciones solo si necesita selección de variantes */}
-        {needsVariantSelection && (
-          <Link
-            href={`/tienda/productos/${slugify(product.name)}`}
-            className="action-button primary"
-            title="Ver más opciones"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </Link>
-        )}
-      </div>
     </div>
   );
 };
