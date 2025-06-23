@@ -154,6 +154,21 @@ const ProductGridShop = ({
     setIsLoading(false);
   }, [page, selectedCategory]);
 
+  // Efecto para sincronizar los filtros de categorías con la URL
+  useEffect(() => {
+    if (selectedCategory) {
+      setFilters((prev) => ({
+        ...prev,
+        categories: [selectedCategory],
+      }));
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        categories: [],
+      }));
+    }
+  }, [selectedCategory]);
+
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", newPage.toString());
@@ -312,6 +327,18 @@ const ProductGridShop = ({
       [filterType]: value,
     }));
     setPage(1);
+
+    // Si se está cambiando las categorías, actualizar la URL
+    if (filterType === "categories") {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value.length > 0) {
+        params.set("categoria", value[0]); // Tomar la primera categoría seleccionada
+      } else {
+        params.delete("categoria");
+      }
+      params.delete("page");
+      router.push(`/tienda?${params.toString()}`);
+    }
   };
 
   const clearAllFilters = () => {
@@ -325,6 +352,12 @@ const ProductGridShop = ({
       productsPerPage: 6,
     });
     setPage(1);
+
+    // Limpiar la URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("categoria");
+    params.delete("page");
+    router.push(`/tienda?${params.toString()}`);
   };
 
   const getPageNumbers = (currentPage: number, totalPages: number) => {

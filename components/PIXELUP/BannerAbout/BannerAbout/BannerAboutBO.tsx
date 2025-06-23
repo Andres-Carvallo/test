@@ -305,11 +305,11 @@ const BannerAboutBO: React.FC<any> = () => {
           ...prevConfigOptions[section as keyof typeof prevConfigOptions],
           [property]: value,
         },
-        // Si es una alineación, sincronizar con la otra vista
-        ...(property === "textAlignment" && {
-          [section === "desktop" ? "mobile" : "desktop"]: {
-            ...prevConfigOptions[section === "desktop" ? "mobile" : "desktop"],
-            textAlignment: value,
+        // Sincronizar mobile con desktop para todas las propiedades
+        ...(section === "desktop" && {
+          mobile: {
+            ...prevConfigOptions.mobile,
+            [property]: value,
           },
         }),
       }));
@@ -757,7 +757,8 @@ const BannerAboutBO: React.FC<any> = () => {
               <div
                 className="relative w-full overflow-hidden rounded-lg shadow-lg border border-gray-200"
                 style={{
-                  aspectRatio: activeView === "desktop" ? desktopAspect : mobileAspect,
+                  aspectRatio:
+                    activeView === "desktop" ? desktopAspect : mobileAspect,
                   maxWidth: activeView === "mobile" ? "720px" : "100%",
                   maxHeight: activeView === "mobile" ? "400px" : "400px",
                   margin: activeView === "mobile" ? "0 auto" : "0",
@@ -772,14 +773,10 @@ const BannerAboutBO: React.FC<any> = () => {
                   alt="Banner preview"
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                {((activeView === "desktop" &&
-                  (configOptions.desktop.showTitle ||
-                    configOptions.desktop.showLandingText ||
-                    configOptions.desktop.showButton)) ||
-                  (activeView === "mobile" &&
-                    (configOptions.mobile.showTitle ||
-                      configOptions.mobile.showLandingText ||
-                      configOptions.mobile.showButton))) && (
+                {/* Overlay y texto - solo mostrar si al menos un elemento está activado */}
+                {(configOptions.desktop.showTitle ||
+                  configOptions.desktop.showLandingText ||
+                  configOptions.desktop.showButton) && (
                   <div className="absolute inset-0 flex flex-col justify-center px-6 py-6 bg-black bg-opacity-40 w-full">
                     <div className="w-full max-w-[95%] mx-auto px-4">
                       <div
@@ -790,16 +787,14 @@ const BannerAboutBO: React.FC<any> = () => {
                               : configOptions.desktop.textAlignment === "right"
                               ? "text-right ml-auto max-w-2xl"
                               : "text-left max-w-2xl"
-                            : configOptions.mobile.textAlignment === "center"
+                            : configOptions.desktop.textAlignment === "center"
                             ? "text-center mx-auto"
-                            : configOptions.mobile.textAlignment === "right"
+                            : configOptions.desktop.textAlignment === "right"
                             ? "text-right ml-auto max-w-xs"
                             : "text-left max-w-xs"
                         }`}
                       >
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showTitle
-                          : configOptions.mobile.showTitle) && (
+                        {configOptions.desktop.showTitle && (
                           <h2
                             className={`${
                               activeView === "desktop"
@@ -808,28 +803,20 @@ const BannerAboutBO: React.FC<any> = () => {
                             } font-bold text-white mb-3 drop-shadow-lg`}
                             style={shadowTextStyle}
                           >
-                            {activeView === "desktop"
-                              ? configOptions.desktop.title
-                              : configOptions.mobile.title}
+                            {configOptions.desktop.title}
                           </h2>
                         )}
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showLandingText
-                          : configOptions.mobile.showLandingText) && (
+                        {configOptions.desktop.showLandingText && (
                           <p
                             className={`${
                               activeView === "desktop" ? "text-lg" : "text-base"
                             } text-white mb-4 drop-shadow-lg`}
                             style={shadowTextStyle}
                           >
-                            {activeView === "desktop"
-                              ? configOptions.desktop.textContent
-                              : configOptions.mobile.textContent}
+                            {configOptions.desktop.textContent}
                           </p>
                         )}
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showButton
-                          : configOptions.mobile.showButton) && (
+                        {configOptions.desktop.showButton && (
                           <div>
                             <button
                               className={`inline-block px-${
@@ -838,9 +825,7 @@ const BannerAboutBO: React.FC<any> = () => {
                                 activeView === "desktop" ? "3" : "2.5"
                               } bg-white text-black rounded-md shadow-md font-medium`}
                             >
-                              {activeView === "desktop"
-                                ? configOptions.desktop.buttonText
-                                : configOptions.mobile.buttonText}
+                              {configOptions.desktop.buttonText}
                             </button>
                           </div>
                         )}
@@ -1530,7 +1515,11 @@ const BannerAboutBO: React.FC<any> = () => {
                   image={mainImageHero || ""}
                   crop={crop}
                   zoom={zoom}
-                  aspect={activeView === "desktop" ? eval(desktopAspect) : eval(mobileAspect)}
+                  aspect={
+                    activeView === "desktop"
+                      ? eval(desktopAspect)
+                      : eval(mobileAspect)
+                  }
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
                   onCropComplete={handleCropComplete}

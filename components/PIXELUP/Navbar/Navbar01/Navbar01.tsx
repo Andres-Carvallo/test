@@ -18,6 +18,7 @@ import { useLogo } from "@/context/LogoContext";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isCategoriesVisible, setIsCategoriesVisible] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(
     null
@@ -33,6 +34,7 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [collections, setCollections] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   // Filtrar los enlaces del menú que son visibles
   const menuItems = mainMenuConfig.showInNavbar
@@ -52,6 +54,10 @@ export default function Navbar() {
     .filter((collection) => !excludedIds.includes(collection.id))
     .sort((a, b) => a.title.localeCompare(b.title));
 
+  const filteredCategories = categories
+    .filter((category) => category.statusCode === "ACTIVE")
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   // Función para verificar si una ruta está activa
   const isActive = (path: string) => {
     if (!pathname) return false;
@@ -62,7 +68,7 @@ export default function Navbar() {
     // Caso especial para la tienda
     if (
       path === "/tienda" &&
-      pathname.startsWith("/tienda/") &&
+      pathname.startsWith("/tienda") &&
       !pathname.includes("/tienda/colecciones")
     )
       return true;
@@ -100,6 +106,19 @@ export default function Navbar() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const siteid = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/product-types?pageNumber=1&pageSize=50&siteId=${siteid}`
+      );
+      setCategories(response.data.productTypes);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setError(error as Error);
+    }
+  };
+
   // Cargar productos iniciales
   useEffect(() => {
     const loadInitialData = async () => {
@@ -124,6 +143,10 @@ export default function Navbar() {
     fetchCollections();
   }, []);
 
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   // Limpiar el timeout cuando el componente se desmonte
   useEffect(() => {
     return () => {
@@ -139,6 +162,10 @@ export default function Navbar() {
 
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
+  };
+
+  const toggleCategoriesVisibility = () => {
+    setIsCategoriesVisible(!isCategoriesVisible);
   };
 
   const handleDropdownEnter = (index: number) => {
@@ -256,6 +283,112 @@ export default function Navbar() {
                                     </svg>
                                   </span>
                                   {collection.title}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                      </ul>
+                    </li>
+                  );
+                }
+                // Si es un menú desplegable de categorías
+                if (item.isDropdown && item.dropdownType === "categories") {
+                  return (
+                    <li
+                      key={index}
+                      className="relative"
+                      onMouseEnter={() => handleDropdownEnter(index)}
+                      onMouseLeave={handleDropdownLeave}
+                    >
+                      <p
+                        className={`cursor-pointer text-base font-medium flex items-center ${hoverColorClass} ${
+                          pathname.includes("categoria=")
+                            ? `${activeColorClass} ${activeFontWeight}`
+                            : ""
+                        }`}
+                      >
+                        {item.title}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16px"
+                          height="16px"
+                          className="ml-1"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M12 16a1 1 0 0 1-.71-.29l-6-6a1 1 0 0 1 1.42-1.42l5.29 5.3 5.29-5.29a1 1 0 0 1 1.41 1.41l-6 6a1 1 0 0 1-.7.29z"
+                            data-name="16"
+                            data-original="#000000"
+                          />
+                        </svg>
+                      </p>
+                      {/* Área de padding invisible para facilitar la navegación al submenú */}
+                      <div className="absolute h-4 w-full left-0 top-full"></div>
+                      <ul
+                        className={`absolute uppercase left-0 w-64 z-50 bg-white dark:bg-gray-800  dark:border-gray-700 shadow-lg rounded-md py-2 mt-4 transition-all duration-300 ${
+                          activeDropdown === index
+                            ? "opacity-100 visible"
+                            : "opacity-0 invisible"
+                        }`}
+                      >
+                        {filteredCategories.length > 0 &&
+                          filteredCategories.map((category) => {
+                            const categoryPath = `/tienda?categoria=${slugify(
+                              category.name
+                            )}`;
+                            return (
+                              <li
+                                key={category.id}
+                                className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 ${
+                                  pathname.includes(
+                                    `categoria=${slugify(category.name)}`
+                                  )
+                                    ? "bg-gray-100 dark:bg-gray-600"
+                                    : ""
+                                }`}
+                              >
+                                <Link
+                                  href={categoryPath}
+                                  className={`flex items-center px-4 py-2 text-sm ${hoverColorClass} ${
+                                    pathname.includes(
+                                      `categoria=${slugify(category.name)}`
+                                    )
+                                      ? `${activeColorClass} font-medium`
+                                      : ""
+                                  }`}
+                                  onClick={() => {
+                                    setIsOpen(false);
+                                    // Scroll hacia la sección de productos después de la navegación
+                                    setTimeout(() => {
+                                      const productSection =
+                                        document.querySelector(
+                                          ".product-grid-section"
+                                        );
+                                      if (productSection) {
+                                        productSection.scrollIntoView({
+                                          behavior: "smooth",
+                                        });
+                                      }
+                                    }, 100);
+                                  }}
+                                >
+                                  <span className="mr-2">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth={1.5}
+                                      stroke="currentColor"
+                                      className="size-3"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                      />
+                                    </svg>
+                                  </span>
+                                  {category.name}
                                 </Link>
                               </li>
                             );
@@ -394,7 +527,7 @@ export default function Navbar() {
           isOpen ? "block" : "hidden"
         }`}
       >
-        <div className="flex justify-end p-4">
+        <div className="flex justify-end px-4 py-2">
           <button
             onClick={toggleMenu}
             className="text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
@@ -422,7 +555,7 @@ export default function Navbar() {
               onClick={() => setIsOpen(false)}
             >
               <img
-                className="w-auto max-h-20"
+                className="w-auto max-h-14 mb-6"
                 src={Logo}
                 alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
               />
@@ -443,16 +576,75 @@ export default function Navbar() {
                     }`}
                   >
                     <button
-                      className={`relative flex items-center justify-center ${hoverColorClass} text-base font-medium w-full py-2 ${
+                      className={`relative flex items-center ${hoverColorClass} text-base font-medium w-full py-2 uppercase ${
                         pathname.includes("/tienda/colecciones")
                           ? activeColorClass
                           : ""
                       }`}
                       onClick={toggleVisibility}
                     >
-                      {item.title}
-                      <span className="ml-2">
+                      <span className="w-full text-center">
+                        {item.title.toUpperCase()}
+                      </span>
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 mr-2 flex-shrink-0">
                         {isVisible ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                    </button>
+                  </li>
+                );
+              }
+              // Si es un menú desplegable de categorías en versión móvil
+              if (item.isDropdown && item.dropdownType === "categories") {
+                return (
+                  <li
+                    key={index}
+                    className={`${
+                      pathname.includes("categoria=")
+                        ? `${activeColorClass} ${activeFontWeight}`
+                        : ""
+                    }`}
+                  >
+                    <button
+                      className={`relative flex items-center ${hoverColorClass} text-base font-medium w-full py-2 uppercase ${
+                        pathname.includes("categoria=") ? activeColorClass : ""
+                      }`}
+                      onClick={toggleCategoriesVisibility}
+                    >
+                      <span className="w-full text-center">
+                        {item.title.toUpperCase()}
+                      </span>
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 mr-2 flex-shrink-0">
+                        {isCategoriesVisible ? (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -552,6 +744,75 @@ export default function Navbar() {
                               </svg>
                             </span>
                             {collection.title}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            {isCategoriesVisible && (
+              <div className="border-t border-gray-200 dark:border-gray-700 py-3 mt-2 bg-gray-50 dark:bg-gray-700 rounded-md">
+                {filteredCategories.length > 0 && (
+                  <ul className="flex flex-col space-y-2 text-center px-4">
+                    {filteredCategories.map((category) => {
+                      const categoryPath = `/tienda?categoria=${slugify(
+                        category.name
+                      )}`;
+                      return (
+                        <li
+                          key={category.id}
+                          className={`${
+                            pathname.includes(
+                              `categoria=${slugify(category.name)}`
+                            )
+                              ? `${activeColorClass} ${activeFontWeight}`
+                              : ""
+                          } transition-colors duration-200`}
+                        >
+                          <Link
+                            href={categoryPath}
+                            className={`flex items-center justify-center ${hoverColorClass} text-base font-medium uppercase py-1 ${
+                              pathname.includes(
+                                `categoria=${slugify(category.name)}`
+                              )
+                                ? activeColorClass
+                                : ""
+                            }`}
+                            onClick={() => {
+                              setIsOpen(false);
+                              // Scroll hacia la sección de productos después de la navegación
+                              setTimeout(() => {
+                                const productSection = document.querySelector(
+                                  ".product-grid-section"
+                                );
+                                if (productSection) {
+                                  productSection.scrollIntoView({
+                                    behavior: "smooth",
+                                  });
+                                }
+                              }, 100);
+                            }}
+                          >
+                            <span className="mr-2">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-3"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                />
+                              </svg>
+                            </span>
+                            {category.name}
                           </Link>
                         </li>
                       );

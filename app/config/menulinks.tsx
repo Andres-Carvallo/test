@@ -24,7 +24,7 @@ export interface MenuLink {
   path: string;
   isVisible?: boolean;
   isDropdown?: boolean;
-  dropdownType?: "collections" | "custom";
+  dropdownType?: "collections" | "categories" | "custom";
 }
 
 export interface SocialLink {
@@ -69,6 +69,8 @@ export const mainMenuConfig: MenuConfig = {
       title: "Tienda",
       path: "/tienda",
       isVisible: true,
+      isDropdown: true,
+      dropdownType: "categories",
     },
     {
       title: "Colecciones",
@@ -77,6 +79,7 @@ export const mainMenuConfig: MenuConfig = {
       isDropdown: true,
       dropdownType: "collections",
     },
+
     {
       title: "Nosotros",
       path: "/nosotros",
@@ -90,7 +93,7 @@ export const mainMenuConfig: MenuConfig = {
     {
       title: "Componentes",
       path: "/componentes-pixelup",
-      isVisible: true,
+      isVisible: false,
     },
   ],
 };

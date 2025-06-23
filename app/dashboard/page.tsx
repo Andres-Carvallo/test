@@ -19,15 +19,17 @@ const InicioDashboard = () => {
     setTutorialSteps([
       {
         target: ".sidebar-logo",
-        content: "Este es el logo de tu Sitio Web. Haz clic aquí para volver al inicio.",
+        content:
+          "Este es el logo de tu Sitio Web. Haz clic aquí para volver al inicio.",
         disableBeacon: true,
       },
       {
         target: ".sidebar-menu",
-        content: "Aquí encontrarás todas las opciones de navegación del dashboard.",
+        content:
+          "Aquí encontrarás todas las opciones de navegación del dashboard.",
         disableBeacon: true,
       },
-/*       {
+      /*       {
         target: "a[href='/dashboard/']",
         content: "Inicio: Aquí podrás ver el resumen general de tu tienda.",
         disableBeacon: true,
@@ -84,7 +86,8 @@ const InicioDashboard = () => {
       }, */
       {
         target: ".sidebar-user",
-        content: "Tu perfil de usuario. Aquí puedes acceder a la configuración y cerrar sesión.",
+        content:
+          "Tu perfil de usuario. Aquí puedes acceder a la configuración y cerrar sesión.",
         disableBeacon: true,
       },
       {
@@ -99,14 +102,16 @@ const InicioDashboard = () => {
     const { status } = data;
     if (status === "finished" || status === "skipped") {
       setRunTutorial(false);
-      
+
       // Restaurar el scroll del Sidebar después de completar el tutorial
       setTimeout(() => {
-        const sidebarElement = document.querySelector('.sidebar-scroll') as HTMLElement;
+        const sidebarElement = document.querySelector(
+          ".sidebar-scroll"
+        ) as HTMLElement;
         if (sidebarElement) {
-          sidebarElement.classList.remove('overflow-hidden');
-          sidebarElement.style.overflow = 'auto';
-          sidebarElement.style.height = 'auto';
+          sidebarElement.classList.remove("overflow-hidden");
+          sidebarElement.style.overflow = "auto";
+          sidebarElement.style.height = "auto";
         }
       }, 100);
     }
@@ -122,13 +127,15 @@ const InicioDashboard = () => {
 
   const startTutorial = () => {
     // Asegurarse de que el Sidebar esté expandido antes de iniciar el tutorial
-    const sidebarElement = document.querySelector('.sidebar-scroll') as HTMLElement;
+    const sidebarElement = document.querySelector(
+      ".sidebar-scroll"
+    ) as HTMLElement;
     if (sidebarElement) {
-      sidebarElement.classList.add('overflow-hidden');
-      sidebarElement.style.overflow = 'auto';
-      sidebarElement.style.height = 'auto';
+      sidebarElement.classList.add("overflow-hidden");
+      sidebarElement.style.overflow = "auto";
+      sidebarElement.style.height = "auto";
     }
-    
+
     setRunTutorial(true);
   };
 
@@ -160,18 +167,27 @@ const InicioDashboard = () => {
   return (
     <div className="w-full h-screen relative">
       <title>PixelUP - Dashboard</title>
-      
+
       {/* Botón de tutorial */}
       <button
         onClick={startTutorial}
-        className="absolute top-4 right-12 bg-primary text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary/90 transition-colors flex items-center gap-2 z-10"
+        className="absolute hidden top-4 right-12 bg-primary text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary/90 transition-colors flex items-center gap-2 z-10"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clipRule="evenodd"
+          />
         </svg>
         Tutorial
       </button>
-      
+
       {/* Componente Joyride para el tutorial */}
       <Joyride
         steps={tutorialSteps}
@@ -223,7 +239,7 @@ const InicioDashboard = () => {
           disableAnimation: true,
         }}
       />
-      
+
       <iframe
         src="https://welcome-client-git-development-pixelups-projects.vercel.app/home-clientes-dashboard"
         className="w-full h-full border-0"
