@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -51,7 +52,7 @@ interface ProductGridShopProps {
 
 interface FilterState {
   categories: string[];
-  priceRange: { min: number; max: number };
+  priceRange: { min: number | null; max: number | null };
   hasOffers: boolean | null;
   deliveryType: string[];
   viewMode: "grid" | "list";
@@ -81,13 +82,13 @@ const ProductGridShop = ({
   const [filters, setFilters] = useState<FilterState>({
     categories:
       selectedCategory && selectedCategory !== "ALL" ? [selectedCategory] : [],
-    priceRange: { min: 0, max: 1000000 },
+    priceRange: { min: null, max: null },
     hasOffers: null,
     deliveryType: [],
     viewMode: "grid",
     sortBy: "nameAsc",
-    columns: 4,
-    productsPerPage: 12,
+    columns: 3,
+    productsPerPage: 6,
   });
 
   // Obtener rangos de precios para los filtros
@@ -225,7 +226,15 @@ const ProductGridShop = ({
     // Filtro por rango de precio
     filtered = filtered.filter((product: any) => {
       const price = getProductPrice(product);
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
+      const { min, max } = filters.priceRange;
+
+      if (min !== null && price < min) {
+        return false;
+      }
+      if (max !== null && price > max) {
+        return false;
+      }
+      return true;
     });
 
     // Filtro por ofertas
@@ -310,13 +319,13 @@ const ProductGridShop = ({
   const clearAllFilters = () => {
     setFilters({
       categories: [],
-      priceRange: { min: 0, max: 1000000 },
+      priceRange: { min: null, max: null },
       hasOffers: null,
       deliveryType: [],
       viewMode: "grid",
       sortBy: "nameAsc",
-      columns: 4,
-      productsPerPage: 12,
+      columns: 3,
+      productsPerPage: 6,
     });
     setPage(1);
   };
@@ -434,8 +443,6 @@ const ProductGridShop = ({
                   <option value={2}>2</option>
                   <option value={3}>3</option>
                   <option value={4}>4</option>
-                  <option value={5}>5</option>
-                  <option value={6}>6</option>
                 </select>
               </div>
             )}
@@ -454,10 +461,8 @@ const ProductGridShop = ({
                 className="config-selector px-3 py-2 text-sm focus:outline-none"
               >
                 <option value={6}>6</option>
+                <option value={8}>8</option>
                 <option value={12}>12</option>
-                <option value={24}>24</option>
-                <option value={48}>48</option>
-                <option value={96}>96</option>
               </select>
             </div>
 
@@ -563,30 +568,36 @@ const ProductGridShop = ({
                 {/* Filtro por rango de precio */}
                 <FilterSection title="Rango de Precio">
                   <div className="space-y-4">
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <input
                         type="number"
                         placeholder="Mín"
-                        value={filters.priceRange.min || ""}
+                        value={filters.priceRange.min ?? ""}
                         onChange={(e) =>
                           handleFilterChange("priceRange", {
                             ...filters.priceRange,
-                            min: parseInt(e.target.value) || 0,
+                            min:
+                              e.target.value === ""
+                                ? null
+                                : parseInt(e.target.value),
                           })
                         }
-                        className="price-range-input flex-1 px-3 py-2 text-sm focus:outline-none"
+                        className="price-range-input w-full px-3 py-2 text-sm focus:outline-none"
                       />
                       <input
                         type="number"
                         placeholder="Máx"
-                        value={filters.priceRange.max || ""}
+                        value={filters.priceRange.max ?? ""}
                         onChange={(e) =>
                           handleFilterChange("priceRange", {
                             ...filters.priceRange,
-                            max: parseInt(e.target.value) || 1000000,
+                            max:
+                              e.target.value === ""
+                                ? null
+                                : parseInt(e.target.value),
                           })
                         }
-                        className="price-range-input flex-1 px-3 py-2 text-sm focus:outline-none"
+                        className="price-range-input w-full px-3 py-2 text-sm focus:outline-none"
                       />
                     </div>
                     <div className="text-xs text-gray-500">
@@ -603,33 +614,23 @@ const ProductGridShop = ({
                       <input
                         type="radio"
                         name="offers"
-                        checked={filters.hasOffers === true}
-                        onChange={() => handleFilterChange("hasOffers", true)}
-                        className="custom-radio w-4 h-4 text-primary border-gray-300 focus:ring-primary/20"
-                      />
-                      <span className="text-sm text-gray-700">
-                        Solo productos con ofertas
-                      </span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer filter-transition">
-                      <input
-                        type="radio"
-                        name="offers"
-                        checked={filters.hasOffers === false}
-                        onChange={() => handleFilterChange("hasOffers", false)}
-                        className="custom-radio w-4 h-4 text-primary border-gray-300 focus:ring-primary/20"
-                      />
-                      <span className="text-sm text-gray-700">Sin ofertas</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer filter-transition">
-                      <input
-                        type="radio"
-                        name="offers"
                         checked={filters.hasOffers === null}
                         onChange={() => handleFilterChange("hasOffers", null)}
                         className="custom-radio w-4 h-4 text-primary border-gray-300 focus:ring-primary/20"
                       />
                       <span className="text-sm text-gray-700">Todos</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer filter-transition">
+                      <input
+                        type="radio"
+                        name="offers"
+                        checked={filters.hasOffers === true}
+                        onChange={() => handleFilterChange("hasOffers", true)}
+                        className="custom-radio w-4 h-4 text-primary border-gray-300 focus:ring-primary/20"
+                      />
+                      <span className="text-sm text-gray-700">
+                        Solo ofertas
+                      </span>
                     </label>
                   </div>
                 </FilterSection>
