@@ -391,7 +391,10 @@ const ProductGridShop = ({
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Nuestra Tienda
             </h1>
-            <p className="product-counter text-sm text-gray-600 inline-block w-full max-w-sm">
+            <p
+              className="product-counter text-sm text-gray-600 inline-block w-full max-w-sm"
+              style={{ borderRadius: "var(--radius)" }}
+            >
               <FiPackage className="product-counter-icon" />
               Mostrando {paginatedProducts.length} de {sortedProducts.length}{" "}
               productos
@@ -401,7 +404,10 @@ const ProductGridShop = ({
           {/* Controles de vista y ordenamiento */}
           <div className="hidden view-controls lg:flex flex-col sm:flex-row gap-4 lg:order-3">
             {/* Selector de columnas (solo visible en modo grid) */}
-            <div className="view-control-group">
+            <div
+              className="view-control-group"
+              style={{ borderRadius: "var(--radius)" }}
+            >
               <span className="view-control-label">Columnas:</span>
               <select
                 value={filters.columns}
@@ -418,7 +424,10 @@ const ProductGridShop = ({
             </div>
 
             {/* Selector de productos por página */}
-            <div className="view-control-group">
+            <div
+              className="view-control-group"
+              style={{ borderRadius: "var(--radius)" }}
+            >
               <span className="view-control-label">Por página:</span>
               <select
                 value={filters.productsPerPage}
@@ -438,7 +447,10 @@ const ProductGridShop = ({
             </div>
 
             {/* Ordenamiento */}
-            <div className="view-control-group">
+            <div
+              className="view-control-group"
+              style={{ borderRadius: "var(--radius)" }}
+            >
               <span className="view-control-label">Ordenar:</span>
               <select
                 value={filters.sortBy}
@@ -475,7 +487,10 @@ const ProductGridShop = ({
             )}
 
             {/* Sidebar */}
-            <div className="shop-filters-sidebar fixed lg:relative left-0 top-0 h-full lg:h-auto w-full sm:w-80 lg:w-64 bg-white border-r border-gray-200 lg:border-r-0 lg:border-b lg:border-gray-200 lg:pb-6 overflow-y-auto">
+            <div
+              className="shop-filters-sidebar fixed lg:relative left-0 top-0 h-full lg:h-auto w-full sm:w-80 lg:w-64 bg-white border-r border-gray-200 lg:border-r-0 lg:border-b lg:border-gray-200 lg:pb-6 overflow-y-auto"
+              style={{ borderRadius: "var(--radius)" }}
+            >
               <div className="p-6">
                 {/* Header del sidebar */}
                 <div className="flex items-center justify-between mb-6">
