@@ -393,6 +393,45 @@ export default function Navbar() {
                               </li>
                             );
                           })}
+                        {/* Enlace "Ver todos" al final del dropdown */}
+                        <li className="border-t border-gray-200 dark:border-gray-600 mt-2 pt-2">
+                          <Link
+                            href="/tienda"
+                            className={`flex items-center px-4 py-2 text-sm ${hoverColorClass} font-medium`}
+                            onClick={() => {
+                              setIsOpen(false);
+                              // Scroll hacia la sección de productos después de la navegación
+                              setTimeout(() => {
+                                const productSection = document.querySelector(
+                                  ".product-grid-section"
+                                );
+                                if (productSection) {
+                                  productSection.scrollIntoView({
+                                    behavior: "smooth",
+                                  });
+                                }
+                              }, 100);
+                            }}
+                          >
+                            <span className="mr-2">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-3"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                />
+                              </svg>
+                            </span>
+                            Ver todos
+                          </Link>
+                        </li>
                       </ul>
                     </li>
                   );
@@ -817,6 +856,45 @@ export default function Navbar() {
                         </li>
                       );
                     })}
+                    {/* Enlace "Ver todos" al final del dropdown móvil */}
+                    <li className="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2">
+                      <Link
+                        href="/tienda"
+                        className={`flex items-center justify-center ${hoverColorClass} text-base font-medium uppercase py-1`}
+                        onClick={() => {
+                          setIsOpen(false);
+                          // Scroll hacia la sección de productos después de la navegación
+                          setTimeout(() => {
+                            const productSection = document.querySelector(
+                              ".product-grid-section"
+                            );
+                            if (productSection) {
+                              productSection.scrollIntoView({
+                                behavior: "smooth",
+                              });
+                            }
+                          }, 100);
+                        }}
+                      >
+                        <span className="mr-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-3"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                            />
+                          </svg>
+                        </span>
+                        Ver todos
+                      </Link>
+                    </li>
                   </ul>
                 )}
               </div>
