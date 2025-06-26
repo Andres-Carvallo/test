@@ -1,5 +1,3 @@
-"use client"
-
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect, useRef } from "react";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
@@ -132,7 +130,7 @@ export default function NavbarBanner() {
   const fetchBannerHome = async () => {
     try {
       setLoading(true);
-      const bannerId = `${process.env.NEXT_PUBLIC_BANNERPRINCIPAL03_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_NAVBARBANNER_ID}`;
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -207,23 +205,19 @@ export default function NavbarBanner() {
   return (
     <div>
       <nav
-        className={`fixed w-full z-[1000] transition-all duration-300 font-montserrat ${
-          isScrolled ? "bg-[#F5F7F2] shadow-md" : "bg-transparent"
-        }`}
+        className={`absolute w-full z-[1000] transition-all duration-300 font-montserrat bg-transparent`}
       >
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div
-                className={`${isScrolled ? "text-[#4A6741]" : "text-white"}`}
+                className={`text-white`}
               >
                 <span className="text-lg font-light tracking-wider font-poppins uppercase">
                   Health Coach
                 </span>
                 <div
-                  className={`text-lg uppercase tracking-[0.3em] ${
-                    isScrolled ? "text-[#6B8E4E]" : "text-white/80"
-                  } mt-[-2px]`}
+                  className={`text-lg uppercase tracking-[0.3em] text-white/80 mt-[-2px]`}
                 >
                   Pepa
                 </div>
@@ -239,11 +233,9 @@ export default function NavbarBanner() {
                     e.preventDefault();
                     scrollToSection("inicio");
                   }}
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80`}
+                  className={`text-white hover:opacity-80`}
                 >
-                  HOME 1
+                  Inicio
                 </Link>
                 <Link
                   href="#que-es"
@@ -251,35 +243,29 @@ export default function NavbarBanner() {
                     e.preventDefault();
                     scrollToSection("que-es");
                   }}
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80`}
+                  className={`text-white hover:opacity-80`}
                 >
-                  HOME 2
+                  ¿Qué es?
                 </Link>
                 <Link
-                  href="/tienda"
+                  href="#planes"
                   onClick={(e) => {
                     e.preventDefault();
                     scrollToSection("planes");
                   }}
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80`}
+                  className={`text-white hover:opacity-80`}
                 >
-                  TIENDA
+                  Servicios
                 </Link>
                 <Link
-                  href="/componentes-pixelup"
+                  href="#redes"
                   onClick={(e) => {
                     e.preventDefault();
                     scrollToSection("redes");
                   }}
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80`}
+                  className={`text-white hover:opacity-80`}
                 >
-                  COMPONENTES
+                  Recetas
                 </Link>
                 <Link
                   href="#conoceme"
@@ -287,17 +273,13 @@ export default function NavbarBanner() {
                     e.preventDefault();
                     scrollToSection("conoceme");
                   }}
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80`}
+                  className={`text-white hover:opacity-80`}
                 >
                   Conóceme
                 </Link>
                 <button
                   onClick={() => handleWhatsAppClick("general")}
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80`}
+                  className={`text-white hover:opacity-80`}
                 >
                   CONTACTO
                 </button>
@@ -308,17 +290,13 @@ export default function NavbarBanner() {
                 <Link
                   href="https://www.instagram.com/healthcoach_pepa/"
                   target="_blank"
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80 transition-opacity`}
+                  className={`text-white hover:opacity-80 transition-opacity`}
                 >
                   <FaInstagram size={20} />
                 </Link>
                 <button
                   onClick={() => handleWhatsAppClick("general")}
-                  className={`${
-                    isScrolled ? "text-[#4A6741]" : "text-white"
-                  } hover:opacity-80 transition-opacity`}
+                  className={`text-white hover:opacity-80 transition-opacity`}
                 >
                   <FaWhatsapp size={20} />
                 </button>
@@ -329,7 +307,7 @@ export default function NavbarBanner() {
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="md:hidden text-2xl"
               >
-                <div className={isScrolled ? "text-[#4A6741]" : "text-white"}>
+                <div className="text-white">
                   {isMenuOpen ? "✕" : "☰"}
                 </div>
               </button>
@@ -342,7 +320,7 @@ export default function NavbarBanner() {
               isMenuOpen ? "max-h-[300px]" : "max-h-0"
             }`}
             style={{
-              background: isScrolled ? "#F5F7F2" : "white",
+              background: "rgba(0, 0, 0, 0.7)",
               boxShadow: isMenuOpen
                 ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                 : "none",
@@ -351,7 +329,7 @@ export default function NavbarBanner() {
             <div className="container mx-auto px-6">
               <div className="flex flex-col space-y-4 py-6">
                 {/* Links del menú */}
-                <div className="flex flex-col space-y-4 text-sm tracking-wider uppercase font-bold text-[#4A6741]">
+                <div className="flex flex-col space-y-4 text-sm tracking-wider uppercase font-bold text-white">
                   <Link
                     href="#inicio"
                     onClick={(e) => {
@@ -359,9 +337,9 @@ export default function NavbarBanner() {
                       scrollToSection("inicio");
                       setIsMenuOpen(false);
                     }}
-                    className="hover:text-[#6B8E4E] transition-colors duration-200"
+                    className="hover:text-white/80 transition-colors duration-200"
                   >
-                    HOME 1
+                    Inicio
                   </Link>
                   <Link
                     href="#que-es"
@@ -370,31 +348,31 @@ export default function NavbarBanner() {
                       scrollToSection("que-es");
                       setIsMenuOpen(false);
                     }}
-                    className="hover:text-[#6B8E4E] transition-colors duration-200"
+                    className="hover:text-white/80 transition-colors duration-200"
                   >
-                    HOME 2
+                    ¿Qué es?
                   </Link>
                   <Link
-                    href="/tienda"
+                    href="#planes"
                     onClick={(e) => {
                       e.preventDefault();
                       scrollToSection("planes");
                       setIsMenuOpen(false);
                     }}
-                    className="hover:text-[#6B8E4E] transition-colors duration-200"
+                    className="hover:text-white/80 transition-colors duration-200"
                   >
-                    TIENDA
+                    Servicios
                   </Link>
                   <Link
-                    href="/componentes-pixelup"
+                    href="#redes"
                     onClick={(e) => {
                       e.preventDefault();
                       scrollToSection("redes");
                       setIsMenuOpen(false);
                     }}
-                    className="hover:text-[#6B8E4E] transition-colors duration-200"
+                    className="hover:text-white/80 transition-colors duration-200"
                   >
-                    COMPONENTES
+                    Recetas
                   </Link>
                   <Link
                     href="#conoceme"
@@ -403,7 +381,7 @@ export default function NavbarBanner() {
                       scrollToSection("conoceme");
                       setIsMenuOpen(false);
                     }}
-                    className="hover:text-[#6B8E4E] transition-colors duration-200"
+                    className="hover:text-white/80 transition-colors duration-200"
                   >
                     Conóceme
                   </Link>
@@ -414,14 +392,14 @@ export default function NavbarBanner() {
                       scrollToSection("contacto");
                       setIsMenuOpen(false);
                     }}
-                    className="hover:text-[#6B8E4E] transition-colors duration-200"
+                    className="hover:text-white/80 transition-colors duration-200"
                   >
                     Contacto
                   </Link>
                 </div>
 
                 {/* Separador */}
-                <div className="h-px w-full bg-[#4A6741]/10"></div>
+                <div className="h-px w-full bg-white/20"></div>
 
                 {/* Iconos sociales */}
                 <div className="flex items-center gap-6 justify-center pt-2">
@@ -429,7 +407,7 @@ export default function NavbarBanner() {
                     href="https://www.instagram.com/healthcoach_pepa/"
                     target="_blank"
                     onClick={() => setIsMenuOpen(false)}
-                    className="text-[#4A6741] hover:text-[#6B8E4E] transition-colors"
+                    className="text-white hover:text-white/80 transition-colors"
                   >
                     <FaInstagram size={24} />
                   </Link>
@@ -438,7 +416,7 @@ export default function NavbarBanner() {
                       handleWhatsAppClick("general");
                       setIsMenuOpen(false);
                     }}
-                    className="text-[#4A6741] hover:text-[#6B8E4E] transition-colors"
+                    className="text-white hover:text-white/80 transition-colors"
                   >
                     <FaWhatsapp size={24} />
                   </button>
@@ -450,7 +428,7 @@ export default function NavbarBanner() {
       </nav>
       <section
         id="inicio"
-        className="h-screen"
+        className="h-screen relative"
       >
         {loading ? (
           // Skeleton loader
@@ -467,11 +445,13 @@ export default function NavbarBanner() {
           </div>
         ) : (
           <>
-            <img
-              src={bannerData?.images[0]?.mainImage?.url || "/pepa/home.webp"}
-              alt="Health Coach Banner"
-              className="object-cover w-full h-full"
-            />
+            <div className="absolute inset-0">
+              <img
+                src={bannerData?.images[0]?.mainImage?.url || "/pepa/home.webp"}
+                alt="Health Coach Banner"
+                className="object-cover w-full h-full"
+              />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-black/10">
               <div className="container mx-auto px-6 h-full flex items-center">
                 <div className="max-w-2xl pl-6 xl:pl-0">

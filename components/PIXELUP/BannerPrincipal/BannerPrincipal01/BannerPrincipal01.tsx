@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { globalConfig } from "@/app/config/GlobalConfig";
 
 interface BannerImage {
   mainImage: any;
+  mobileImage?: any;
   url: string;
   title: string;
   landingText: string;
@@ -34,6 +36,8 @@ interface DisplayConfig {
   contentAlignment: "left" | "center" | "right";
   fullBannerLink: boolean;
   fullBannerLinkUrl: string;
+  baseTypography: string;
+  titleTypography: string;
 }
 
 interface BannerData {
@@ -45,13 +49,64 @@ const BannerPrincipal01: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isTablet, setIsTablet] = useState<boolean>(false);
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">(
     "left"
   );
 
+  // Obtener los aspectos de las imágenes desde la configuración global
+  const desktopAspect = globalConfig.bannerPrincipalAspects.desktop;
+  const mobileAspect = globalConfig.bannerPrincipalAspects.mobile;
+  const tabletAspect = globalConfig.bannerPrincipalAspects.tablet;
+
   // Agregar constantes para valores por defecto
   const DEFAULT_TITLE = "Banner";
   const DEFAULT_BUTTON_LINK = "#";
+
+  // Detectar el tipo de dispositivo con debounce para mejor rendimiento
+  useEffect(() => {
+    const checkDeviceType = () => {
+      const width = window.innerWidth;
+      setIsMobile(width <= 850);
+      setIsTablet(width > 850 && width <= 1560);
+    };
+
+    // Función con debounce para evitar múltiples actualizaciones
+    let timeoutId: NodeJS.Timeout;
+    const debouncedCheckDevice = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkDeviceType, 100);
+    };
+
+    // Verificar inmediatamente al cargar
+    checkDeviceType();
+
+    // Agregar listener con debounce
+    window.addEventListener("resize", debouncedCheckDevice);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("resize", debouncedCheckDevice);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // Precargar imágenes
+  useEffect(() => {
+    if (bannerData?.images) {
+      bannerData.images.forEach((image) => {
+        if (image.mainImage?.url) {
+          const img = new Image();
+          img.src = image.mainImage.url;
+        }
+        if (image.mobileImage?.url) {
+          const img = new Image();
+          img.src = image.mobileImage.url;
+        }
+      });
+    }
+  }, [bannerData]);
 
   const fetchBannerHome = async () => {
     try {
@@ -61,7 +116,6 @@ const BannerPrincipal01: React.FC = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      console.log("Datos del banner recibidos:", response.data.banner);
       setBannerData(response.data.banner);
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
@@ -143,6 +197,8 @@ const BannerPrincipal01: React.FC = () => {
           contentAlignment: parsed.contentAlignment || "left",
           fullBannerLink: parsed.fullBannerLink ?? false,
           fullBannerLinkUrl: parsed.fullBannerLinkUrl || "#",
+          baseTypography: parsed.baseTypography || "montserrat",
+          titleTypography: parsed.titleTypography || "montserrat",
         };
       }
       return {
@@ -159,6 +215,8 @@ const BannerPrincipal01: React.FC = () => {
         contentAlignment: "left",
         fullBannerLink: false,
         fullBannerLinkUrl: "#",
+        baseTypography: "montserrat",
+        titleTypography: "montserrat",
       };
     } catch {
       return {
@@ -175,6 +233,8 @@ const BannerPrincipal01: React.FC = () => {
         contentAlignment: "left",
         fullBannerLink: false,
         fullBannerLinkUrl: "#",
+        baseTypography: "montserrat",
+        titleTypography: "montserrat",
       };
     }
   };
@@ -236,6 +296,13 @@ const BannerPrincipal01: React.FC = () => {
     );
   };
 
+  // Función para obtener el aspect ratio según el dispositivo
+  const getCurrentAspectRatio = () => {
+    if (isMobile) return mobileAspect;
+    if (isTablet) return tabletAspect;
+    return desktopAspect;
+  };
+
   if (loading) {
     return (
       <div
@@ -267,34 +334,77 @@ const BannerPrincipal01: React.FC = () => {
   const currentImage = bannerData.images[currentIndex];
   const multipleImages = bannerData.images.length > 1;
 
-  console.log("Link del botón Ver detalles:", currentImage.mainImageLink);
-
   return (
     <section
-      className="relative overflow-hidden"
+      className={`relative overflow-hidden w-full`}
+      style={{
+        aspectRatio: getCurrentAspectRatio(),
+      }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Contenedor de imágenes */}
-      <div className="absolute inset-0">
+      <div
+        className={`absolute inset-0 w-full`}
+        style={{
+          aspectRatio: getCurrentAspectRatio(),
+        }}
+      >
         {bannerData.images.map((image, index) => {
           const config = parseDisplayConfig(image.landingText);
+
+          // Lógica simplificada: mobile usa mobileImage, tablet y desktop usan mainImage
+          const imageToShow =
+            isMobile && image.mobileImage?.url
+              ? image.mobileImage
+              : image.mainImage;
+          const nextImageToShow =
+            isMobile && image.mobileImage?.url
+              ? image.mainImage
+              : image.mobileImage;
+
           return (
             <div
               key={index}
               className="absolute inset-0"
+              style={{
+                opacity: index === currentIndex ? 1 : 0,
+                transition: "all 800ms cubic-bezier(0.4, 0, 0.2, 1)",
+                visibility:
+                  Math.abs(index - currentIndex) <= 1 ? "visible" : "hidden",
+              }}
             >
+              {/* Imagen principal visible */}
               <img
-                src={image.mainImage.url}
+                src={imageToShow.url}
                 alt={image.title !== DEFAULT_TITLE ? image.title : ""}
-                className={`w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-                  index === currentIndex ? "opacity-100" : "opacity-0"
-                }`}
+                className="w-full h-full object-cover"
+                style={{
+                  transition: "transform 800ms cubic-bezier(0.4, 0, 0.2, 1)",
+                  transform:
+                    index === currentIndex ? "scale(1)" : "scale(1.05)",
+                }}
+                loading={index === 0 ? "eager" : "lazy"}
               />
+
+              {/* Imagen alternativa precargada pero oculta */}
+              {nextImageToShow?.url && (
+                <img
+                  src={nextImageToShow.url}
+                  alt=""
+                  className="hidden"
+                  aria-hidden="true"
+                />
+              )}
+
               {shouldShowOverlay(image) && index === currentIndex && (
                 <div
-                  className="absolute inset-0 bg-black/30"
-                  style={{ pointerEvents: "none" }}
+                  className="absolute inset-0 bg-black/50"
+                  style={{
+                    pointerEvents: "none",
+                    transition: "opacity 800ms cubic-bezier(0.4, 0, 0.2, 1)",
+                    opacity: index === currentIndex ? 0.3 : 0,
+                  }}
                 />
               )}
               {config.fullBannerLink &&
@@ -304,6 +414,7 @@ const BannerPrincipal01: React.FC = () => {
                     href={config.fullBannerLinkUrl}
                     className="absolute inset-0 z-30 cursor-pointer pointer-events-auto"
                     target="_self"
+                    prefetch={true}
                   >
                     <span className="sr-only">Ver más</span>
                   </Link>
@@ -315,9 +426,9 @@ const BannerPrincipal01: React.FC = () => {
 
       {/* Contenido del banner */}
       <div className="relative h-full z-20">
-        <div className="h-full mx-auto px-20 md:px-24">
+        <div className="h-full mx-auto px-14 sm:px-20 md:px-20 lg:px-24">
           <div
-            className={`flex flex-col justify-center h-full min-h-[450px] ${(() => {
+            className={`flex flex-col justify-center h-full ${(() => {
               const config = parseDisplayConfig(currentImage.landingText);
               switch (config.contentAlignment) {
                 case "center":
@@ -330,13 +441,21 @@ const BannerPrincipal01: React.FC = () => {
             })()} max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-              <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+              <span
+                className={`text-white text-[10px] sm:text-sm uppercase tracking-widest sm:mb-4 drop-shadow-md font-${
+                  parseDisplayConfig(currentImage.landingText).baseTypography
+                }`}
+              >
                 {currentImage.buttonLink}
               </span>
             )}
 
             {currentImage.title !== DEFAULT_TITLE && (
-              <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+              <h2
+                className={`text-3xl sm:text-4xl md:text-5xl lg:text-7xl text-white font-light mb-2 sm:mb-6 leading-tight drop-shadow-md font-${
+                  parseDisplayConfig(currentImage.landingText).titleTypography
+                }`}
+              >
                 {currentImage.title}
               </h2>
             )}
@@ -344,7 +463,11 @@ const BannerPrincipal01: React.FC = () => {
             {/* Texto descriptivo */}
             {parseDisplayConfig(currentImage.landingText).showText &&
               parseDisplayConfig(currentImage.landingText).text && (
-                <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                <p
+                  className={`text-white text-[0.9rem] sm:text-lg md:text-xl mb-6 sm:mb-8 leading-tight drop-shadow-md font-${
+                    parseDisplayConfig(currentImage.landingText).baseTypography
+                  }`}
+                >
                   {parseDisplayConfig(currentImage.landingText).text}
                 </p>
               )}
@@ -352,16 +475,26 @@ const BannerPrincipal01: React.FC = () => {
             {/* Mostrar precio y valor según la configuración */}
             {(parseDisplayConfig(currentImage.landingText).showPrice ||
               parseDisplayConfig(currentImage.landingText).showValue) && (
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
                 {parseDisplayConfig(currentImage.landingText).showPrice &&
                   parseButtonTextData(currentImage.buttonText).price && (
-                    <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                    <span
+                      className={`bg-white/5 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md font-${
+                        parseDisplayConfig(currentImage.landingText)
+                          .baseTypography
+                      }`}
+                    >
                       {parseButtonTextData(currentImage.buttonText).price}
                     </span>
                   )}
                 {parseDisplayConfig(currentImage.landingText).showValue &&
                   parseButtonTextData(currentImage.buttonText).value && (
-                    <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                    <span
+                      className={`bg-white/5 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md font-${
+                        parseDisplayConfig(currentImage.landingText)
+                          .baseTypography
+                      }`}
+                    >
                       {parseButtonTextData(currentImage.buttonText).value}
                     </span>
                   )}
@@ -373,12 +506,13 @@ const BannerPrincipal01: React.FC = () => {
               const config = parseDisplayConfig(currentImage.landingText);
               if (config.fullBannerLink) return null; // No mostrar botones si el banner es clickeable
               return (
-                <div className="flex flex-wrap gap-4 relative z-20">
+                <div className="flex flex-wrap gap-3 sm:gap-4 relative z-20">
                   {config.showButton1 && config.button1Text && (
                     <Link
                       href={config.button1Link}
                       target="_self"
-                      className="bg-primary/60 text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                      className={`bg-primary/60 text-white px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-primary transition-all cursor-pointer drop-shadow-md font-${config.baseTypography}`}
+                      style={{ borderRadius: "var(--radius)" }}
                     >
                       {config.button1Text}
                     </Link>
@@ -387,7 +521,8 @@ const BannerPrincipal01: React.FC = () => {
                     <Link
                       href={config.button2Link}
                       target="_self"
-                      className="relative inline-block bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
+                      className={`relative inline-block bg-white/5 text-white border border-white/20 px-6 sm:px-8 py-3 sm:py-4 rounded text-sm sm:text-base hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20 font-${config.baseTypography}`}
+                      style={{ borderRadius: "var(--radius)" }}
                     >
                       {config.button2Text}
                     </Link>
@@ -404,10 +539,10 @@ const BannerPrincipal01: React.FC = () => {
         <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between items-center z-40 pointer-events-none">
           <button
             onClick={handlePrev}
-            className="pointer-events-auto ml-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
+            className="pointer-events-auto ml-2 sm:ml-4 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
           >
             <svg
-              className="w-5 h-5 md:w-6 md:h-6"
+              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -422,10 +557,10 @@ const BannerPrincipal01: React.FC = () => {
           </button>
           <button
             onClick={handleNext}
-            className="pointer-events-auto mr-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
+            className="pointer-events-auto mr-2 sm:mr-4 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
           >
             <svg
-              className="w-5 h-5 md:w-6 md:h-6"
+              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -443,15 +578,15 @@ const BannerPrincipal01: React.FC = () => {
 
       {/* Indicador de posición */}
       {bannerData.images.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-40 pointer-events-none">
+        <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex gap-1.5 sm:gap-2 z-40 pointer-events-none">
           {bannerData.images.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`pointer-events-auto h-1 transition-all duration-300 rounded relative z-50 ${
                 index === currentIndex
-                  ? "w-8 bg-white"
-                  : "w-4 bg-white/50 hover:bg-white/75"
+                  ? "w-6 sm:w-8 bg-white"
+                  : "w-3 sm:w-4 bg-white/50 hover:bg-white/75"
               }`}
               aria-label={`Ir a la imagen ${index + 1}`}
             />

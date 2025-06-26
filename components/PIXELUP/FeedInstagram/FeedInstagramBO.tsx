@@ -11,7 +11,7 @@ import "./quill-custom.css";
 
 interface Post {
   id: string;
-  nombre: string;  // URL de Instagram
+  nombre: string; // URL de Instagram
 }
 
 interface InstagramThumbnail {
@@ -27,7 +27,6 @@ const InstagramEmbed = ({ url }: { url: string }) => (
     height="650"
     frameBorder="0"
     scrolling="no"
-    allowTransparency={true}
   ></iframe>
 );
 
@@ -39,7 +38,6 @@ const InstagramThumbnail = ({ url, className = "" }: InstagramThumbnail) => {
         className="w-full h-full"
         frameBorder="0"
         scrolling="no"
-        allowTransparency={true}
       ></iframe>
     </div>
   );
@@ -129,7 +127,9 @@ const FeedInstagramBO: React.FC = () => {
         }
       );
 
-      const postsData = JSON.parse(response.data.contentBlock.contentText || "[]");
+      const postsData = JSON.parse(
+        response.data.contentBlock.contentText || "[]"
+      );
       setTestimonios(postsData);
     } catch (error) {
       console.error("Error al obtener los posts:", error);
@@ -158,23 +158,25 @@ const FeedInstagramBO: React.FC = () => {
     try {
       // Crear un objeto URL para manipular la URL fácilmente
       const urlObj = new URL(url);
-      
+
       // Dividir el pathname en partes
-      const partes = urlObj.pathname.split('/').filter(part => part);
-      
+      const partes = urlObj.pathname.split("/").filter((part) => part);
+
       // Si tenemos suficientes partes y encontramos 'p' o 'reel'
       if (partes.length >= 2) {
-        const tipoContenido = partes.find(part => part === 'p' || part === 'reel');
+        const tipoContenido = partes.find(
+          (part) => part === "p" || part === "reel"
+        );
         const idContenido = partes[partes.length - 1];
-        
+
         if (tipoContenido && idContenido) {
           return `https://www.instagram.com/${tipoContenido}/${idContenido}/`;
         }
       }
-      
+
       return url; // Devolver la URL original si no se puede procesar
     } catch (error) {
-      console.error('Error al procesar la URL:', error);
+      console.error("Error al procesar la URL:", error);
       return url; // Devolver la URL original si hay un error
     }
   };
@@ -296,7 +298,7 @@ const FeedInstagramBO: React.FC = () => {
   return (
     <section className="w-full mx-auto">
       <div className="bg-white p-4 mb-8">
-{/*         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        {/*         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <button
             onClick={() => setShowPreview(!showPreview)}
             className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200"
@@ -316,7 +318,10 @@ const FeedInstagramBO: React.FC = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 {testimonios.slice(0, visiblePosts).map((post) => (
-                  <div key={post.id} className="flex justify-center">
+                  <div
+                    key={post.id}
+                    className="flex justify-center"
+                  >
                     {isClient && <InstagramEmbed url={post.nombre} />}
                   </div>
                 ))}
@@ -326,7 +331,11 @@ const FeedInstagramBO: React.FC = () => {
               {visiblePosts < testimonios.length && (
                 <div className="text-center mt-12">
                   <button
-                    onClick={() => setVisiblePosts(prev => Math.min(prev + (isMobile ? 1 : 3), testimonios.length))}
+                    onClick={() =>
+                      setVisiblePosts((prev) =>
+                        Math.min(prev + (isMobile ? 1 : 3), testimonios.length)
+                      )
+                    }
                     className="inline-flex items-center px-8 py-3 bg-[#6B8E4E]/10 text-[#4A6741] rounded-full hover:bg-[#6B8E4E]/20 transition duration-300 group"
                   >
                     <span className="font-montserrat text-sm tracking-wider">
@@ -343,7 +352,10 @@ const FeedInstagramBO: React.FC = () => {
         )}
 
         {/* Formulario simplificado */}
-        <form onSubmit={handleSubmit} className="mb-8">
+        <form
+          onSubmit={handleSubmit}
+          className="mb-8"
+        >
           <div className="space-y-4 mt-3">
             <div>
               <h3 className="font-normal text-primary">
@@ -352,10 +364,12 @@ const FeedInstagramBO: React.FC = () => {
               <input
                 type="text"
                 value={nuevoTestimonio.nombre}
-                onChange={(e) => setNuevoTestimonio({
-                  ...nuevoTestimonio, 
-                  nombre: limpiarURLInstagram(e.target.value)
-                })}
+                onChange={(e) =>
+                  setNuevoTestimonio({
+                    ...nuevoTestimonio,
+                    nombre: limpiarURLInstagram(e.target.value),
+                  })
+                }
                 className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 rounded-md"
                 placeholder="https://www.instagram.com/p/..."
                 required
@@ -373,9 +387,12 @@ const FeedInstagramBO: React.FC = () => {
         {/* Lista de posts existentes */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {testimonios.map((post) => (
-            <div key={post.id} className="relative group bg-gray-50 rounded-lg overflow-hidden">
-              <InstagramThumbnail 
-                url={post.nombre} 
+            <div
+              key={post.id}
+              className="relative group bg-gray-50 rounded-lg overflow-hidden"
+            >
+              <InstagramThumbnail
+                url={post.nombre}
                 className="w-full h-48 object-cover"
               />
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
@@ -383,8 +400,17 @@ const FeedInstagramBO: React.FC = () => {
                   onClick={() => handleDeleteTestimonio(post.id)}
                   className="bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </button>
               </div>

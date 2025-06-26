@@ -84,7 +84,7 @@ const ImageToBase64Converter = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="mx-auto p-6">
       <h2 className="text-xl font-bold mb-4">
         Convertidor de Imágenes a Base64
       </h2>

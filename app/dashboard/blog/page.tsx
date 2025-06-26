@@ -178,7 +178,6 @@ const CreateOrEditPost: React.FC = () => {
             },
           }
         );
-        console.log("Post updated successfully");
       } else {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/articles?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,

@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { getCookie } from "cookies-next";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";
 import toast from "react-hot-toast";
+import { validateImage } from "@/utils/imageValidation";
 
 type ImageUploaderVariableProps = {
   productId: string;
@@ -27,6 +28,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
   onImagesChange,
 }) => {
   const token = getCookie("AdminTokenAuth");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingImages, setPendingImages] = useState<any[]>([]);
   const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
   const [imageSrc, setImageSrc] = useState<any>(null);
@@ -108,6 +110,13 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length > 0) {
+      // Validar cada archivo antes de procesarlo
+      for (const file of files) {
+        if (!validateImage(file)) {
+          return;
+        }
+      }
+
       const totalImages =
         files.length + currentImages.length + pendingImages.length;
       if (totalImages > 4) {
@@ -171,12 +180,21 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
     }
   };
 
+  // Función para reiniciar el input de archivo
+  const resetFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleRemoveImage = (imageId: string) => {
     setPendingDeletions((prev) => [...prev, imageId]);
+    resetFileInput(); // Reiniciar el input de archivo
   };
 
   const handleRemovePendingImage = (index: number) => {
     setPendingImages((prev) => prev.filter((_, i) => i !== index));
+    resetFileInput(); // Reiniciar el input de archivo
   };
 
   const handleUndoDelete = (imageId: string) => {
@@ -217,6 +235,7 @@ const ImageUploaderVariable: React.FC<ImageUploaderVariableProps> = ({
           </div>
           <input
             id="variationImageUpload"
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             multiple

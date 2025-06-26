@@ -2,7 +2,7 @@
 import React, { useContext, useState, createContext } from "react";
 import axios from "axios";
 import { setCookie, getCookie } from "cookies-next";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 const APIContextProductType = createContext();
 

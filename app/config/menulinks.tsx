@@ -9,13 +9,13 @@ const LOGO_CENTERED = false;
 const SHOW_MAIN_MENU_IN_NAVBAR = true;
 const SHOW_MAIN_MENU_IN_FOOTER = true;
 
-const SHOW_SOCIAL_IN_NAVBAR = false;
+const SHOW_SOCIAL_IN_NAVBAR = true;
 const SHOW_SOCIAL_IN_FOOTER = true;
 
 // Configuración de colores del menú
 // Usa solo el nombre del color y la intensidad, sin el prefijo "text-" o "hover:"
 // Ejemplos: "red-500", "blue-600", "green-400", etc.
-const MENU_COLOR = "green-500";
+const MENU_COLOR = "primary";
 const MENU_ACTIVE_FONT_WEIGHT = "font-bold";
 
 // Interfaces
@@ -24,7 +24,7 @@ export interface MenuLink {
   path: string;
   isVisible?: boolean;
   isDropdown?: boolean;
-  dropdownType?: "collections" | "custom";
+  dropdownType?: "collections" | "categories" | "custom";
 }
 
 export interface SocialLink {
@@ -69,6 +69,8 @@ export const mainMenuConfig: MenuConfig = {
       title: "Tienda",
       path: "/tienda",
       isVisible: true,
+      isDropdown: true,
+      dropdownType: "categories",
     },
     {
       title: "Colecciones",
@@ -77,6 +79,7 @@ export const mainMenuConfig: MenuConfig = {
       isDropdown: true,
       dropdownType: "collections",
     },
+
     {
       title: "Nosotros",
       path: "/nosotros",
@@ -86,6 +89,11 @@ export const mainMenuConfig: MenuConfig = {
       title: "Contacto",
       path: "/contacto",
       isVisible: true,
+    },
+    {
+      title: "Componentes",
+      path: "/componentes-pixelup",
+      isVisible: false,
     },
   ],
 };
@@ -97,7 +105,7 @@ export const socialConfig: SocialConfig = {
   links: [
     {
       platform: "Facebook",
-      url: "https://facebook.com/tuempresa",
+      url: process.env.NEXT_PUBLIC_FACEBOOK || "",
       isVisible: true,
       icon: (
         <svg
@@ -112,7 +120,7 @@ export const socialConfig: SocialConfig = {
     },
     {
       platform: "Instagram",
-      url: "https://instagram.com/tuempresa",
+      url: process.env.NEXT_PUBLIC_INSTAGRAM || "",
       isVisible: true,
       icon: (
         <svg
@@ -127,8 +135,8 @@ export const socialConfig: SocialConfig = {
     },
     {
       platform: "Twitter",
-      url: "https://twitter.com/tuempresa",
-      isVisible: true,
+      url: process.env.NEXT_PUBLIC_TWITTER || "",
+      isVisible: false,
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"

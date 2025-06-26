@@ -107,21 +107,23 @@ const Hero05 = () => {
               <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 block">
                 {additionalData.subtitle}
               </span>
-              <h1 className="text-4xl font-light text-[#5B488E] leading-12">
+              <h1 className="text-4xl font-light text-primary leading-12">
                 {content?.title}
               </h1>
             </div>
             <p className="text-lg text-gray-600">{content?.landingText}</p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="https://www.conectasitios.cl/pagina_sucursal/peluqueriacanina&petshop/MzA="
-                className="bg-[#5B488E] text-white px-8 py-4 rounded hover:bg-[#1B9C84] transition-all"
+                href="pixelup.cl"
+                className="bg-primary text-white px-8 py-4 rounded hover:bg-primary/90 transition-all"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 {additionalData.primaryButtonText}
               </Link>
               <Link
                 href="/servicios"
-                className="border-2 border-[#81C4BA] text-[#81C4BA] px-8 py-4 rounded hover:bg-[#5B488E] hover:text-white transition-all"
+                  className="border-2 border-primary text-primary px-8 py-4 rounded hover:bg-primary hover:text-white transition-all"
+                style={{ borderRadius: "var(--radius)" }}
               >
                 {additionalData.secondaryButtonText}
               </Link>
@@ -135,13 +137,14 @@ const Hero05 = () => {
                 "https://placedog.net/800/600"
               }
               alt="Perro feliz"
-              className="rounded shadow-xl w-full h-auto object-cover"
+              className=" shadow-xl w-full h-auto object-cover"
+              style={{ borderRadius: "var(--radius)" }}
             />
-            <div className="absolute -bottom-8 left-4 md:-left-8 bg-white p-4 md:p-6 rounded shadow-lg max-w-[180px] md:max-w-[200px]">
+            <div className="absolute -bottom-8 left-4 md:-left-8 bg-white p-4 md:p-6 shadow-lg max-w-[180px] md:max-w-[200px]" style={{ borderRadius: "var(--radius)" }}>
               <span className="text-[#81C4BA] text-xs md:text-sm font-medium">
                 {additionalData.newServiceSubtitle}
               </span>
-              <h3 className="text-[#5B488E] text-sm md:text-base font-medium mt-1 md:mt-2">
+              <h3 className="text-primary text-sm md:text-base font-medium mt-1 md:mt-2">
                 {additionalData.newServiceTitle}
               </h3>
               <p className="text-gray-500 text-xs md:text-sm mt-1">

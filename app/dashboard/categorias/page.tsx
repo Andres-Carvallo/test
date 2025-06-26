@@ -63,7 +63,7 @@ const CategoriasPage: React.FC = () => {
             }`}
             onClick={() => handleTabChange("edit")}
           >
-            Editar Categoría
+              Editar / Borrar Categoría
           </button>
         </div>
           {activeTab === "create" && (

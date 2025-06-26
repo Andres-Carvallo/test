@@ -10,6 +10,8 @@ import { deleteCookie, getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import axios from "axios";
+import { useLogo } from "@/context/LogoContext";
+import LogoEdit from "../LogoEdit/LogoEdit";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -24,11 +26,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [userDataInfo, setUserDataInfo] = useState<UserData>();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isLogoEditOpen, setIsLogoEditOpen] = useState(false);
   const router = useRouter();
   const token = getCookie("AdminTokenAuth")?.toString();
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [menuEnabled, setMenuEnabled] = useState<boolean>(true);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const { logo } = useLogo();
 
   useEffect(() => {
     if (!token) {
@@ -62,8 +65,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   useEffect(() => {
     const fetchMenuOption = async () => {
-      if (isInitialized) return;
-      
       try {
         const contentBlockId = process.env.NEXT_PUBLIC_MENUOPTION_CONTENTBLOCK;
         const response = await axios.get(
@@ -80,7 +81,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         if (!isEnabled) {
           setIsExpanded(true);
         }
-        setIsInitialized(true);
       } catch (error) {
         console.error("Error al obtener la configuración del menú:", error);
       }
@@ -89,14 +89,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     if (token) {
       fetchMenuOption();
     }
-  }, [token, isInitialized]);
+  }, [token]);
 
   useEffect(() => {
     if (sidebarOpen || !menuEnabled) {
       setIsExpanded(true);
     } else {
-      setIsExpanded(false);
-      setOpenMenuIndex(null);
+      const timer = setTimeout(() => {
+        setIsExpanded(false);
+        setOpenMenuIndex(null);
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [sidebarOpen, menuEnabled]);
 
@@ -108,8 +111,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const handleLinkClick = (href: string) => {
     // Cerrar el menú en móvil
     setSidebarOpen(false);
-    
-    // Usar la navegación de Next.js
+
+    // Usar el router de Next.js para la navegación
     router.push(href);
   };
 
@@ -264,8 +267,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 </svg>
               </Link>
               <div
-                className={`translate transform overflow-hidden transition-all duration-300 ease-in-out ${
-                  !open ? "h-0" : "h-auto"
+                className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
+                  open ? "max-h-[500px]" : "max-h-0"
                 }`}
               >
                 <ul className="mt-2 mb-3 flex flex-col gap-2 pl-6">
@@ -276,13 +279,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         className={`group relative flex items-center gap-3 rounded-lg py-2 px-3 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
                           isRouteActive(sublink.path, true) && "bg-black/10"
                         }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (sublink.onClick) {
-                            sublink.onClick();
-                          } else {
-                            handleLinkClick(sublink.path);
-                          }
+                        onClick={() => {
+                          handleLinkClick(sublink.path);
                           setOpenMenuIndex(null);
                         }}
                       >
@@ -376,9 +374,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         onMouseEnter={() => menuEnabled && setIsHovered(true)}
         onMouseLeave={() => {
           if (menuEnabled) {
-            setIsHovered(false);
-            setUserDropdownOpen(false);
-            setOpenMenuIndex(null);
+            const timer = setTimeout(() => {
+              setIsHovered(false);
+              setUserDropdownOpen(false);
+              setOpenMenuIndex(null);
+            }, 100);
+            return () => clearTimeout(timer);
           }
         }}
         className={`fixed top-0 left-0 ${
@@ -453,7 +454,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   }`}
                 >
                   <img
-                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
+                    src={
+                      logo?.mainImage?.url ||
+                      process.env.NEXT_PUBLIC_LOGO ||
+                      "Logo Principal"
+                    }
                     alt={
                       process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
                     }
@@ -471,17 +476,47 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       : "opacity-0"
                   }`}
                 >
-                  <img
-                    src={process.env.NEXT_PUBLIC_LOGO || "Logo Principal"}
-                    alt={
-                      process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
-                    }
-                    className={`object-contain ${
-                      isExpanded || isHovered || sidebarOpen
-                        ? "w-40 lg:w-60 scale-110"
-                        : "w-60 scale-100"
-                    } transition-transform duration-300`}
-                  />
+                  <div className="relative">
+                    <img
+                      src={
+                        logo?.mainImage?.url ||
+                        process.env.NEXT_PUBLIC_LOGO ||
+                        "Logo Principal"
+                      }
+                      alt={
+                        process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Logo Principal"
+                      }
+                      className={`object-contain ${
+                        isExpanded || isHovered || sidebarOpen
+                          ? "w-40 lg:w-60 scale-110"
+                          : "w-60 scale-100"
+                      } transition-transform duration-300`}
+                    />
+                    {(isExpanded || isHovered || sidebarOpen) && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsLogoEditOpen(true);
+                        }}
+                        className="absolute bottom-0 right-0 bg-white text-black p-1 rounded-full shadow-lg hover:bg-secondary transition-colors duration-300"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </Link>
@@ -651,12 +686,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       className="size-5"
                     >
                       <path
-                        stroke-linecap="round"
+                        strokeLinecap="round"
                         stroke-linejoin="round"
                         d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
                       />
                       <path
-                        stroke-linecap="round"
+                        strokeLinecap="round"
                         stroke-linejoin="round"
                         d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                       />
@@ -694,6 +729,37 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           )}
         </div>
       </aside>
+
+      {/* Agregar el modal de edición de logo */}
+      {isLogoEditOpen && (
+        <div className="fixed inset-0 z-[99999] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 sticky top-0 bg-white pb-4">
+              <h2 className="text-xl font-bold">Editar Logo</h2>
+              <button
+                onClick={() => setIsLogoEditOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-6 h-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <LogoEdit onClose={() => setIsLogoEditOpen(false)} />
+          </div>
+        </div>
+      )}
     </>
   );
 };

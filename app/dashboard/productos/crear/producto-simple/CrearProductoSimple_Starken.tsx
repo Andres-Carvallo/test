@@ -15,7 +15,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import ImageUploader from "./ImageUploader";
 import StarCheckbox from "@/components/Core/Checkbox/StarCheckbox";
 import LoaderProgress from "@/components/common/LoaderProgress";
-import { Toaster, toast } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";

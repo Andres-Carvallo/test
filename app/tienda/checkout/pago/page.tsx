@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import Loader from "@/components/common/Loader";
 
 export const metadata: Metadata = {
-  title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA + "Pago",
+  title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA + " - Pago",
   description: "Checkout Pago",
   // other metadata
 };

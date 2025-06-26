@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
+import React, { useState, useEffect, ChangeEvent, useCallback, useRef } from "react";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Select from "react-select";
 import GalleryUpload from "@/components/Core/Products/ImgUpload/GalleryUploadV2";
@@ -40,7 +40,10 @@ interface ImageData {
 const CrearVariable: React.FC = () => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [skuImages, setSkuImages] = useState<any[]>([]);
+  const [galleryImages, setGalleryImages] = useState<(string | null)[]>([]);
   const { triggerRevalidation } = useRevalidation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   /* PARA SUBBIR AL TOP PAGE */
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -406,6 +409,9 @@ const CrearVariable: React.FC = () => {
     setImage: React.Dispatch<React.SetStateAction<string | null>>
   ) => {
     setImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const [pendingImageChanges, setPendingImageChanges] = useState<{
@@ -826,6 +832,15 @@ const CrearVariable: React.FC = () => {
       setNameError("Error al verificar el nombre del producto");
     } finally {
       setIsCheckingName(false);
+    }
+  };
+
+  const handleClearGalleryImage = (index: number) => {
+    const newGalleryImages = [...galleryImages];
+    newGalleryImages[index] = null;
+    setGalleryImages(newGalleryImages);
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = '';
     }
   };
 
@@ -1338,6 +1353,7 @@ const CrearVariable: React.FC = () => {
                       accept="image/*"
                       id="mainImage"
                       className="hidden"
+                      ref={fileInputRef}
                       onChange={(e) =>
                         handleImageChange(e, setMainImage, "mainImage")
                       }

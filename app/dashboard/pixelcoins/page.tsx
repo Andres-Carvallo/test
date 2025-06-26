@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 interface CreditSummary {
   customerId: string;
@@ -166,12 +166,12 @@ const CreditChecker = () => {
 
   return (
     <div className="min-h-screen ">
-      <Toaster />
       <title>PixelCoins</title>
       <section className="mx-auto p-8">
         <h1 className="text-3xl font-bold mb-8 text-gray-800">
           Mis PixelCoins
         </h1>
+
 
         {loading ? (
           <div className="bg-white p-8 rounded-lg shadow-md">
@@ -191,24 +191,71 @@ const CreditChecker = () => {
                     key={summary.customerId}
                     className="bg-white p-8 rounded-xl shadow-md"
                   >
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800">
+                    <h2 className="text-2xl font-bold mb-2 text-gray-800">
                       Resumen de PixelCoins
                     </h2>
+
+                    
+        <div className="py-7 flex items-center p-4 mb-4 text-sm text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800" role="alert">
+          <svg className="shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+          </svg>
+          <span className="sr-only">Info</span>
+          <div>
+            <span className="font-bold">¡Importante!</span> Los PixelCoins se actualizan 1 vez al día.
+          </div>
+        </div>
                     {summary.creditsBalance === 0 ? (
-                      <div className="flex items-center p-4 text-sm text-yellow-800 rounded-lg bg-yellow-50 border border-yellow-400">
-                        <svg
-                          className="flex-shrink-0 inline w-4 h-4 me-3"
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                        </svg>
-                        <div>
-                          Aquí verás el detalle de tus{" "}
-                          <span className="font-bold">PixelCoins</span> cuando
-                          recibas la primera carga.
+                      <div className="flex flex-col md:flex-row gap-8">
+                        <div className="flex-1 p-6 rounded-xl bg-gray-50 hover:scale-105 transition-all duration-300 border border-gray-200 shadow-sm">
+                          <div className="space-y-6">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                                Balance Actual
+                              </h3>
+                              <p className="text-3xl font-bold text-rosa">
+                                0
+                              </p>
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-medium text-gray-600">
+                                Última Actualización
+                              </h3>
+                              <p className="text-gray-800 mt-1">
+                                {new Date(summary.lastUpdated).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 p-6 rounded-xl bg-gray-50 hover:scale-105 transition-all duration-300 border border-gray-200 shadow-sm">
+                          <div className="space-y-6">
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-700 mb-3">
+                                Información de Expiración
+                              </h3>
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-600">
+                                    PixelCoins por Expirar
+                                  </p>
+                                  <p className="text-2xl font-semibold text-dark mt-1">
+                                    {formatCLP(summary.creditsAboutToExpire)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-600">
+                                    Fecha de Expiración más cercana
+                                  </p>
+                                  <p className="text-gray-800 mt-1">
+                                    {new Date(
+                                      summary.nearestExpirationDate
+                                    ).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ) : (

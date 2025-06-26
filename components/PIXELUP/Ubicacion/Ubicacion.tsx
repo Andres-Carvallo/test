@@ -110,14 +110,14 @@ export default function Ubicacion() {
   }
 
   return (
-    <section className="py-12 md:py-24 bg-[#81C4BA]/5">
+    <section className="py-12 md:py-24 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <div className="space-y-6 lg:space-y-8">
-            <span className="text-[#81C4BA] text-sm uppercase tracking-widest">
+            <span className="text-primary/70 text-sm uppercase tracking-widest">
               {content.additionalData.subtitle}
             </span>
-            <h2 className="text-3xl lg:text-4xl font-light text-[#5B488E]">
+            <h2 className="text-3xl lg:text-4xl font-light text-primary">
               {content.title}
             </h2>
             <div 
@@ -126,11 +126,11 @@ export default function Ubicacion() {
             />
 
             <div className="grid gap-4 lg:gap-6">
-              <div className="bg-white p-4 lg:p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-4 lg:p-6 shadow-sm hover:shadow-md transition-shadow" style={{ borderRadius: "var(--radius)" }}>
                 <div className="flex items-start gap-3 lg:gap-4">
-                  <div className="p-2 lg:p-3 bg-[#5B488E]/10 rounded-xl">
-                    <svg
-                      className="w-6 h-6 text-[#81C4BA]"
+                  <div className="p-2 lg:p-3 bg-primary/10 rounded-xl">
+                    <svg    
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -150,18 +150,18 @@ export default function Ubicacion() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#5B488E] mb-1 text-sm lg:text-base">Dirección</h3>
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">Dirección</h3>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.address.street}</p>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.address.city}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-4 lg:p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-4 lg:p-6 shadow-sm hover:shadow-md transition-shadow" style={{ borderRadius: "var(--radius)" }}>
                 <div className="flex items-start gap-3 lg:gap-4">
-                  <div className="p-2 lg:p-3 bg-[#5B488E]/10 rounded-xl">
+                  <div className="p-2 lg:p-3 bg-primary/10 rounded-xl">
                     <svg
-                      className="w-6 h-6 text-[#81C4BA]"
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -175,18 +175,18 @@ export default function Ubicacion() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#5B488E] mb-1 text-sm lg:text-base">Horario de Atención</h3>
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">Horario de Atención</h3>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.schedule.weekdays}</p>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.schedule.saturday}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-4 lg:p-6 rounded shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white p-4 lg:p-6 shadow-sm hover:shadow-md transition-shadow" style={{ borderRadius: "var(--radius)" }}>
                 <div className="flex items-start gap-3 lg:gap-4">
-                  <div className="p-2 lg:p-3 bg-[#5B488E]/10 rounded-xl">
+                  <div className="p-2 lg:p-3 bg-primary/10 rounded-xl">
                     <svg
-                      className="w-6 h-6 text-[#81C4BA]"
+                      className="w-6 h-6 text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -200,7 +200,7 @@ export default function Ubicacion() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-[#5B488E] mb-1 text-sm lg:text-base">Contacto</h3>
+                    <h3 className="font-medium text-primary mb-1 text-sm lg:text-base">Contacto</h3>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.contact.phone}</p>
                     <p className="text-gray-600 text-sm lg:text-base">{content.additionalData.contact.email}</p>
                   </div>
@@ -224,13 +224,12 @@ export default function Ubicacion() {
                 <img
                   src={images[0].mainImage.url}
                   alt={images[0].title}
-                  className="rounded shadow-xl w-full h-[300px] lg:h-full object-cover"
+                    className="rounded shadow-xl w-full h-[300px] lg:h-full object-cover" style={{ borderRadius: "var(--radius)" }}
                 />
-                <div className="absolute -bottom-4 right-4 lg:-bottom-8 lg:-right-8 bg-white p-4 lg:p-6 rounded shadow-lg">
-                  <div className="flex items-center gap-2 lg:gap-3">
-                    <div className="w-10 h-10 lg:w-12 lg:h-12 bg-[#2A9D8F]/10 rounded flex items-center justify-center">
+                <div className="absolute -bottom-4 right-4 lg:-bottom-8 lg:-right-8 bg-white p-4 lg:p-6 shadow-lg" style={{ borderRadius: "var(--radius)" }}>
+                  <div className="flex items-center gap-2 lg:gap-3">    
                       <svg
-                        className="w-6 h-6 text-[#2A9D8F]"
+                        className="w-6 h-6 text-gray-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -242,10 +241,9 @@ export default function Ubicacion() {
                           d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
                         />
                       </svg>
-                    </div>
                     <div>
                       <p className="text-xs lg:text-sm text-gray-500">Calificación</p>
-                      <p className="text-[#264653] text-sm lg:text-base font-medium">4.9 de 5 estrellas</p>
+                      <p className="text-primary text-sm lg:text-base font-medium">4.9 de 5 estrellas</p>
                     </div>
                   </div>
                 </div>

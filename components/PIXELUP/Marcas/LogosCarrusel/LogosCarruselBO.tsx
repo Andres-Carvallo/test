@@ -7,6 +7,7 @@ import Modal from "@/components/Core/Modals/ModalSeo";
 import imageCompression from "browser-image-compression";
 import Loader from "@/components/common/Loader-t";
 import Marquee from "react-fast-marquee";
+import { validateImage } from "@/utils/imageValidation";
 
 interface LogoImage {
   id: string;
@@ -62,6 +63,10 @@ const LogosDinamicosBO: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       try {
+        if (!validateImage(file)) {
+          return;
+        }
+
         setLoading(true);
         setFileName(file.name);
 

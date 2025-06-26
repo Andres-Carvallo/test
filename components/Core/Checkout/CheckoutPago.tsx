@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { getCookie, deleteCookie } from "cookies-next";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import AutoSubmitForm from "@/components/Core/Checkout/AutoSubmitForm";
 import { obtenerOrdenesId } from "@/app/utils/obtenerOrdenesID";
 import { useSearchParams } from "next/navigation";
@@ -50,6 +50,50 @@ function CheckoutPago() {
   const hasDiscount =
     orderDetail.discountCoupons && orderDetail.discountCoupons.length > 0;
 
+  const verifyDiscountStatus = async (
+    expectedDiscountAmount: number,
+    maxAttempts: number = 5
+  ): Promise<boolean> => {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const orderResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        );
+        const orderData = await orderResponse.json();
+
+        if (orderData.code === 0) {
+          // Si estamos aplicando un descuento, verificamos que exista en discountCoupons
+          if (expectedDiscountAmount > 0) {
+            if (
+              orderData.order.discountCoupons &&
+              orderData.order.discountCoupons.length > 0
+            ) {
+              setOrderDetail(orderData.order);
+              return true;
+            }
+          }
+          // Si estamos eliminando un descuento, verificamos que no exista en discountCoupons
+          else {
+            if (
+              !orderData.order.discountCoupons ||
+              orderData.order.discountCoupons.length === 0
+            ) {
+              setOrderDetail(orderData.order);
+              return true;
+            }
+          }
+        }
+
+        // Esperar 500ms entre intentos
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error("Error al verificar el estado del descuento:", error);
+        return false;
+      }
+    }
+    return false;
+  };
+
   const applyDiscount = async () => {
     try {
       setLoading(true);
@@ -69,41 +113,18 @@ function CheckoutPago() {
       const data = await response.json();
 
       if (data.code === 0) {
-        // Verificar que el descuento se aplicó correctamente
-        const orderResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+        const discountApplied = await verifyDiscountStatus(
+          orderDetail.totals.discountAmount + 1
         );
-        const orderData = await orderResponse.json();
 
-        if (orderData.order.totals.discountAmount > 0) {
+        if (discountApplied) {
           toast.success("Descuento aplicado con éxito");
-          setOrderDetail(orderData.order);
           setDiscountApplied(true);
         } else {
-          // Si después de 3 intentos no se actualiza, recargamos la página
-          let attempts = 0;
-          const checkDiscount = async () => {
-            if (attempts >= 3) {
-              window.location.href = window.location.href;
-              return;
-            }
-
-            const retryResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-            );
-            const retryData = await retryResponse.json();
-
-            if (retryData.order.totals.discountAmount > 0) {
-              toast.success("Descuento aplicado con éxito");
-              setOrderDetail(retryData.order);
-              setDiscountApplied(true);
-            } else {
-              attempts++;
-              setTimeout(checkDiscount, 1000); // Esperar 1 segundo antes de reintentar
-            }
-          };
-
-          checkDiscount();
+          toast.error(
+            "No se pudo verificar el descuento. Por favor, intente nuevamente."
+          );
+          setDiscountApplied(false);
         }
       } else {
         toast.error("Código de descuento inválido");
@@ -112,6 +133,7 @@ function CheckoutPago() {
     } catch (error) {
       console.error("Error al aplicar el descuento:", error);
       toast.error("Error al aplicar el descuento");
+      setDiscountApplied(false);
     } finally {
       setLoading(false);
     }
@@ -131,41 +153,15 @@ function CheckoutPago() {
       const data = await response.json();
 
       if (data.code === 0) {
-        // Verificar que el descuento se eliminó correctamente
-        const orderResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        );
-        const orderData = await orderResponse.json();
+        const discountRemoved = await verifyDiscountStatus(0);
 
-        if (orderData.order.totals.discountAmount === 0) {
+        if (discountRemoved) {
           toast.success("Descuento eliminado con éxito");
-          setOrderDetail(orderData.order);
           setDiscountApplied(false);
         } else {
-          // Si después de 3 intentos no se actualiza, recargamos la página
-          let attempts = 0;
-          const checkDiscountRemoval = async () => {
-            if (attempts >= 3) {
-              window.location.href = window.location.href;
-              return;
-            }
-
-            const retryResponse = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/orders/${orderId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-            );
-            const retryData = await retryResponse.json();
-
-            if (retryData.order.totals.discountAmount === 0) {
-              toast.success("Descuento eliminado con éxito");
-              setOrderDetail(retryData.order);
-              setDiscountApplied(false);
-            } else {
-              attempts++;
-              setTimeout(checkDiscountRemoval, 1000); // Esperar 1 segundo antes de reintentar
-            }
-          };
-
-          checkDiscountRemoval();
+          toast.error(
+            "No se pudo verificar la eliminación del descuento. Por favor, intente nuevamente."
+          );
         }
       } else {
         toast.error("Error al eliminar el descuento");
@@ -227,7 +223,7 @@ function CheckoutPago() {
         ////////////////TRANSBANK////////////////////////////
         ////////////////////////////////////////////////////
 
-        /*     alert(updateOrderResponse.data.transaction.token); */
+        /*   alert(updateOrderData.transaction.token);  */
 
         // Marca la orden como enviada
         setOrderSubmitted(true);
@@ -628,14 +624,19 @@ function CheckoutPago() {
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-900">Despacho</p>
                   <p className="font-semibold text-gray-900">
-                    {hasFreeShipping || (orderDetail.totals.shippingAmount === 0) ? (
+                    {hasFreeShipping ||
+                    orderDetail.totals.shippingAmount === 0 ? (
                       <span>
                         {orderDetail.totals.shippingAmount > 0 && (
                           <span className="line-through">
                             ${formatPrice(orderDetail.totals.shippingAmount)}
                           </span>
                         )}
-                        <span className={`${orderDetail.totals.shippingAmount > 0 ? "ml-2" : ""} text-green-600`}>
+                        <span
+                          className={`${
+                            orderDetail.totals.shippingAmount > 0 ? "ml-2" : ""
+                          } text-green-600`}
+                        >
                           Envío Gratis
                         </span>
                       </span>

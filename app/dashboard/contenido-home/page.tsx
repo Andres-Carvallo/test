@@ -2,6 +2,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
+
+const GaleriaBO = dynamic(
+  () => import("@/components/PIXELUP/Galeria/Galeria01/Galeria01BO"),
+  { ssr: false }
+);
 // Importaciones dinámicas para evitar problemas de SSR
 const Hero01BO = dynamic(
   () => import("@/components/PIXELUP/Hero/Hero01/Hero01BO"),
@@ -11,10 +16,15 @@ const Hero02BO = dynamic(
   () => import("@/components/PIXELUP/Hero/Hero02/Hero02BO"),
   { ssr: false }
 );
+
+const ParallaxBO = dynamic(
+  () => import("@/components/PIXELUP/Parallax/ParallaxBO"),
+  { ssr: false }
+);
 const BannerPrincipal02BO = dynamic(
   () =>
     import(
-      "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02"
+      "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02BO"
     ),
   { ssr: false }
 );
@@ -23,6 +33,10 @@ const BannerPrincipal01BO = dynamic(
     import(
       "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01BO"
     ),
+  { ssr: false }
+);
+const MaterialesBO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/Materiales/MaterialesBO"),
   { ssr: false }
 );
 const MarqueeTOP = dynamic(
@@ -41,10 +55,7 @@ const SinFoto01BO = dynamic(
   () => import("@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01BO"),
   { ssr: false }
 );
-const SinFoto02BO = dynamic(
-  () => import("@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02BO"),
-  { ssr: false }
-);
+
 const Hero03BO = dynamic(
   () => import("@/components/PIXELUP/Hero/Hero03/Hero03BO"),
   { ssr: false }
@@ -62,10 +73,7 @@ const Colecciones02BO = dynamic(
     import("@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02BO"),
   { ssr: false }
 );
-const UbicacionBO = dynamic(
-  () => import("@/components/PIXELUP/Ubicacion/UbicacionBO"),
-  { ssr: false }
-);
+
 const Hero05BO = dynamic(
   () => import("@/components/PIXELUP/Hero/Hero05/Hero05BO"),
   { ssr: false }
@@ -76,6 +84,10 @@ const SinFoto03BO = dynamic(
 );
 const Categoria01BO = dynamic(
   () => import("@/components/PIXELUP/Categorias/Categoria01/CategoriaBO01"),
+  { ssr: false }
+);
+const SinFotoBO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05BO"),
   { ssr: false }
 );
 const Categoria03BO = dynamic(
@@ -94,6 +106,96 @@ const Categoria07BO = dynamic(
   () => import("@/components/PIXELUP/Categorias/Categoria07/CategoriaBO07"),
   { ssr: false }
 );
+const Hero06BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero06/Hero06BO"),
+  { ssr: false }
+);
+const Hero07BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero07/Hero07BO"),
+  { ssr: false }
+);
+const LogosCarruselBO = dynamic(
+  () => import("@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarruselBO"),
+  { ssr: false }
+);
+const Testimonios01BO = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01BO"),
+  { ssr: false }
+);
+const Colecciones01BO = dynamic(
+  () => import("@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01BO"),
+  { ssr: false }
+);
+const Ubicacion02BO = dynamic(
+  () => import("@/components/PIXELUP/Ubicacion/Ubicacion02/Ubicacion02BO"),
+  { ssr: false }
+);
+const Hero08BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero08/Hero08BO"),
+  { ssr: false }
+);
+const SinFoto02BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02BO"),
+  { ssr: false }
+);
+const Hero09BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero09/Hero09BO"),
+  { ssr: false }
+);
+const SinFoto04BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto04/SinFoto04BO"),
+  { ssr: false }
+);
+
+const Testimonios03BO = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios03/Testimonios03BO"),
+  { ssr: false }
+);
+const Galeria02BO = dynamic(
+  () => import("@/components/PIXELUP/Galeria/Galeria02/Galeria02BO"),
+  { ssr: false }
+);
+const Servicios01BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios01/Servicios01BO"),
+  { ssr: false }
+);
+const Servicios02BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios02/Servicios02BO"),
+  { ssr: false }
+);
+const Servicios03BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios03/Servicios03BO"),
+  { ssr: false }
+);
+const SinFoto06BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto06/SinFoto06BO"),
+  { ssr: false }
+);
+const SinFoto07BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto07/SinFoto07BO"),
+  { ssr: false }
+);
+/* const NavbarbannerBO = dynamic(
+  () => import("@/components/PIXELUP/Navbar/Navbarbanner/NavbarbannerBO"),
+  { ssr: false }
+); */
+const Nosotros01BO = dynamic(
+  () => import("@/components/PIXELUP/Nosotros/Nosotros01/Nosotros01BO"),
+  { ssr: false }
+);
+const Servicios04BO = dynamic(
+  () => import("@/components/PIXELUP/Servicios/Servicios04/Servicios04BO"),
+  { ssr: false }
+);
+const Testimonios04BO = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios04/Testimonios04BO"),
+  { ssr: false }
+);
+const DestacadosCatBO = dynamic(
+  () => import("@/components/PIXELUP/Destacados/DestacadosCat/DestacadosCatBO"),
+  { ssr: false }
+);
+
 
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
@@ -126,13 +228,40 @@ export default function BannerHome() {
     <section className="gap-4 flex flex-col py-10 mx-4">
       <title>Content block - Home</title>
       {[
-        { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
-        {
-          id: "bannerPrincipal01",
-          title: "Banner",
-          component: <BannerPrincipal01BO />,
-        },
-        {
+/*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
+ */     {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
+ {id: "destacadosCat", title: "Destacados Cat", component: <DestacadosCatBO/>},
+ {id: "testimonios03", title: "Testimonios 03", component: <Testimonios03BO/>},
+ {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
+ {id: "testimonios04", title: "Testimonios 04", component: <Testimonios04BO/>},
+ {id: "sinFoto04", title: "Sin Foto 04", component: <SinFoto04BO/>},
+/*  {id: "navbarbanner", title: "Navbar Banner", component: <NavbarbannerBO/>},
+ */ {id: "colecciones01", title: "Coleccion 01", component: <Colecciones01BO/>},
+ {id: "colecciones02", title: "Coleccion 02", component: <Colecciones02BO/>},
+ {id: "galeria02", title: "Galería 02", component: <Galeria02BO/>},
+ {id: "nosotros01", title: "Nosotros 01", component: <Nosotros01BO/>},
+ {id: "sinFoto06", title: "Sin Foto 06", component: <SinFoto06BO/>},
+ {id: "sinFoto07", title: "Sin Foto 07", component: <SinFoto07BO/>},
+ {id: "ubicacion02", title: "Ubicación 02", component: <Ubicacion02BO/>},
+ {id: "servicios01", title: "Servicios 01", component: <Servicios01BO/>},
+ {id: "servicios02", title: "Servicios 02", component: <Servicios02BO/>},
+ {id: "servicios03", title: "Servicios 03", component: <Servicios03BO/>},
+ {id: "servicios04", title: "Servicios 04", component: <Servicios04BO/>},
+/*         
+
+{id: "galeria", title: "Galería", component: <GaleriaBO/>},
+        {id: "sinFoto", title: "Sin Foto", component: <SinFotoBO/>},
+        {id: "sinFoto02", title: "Sin Foto 02", component: <SinFoto02BO/>},
+        {id: "hero06", title: "Hero 06", component: <Hero06BO/>},
+        {id: "materiales", title: "Materiales", component: <MaterialesBO/>},
+        {id: "logosCarrusel", title: "Logos Carrusel", component: <LogosCarruselBO/>},
+        {id: "hero07", title: "Hero 07", component: <Hero07BO/>},
+        {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
+        {id: "colecciones01", title: "Colecciones 01", component: <Colecciones01BO/>},
+        {id: "ubicacionContent", title: "Ubicación", component: <Ubicacion02BO/>},
+        {id: "hero08", title: "Hero 08", component: <Hero08BO/>},
+        {id: "hero09", title: "Hero 09", component: <Hero09BO/>}, */
+/*         {
           id: "bannerPrincipal02",
           title: "Banner Doble",
           component: <BannerPrincipal02BO />,
@@ -199,8 +328,8 @@ export default function BannerHome() {
           title: "Feed Instagram",
           component: <FeedInstagramBO />,
         },
-
-        /*          { id: "parallax", title: "Parallax", component: <ParallaxBO /> },
+        { id: "parallax", title: "Parallax", component: <ParallaxBO /> } */
+        /* ,
         { id: "bannerPrincipal04", title: "Barra Superior", component: <BannerPrincipal04BO /> },
         { id: "cardsPage", title: "Hero 03", component: <CardsPage /> },
         { id: "hero03", title: "Hero 03", component: <Hero03BO /> },

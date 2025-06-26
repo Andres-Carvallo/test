@@ -214,7 +214,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
     <div className="relative flex flex-col items-center mt-8 ">
       {isOnSale && (
         <span
-          className={`mt-6 absolute top-0 -right-2 bg-red-600 text-white text-[14px] py-1 px-2`}
+            className={`mt-6 absolute top-0 -right-2 bg-red-600 text-white text-[14px] py-1 px-2`} style={{ borderRadius: "var(--radius)" }}
         >
           En Oferta
         </span>
@@ -237,7 +237,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
         </div>
         <button
           type="button"
-          className={`mt-3 sm:mt-4 uppercase w-full inline-flex items-center justify-center rounded-md border-2 border-transparent bg-primary md:hover:scale-105 duration-300 px-4 sm:px-12 py-2 sm:py-3 text-center text-sm sm:text-base font-bold text-white transition-all ease-in-out focus:shadow`}
+          className={`mt-3 sm:mt-4 uppercase w-full inline-flex items-center justify-center border-2 border-transparent bg-primary md:hover:scale-105 duration-300 px-4 sm:px-12 py-2 sm:py-3 text-center text-sm sm:text-base font-bold text-white transition-all ease-in-out focus:shadow`} style={{ borderRadius: "var(--radius)" }}  
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

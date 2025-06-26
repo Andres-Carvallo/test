@@ -72,7 +72,7 @@ const Categoria06 = () => {
               >
                 {getDefaultBanner(bannerData?.[0]).title}
               </Link>
-              <div className="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50" />
+              <div className="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50" style={{ borderRadius: "var(--radius)" }} />
             </div>
 
             {/* Columna central con dos imágenes */}
@@ -92,7 +92,7 @@ const Categoria06 = () => {
                   >
                     {getDefaultBanner(bannerData?.[index]).title}
                   </Link>
-                  <div className="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50" />
+                  <div className="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50" style={{ borderRadius: "var(--radius)" }} />
                 </div>
               ))}
             </div>
@@ -112,7 +112,7 @@ const Categoria06 = () => {
               >
                 {getDefaultBanner(bannerData?.[3]).title}
               </Link>
-              <div className="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50" />
+              <div className="absolute opacity-0 group-hover:opacity-100 transition duration-500 bottom-3 py-6 z-0 px-20 w-36 bg-white bg-opacity-50" style={{ borderRadius: "var(--radius)" }} />
             </div>
           </div>
         </div>

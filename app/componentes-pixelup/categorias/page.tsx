@@ -8,6 +8,8 @@ import Categoria04 from "@/components/PIXELUP/Categorias/Categoria04/Categoria04
 import Categoria05 from "@/components/PIXELUP/Categorias/Categoria05/Categoria05";
 import Categoria06 from "@/components/PIXELUP/Categorias/Categoria06/Categoria06";
 import Categoria07 from "@/components/PIXELUP/Categorias/Categoria07/Categoria07";
+import Colecciones01 from "@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01";
+import Colecciones02 from "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -16,8 +18,7 @@ export const revalidate = 60; // Revalida cada 60 segundos
 
 export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
 
-
-export default async function categorias() {
+export default function categorias() {
     return (
       <>
               <div className="inline-flex items-center justify-center w-full">
@@ -56,6 +57,16 @@ export default async function categorias() {
     <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Categoría 07</span>
 </div>
 <Categoria07/>
+<div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Colecciones</span>
+</div>
+<Colecciones01/>
+<div className="inline-flex items-center justify-center w-full">
+    <hr className="w-64 h-px my-8 bg-gray-200 border-0 dark:bg-gray-700"/>
+    <span className="absolute px-3 text-2xl text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900">Colecciones 02</span>
+</div>
+<Colecciones02/>
 </>
     );
 }

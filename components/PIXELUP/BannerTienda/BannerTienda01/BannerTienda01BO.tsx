@@ -9,6 +9,7 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
+import { globalConfig } from "@/app/config/GlobalConfig";
 
 // Cargar react-quill dinámicamente para evitar problemas de SSR (Server-Side Rendering)
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -124,6 +125,10 @@ const BannerTienda01BO: React.FC<any> = () => {
   const [activeView, setActiveView] = useState<"desktop" | "mobile">("desktop");
 
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+
+  // Obtener los aspectos de las imágenes desde la configuración global específica para BannerTienda
+  const desktopAspect = globalConfig.bannerTiendaAspects.desktop;
+  const mobileAspect = globalConfig.bannerTiendaAspects.mobile;
 
   const fetchBannerHome = async () => {
     try {
@@ -338,8 +343,8 @@ const BannerTienda01BO: React.FC<any> = () => {
           ...configOptions.mobile,
           title: configOptions.desktop.title,
           textContent: configOptions.desktop.textContent,
-          buttonText: configOptions.desktop.buttonText,
-          buttonLink: configOptions.desktop.buttonLink,
+          buttonText: configOptions.desktop.buttonText || "Ver más", // Valor por defecto
+          buttonLink: configOptions.desktop.buttonLink || "/", // Valor por defecto
           showTitle: configOptions.desktop.showTitle,
           showLandingText: configOptions.desktop.showLandingText,
           showButton: configOptions.desktop.showButton,
@@ -361,8 +366,8 @@ const BannerTienda01BO: React.FC<any> = () => {
           body: JSON.stringify({
             title: formDataHero.title,
             landingText: configJSON, // Guardar la configuración como JSON en landingText del banner base
-            buttonText: formDataHero.buttonText,
-            buttonLink: formDataHero.buttonLink,
+            buttonText: formDataHero.buttonText || "Ver más", // Valor por defecto
+            buttonLink: formDataHero.buttonLink || "/", // Valor por defecto
           }),
           cache: "no-store",
           next: { revalidate: 0 },
@@ -374,6 +379,8 @@ const BannerTienda01BO: React.FC<any> = () => {
         ...formDataHero,
         landingText: formDataHero.landingText, // Solo guardar el contenido del texto en la imagen
         orderNumber: formDataHero.orderNumber,
+        buttonText: formDataHero.buttonText || "Ver más", // Valor por defecto
+        buttonLink: formDataHero.buttonLink || "/", // Valor por defecto
       };
 
       // Eliminar ambas imágenes del objeto base
@@ -741,7 +748,6 @@ const BannerTienda01BO: React.FC<any> = () => {
     <div className="w-full">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4 p-6 bg-white rounded-lg shadow">
-          <h2 className="text-2xl font-bold border-b pb-3">Banner Tienda 01</h2>
           <form
             onSubmit={handleSubmit}
             className="flex flex-col gap-6"
@@ -751,98 +757,83 @@ const BannerTienda01BO: React.FC<any> = () => {
               <div
                 className="relative w-full overflow-hidden rounded-lg shadow-lg border border-gray-200"
                 style={{
-                  aspectRatio: activeView === "desktop" ? "16/5" : "9/5",
+                  aspectRatio:
+                    activeView === "desktop" ? desktopAspect : mobileAspect,
                   maxWidth: activeView === "mobile" ? "720px" : "100%",
                   maxHeight: activeView === "mobile" ? "400px" : "400px",
                   margin: activeView === "mobile" ? "0 auto" : "0",
                 }}
               >
-                <Image
+                <img
                   src={
                     activeView === "desktop"
                       ? mainImageHero || "/placeholder.png"
                       : mobileImageHero || "/placeholder.png"
                   }
                   alt="Banner preview"
-                  fill
-                  style={{ objectFit: "cover" }}
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-                {((activeView === "desktop" &&
-                  (configOptions.desktop.showTitle ||
-                    configOptions.desktop.showLandingText ||
-                    configOptions.desktop.showButton)) ||
-                  (activeView === "mobile" &&
-                    (configOptions.mobile.showTitle ||
-                      configOptions.mobile.showLandingText ||
-                      configOptions.mobile.showButton))) && (
-                  <div className="absolute inset-0 flex flex-col justify-center px-6 py-6 bg-black bg-opacity-40 w-full">
-                    <div className="w-full max-w-[95%] mx-auto px-4">
-                      <div
-                        className={`${
-                          activeView === "desktop"
-                            ? configOptions.desktop.textAlignment === "center"
-                              ? "text-center mx-auto max-w-3xl"
-                              : configOptions.desktop.textAlignment === "right"
-                              ? "text-right ml-auto max-w-2xl"
-                              : "text-left max-w-2xl"
-                            : configOptions.mobile.textAlignment === "center"
-                            ? "text-center mx-auto"
-                            : configOptions.mobile.textAlignment === "right"
-                            ? "text-right ml-auto max-w-xs"
-                            : "text-left max-w-xs"
-                        }`}
-                      >
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showTitle
-                          : configOptions.mobile.showTitle) && (
-                          <h2
-                            className={`${
-                              activeView === "desktop"
-                                ? "text-3xl md:text-4xl"
-                                : "text-2xl md:text-3xl"
-                            } font-bold text-white mb-3 drop-shadow-lg`}
-                            style={shadowTextStyle}
+                {/* Overlay y textos - corregido para funcionar en ambas vistas */}
+                <div className="absolute inset-0 flex flex-col justify-center px-6 py-6 bg-black bg-opacity-40 w-full">
+                  <div className="w-full max-w-[95%] mx-auto px-4">
+                    <div
+                      className={`${
+                        activeView === "desktop"
+                          ? configOptions.desktop.textAlignment === "center"
+                            ? "text-center mx-auto max-w-3xl"
+                            : configOptions.desktop.textAlignment === "right"
+                            ? "text-right ml-auto max-w-2xl"
+                            : "text-left max-w-2xl"
+                          : configOptions.mobile.textAlignment === "center"
+                          ? "text-center mx-auto"
+                          : configOptions.mobile.textAlignment === "right"
+                          ? "text-right ml-auto max-w-xs"
+                          : "text-left max-w-xs"
+                      }`}
+                    >
+                      {/* Título */}
+                      {configOptions.desktop.showTitle && (
+                        <h2
+                          className={`${
+                            activeView === "desktop"
+                              ? "text-3xl md:text-4xl"
+                              : "text-2xl md:text-3xl"
+                          } font-bold text-white mb-3 drop-shadow-lg`}
+                          style={shadowTextStyle}
+                        >
+                          {configOptions.desktop.title}
+                        </h2>
+                      )}
+
+                      {/* Texto descriptivo */}
+                      {configOptions.desktop.showLandingText && (
+                        <p
+                          className={`${
+                            activeView === "desktop" ? "text-lg" : "text-base"
+                          } text-white mb-4 drop-shadow-lg`}
+                          style={shadowTextStyle}
+                        >
+                          {configOptions.desktop.textContent}
+                        </p>
+                      )}
+
+                      {/* Botón */}
+                      {configOptions.desktop.showButton && (
+                        <div>
+                          <button
+                            className={`inline-block px-${
+                              activeView === "desktop" ? "6" : "5"
+                            } py-${
+                              activeView === "desktop" ? "3" : "2.5"
+                            } bg-white text-black rounded-md shadow-md font-medium`}
                           >
-                            {activeView === "desktop"
-                              ? configOptions.desktop.title
-                              : configOptions.mobile.title}
-                          </h2>
-                        )}
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showLandingText
-                          : configOptions.mobile.showLandingText) && (
-                          <p
-                            className={`${
-                              activeView === "desktop" ? "text-lg" : "text-base"
-                            } text-white mb-4 drop-shadow-lg`}
-                            style={shadowTextStyle}
-                          >
-                            {activeView === "desktop"
-                              ? configOptions.desktop.textContent
-                              : configOptions.mobile.textContent}
-                          </p>
-                        )}
-                        {(activeView === "desktop"
-                          ? configOptions.desktop.showButton
-                          : configOptions.mobile.showButton) && (
-                          <div>
-                            <button
-                              className={`inline-block px-${
-                                activeView === "desktop" ? "6" : "5"
-                              } py-${
-                                activeView === "desktop" ? "3" : "2.5"
-                              } bg-white text-black rounded-md shadow-md font-medium`}
-                            >
-                              {activeView === "desktop"
-                                ? configOptions.desktop.buttonText
-                                : configOptions.mobile.buttonText}
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                            {configOptions.desktop.buttonText}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
             {/* Botones de vista */}
@@ -1224,9 +1215,7 @@ const BannerTienda01BO: React.FC<any> = () => {
                         }
                       }}
                       className={`px-4 py-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                        !configOptions.desktop.showTitle
-                          ? "opacity-50"
-                          : ""
+                        !configOptions.desktop.showTitle ? "opacity-50" : ""
                       }`}
                       placeholder="Ingresa el título del banner"
                       disabled={!configOptions.desktop.showTitle}
@@ -1494,7 +1483,9 @@ const BannerTienda01BO: React.FC<any> = () => {
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen
+                </h2>
               </div>
               <button
                 onClick={() => {
@@ -1525,7 +1516,11 @@ const BannerTienda01BO: React.FC<any> = () => {
                   image={mainImageHero || ""}
                   crop={crop}
                   zoom={zoom}
-                  aspect={activeView === "desktop" ? 16 / 5 : 9 / 5}
+                  aspect={
+                    activeView === "desktop"
+                      ? eval(desktopAspect)
+                      : eval(mobileAspect)
+                  }
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
                   onCropComplete={handleCropComplete}
@@ -1579,7 +1574,9 @@ const BannerTienda01BO: React.FC<any> = () => {
           <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
             <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen Móvil</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Recortar Imagen Móvil
+                </h2>
               </div>
               <button
                 onClick={() => {
@@ -1610,7 +1607,7 @@ const BannerTienda01BO: React.FC<any> = () => {
                   image={mobileImageHero || ""}
                   crop={crop}
                   zoom={zoom}
-                  aspect={9 / 5}
+                  aspect={eval(mobileAspect)}
                   onCropChange={setCrop}
                   onZoomChange={setZoom}
                   onCropComplete={handleCropComplete}

@@ -237,7 +237,7 @@ const EditCategory: React.FC<EditCategoryProps> = ({
         <div>
           <div className="pb-4 mb-4 rounded-t border-b sm:mb-5">
             <h3 className="text-lg font-semibold text-gray-900">
-              Editar Categoría
+              Editar / Borrar Categoría
             </h3>
           </div>
           <div className="mb-4">

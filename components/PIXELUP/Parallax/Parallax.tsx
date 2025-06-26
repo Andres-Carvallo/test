@@ -61,7 +61,6 @@ const Parallax: React.FC = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      console.log("Datos del banner recibidos:", response.data.banner);
       setBannerData(response.data.banner);
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
@@ -191,7 +190,7 @@ const Parallax: React.FC = () => {
       // Actualizar el banner en la base de datos
       await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        { 
+        {
           banner: {
             images: bannerData?.images.map((image, index) =>
               index === currentIndex
@@ -267,8 +266,6 @@ const Parallax: React.FC = () => {
   const currentImage = bannerData.images[currentIndex];
   const multipleImages = bannerData.images.length > 1;
 
-  console.log("Link del botón Ver detalles:", currentImage.mainImageLink);
-
   return (
     <section
       className="relative overflow-hidden"
@@ -285,12 +282,12 @@ const Parallax: React.FC = () => {
               className="absolute inset-0"
               style={{
                 backgroundImage: `url(${image.mainImage.url})`,
-                backgroundAttachment: 'fixed',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'cover',
+                backgroundAttachment: "fixed",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "cover",
                 opacity: index === currentIndex ? 1 : 0,
-                transition: 'opacity 1000ms ease-in-out'
+                transition: "opacity 1000ms ease-in-out",
               }}
             >
               {shouldShowOverlay(image) && index === currentIndex && (
@@ -317,9 +314,9 @@ const Parallax: React.FC = () => {
 
       {/* Contenido del banner */}
       <div className="relative h-full z-20">
-        <div className="h-full mx-auto px-20 md:px-24">
+        <div className="h-full mx-auto px-4 sm:px-6 md:px-20 lg:px-24">
           <div
-            className={`flex flex-col justify-center h-full min-h-[450px] ${(() => {
+            className={`flex flex-col justify-center h-full min-h-[350px] sm:min-h-[450px] ${(() => {
               const config = parseDisplayConfig(currentImage.landingText);
               switch (config.contentAlignment) {
                 case "center":
@@ -332,13 +329,13 @@ const Parallax: React.FC = () => {
             })()} max-w-2xl`}
           >
             {currentImage.buttonLink !== DEFAULT_BUTTON_LINK && (
-              <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 drop-shadow-md">
+              <span className="text-white text-xs sm:text-sm uppercase tracking-widest mb-2 sm:mb-4 drop-shadow-md">
                 {currentImage.buttonLink}
               </span>
             )}
 
             {currentImage.title !== DEFAULT_TITLE && (
-              <h2 className="text-5xl md:text-7xl text-white font-light mb-6 leading-tight drop-shadow-md">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white font-light mb-3 sm:mb-6 leading-tight drop-shadow-md">
                 {currentImage.title}
               </h2>
             )}
@@ -346,7 +343,7 @@ const Parallax: React.FC = () => {
             {/* Texto descriptivo */}
             {parseDisplayConfig(currentImage.landingText).showText &&
               parseDisplayConfig(currentImage.landingText).text && (
-                <p className="text-white text-lg md:text-xl mb-8 leading-relaxed drop-shadow-md">
+                <p className="text-white text-base sm:text-lg md:text-xl mb-4 sm:mb-8 leading-relaxed drop-shadow-md">
                   {parseDisplayConfig(currentImage.landingText).text}
                 </p>
               )}
@@ -354,16 +351,16 @@ const Parallax: React.FC = () => {
             {/* Mostrar precio y valor según la configuración */}
             {(parseDisplayConfig(currentImage.landingText).showPrice ||
               parseDisplayConfig(currentImage.landingText).showValue) && (
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-8">
                 {parseDisplayConfig(currentImage.landingText).showPrice &&
                   parseButtonTextData(currentImage.buttonText).price && (
-                    <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                    <span className="bg-white/5 backdrop-blur-sm text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md">
                       {parseButtonTextData(currentImage.buttonText).price}
                     </span>
                   )}
                 {parseDisplayConfig(currentImage.landingText).showValue &&
                   parseButtonTextData(currentImage.buttonText).value && (
-                    <span className="bg-white/5 backdrop-blur-sm text-white px-4 py-2 rounded text-sm drop-shadow-md">
+                    <span className="bg-white/5 backdrop-blur-sm text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded text-xs sm:text-sm drop-shadow-md">
                       {parseButtonTextData(currentImage.buttonText).value}
                     </span>
                   )}
@@ -375,12 +372,13 @@ const Parallax: React.FC = () => {
               const config = parseDisplayConfig(currentImage.landingText);
               if (config.fullBannerLink) return null; // No mostrar botones si el banner es clickeable
               return (
-                <div className="flex flex-wrap gap-4 relative z-20">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 relative z-20 w-full sm:w-auto">
                   {config.showButton1 && config.button1Text && (
                     <Link
                       href={config.button1Link}
                       target="_self"
-                      className="bg-primary/60 text-white px-8 py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md"
+                      style={{ borderRadius: "var(--radius)" }}
+                      className="w-full sm:w-auto text-center bg-primary/60 text-white px-6 sm:px-8 py-3 sm:py-4 rounded hover:bg-primary transition-all cursor-pointer drop-shadow-md text-sm sm:text-base"
                     >
                       {config.button1Text}
                     </Link>
@@ -389,7 +387,8 @@ const Parallax: React.FC = () => {
                     <Link
                       href={config.button2Link}
                       target="_self"
-                      className="relative inline-block bg-white/5 text-white border border-white/20 px-8 py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20"
+                      style={{ borderRadius: "var(--radius)" }}
+                      className="w-full sm:w-auto text-center relative inline-block bg-white/5 text-white border border-white/20 px-6 sm:px-8 py-3 sm:py-4 rounded hover:bg-white/10 transition-all backdrop-blur-sm cursor-pointer drop-shadow-md z-20 text-sm sm:text-base"
                     >
                       {config.button2Text}
                     </Link>
@@ -406,10 +405,10 @@ const Parallax: React.FC = () => {
         <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between items-center z-40 pointer-events-none">
           <button
             onClick={handlePrev}
-            className="pointer-events-auto ml-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
+            className="pointer-events-auto ml-2 sm:ml-4 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
           >
             <svg
-              className="w-5 h-5 md:w-6 md:h-6"
+              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -424,10 +423,10 @@ const Parallax: React.FC = () => {
           </button>
           <button
             onClick={handleNext}
-            className="pointer-events-auto mr-4 w-10 h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
+            className="pointer-events-auto mr-2 sm:mr-4 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors relative z-50"
           >
             <svg
-              className="w-5 h-5 md:w-6 md:h-6"
+              className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -445,15 +444,15 @@ const Parallax: React.FC = () => {
 
       {/* Indicador de posición */}
       {bannerData.images.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-40 pointer-events-none">
+        <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex gap-1.5 sm:gap-2 z-40 pointer-events-none">
           {bannerData.images.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`pointer-events-auto h-1 transition-all duration-300 rounded relative z-50 ${
                 index === currentIndex
-                  ? "w-8 bg-white"
-                  : "w-4 bg-white/50 hover:bg-white/75"
+                  ? "w-6 sm:w-8 bg-white"
+                  : "w-3 sm:w-4 bg-white/50 hover:bg-white/75"
               }`}
               aria-label={`Ir a la imagen ${index + 1}`}
             />

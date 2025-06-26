@@ -60,15 +60,8 @@ const LogosDinamicos: React.FC = () => {
   }
 
   return (
-    <div className="relative py-8 bg-gray-100">{/*  bg-gray-100 */}
-{/*       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-        <Image
-          src="/fran/logo_02.png"
-          alt="Logo centrado"
-          width={80}
-          height={80}
-        />
-      </div> */}
+    <div className="relative py-8 bg-gray-100">
+      {/*  bg-gray-100 */}
 
       <Marquee
         speed={20}

@@ -6,11 +6,6 @@ import Link from 'next/link';
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-export const revalidate = 60; // Revalida cada 60 segundos
-
-export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
-
-
 import { 
   Bars3Icon, 
   PhotoIcon, 
@@ -22,7 +17,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 
-export default async function Componentes() {
+export default function Componentes() {
   return (
     <div className=" mx-auto py-24 px-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8  lg:max-w-[1000px] mx-auto">

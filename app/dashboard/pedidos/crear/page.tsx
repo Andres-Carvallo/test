@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader-t";
 import { obtenerProductosBO } from "@/app/utils/obtenerProductosBO";
 import { getCurrentStock } from "@/app/utils/HandleStockSku";
+import { obtenerPrecioProducto } from "@/app/utils/obtenerPrecioProducto";
 
 interface Product {
   id: string;
@@ -59,6 +60,8 @@ interface SelectedItem {
   skuId: string;
   name: string;
   quantity: number;
+  price: number;
+  productId: string;
 }
 
 const ManualOrder: React.FC = () => {
@@ -80,10 +83,18 @@ const ManualOrder: React.FC = () => {
     setModalConfirmCallback(null);
   };
 
-  const [regionsDelivery, setRegionsDelivery] = useState<{ id: string; name: string }[]>([]);
-  const [communesDelivery, setCommunesDelivery] = useState<{ id: string; name: string; regionId: string }[]>([]);
-  const [regionsPickup, setRegionsPickup] = useState<{ id: string; name: string }[]>([]);
-  const [communesPickup, setCommunesPickup] = useState<{ id: string; name: string; regionId: string }[]>([]);
+  const [regionsDelivery, setRegionsDelivery] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [communesDelivery, setCommunesDelivery] = useState<
+    { id: string; name: string; regionId: string }[]
+  >([]);
+  const [regionsPickup, setRegionsPickup] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [communesPickup, setCommunesPickup] = useState<
+    { id: string; name: string; regionId: string }[]
+  >([]);
   const [loadingRegions, setLoadingRegions] = useState<boolean>(false);
   const [loadingCommunes, setLoadingCommunes] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -125,15 +136,47 @@ const ManualOrder: React.FC = () => {
   }, []);
 
   const fetchProducts = async () => {
-    const token = getCookie("AdminTokenAuth");
-    const data = await obtenerProductosBO(1, 500, token as string);
-    setProducts(data.products);
+    setLoading(true);
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const data = await obtenerProductosBO(1, 500, token as string);
+      setProducts(data.products);
+    } catch (error) {
+      console.error("Error al cargar productos:", error);
+      toast.error("Error al cargar los productos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función alternativa para obtener precios usando la API del cliente
+  const obtenerPrecioCliente = async (productId: string, skuId: string): Promise<number | null> => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${productId}/skus/${skuId}/pricings?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+      
+      console.log("Respuesta de precios (cliente):", response.data);
+      
+      if (response.data.code === 0 && response.data.skuPricings && response.data.skuPricings.length > 0) {
+        const { unitPrice } = response.data.skuPricings[0];
+        console.log("Precio encontrado (cliente):", unitPrice);
+        return unitPrice;
+      } else {
+        console.log("No se encontraron precios para el SKU (cliente):", skuId);
+        return null;
+      }
+    } catch (error) {
+      console.error("Error al obtener el precio del producto (cliente):", error);
+      return null;
+    }
   };
 
   const fetchRegionsAndCommunes = async (applyShippingZonesFilter: boolean) => {
     setLoadingRegions(true);
     try {
       if (regionsDelivery.length > 0 && regionsPickup.length > 0) {
+        setLoadingRegions(false);
         return;
       }
 
@@ -150,7 +193,6 @@ const ManualOrder: React.FC = () => {
       console.error("Error fetching regions:", error);
       toast.error("Error al cargar las regiones");
     } finally {
-      setLoading(false);
       setLoadingRegions(false);
     }
   };
@@ -160,11 +202,12 @@ const ManualOrder: React.FC = () => {
     try {
       const Pais = "CL";
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      
+
       // Determinar el endpoint según el tipo de entrega
-      const endpoint = deliveryType === "WITHDRAWAL_FROM_STORE"
-        ? `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}&hasDeliveryAvailable=false`
-        : `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}&hasDeliveryAvailable=true`;
+      const endpoint =
+        deliveryType === "WITHDRAWAL_FROM_STORE"
+          ? `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}&hasDeliveryAvailable=false`
+          : `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions?siteId=${siteId}&hasDeliveryAvailable=true`;
 
       const response = await axios.get(endpoint);
       const availableRegions = response.data.regions;
@@ -187,11 +230,12 @@ const ManualOrder: React.FC = () => {
     try {
       const Pais = "CL";
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
-      
+
       // Determinar qué endpoint usar basado en el tipo de entrega
-      const endpoint = deliveryType === "WITHDRAWAL_FROM_STORE"
-        ? `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=false`
-        : `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=true`;
+      const endpoint =
+        deliveryType === "WITHDRAWAL_FROM_STORE"
+          ? `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=false`
+          : `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/countries/${Pais}/regions/${regionId}/communes?siteId=${siteId}&hasDeliveryAvailable=true`;
 
       const response = await axios.get(endpoint);
       const communes = response.data.communes.map((commune: any) => ({
@@ -218,7 +262,9 @@ const ManualOrder: React.FC = () => {
     }
   };
 
-  const handleRegionChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleRegionChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const regionId = e.target.value;
     setSelectedRegion(regionId);
     setSelectedCommune(""); // Reset selected commune
@@ -325,6 +371,12 @@ const ManualOrder: React.FC = () => {
       return;
     }
 
+    // Obtener el precio del producto
+    const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+    console.log("Obteniendo precio para:", { productId: selectedProduct.id, skuId, siteId });
+    const price = await obtenerPrecioCliente(selectedProduct.id, skuId) || 0;
+    console.log("Precio obtenido:", price);
+
     // Verificar el stock disponible
     console.log("Verificando stock para SKU:", skuId);
     const availableStock = await getCurrentStock(selectedProduct.id, skuId);
@@ -343,7 +395,7 @@ const ManualOrder: React.FC = () => {
                 : item
             );
           } else {
-            return [...prevItems, { skuId, name, quantity: 1 }];
+            return [...prevItems, { skuId, name, quantity: 1, price, productId: selectedProduct.id }];
           }
         });
       });
@@ -358,7 +410,7 @@ const ManualOrder: React.FC = () => {
           item.skuId === skuId ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
-        return [...prevItems, { skuId, name, quantity: 1 }];
+        return [...prevItems, { skuId, name, quantity: 1, price, productId: selectedProduct.id }];
       }
     });
 
@@ -382,12 +434,23 @@ const ManualOrder: React.FC = () => {
   };
 
   const displayedRegions = useMemo(() => {
-    return deliveryType === "WITHDRAWAL_FROM_STORE" ? regionsPickup : regionsDelivery;
+    return deliveryType === "WITHDRAWAL_FROM_STORE"
+      ? regionsPickup
+      : regionsDelivery;
   }, [deliveryType, regionsPickup, regionsDelivery]);
 
   const displayedCommunes = useMemo(() => {
-    return deliveryType === "WITHDRAWAL_FROM_STORE" ? communesPickup : communesDelivery;
+    return deliveryType === "WITHDRAWAL_FROM_STORE"
+      ? communesPickup
+      : communesDelivery;
   }, [deliveryType, communesPickup, communesDelivery]);
+
+  // Calcular el total de la orden
+  const orderTotal = useMemo(() => {
+    return selectedItems.reduce((total, item) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+  }, [selectedItems]);
 
   const handleCommuneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const communeId = e.target.value;
@@ -431,6 +494,7 @@ const ManualOrder: React.FC = () => {
       setLoading(true); // Iniciar loader
 
       try {
+        // Obtener los tipos de entrega
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/delivery-types?statusCode=ACTIVE`
         );
@@ -445,23 +509,27 @@ const ManualOrder: React.FC = () => {
             "No se encontró el deliveryType seleccionado en la respuesta de la API"
           );
         }
+
+        // Limpiar selecciones anteriores
+        setSelectedRegion("");
+        setSelectedCommune("");
+        setCustomer((prevState) => ({
+          ...prevState,
+          customer: {
+            ...prevState.customer,
+            communeId: "",
+          },
+        }));
+
+        // Cargar las regiones disponibles según el tipo de entrega
+        await fetchAvailableRegions(newValue);
       } catch (error) {
-        console.error("Error al obtener los tipos de entrega:", error);
+        console.error("Error al cambiar tipo de entrega:", error);
+        toast.error("Error al cambiar tipo de entrega");
+      } finally {
+        // Asegurarse que siempre se desactive el loader
+        setLoading(false);
       }
-
-      // Limpiar selecciones anteriores
-      setSelectedRegion("");
-      setSelectedCommune("");
-      setCustomer((prevState) => ({
-        ...prevState,
-        customer: {
-          ...prevState.customer,
-          communeId: "",
-        },
-      }));
-
-      // Cargar las regiones disponibles según el tipo de entrega
-      await fetchAvailableRegions(newValue);
     }
   };
 
@@ -647,7 +715,7 @@ const ManualOrder: React.FC = () => {
                       htmlFor="email"
                       className="block mt-4"
                     >
-                      Email
+                      Email <span className="text-red-500">*</span>
                       <input
                         type="text"
                         id="email"
@@ -780,7 +848,7 @@ const ManualOrder: React.FC = () => {
                       htmlFor="addressLine1"
                       className="block mt-4"
                     >
-                      Dirección
+                      Dirección <span className="text-red-500">*</span>
                       <input
                         type="text"
                         id="addressLine1"
@@ -827,7 +895,7 @@ const ManualOrder: React.FC = () => {
                     htmlFor="region"
                     className="block"
                   >
-                    Región
+                    Región <span className="text-red-500">*</span>
                     <select
                       id="region"
                       value={selectedRegion}
@@ -840,7 +908,10 @@ const ManualOrder: React.FC = () => {
                         <>
                           <option>Selecciona Región</option>
                           {displayedRegions.map((region) => (
-                            <option key={region.id} value={region.id}>
+                            <option
+                              key={region.id}
+                              value={region.id}
+                            >
                               {region.name}
                             </option>
                           ))}
@@ -852,7 +923,7 @@ const ManualOrder: React.FC = () => {
                     htmlFor="commune"
                     className="block"
                   >
-                    Comuna
+                    Comuna <span className="text-red-500">*</span>
                     {loadingCommunes ? (
                       <Loader />
                     ) : (
@@ -864,9 +935,14 @@ const ManualOrder: React.FC = () => {
                       >
                         <option>Selecciona Comuna</option>
                         {displayedCommunes
-                          .filter((commune) => commune.regionId === selectedRegion)
+                          .filter(
+                            (commune) => commune.regionId === selectedRegion
+                          )
                           .map((commune) => (
-                            <option key={commune.id} value={commune.id}>
+                            <option
+                              key={commune.id}
+                              value={commune.id}
+                            >
                               {commune.name}
                             </option>
                           ))}
@@ -969,12 +1045,22 @@ const ManualOrder: React.FC = () => {
                   <h3>Productos seleccionados:</h3>
                 </div>
                 <div className="space-y-4  py-6">
+                  {/* Encabezados de las columnas */}
+                  <div className="grid grid-cols-3 items-center space-x-4 justify-between">
+                    <div className="flex w-full justify-between space-x-4">
+                      <span className="w-full min-w-24 font-semibold text-gray-700 text-sm">Producto</span>
+                      <span className="font-semibold text-gray-700 text-sm w-20 text-center">Unidades</span>
+                    </div>
+                    <span className="font-semibold text-gray-700 text-sm text-center">Precio Unit.</span>
+                    <span className="font-semibold text-gray-700 text-sm text-center">Acciones</span>
+                  </div>
+                  
                   {selectedItems.map((item) => (
                     <div
                       key={item.skuId}
-                      className="grid grid-cols-2 items-center space-x-4 justify-between"
+                      className="grid grid-cols-3 items-center space-x-4 justify-between"
                     >
-                      <div className="flex w-full justify-between  space-x-4">
+                      <div className="flex w-full justify-between space-x-4">
                         <span className="w-full min-w-24 border p-2">
                           {item.name}
                         </span>
@@ -982,12 +1068,15 @@ const ManualOrder: React.FC = () => {
                           type="number"
                           min="1"
                           value={item.quantity}
-                          className="border rounded p-2 w-28"
+                          className="border rounded p-2 w-20"
                           onChange={(e) =>
                             handleQuantityChange(item.skuId, e.target.value)
                           }
                         />
                       </div>
+                      <span className="text-center font-medium">
+                        ${item.price.toLocaleString('es-CL')}
+                      </span>
                       <button
                         type="button"
                         className="bg-red-500 text-white rounded p-2"
@@ -997,6 +1086,18 @@ const ManualOrder: React.FC = () => {
                       </button>
                     </div>
                   ))}
+                  
+                  {/* Total de la orden */}
+                  {selectedItems.length > 0 && (
+                    <div className="border-t pt-4 mt-6">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold">Total de la Orden:</span>
+                        <span className="text-xl font-bold text-green-600">
+                          ${orderTotal.toLocaleString('es-CL')}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={handleSubmitOrder}

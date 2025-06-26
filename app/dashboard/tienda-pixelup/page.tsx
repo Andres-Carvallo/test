@@ -5,6 +5,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
 import "react-quill/dist/quill.snow.css"; // Importar los estilos de Quill
 import "./tienda.css";
 
@@ -52,7 +53,15 @@ const ExchangesGrid = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCompany, setSelectedCompany] = useState<string>("");
 
-  const [pageNumber, setPageNumber] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Obtener la página actual de los parámetros de URL o usar 1 como valor predeterminado
+  const [pageNumber, setPageNumber] = useState(() => {
+    const pageParam = searchParams.get('page');
+    return pageParam ? parseInt(pageParam, 10) : 1;
+  });
+  
   const [pageSize, setPageSize] = useState(6); // Tamaño de la página
   const [totalPages, setTotalPages] = useState(1); // Estado para el número total de páginas
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +73,39 @@ const ExchangesGrid = () => {
     fetchAllExchanges();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Efecto para cargar los filtros desde la URL cuando se carga la página
+  useEffect(() => {
+    // Cargar categoría desde la URL
+    const categoriaParam = searchParams.get('categoria');
+    if (categoriaParam) {
+      const category = categories.find(cat => cat.name === categoriaParam);
+      if (category) {
+        setSelectedCategories([category.id]);
+      }
+    }
+
+    // Cargar búsqueda desde la URL
+    const buscarParam = searchParams.get('buscar');
+    if (buscarParam) {
+      setSearchQuery(buscarParam);
+    }
+
+    // Cargar empresa desde la URL
+    const empresaParam = searchParams.get('empresa');
+    if (empresaParam) {
+      setSelectedCompany(empresaParam);
+    }
+  }, [searchParams, categories]);
+
+  // Efecto para actualizar la URL cuando cambia la página
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', pageNumber.toString());
+    
+    // Actualizar la URL sin recargar la página
+    router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
+  }, [pageNumber, router, searchParams]);
 
   useEffect(() => {
     filterAndPaginateExchanges();
@@ -156,11 +198,14 @@ const ExchangesGrid = () => {
 
     let filtered = [...exchanges];
 
-    // Ordenar los exchanges para que Pixel Up aparezca primero
+    // Ordenar los exchanges para que Pixel Up aparezca primero y luego por precio de menor a mayor
     filtered.sort((a, b) => {
+      // Primero ordenar por Pixel Up
       if (a.companyName === "Pixel Up" && b.companyName !== "Pixel Up") return -1;
       if (a.companyName !== "Pixel Up" && b.companyName === "Pixel Up") return 1;
-      return 0;
+      
+      // Si ambos son de Pixel Up o ambos no son de Pixel Up, ordenar por precio
+      return a.creditAmount - b.creditAmount;
     });
 
     console.log("Filtering with:", {
@@ -218,12 +263,67 @@ const ExchangesGrid = () => {
           ? prevCategories.filter((id) => id !== categoryId) // Si ya está, lo quitamos
           : [...prevCategories, categoryId] // Si no está, lo agregamos
     );
+    
+    // Actualizar la URL con los filtros
+    updateUrlWithFilters(1, categoryId);
   };
 
   // Mostrar todas las categorías
   const handleShowAll = () => {
     setPageNumber(1); // Reiniciar la paginación
     setSelectedCategories([]);
+    
+    // Actualizar la URL sin filtros
+    updateUrlWithFilters(1);
+  };
+
+  // Limpiar todos los filtros y volver a la página 1
+  const clearAllFilters = () => {
+    setPageNumber(1);
+    setSelectedCategories([]);
+    setSearchQuery('');
+    setSelectedCompany('');
+    
+    // Actualizar la URL sin filtros
+    const params = new URLSearchParams();
+    params.set('page', '1');
+    router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
+  };
+
+  // Función para actualizar la URL con los filtros actuales
+  const updateUrlWithFilters = (page: number, categoryId?: string) => {
+    // Crear un nuevo objeto URLSearchParams para evitar modificar el original
+    const params = new URLSearchParams();
+    
+    // Actualizar página
+    params.set('page', page.toString());
+    
+    // Actualizar categorías
+    if (categoryId) {
+      const category = categories.find(cat => cat.id === categoryId);
+      if (category) {
+        params.set('categoria', category.name);
+      }
+    } else if (selectedCategories.length > 0) {
+      // Si no se proporciona categoryId pero hay categorías seleccionadas
+      const category = categories.find(cat => cat.id === selectedCategories[0]);
+      if (category) {
+        params.set('categoria', category.name);
+      }
+    }
+    
+    // Actualizar búsqueda
+    if (searchQuery) {
+      params.set('buscar', searchQuery);
+    }
+    
+    // Actualizar compañía - SIEMPRE incluir si existe, independientemente de otros filtros
+    if (selectedCompany) {
+      params.set('empresa', selectedCompany);
+    }
+    
+    // Actualizar la URL sin recargar la página
+    router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
   };
 
   // Obtener lista única de compañías
@@ -264,7 +364,14 @@ const ExchangesGrid = () => {
                 type="text"
                 placeholder="Buscar por nombre o empresa..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPageNumber(1); // Reiniciar la paginación al buscar
+                }}
+                onBlur={() => {
+                  // Actualizar la URL cuando se pierde el foco
+                  updateUrlWithFilters(pageNumber);
+                }}
                 className="w-full text-[13px] px-6 py-4 border-2 border-gray-200 rounded-xl
                          focus:outline-none focus:border-rosa transition-all duration-300
                          shadow-sm text-gray-700 bg-white/80 backdrop-blur-sm
@@ -296,11 +403,32 @@ const ExchangesGrid = () => {
               onChange={(e) => {
                 const categoryId = e.target.value;
                 setPageNumber(1);
-                if (categoryId === "") {
-                  setSelectedCategories([]);
-                } else {
-                  setSelectedCategories([categoryId]);
+                const newSelectedCategories = categoryId === "" ? [] : [categoryId];
+                setSelectedCategories(newSelectedCategories);
+                
+                // Crear params con todos los filtros actuales
+                const params = new URLSearchParams();
+                params.set('page', '1');
+                
+                // Añadir categoría si existe
+                if (categoryId !== "") {
+                  const category = categories.find(cat => cat.id === categoryId);
+                  if (category) {
+                    params.set('categoria', category.name);
+                  }
                 }
+                
+                // Mantener empresa si existe
+                if (selectedCompany) {
+                  params.set('empresa', selectedCompany);
+                }
+                
+                // Mantener búsqueda si existe
+                if (searchQuery) {
+                  params.set('buscar', searchQuery);
+                }
+                
+                router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
               }}
             >
               <option value="">Todas las categorías</option>
@@ -321,8 +449,33 @@ const ExchangesGrid = () => {
                       hover:border-rosa/50 cursor-pointer min-w-[200px]"
               value={selectedCompany}
               onChange={(e) => {
-                setSelectedCompany(e.target.value);
+                const company = e.target.value;
+                setSelectedCompany(company);
                 setPageNumber(1);
+                
+                // Crear params con todos los filtros actuales
+                const params = new URLSearchParams();
+                params.set('page', '1');
+                
+                // Mantener categoría si existe
+                if (selectedCategories.length > 0) {
+                  const category = categories.find(cat => cat.id === selectedCategories[0]);
+                  if (category) {
+                    params.set('categoria', category.name);
+                  }
+                }
+                
+                // Añadir empresa si existe
+                if (company) {
+                  params.set('empresa', company);
+                }
+                
+                // Mantener búsqueda si existe
+                if (searchQuery) {
+                  params.set('buscar', searchQuery);
+                }
+                
+                router.push(`/dashboard/tienda-pixelup?${params.toString()}`, { scroll: false });
               }}
             >
               <option value="">Todas las empresas</option>
@@ -335,6 +488,31 @@ const ExchangesGrid = () => {
                 </option>
               ))}
             </select>
+            
+            {/* Botón para limpiar filtros */}
+            {(selectedCategories.length > 0 || searchQuery || selectedCompany) && (
+              <button
+                onClick={clearAllFilters}
+                className="px-6 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl
+                          transition-all duration-300 flex items-center justify-center gap-2
+                          border-2 border-gray-200 hover:border-gray-300"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Limpiar filtros
+              </button>
+            )}
           </div>
         </div>
 
@@ -428,7 +606,7 @@ const ExchangesGrid = () => {
 
                     {/* Botón de acción */}
                     <Link
-                      href={`/dashboard/tienda-pixelup/${exchange.id}`}
+                      href={`/dashboard/tienda-pixelup/${exchange.id}?${searchParams.toString()}`}
                       className="block w-full"
                     >
                       <button className="w-full bg-gray-800 hover:bg-gray-900
@@ -446,7 +624,11 @@ const ExchangesGrid = () => {
         {/* Paginación mejorada */}
         <div className="flex justify-center items-center gap-4 mt-16">
           <button
-            onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+            onClick={() => {
+              const newPage = Math.max(pageNumber - 1, 1);
+              setPageNumber(newPage);
+              updateUrlWithFilters(newPage);
+            }}
             className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300
                        ${
                          pageNumber === 1
@@ -463,9 +645,11 @@ const ExchangesGrid = () => {
           </span>
 
           <button
-            onClick={() =>
-              setPageNumber((prev) => Math.min(prev + 1, totalPages))
-            }
+            onClick={() => {
+              const newPage = Math.min(pageNumber + 1, totalPages);
+              setPageNumber(newPage);
+              updateUrlWithFilters(newPage);
+            }}
             className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300
                        ${
                          pageNumber === totalPages

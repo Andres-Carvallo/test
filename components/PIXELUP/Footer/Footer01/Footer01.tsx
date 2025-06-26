@@ -9,16 +9,20 @@ import MailchimpForm from "@/components/Core/MailChimp/MailchimpForm";
 import axios from "axios";
 import { mainMenuConfig, socialConfig } from "@/app/config/menulinks";
 import { slugify } from "@/app/utils/slugify";
+import { useLogo } from "@/context/LogoContext";
 
 export default function Footer() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [collections, setCollections] = useState<any[]>([]);
+  const { logo } = useLogo();
 
   // Filtrar los enlaces del menú que son visibles
   const menuItems = mainMenuConfig.showInFooter
-    ? mainMenuConfig.links.filter((link) => link.isVisible && !link.isDropdown)
+    ? mainMenuConfig.links.filter(
+        (link) => link.isVisible && link.title !== "Colecciones"
+      )
     : [];
 
   // Encontrar el enlace de colecciones
@@ -85,13 +89,9 @@ export default function Footer() {
           <div className="lg:col-span-4 flex flex-col items-center lg:items-start">
             <img
               alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-              className="h-40 object-cover mb-6"
-              src={process.env.NEXT_PUBLIC_LOGO_COLOR}
+              className="h-40 object-fit object-contain  max-w-[150px] md:max-w-[250px]"
+              src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
-            <p className="text-secondary text-center lg:text-left mt-4 max-w-xs">
-              {process.env.NEXT_PUBLIC_DESCRIPCION_TIENDA ||
-                `Tienda online de ${process.env.NEXT_PUBLIC_NOMBRE_TIENDA}. Encuentra los mejores productos.`}
-            </p>
           </div>
 
           {/* Enlaces y contenido */}
@@ -99,9 +99,7 @@ export default function Footer() {
             <div className={`grid ${getGridClass()} gap-8`}>
               {/* Enlaces del menú principal - siempre visible */}
               <div className="text-center sm:text-left">
-                <h3 className="text-lg font-semibold mb-6 text-secondary">
-                  Enlaces
-                </h3>
+                <h3 className="text-lg text-white underline mb-6">Enlaces</h3>
                 <ul className="mt-4 space-y-3">
                   {menuItems.map((item, index) => (
                     <li key={index}>
@@ -119,7 +117,7 @@ export default function Footer() {
               {/* Colecciones - visible solo si hay colecciones */}
               {hasCollections && (
                 <div className="text-center sm:text-left">
-                  <h3 className="text-lg font-semibold mb-6 text-secondary">
+                  <h3 className="text-lg text-white underline mb-6">
                     {collectionsLink.title}
                   </h3>
                   <ul className="mt-4 space-y-3">
@@ -152,7 +150,7 @@ export default function Footer() {
               {/* Redes sociales - visible solo si hay redes sociales */}
               {hasSocial && (
                 <div className="text-center sm:text-left">
-                  <h3 className="text-lg font-semibold mb-6 text-secondary">
+                  <h3 className="text-lg text-white underline mb-6">
                     Síguenos
                   </h3>
                   <ul className="mt-4 space-y-4">

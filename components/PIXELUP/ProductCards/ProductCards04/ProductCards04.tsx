@@ -21,7 +21,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
   addToCartHandler,
   product,
   isOnSale,
-  stock,
+  stock,  
 }) => {
   const [cuotasEnabled, setCuotasEnabled] = useState(false);
   const [numeroCuotas, setNumeroCuotas] = useState(0);
@@ -166,23 +166,24 @@ const ProductCard04: React.FC<ProductCardProps> = ({
 
   return (
     <section className="mt-4">
-      <div className="bg-gray-50 rounded overflow-hidden hover:shadow-xl transition-all duration-300 border border-[#81C4BA]/10">
+      <div className="bg-gray-50 rounded overflow-hidden hover:shadow-xl transition-all duration-300 border border-[#81C4BA]/10" style={{ borderRadius: "var(--radius)" }}>
         <div className="relative aspect-square">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
             <img
               src={product.mainImageUrl}
               alt={product.name}
               className="md:min-w-[250px] md:min-h-[250px] w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              
             />
           </Link>
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             {product.productTypes && product.productTypes.length > 0 && (
-              <span className="bg-[#81C4BA] px-3 py-1 rounded text-sm text-white font-medium max-w-[14ch] md:max-w-[22ch] truncate">
+              <span className="bg-[#81C4BA] px-3 py-1 rounded text-sm text-white font-medium max-w-[14ch] md:max-w-[22ch] truncate" style={{ borderRadius: "var(--radius)" }}>
                 {product.productTypes[0].name}
               </span>
             )}
             {isOnSale && (
-              <span className="bg-red-500 px-3 py-1 rounded text-sm text-white font-medium ">
+              <span className="bg-red-500 px-3 py-1 rounded text-sm text-white font-medium " style={{ borderRadius: "var(--radius)" }}>
                 En Oferta
               </span>
             )}
@@ -199,7 +200,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             {product.hasVariations || stock === 0 ? (
               <Link
                 href={`/tienda/productos/${slugify(product.name)}`}
-                className="bg-white p-2 rounded border text-primary hover:text-secondary hover:shadow-md transition-all"
+                className="bg-white p-2 rounded border text-primary hover:text-secondary hover:shadow-md transition-all" style={{ borderRadius: "var(--radius)" }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -219,7 +220,7 @@ const ProductCard04: React.FC<ProductCardProps> = ({
             ) : (
               <button
                 onClick={handleButtonClick}
-                className="bg-white hover:bg-primary p-2 rounded border border-primary/10 text-primary hover:text-secondary hover:shadow-md transition-all"
+                className="bg-white hover:bg-primary p-2 rounded border border-primary/10 text-primary hover:text-secondary hover:shadow-md transition-all" style={{ borderRadius: "var(--radius)" }}
               >
                 <svg
                   className="w-5 h-5"

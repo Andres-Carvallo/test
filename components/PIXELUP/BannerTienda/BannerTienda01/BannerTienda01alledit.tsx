@@ -718,15 +718,14 @@ const BannerTienda01BO: React.FC<any> = () => {
                   margin: activeView === "mobile" ? "0 auto" : "0",
                 }}
               >
-                <Image
+                <img
                   src={
                     activeView === "desktop"
                       ? mainImageHero || "/placeholder.png"
                       : mobileImageHero || "/placeholder.png"
                   }
                   alt="Banner preview"
-                  fill
-                  style={{ objectFit: "cover" }}
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
                 {((activeView === "desktop" &&
                   (configOptions.desktop.showTitle ||

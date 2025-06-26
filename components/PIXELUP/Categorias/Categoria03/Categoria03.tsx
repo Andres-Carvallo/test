@@ -44,7 +44,7 @@ const Categoria03 = () => {
             {bannerData.map((banner: any) => (
               <div 
                 key={banner.id} 
-                className="card group md:w-96 w-full h-[500px] rounded-lg overflow-hidden relative transition duration-500 cursor-pointer transform md:hover:scale-105"
+                className="card group md:w-96 w-full h-[500px] rounded-lg overflow-hidden relative transition duration-500 cursor-pointer transform md:hover:scale-105" style={{ borderRadius: "var(--radius)" }}
               >
                 <img 
                   src={banner.mainImage.url}
@@ -60,7 +60,7 @@ const Categoria03 = () => {
                     <p className="text-sm mt-2">{banner.description || 'Descripción no disponible'}</p>
                     <Link 
                       href={banner.buttonLink}
-                      className="inline-block bg-secondary hover:bg-primary text-foreground font-bold py-2 px-4 rounded mt-4"
+                      className="inline-block bg-secondary hover:bg-primary text-foreground font-bold py-2 px-4 mt-4" style={{ borderRadius: "var(--radius)" }}
                     >
                       Ver más
                     </Link>

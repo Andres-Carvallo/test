@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
+import React, { useState, useEffect, ChangeEvent, useCallback, useRef } from "react";
 import Breadcrumb from "@/components/Core/Breadcrumbs/Breadcrumb";
 import TabExtra from "@/components/Core/Products/ProductoSimple/TabExtra";
 import TabCategory from "@/components/Core/Products/Category/TabCategory";
@@ -48,6 +48,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isCheckingName, setIsCheckingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
   const [isPreviewImageUploaded, setIsPreviewImageUploaded] = useState(false);
@@ -89,7 +90,9 @@ const CrearProductoSimple: React.FC = ({}) => {
       valid = false;
     }
     if (nameError) {
-      toast.error("No se puede publicar el producto con un nombre que ya existe");
+      toast.error(
+        "No se puede publicar el producto con un nombre que ya existe"
+      );
       valid = false;
     }
     if (!formData.description) {
@@ -366,7 +369,10 @@ const CrearProductoSimple: React.FC = ({}) => {
   const handleClearImage = (
     setImage: React.Dispatch<React.SetStateAction<string | null>>
   ) => {
-    setImage(null);
+    setImage(null); // Limpiar la imagen seleccionada
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Reiniciar el input de archivo
+    }
   };
 
   const productTypeOptions = productType.map(
@@ -617,7 +623,7 @@ const CrearProductoSimple: React.FC = ({}) => {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     event.preventDefault();
-    
+
     // Prevenir múltiples envíos
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -668,7 +674,9 @@ const CrearProductoSimple: React.FC = ({}) => {
 
       // Si no estamos en modo edición, redirigir a la misma página con el nuevo ID
       if (!isEditMode && currentProductId) {
-        router.push(`${window.location.pathname}?productId=${currentProductId}`);
+        router.push(
+          `${window.location.pathname}?productId=${currentProductId}`
+        );
       }
 
       // 2. Procesar todas las actualizaciones en paralelo
@@ -754,37 +762,39 @@ const CrearProductoSimple: React.FC = ({}) => {
           },
         }
       );
-      
+
       const updatedProductData = await updatedProductResponse.json();
       const productName = updatedProductData.product.name;
 
       toast.custom(
         (t) => (
-          <div 
+          <div
             className={`${
-              t.visible ? 'animate-enter' : 'animate-leave'
+              t.visible ? "animate-enter" : "animate-leave"
             } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 mb-4 mr-4 hover:[animation-play-state:paused]`}
           >
             <div className="flex-1 w-0 p-4">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <svg 
-                    className="h-6 w-6 text-green-400" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
+                  <svg
+                    className="h-6 w-6 text-green-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900">
-                    {isEditMode ? "¡Producto Actualizado!" : "¡Producto Creado Exitosamente!"}
+                    {isEditMode
+                      ? "¡Producto Actualizado!"
+                      : "¡Producto Creado Exitosamente!"}
                   </p>
                   <p className="mt-1 text-sm text-gray-500">
                     ¿Qué deseas hacer ahora?
@@ -794,17 +804,17 @@ const CrearProductoSimple: React.FC = ({}) => {
                       href="/dashboard/productos"
                       className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
                     >
-                      <svg 
-                        className="mr-2 h-4 w-4" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
+                      <svg
+                        className="mr-2 h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M4 6h16M4 10h16M4 14h16M4 18h16" 
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 6h16M4 10h16M4 14h16M4 18h16"
                         />
                       </svg>
                       Ver lista
@@ -813,29 +823,32 @@ const CrearProductoSimple: React.FC = ({}) => {
                       onClick={() => {
                         if (currentProductId && productName) {
                           const productSlug = slugify(productName);
-                          window.open(`/tienda/productos/${productSlug}`, "_blank");
+                          window.open(
+                            `/tienda/productos/${productSlug}`,
+                            "_blank"
+                          );
                         }
                         toast.dismiss(t.id);
                       }}
                       className="inline-flex justify-center items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-primary bg-primary/10 hover:bg-primary/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
                     >
-                      <svg 
-                        className="mr-2 h-4 w-4" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
+                      <svg
+                        className="mr-2 h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                         />
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" 
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                         />
                       </svg>
                       Ver producto
@@ -849,21 +862,26 @@ const CrearProductoSimple: React.FC = ({}) => {
                 onClick={() => toast.dismiss(t.id)}
                 className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition-colors m-2"
               >
-                <svg 
-                  className="h-5 w-5 text-gray-400 hover:text-gray-500" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  className="h-5 w-5 text-gray-400 hover:text-gray-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
           </div>
         ),
-        { 
+        {
           duration: 5000,
-          position: 'bottom-right'
+          position: "bottom-right",
         }
       );
     } catch (error) {
@@ -929,7 +947,7 @@ const CrearProductoSimple: React.FC = ({}) => {
             : { ...formData.mainImage, data: productData.mainImageUrl },
           previewImage: isPreviewImageUploaded
             ? formData.previewImage
-            : { ...formData.previewImage, data: productData.previewImageUrl },
+            : { ...formData.previewImage, data: defaultPreviewImage.data },
           measures: productData.measures || {
             length: null,
             width: null,
@@ -1028,7 +1046,7 @@ const CrearProductoSimple: React.FC = ({}) => {
 
   const checkProductNameExists = async (name: string) => {
     if (!name || isEditMode) return;
-    
+
     try {
       setIsCheckingName(true);
       setNameError(null);
@@ -1048,7 +1066,7 @@ const CrearProductoSimple: React.FC = ({}) => {
         const existingProduct = data.products.find(
           (product: any) => product.name.toLowerCase() === name.toLowerCase()
         );
-        
+
         if (existingProduct) {
           setNameError("Ya existe un producto con este nombre");
         }
@@ -1072,15 +1090,15 @@ const CrearProductoSimple: React.FC = ({}) => {
         toastOptions={{
           duration: 10000,
           style: {
-            background: '#fff',
-            color: '#363636',
+            background: "#fff",
+            color: "#363636",
           },
           success: {
             duration: 10000,
           },
           custom: {
             duration: 10000,
-          }
+          },
         }}
         // Agregar esta propiedad para prevenir toasts duplicados
         gutter={8}
@@ -1269,7 +1287,7 @@ const CrearProductoSimple: React.FC = ({}) => {
               </label>
               <input
                 className={`shadow block w-full px-4 rounded py-3 mt-2 mb-1 border ${
-                  nameError ? 'border-red-500' : 'border-gray-300'
+                  nameError ? "border-red-500" : "border-gray-300"
                 }`}
                 type="text"
                 name="nombreProducto"
@@ -1287,9 +1305,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                 </div>
               )}
               {nameError && (
-                <div className="text-sm text-red-500 mt-1">
-                  {nameError}
-                </div>
+                <div className="text-sm text-red-500 mt-1">{nameError}</div>
               )}
             </div>
             <div className="">
@@ -1608,6 +1624,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                 accept="image/*"
                 id="mainImage"
                 className="hidden"
+                ref={fileInputRef}
                 onChange={(e) =>
                   handleImageChange(e, setMainImage, "mainImage")
                 }

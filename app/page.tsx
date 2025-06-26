@@ -27,6 +27,7 @@ import Hero02 from "@/components/PIXELUP/Hero/Hero02/Hero02";
 import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
 import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
+import FeedRRSS from "@/components/PIXELUP/FeedRRSS/FeedRRSS";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -102,10 +103,13 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <BannerPrincipal01 />
         </Suspense>
-        <Suspense fallback={<Banner />}>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+          <Destacados01 text="Destacados" />
+        </Suspense>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Hero01 />
         </Suspense>
-        <Suspense fallback={<Banner />}>
+        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <Hero02 />
         </Suspense>
         <Suspense fallback={<Banner />}>
@@ -113,9 +117,6 @@ export default async function Page() {
         </Suspense>
         <Suspense fallback={<Banner />}>
           <Hero04 />
-        </Suspense>
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <Destacados01 text="Destacados" />
         </Suspense>
         <Suspense fallback={<Banner />}>
           <Parallax />
@@ -132,7 +133,7 @@ export default async function Page() {
         <Suspense fallback={<Banner />}>
           <FeedInstagram />
         </Suspense>
-
+        <DynamicFooter />
         {/* 
         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
           <SinFoto01 />
@@ -154,10 +155,14 @@ export default async function Page() {
         </Suspense>
         <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
           <Frase02 />
-        </Suspense> */}
+        </Suspense> *
+        <Suspense fallback={<Banner />}>
+          <FeedRRSS />
+        </Suspense>
         <DynamicFooter />
 
         {/* <DiscountModal /> */}
+
         <WhatsAppButton />
       </>
     );

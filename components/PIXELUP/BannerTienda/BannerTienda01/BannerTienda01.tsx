@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
+import { globalConfig } from "@/app/config/GlobalConfig";
 
 interface ConfigOptions {
   desktop: {
@@ -52,6 +53,10 @@ const BannerPrincipal = () => {
       buttonLink: "",
     },
   });
+
+  // Obtener los aspectos de las imágenes desde la configuración global específica para BannerTienda
+  const desktopAspect = globalConfig.bannerTiendaAspects.desktop;
+  const mobileAspect = globalConfig.bannerTiendaAspects.mobile;
 
   // Estilos para la sombra del texto
   const shadowTextStyle = {
@@ -168,7 +173,7 @@ const BannerPrincipal = () => {
               {bannerData?.banner?.images?.[0]?.mainImage?.url && (
                 <div
                   className="relative w-full"
-                  style={{ aspectRatio: "16/5" }}
+                  style={{ aspectRatio: desktopAspect }}
                 >
                   <img
                     src={bannerData.banner.images[0].mainImage.url}
@@ -235,7 +240,7 @@ const BannerPrincipal = () => {
               {bannerData?.banner?.images?.[0]?.mobileImage?.url && (
                 <div
                   className="relative w-full min-h-[300px]"
-                  style={{ aspectRatio: "9/5" }}
+                  style={{ aspectRatio: mobileAspect }}
                 >
                   <img
                     src={bannerData.banner.images[0].mobileImage.url}
