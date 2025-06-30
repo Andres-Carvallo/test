@@ -89,6 +89,16 @@ interface ComponentItem {
   thumbnail?: string;
 }
 
+// Componente wrapper para mostrar ProductCards dentro de Destacados01
+const ProductCardWrapper = ({ ProductCardComponent, text }: { ProductCardComponent: React.ComponentType<any>, text: string }) => {
+  return (
+    <Destacados01 
+      text={text}
+      ProductCardComponent={ProductCardComponent}
+    />
+  );
+};
+
 // Definir las categorías y sus componentes reales
 const categories = [
   {
@@ -322,7 +332,7 @@ const categories = [
         name: "Product Card 01",
         description: "Cards de productos básicas",
         preview: "🛒 Cards simples de productos",
-        component: ProductCard01,
+        component: () => <ProductCardWrapper ProductCardComponent={ProductCard01} text="Productos Destacados - Card 01" />,
         usePreview: true
       },
       {
@@ -330,7 +340,7 @@ const categories = [
         name: "Product Card 02",
         description: "Cards con información adicional",
         preview: "📊 Cards con precios y descuentos",
-        component: ProductCard02,
+        component: () => <ProductCardWrapper ProductCardComponent={ProductCard02} text="Productos Destacados - Card 02" />,
         usePreview: true
       },
       {
@@ -338,7 +348,7 @@ const categories = [
         name: "Product Card 03",
         description: "Cards con hover effects",
         preview: "✨ Cards con efectos al pasar el mouse",
-        component: ProductCard03,
+        component: () => <ProductCardWrapper ProductCardComponent={ProductCard03} text="Productos Destacados - Card 03" />,
         usePreview: true
       },
       {
@@ -346,7 +356,7 @@ const categories = [
         name: "Product Card 04",
         description: "Cards con quick view",
         preview: "👁️ Cards con vista rápida",
-        component: ProductCard04,
+        component: () => <ProductCardWrapper ProductCardComponent={ProductCard04} text="Productos Destacados - Card 04" />,
         usePreview: true
       },
       {
@@ -354,7 +364,7 @@ const categories = [
         name: "Product Card 05",
         description: "Cards con wishlist",
         preview: "❤️ Cards con botón de favoritos",
-        component: ProductCard05,
+        component: () => <ProductCardWrapper ProductCardComponent={ProductCard05} text="Productos Destacados - Card 05" />,
         usePreview: true
       },
       {
