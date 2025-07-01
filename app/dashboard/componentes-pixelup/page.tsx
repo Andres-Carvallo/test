@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from 'next/link';
 import ComponentPreview from './ComponentPreview';
 
@@ -613,6 +613,7 @@ export default function Componentes() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showPreview, setShowPreview] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentComponentIndex, setCurrentComponentIndex] = useState(0);
 
   const filteredCategories = selectedCategory === "Todos" 
     ? categories 
@@ -627,12 +628,58 @@ export default function Componentes() {
   const handlePreviewClick = (component: any) => {
     setSelectedComponent(component);
     setIsModalOpen(true);
+    
+    // Encontrar el índice del componente en la categoría actual
+    if (currentCategory) {
+      const index = currentCategory.components.findIndex(comp => comp.id === component.id);
+      setCurrentComponentIndex(index);
+    }
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedComponent(null);
+    setCurrentComponentIndex(0);
   };
+
+  const navigateToComponent = (direction: 'prev' | 'next') => {
+    if (!currentCategory) return;
+    
+    let newIndex;
+    if (direction === 'prev') {
+      newIndex = currentComponentIndex > 0 ? currentComponentIndex - 1 : currentCategory.components.length - 1;
+    } else {
+      newIndex = currentComponentIndex < currentCategory.components.length - 1 ? currentComponentIndex + 1 : 0;
+    }
+    
+    setCurrentComponentIndex(newIndex);
+    setSelectedComponent(currentCategory.components[newIndex]);
+  };
+
+  // Navegación con teclado
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isModalOpen) return;
+      
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          navigateToComponent('prev');
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          navigateToComponent('next');
+          break;
+        case 'Escape':
+          event.preventDefault();
+          closeModal();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isModalOpen, currentComponentIndex, currentCategory]);
 
   return (
     <div className="min-h-screen bg-gray-50 ">
@@ -949,22 +996,54 @@ export default function Componentes() {
           <div className="relative bg-white rounded-lg shadow-xl max-w-6xl w-[95%] max-h-[90vh] overflow-hidden">
             {/* Header del modal */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {selectedComponent.name}
-                </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  {currentCategory?.name} • ID: {selectedComponent.id}
-                </p>
+              <div className="flex items-center space-x-4">
+                {/* Botón flecha izquierda */}
+                <button
+                  onClick={() => navigateToComponent('prev')}
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900"
+                  title="Componente anterior"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                {/* Información del componente */}
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {selectedComponent.name}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {currentCategory?.name} • ID: {selectedComponent.id}
+                  </p>
+                </div>
+                
+                {/* Botón flecha derecha */}
+                <button
+                  onClick={() => navigateToComponent('next')}
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900"
+                  title="Siguiente componente"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-              <button
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              
+              {/* Indicador de posición */}
+              <div className="flex items-center space-x-3">
+                <div className="text-sm text-gray-500 font-medium">
+                  {currentComponentIndex + 1} de {currentCategory?.components.length}
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
             
             {/* Contenido del modal */}
