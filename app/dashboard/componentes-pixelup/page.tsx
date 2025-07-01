@@ -735,43 +735,8 @@ export default function Componentes() {
                 </div>
               </div>
 
-              {/* Lista de componentes si hay una categoría seleccionada */}
-              {selectedCategory !== "Todos" && currentCategory && (
-                <div className="p-4">
-                  <h3 className="text-sm font-semibold text-gray-900  mb-3">
-                    Componentes de {currentCategory.name}
-                  </h3>
-                  <div className="space-y-2">
-                    {currentCategory.components.map((component) => (
-                      <button
-                        key={component.id}
-                        onClick={() => setSelectedComponent(component)}
-                        className={`w-full text-left p-3 rounded-lg border transition-all ${
-                          selectedComponent?.id === component.id
-                            ? "border-primary/20 bg-primary/20 "
-                            : "border-gray-200  hover:border-gray-300 "
-                        }`}
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">
-                              {component.name.charAt(0)}
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900  truncate">
-                              {component.name}
-                            </p>
-                     {/*        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {component.description}
-                            </p> */}
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+            
+{/*  */}
             </div>
           </div>
 
@@ -853,51 +818,39 @@ export default function Componentes() {
                     {currentCategory?.components.map((component) => (
                       <div
                         key={component.id}
-                        className="group block bg-white rounded-lg border border-gray-200  p-6 hover:shadow-lg transition-all duration-300"
+                        className="group block bg-white rounded-lg border border-gray-200  p-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
                       >
-                        <div className="flex flex-col space-y-4">
-                          {/* Thumbnail */}
-                          <div className="relative overflow-hidden rounded-lg h-48">
-                            {component.usePreview ? (
-                              <ComponentPreview 
-                                component={component.component} 
-                                name={component.name} 
-                              />
-                            ) : (
-                              <img
-                                src={(component as any).thumbnail || "https://via.placeholder.com/300x200/cccccc/ffffff?text=Preview"}
-                                alt={component.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            )}
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
-                          </div>
-                          
+                        {/* Fondo decorativo con gradiente sutil */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        <div className="flex flex-col space-y-4 relative z-10">
                           {/* Información del componente */}
                           <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900  group-hover:text-primary  transition-colors">
-                              {component.name}
-                            </h3>
-                          {/*   <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                              {component.description}
-                            </p> */}
-             {/*                  <div className="mt-3">
-                                <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                                  {component.preview}
-                                </span>
-                              </div> */}
+                            <div className="flex items-center space-x-3 mb-2">
+                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                                {component.name.charAt(0)}
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
+                                  {component.name}
+                                </h3>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  ID: {component.id}
+                                </p>
+                              </div>
+                            </div>
                           </div>
                           
                           {/* Botón de vista previa */}
                           <button
                             onClick={() => handlePreviewClick(component)}
-                            className="w-full bg-primary hover:bg-primary/80 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+                            className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            <span>Ver vista completa</span>
+                            <span>Ver Componente</span>
                           </button>
                         </div>
                       </div>
@@ -906,53 +859,42 @@ export default function Componentes() {
                 ) : (
                   <div className="space-y-4">
                     {currentCategory?.components.map((component) => (
-                      <div
+                                            <div
                         key={component.id}
-                        className="group block w-full bg-white  rounded-lg border border-gray-200  p-6 hover:shadow-lg transition-all duration-300"
+                        className="group block w-full bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
                       >
-                        <div className="flex items-center space-x-4">
-                          {/* Thumbnail */}
-                          <div className="flex-shrink-0 w-24 h-24">
-                            {component.usePreview ? (
-                              <ComponentPreview 
-                                component={component.component} 
-                                name={component.name} 
-                              />
-                            ) : (
-                              <img
-                                src={(component as any).thumbnail || "https://via.placeholder.com/300x200/cccccc/ffffff?text=Preview"}
-                                alt={component.name}
-                                className="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
-                              />
-                            )}
-                          </div>
-                          
+                        {/* Fondo decorativo con gradiente sutil */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-50/20 via-transparent to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        <div className="flex items-center justify-between relative z-10">
                           {/* Información del componente */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-gray-900  group-hover:text-primary  transition-colors">
-                              {component.name}
-                            </h3>
-        {/*                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                {component.description}
-                              </p> */}
-      {/*                         <div className="flex items-center mt-2 space-x-4">
-                                <span className="text-xs text-gray-400 dark:text-gray-500">
-                                  {component.preview}
-                                </span>
-                              </div> */}
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                {component.name.charAt(0)}
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
+                                  {component.name}
+                                </h3>
+                                <p className="text-xs text-gray-500 font-medium">
+                                  ID: {component.id}
+                                </p>
+                              </div>
+                            </div>
                           </div>
                           
                           {/* Botón de vista previa */}
                           <div className="flex-shrink-0">
                             <button
                               onClick={() => handlePreviewClick(component)}
-                              className="bg-primary hover:bg-primary/80 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold py-2.5 px-5 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                               </svg>
-                              <span>Ver vista completa</span>
+                              <span>Ver Componente</span>
                             </button>
                           </div>
                         </div>
