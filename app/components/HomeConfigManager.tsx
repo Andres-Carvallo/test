@@ -856,7 +856,7 @@ function InactiveComponentsModal({
             </div>
 
             {/* Buscador y controles */}
-            <div className="flex justify-between items-center gap-4">
+     {/*        <div className="flex justify-between items-center gap-4">
               <div className="flex-1 max-w-md">
                 <div className="relative">
                   <svg
@@ -882,7 +882,7 @@ function InactiveComponentsModal({
                 </div>
               </div>
               
-              {/* Controles de vista */}
+             
               <div className="flex items-center space-x-4">
                 <div className="flex bg-gray-100 rounded-lg p-1">
                   <button
@@ -911,7 +911,7 @@ function InactiveComponentsModal({
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Contenido principal con sidebar */}
@@ -1725,7 +1725,7 @@ export default function HomeConfigManager({
           <button
             onClick={onSave}
             disabled={loading}
-            className="action-button bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium flex items-center gap-2"
+            className="action-button bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/80 disabled:opacity-50 font-medium flex items-center gap-2"
           >
             {loading ? (
               <>
@@ -1784,7 +1784,7 @@ export default function HomeConfigManager({
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                 Componentes Activos
-                <span className="component-counter">
+                <span className="rounded-full bg-primary text-white px-2 py-1 text-xs">
                   {activeComponents.length}
                 </span>
               </h3>
@@ -1795,7 +1795,7 @@ export default function HomeConfigManager({
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 flex items-center gap-2"
             >
               <svg
                 className="w-4 h-4"
@@ -1867,8 +1867,8 @@ export default function HomeConfigManager({
             {activeId ? (
               <div className="component-card bg-white border border-gray-200 rounded-lg p-4 shadow-lg opacity-90">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-blue-600">
+                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-white">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
                   </div>
