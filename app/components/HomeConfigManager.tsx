@@ -35,6 +35,7 @@ interface HomeConfigManagerProps {
   config: HomeConfig;
   onConfigChange: (config: HomeConfig) => void;
   onSave: () => void;
+  onReset: () => void;
   loading?: boolean;
 }
 
@@ -769,6 +770,7 @@ export default function HomeConfigManager({
   config,
   onConfigChange,
   onSave,
+  onReset,
   loading = false,
 }: HomeConfigManagerProps) {
   const [activeComponents, setActiveComponents] = useState<ComponentConfig[]>(
@@ -937,35 +939,57 @@ export default function HomeConfigManager({
             Arrastra y suelta para reordenar los componentes activos
           </p>
         </div>
-        <button
-          onClick={onSave}
-          disabled={loading}
-          className="action-button bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium flex items-center gap-2"
-        >
-          {loading ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Guardando...
-            </>
-          ) : (
-            <>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              Guardar Cambios
-            </>
-          )}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={onReset}
+            disabled={loading}
+            className="action-button bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 disabled:opacity-50 font-medium flex items-center gap-2"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Restaurar
+          </button>
+          <button
+            onClick={onSave}
+            disabled={loading}
+            className="action-button bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Guardando...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Guardar Cambios
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

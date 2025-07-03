@@ -583,6 +583,18 @@ export default function BannerHome() {
     setHomeConfig(newConfig);
   };
 
+  // Restaurar configuración por defecto
+  const resetHomeConfig = () => {
+    const defaultConfig: HomeConfig = {
+      visibleComponents: availableComponents
+        .slice(0, 10)
+        .map((comp) => comp.id),
+      order: availableComponents.slice(0, 10).map((comp) => comp.id),
+    };
+    setHomeConfig(defaultConfig);
+    toast.success("Configuración restaurada por defecto");
+  };
+
   useEffect(() => {
     fetchHomeConfig();
   }, []);
@@ -697,6 +709,7 @@ export default function BannerHome() {
               config={homeConfig}
               onConfigChange={handleConfigChange}
               onSave={saveHomeConfig}
+              onReset={resetHomeConfig}
               loading={loading}
             />
           )}
