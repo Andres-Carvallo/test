@@ -825,13 +825,13 @@ function InactiveComponentsModal({
       <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col">
           {/* Header */}
-          <div className="p-6 border-b border-gray-200 bg-gradient-to-b from-primary/80 to-primary/60">
-            <div className="flex justify-between items-center mb-6">
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-b from-primary to-primary/70">
+            <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                <h2 className="text-3xl font-bold text-white mb-2">
                   Agregar Componentes
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-white text-sm">
                   Explora y selecciona los componentes que deseas agregar a tu página de inicio
                 </p>
               </div>
@@ -989,7 +989,7 @@ function InactiveComponentsModal({
                     ([category, components]) => (
                       <div key={category}>
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-md">
+                          <div className="w-8 h-8  flex items-center justify-center text-gray-500">
                             {getCategoryIcon(category)}
                           </div>
                           <div>
@@ -1011,17 +1011,17 @@ function InactiveComponentsModal({
                                 className="group block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
                               >
                                 {/* Fondo decorativo con gradiente sutil */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 
                                 <div className="flex flex-col space-y-4 relative z-10">
                                   {/* Información del componente */}
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-3 mb-3">
-                                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                      <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
                                         {component.title.charAt(0)}
                                       </div>
                                       <div>
-                                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
                                           {component.title}
                                         </h4>
                                         <p className="text-xs text-gray-500 font-medium">
@@ -1029,11 +1029,11 @@ function InactiveComponentsModal({
                                         </p>
                                       </div>
                                     </div>
-                                    {component.description && (
+{/*                                     {component.description && (
                                       <p className="text-sm text-gray-600 leading-relaxed">
                                         {component.description}
                                       </p>
-                                    )}
+                                    )} */}
                                   </div>
                                   
                                   {/* Botones de acción */}
@@ -1065,7 +1065,7 @@ function InactiveComponentsModal({
                                     </button>
                                     <button
                                       onClick={() => handleAddDirect(component.id)}
-                                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/80 hover:to-primary text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                                     >
                                       <svg
                                         className="w-4 h-4"
