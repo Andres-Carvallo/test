@@ -1,7 +1,11 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-
+import axios from "axios";
+import { getCookie } from "cookies-next";
+import { toast } from "react-hot-toast";
+import HomeConfigManager from "@/app/components/HomeConfigManager";
+import { HomeConfig } from "@/app/utils/homeConfig";
 
 const GaleriaBO = dynamic(
   () => import("@/components/PIXELUP/Galeria/Galeria01/Galeria01BO"),
@@ -119,11 +123,13 @@ const LogosCarruselBO = dynamic(
   { ssr: false }
 );
 const Testimonios01BO = dynamic(
-  () => import("@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01BO"),
+  () =>
+    import("@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01BO"),
   { ssr: false }
 );
 const Colecciones01BO = dynamic(
-  () => import("@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01BO"),
+  () =>
+    import("@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01BO"),
   { ssr: false }
 );
 const Ubicacion02BO = dynamic(
@@ -148,7 +154,8 @@ const SinFoto04BO = dynamic(
 );
 
 const Testimonios03BO = dynamic(
-  () => import("@/components/PIXELUP/Testimonios/Testimonios03/Testimonios03BO"),
+  () =>
+    import("@/components/PIXELUP/Testimonios/Testimonios03/Testimonios03BO"),
   { ssr: false }
 );
 const Galeria02BO = dynamic(
@@ -188,7 +195,8 @@ const Servicios04BO = dynamic(
   { ssr: false }
 );
 const Testimonios04BO = dynamic(
-  () => import("@/components/PIXELUP/Testimonios/Testimonios04/Testimonios04BO"),
+  () =>
+    import("@/components/PIXELUP/Testimonios/Testimonios04/Testimonios04BO"),
   { ssr: false }
 );
 const DestacadosCatBO = dynamic(
@@ -196,12 +204,388 @@ const DestacadosCatBO = dynamic(
   { ssr: false }
 );
 
-
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
     {}
   );
+  const [homeConfig, setHomeConfig] = useState<HomeConfig | null>(null);
+  const [loading, setLoading] = useState(false);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Configuración de componentes disponibles con descripciones
+  const availableComponents = [
+    {
+      id: "marqueeTOP",
+      title: "Marquee",
+      description: "Banner de texto deslizante en la parte superior",
+      category: "Banners",
+    },
+    {
+      id: "bannerPrincipal01",
+      title: "Banner Principal",
+      description: "Banner principal con imagen y texto",
+      category: "Banners",
+    },
+    {
+      id: "destacadosCat",
+      title: "Destacados Categorías",
+      description: "Muestra categorías destacadas",
+      category: "Categorías",
+    },
+    {
+      id: "testimonios03",
+      title: "Testimonios 03",
+      description: "Sección de testimonios de clientes",
+      category: "Social",
+    },
+    {
+      id: "testimonios",
+      title: "Testimonios",
+      description: "Testimonios de clientes",
+      category: "Social",
+    },
+    {
+      id: "testimonios04",
+      title: "Testimonios 04",
+      description: "Versión alternativa de testimonios",
+      category: "Social",
+    },
+    {
+      id: "sinFoto04",
+      title: "Sin Foto 04",
+      description: "Contenido sin imagen",
+      category: "Contenido",
+    },
+    {
+      id: "colecciones01",
+      title: "Colección 01",
+      description: "Muestra colecciones de productos",
+      category: "Productos",
+    },
+    {
+      id: "colecciones02",
+      title: "Colección 02",
+      description: "Versión alternativa de colecciones",
+      category: "Productos",
+    },
+    {
+      id: "galeria02",
+      title: "Galería 02",
+      description: "Galería de imágenes",
+      category: "Multimedia",
+    },
+    {
+      id: "nosotros01",
+      title: "Nosotros 01",
+      description: "Sección sobre nosotros",
+      category: "Información",
+    },
+    {
+      id: "sinFoto06",
+      title: "Sin Foto 06",
+      description: "Contenido sin imagen",
+      category: "Contenido",
+    },
+    {
+      id: "sinFoto07",
+      title: "Sin Foto 07",
+      description: "Contenido sin imagen",
+      category: "Contenido",
+    },
+    {
+      id: "ubicacion02",
+      title: "Ubicación 02",
+      description: "Información de ubicación",
+      category: "Información",
+    },
+    {
+      id: "servicios01",
+      title: "Servicios 01",
+      description: "Sección de servicios",
+      category: "Servicios",
+    },
+    {
+      id: "servicios02",
+      title: "Servicios 02",
+      description: "Versión alternativa de servicios",
+      category: "Servicios",
+    },
+    {
+      id: "servicios03",
+      title: "Servicios 03",
+      description: "Tercera versión de servicios",
+      category: "Servicios",
+    },
+    {
+      id: "servicios04",
+      title: "Servicios 04",
+      description: "Cuarta versión de servicios",
+      category: "Servicios",
+    },
+    {
+      id: "galeria",
+      title: "Galería",
+      description: "Galería de imágenes principal",
+      category: "Multimedia",
+    },
+    {
+      id: "sinFoto",
+      title: "Sin Foto",
+      description: "Contenido sin imagen",
+      category: "Contenido",
+    },
+    {
+      id: "sinFoto02",
+      title: "Sin Foto 02",
+      description: "Contenido sin imagen",
+      category: "Contenido",
+    },
+    {
+      id: "hero06",
+      title: "Hero 06",
+      description: "Sección hero principal",
+      category: "Hero",
+    },
+    {
+      id: "materiales",
+      title: "Materiales",
+      description: "Sección de materiales",
+      category: "Productos",
+    },
+    {
+      id: "logosCarrusel",
+      title: "Logos Carrusel",
+      description: "Carrusel de logos de marcas",
+      category: "Marcas",
+    },
+    {
+      id: "hero07",
+      title: "Hero 07",
+      description: "Sección hero alternativa",
+      category: "Hero",
+    },
+    {
+      id: "hero08",
+      title: "Hero 08",
+      description: "Tercera versión de hero",
+      category: "Hero",
+    },
+    {
+      id: "hero09",
+      title: "Hero 09",
+      description: "Cuarta versión de hero",
+      category: "Hero",
+    },
+    {
+      id: "bannerPrincipal02",
+      title: "Banner Doble",
+      description: "Banner con dos secciones",
+      category: "Banners",
+    },
+    {
+      id: "hero01",
+      title: "Hero 01",
+      description: "Sección hero principal",
+      category: "Hero",
+    },
+    {
+      id: "hero02",
+      title: "About Me",
+      description: "Sección sobre mí",
+      category: "Hero",
+    },
+    {
+      id: "hero03",
+      title: "Nuestros Servicios",
+      description: "Sección de servicios",
+      category: "Hero",
+    },
+    {
+      id: "hero04",
+      title: "Conóceme",
+      description: "Sección de presentación",
+      category: "Hero",
+    },
+    {
+      id: "hero05",
+      title: "Propuesta de valor",
+      description: "Sección de propuesta de valor",
+      category: "Hero",
+    },
+    {
+      id: "sinFoto01",
+      title: "About me sin foto",
+      description: "Sobre mí sin imagen",
+      category: "Contenido",
+    },
+    {
+      id: "sinFoto03",
+      title: "4 Cajas",
+      description: "Contenido en 4 cajas",
+      category: "Contenido",
+    },
+    {
+      id: "categoria01",
+      title: "Categoría 01",
+      description: "Primera versión de categorías",
+      category: "Categorías",
+    },
+    {
+      id: "categoria02",
+      title: "Categorías 02 (3 imágenes)",
+      description: "Categorías con 3 imágenes",
+      category: "Categorías",
+    },
+    {
+      id: "categoria03",
+      title: "Categorías 03 (3 imágenes)",
+      description: "Tercera versión de categorías",
+      category: "Categorías",
+    },
+    {
+      id: "categoria04",
+      title: "Categorías 04 (3 imágenes)",
+      description: "Cuarta versión de categorías",
+      category: "Categorías",
+    },
+    {
+      id: "categoria05",
+      title: "Categorías 05 (4 imágenes)",
+      description: "Categorías con 4 imágenes",
+      category: "Categorías",
+    },
+    {
+      id: "categoria06",
+      title: "Categorías 06 (4 imágenes)",
+      description: "Sexta versión de categorías",
+      category: "Categorías",
+    },
+    {
+      id: "categoria07",
+      title: "Categorías 07 (5 imágenes)",
+      description: "Categorías con 5 imágenes",
+      category: "Categorías",
+    },
+    {
+      id: "feedInstagram",
+      title: "Feed Instagram",
+      description: "Feed de Instagram",
+      category: "Social",
+    },
+    {
+      id: "parallax",
+      title: "Parallax",
+      description: "Efecto parallax",
+      category: "Efectos",
+    },
+  ];
+
+  // Cargar configuración del home
+  const fetchHomeConfig = async () => {
+    try {
+      setLoading(true);
+      const token = getCookie("AdminTokenAuth");
+      const configId =
+        process.env.NEXT_PUBLIC_HOME_CONFIG_CONTENTBLOCK ||
+        "home-config-default";
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${configId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+
+      if (response.data.code === 0 && response.data.contentBlock) {
+        try {
+          const config = JSON.parse(response.data.contentBlock.contentText);
+          // Validar que la configuración tenga la estructura correcta
+          if (config.visibleComponents && config.order) {
+            setHomeConfig(config);
+          } else {
+            throw new Error("Configuración inválida");
+          }
+        } catch (error) {
+          console.log("Usando configuración por defecto:", error);
+          // Si no hay configuración, usar configuración por defecto
+          const defaultConfig: HomeConfig = {
+            visibleComponents: availableComponents
+              .slice(0, 10)
+              .map((comp) => comp.id),
+            order: availableComponents.slice(0, 10).map((comp) => comp.id),
+          };
+          setHomeConfig(defaultConfig);
+        }
+      } else {
+        // Si no hay respuesta válida, usar configuración por defecto
+        const defaultConfig: HomeConfig = {
+          visibleComponents: availableComponents
+            .slice(0, 10)
+            .map((comp) => comp.id),
+          order: availableComponents.slice(0, 10).map((comp) => comp.id),
+        };
+        setHomeConfig(defaultConfig);
+      }
+    } catch (error) {
+      console.error("Error al cargar configuración del home:", error);
+      // Configuración por defecto
+      const defaultConfig: HomeConfig = {
+        visibleComponents: availableComponents
+          .slice(0, 10)
+          .map((comp) => comp.id),
+        order: availableComponents.slice(0, 10).map((comp) => comp.id),
+      };
+      setHomeConfig(defaultConfig);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Guardar configuración del home
+  const saveHomeConfig = async () => {
+    try {
+      setLoading(true);
+      const token = getCookie("AdminTokenAuth");
+      const configId =
+        process.env.NEXT_PUBLIC_HOME_CONFIG_CONTENTBLOCK ||
+        "home-config-default";
+
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${configId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          title: "Configuración del Home",
+          contentText: JSON.stringify(homeConfig),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data.code === 0) {
+        toast.success("Configuración guardada exitosamente");
+        // Revalidar cache
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: "/" }),
+        });
+      }
+    } catch (error) {
+      console.error("Error al guardar configuración:", error);
+      toast.error("Error al guardar la configuración");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Manejar cambios en la configuración
+  const handleConfigChange = (newConfig: HomeConfig) => {
+    setHomeConfig(newConfig);
+  };
+
+  useEffect(() => {
+    fetchHomeConfig();
+  }, []);
 
   const toggleSection = (sectionId: string) => {
     setOpenSections((prev) => {
@@ -210,142 +594,117 @@ export default function BannerHome() {
         [sectionId]: !prev[sectionId],
       };
 
-      // Si la sección se está abriendo, hacemos scroll hacia ella
       if (newState[sectionId] && sectionRefs.current[sectionId]) {
         setTimeout(() => {
           sectionRefs.current[sectionId]?.scrollIntoView({
             behavior: "smooth",
             block: "start",
           });
-        }, 100); // Pequeño retraso para asegurar que la animación de apertura haya comenzado
+        }, 100);
       }
 
       return newState;
     });
   };
 
+  if (loading && !homeConfig) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando configuración...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Obtener componentes ordenados según la configuración
+  const orderedComponents =
+    homeConfig?.order
+      ?.map((componentId: string) => {
+        const componentInfo = availableComponents.find(
+          (comp) => comp.id === componentId
+        );
+        if (!componentInfo) return null;
+
+        // Mapeo de componentes a sus respectivos componentes BO
+        const componentMap: { [key: string]: React.ReactNode } = {
+          marqueeTOP: <MarqueeTOP />,
+          bannerPrincipal01: <BannerPrincipal01BO />,
+          destacadosCat: <DestacadosCatBO />,
+          testimonios03: <Testimonios03BO />,
+          testimonios: <Testimonios01BO />,
+          testimonios04: <Testimonios04BO />,
+          sinFoto04: <SinFoto04BO />,
+          colecciones01: <Colecciones01BO />,
+          colecciones02: <Colecciones02BO />,
+          galeria02: <Galeria02BO />,
+          nosotros01: <Nosotros01BO />,
+          sinFoto06: <SinFoto06BO />,
+          sinFoto07: <SinFoto07BO />,
+          ubicacion02: <Ubicacion02BO />,
+          servicios01: <Servicios01BO />,
+          servicios02: <Servicios02BO />,
+          servicios03: <Servicios03BO />,
+          servicios04: <Servicios04BO />,
+          galeria: <GaleriaBO />,
+          sinFoto: <SinFotoBO />,
+          sinFoto02: <SinFoto02BO />,
+          hero06: <Hero06BO />,
+          materiales: <MaterialesBO />,
+          logosCarrusel: <LogosCarruselBO />,
+          hero07: <Hero07BO />,
+          hero08: <Hero08BO />,
+          hero09: <Hero09BO />,
+          bannerPrincipal02: <BannerPrincipal02BO />,
+          hero01: <Hero01BO />,
+          hero02: <Hero02BO />,
+          hero03: <Hero03BO />,
+          hero04: <Hero04BO />,
+          hero05: <Hero05BO />,
+          sinFoto01: <SinFoto01BO />,
+          sinFoto03: <SinFoto03BO />,
+          categoria01: <Categoria01BO />,
+          categoria02: <Categoria02BO />,
+          categoria03: <Categoria03BO />,
+          categoria04: <Categoria04BO />,
+          categoria05: <Categoria05BO />,
+          categoria06: <Categoria06BO />,
+          categoria07: <Categoria07BO />,
+          feedInstagram: <FeedInstagramBO />,
+          parallax: <ParallaxBO />,
+        };
+
+        return {
+          ...componentInfo,
+          component: componentMap[componentId] || (
+            <div>Componente no encontrado</div>
+          ),
+        };
+      })
+      .filter(Boolean) || [];
+
   return (
     <section className="gap-4 flex flex-col py-10 mx-4">
       <title>Content block - Home</title>
-      {[
-/*         { id: "marqueeTOP", title: "Marquee", component: <MarqueeTOP /> },
- */     {id: "bannerPrincipal01", title: "Banner", component: <BannerPrincipal01BO />},
- {id: "destacadosCat", title: "Destacados Cat", component: <DestacadosCatBO/>},
- {id: "testimonios03", title: "Testimonios 03", component: <Testimonios03BO/>},
- {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
- {id: "testimonios04", title: "Testimonios 04", component: <Testimonios04BO/>},
- {id: "sinFoto04", title: "Sin Foto 04", component: <SinFoto04BO/>},
-/*  {id: "navbarbanner", title: "Navbar Banner", component: <NavbarbannerBO/>},
- */ {id: "colecciones01", title: "Coleccion 01", component: <Colecciones01BO/>},
- {id: "colecciones02", title: "Coleccion 02", component: <Colecciones02BO/>},
- {id: "galeria02", title: "Galería 02", component: <Galeria02BO/>},
- {id: "nosotros01", title: "Nosotros 01", component: <Nosotros01BO/>},
- {id: "sinFoto06", title: "Sin Foto 06", component: <SinFoto06BO/>},
- {id: "sinFoto07", title: "Sin Foto 07", component: <SinFoto07BO/>},
- {id: "ubicacion02", title: "Ubicación 02", component: <Ubicacion02BO/>},
- {id: "servicios01", title: "Servicios 01", component: <Servicios01BO/>},
- {id: "servicios02", title: "Servicios 02", component: <Servicios02BO/>},
- {id: "servicios03", title: "Servicios 03", component: <Servicios03BO/>},
- {id: "servicios04", title: "Servicios 04", component: <Servicios04BO/>},
-/*         
 
-{id: "galeria", title: "Galería", component: <GaleriaBO/>},
-        {id: "sinFoto", title: "Sin Foto", component: <SinFotoBO/>},
-        {id: "sinFoto02", title: "Sin Foto 02", component: <SinFoto02BO/>},
-        {id: "hero06", title: "Hero 06", component: <Hero06BO/>},
-        {id: "materiales", title: "Materiales", component: <MaterialesBO/>},
-        {id: "logosCarrusel", title: "Logos Carrusel", component: <LogosCarruselBO/>},
-        {id: "hero07", title: "Hero 07", component: <Hero07BO/>},
-        {id: "testimonios", title: "Testimonios", component: <Testimonios01BO/>},
-        {id: "colecciones01", title: "Colecciones 01", component: <Colecciones01BO/>},
-        {id: "ubicacionContent", title: "Ubicación", component: <Ubicacion02BO/>},
-        {id: "hero08", title: "Hero 08", component: <Hero08BO/>},
-        {id: "hero09", title: "Hero 09", component: <Hero09BO/>}, */
-/*         {
-          id: "bannerPrincipal02",
-          title: "Banner Doble",
-          component: <BannerPrincipal02BO />,
-        },
-        { id: "hero01", title: "Hero 01", component: <Hero01BO /> },
-        { id: "hero02", title: "About Me", component: <Hero02BO /> },
-        { id: "hero03", title: "Nuestros Servicios", component: <Hero03BO /> },
-        { id: "hero04", title: "Conóceme", component: <Hero04BO /> },
-        { id: "hero05", title: "Propuesta de valor", component: <Hero05BO /> },
-        {
-          id: "sinFoto01",
-          title: "About me sin foto",
-          component: <SinFoto01BO />,
-        },
-        {
-          id: "sinFoto02",
-          title: "Sin Foto 02 ARREGLAR",
-          component: <SinFoto02BO />,
-        },
-        { id: "sinFoto03", title: "4 Cajas", component: <SinFoto03BO /> },
-        {
-          id: "colecciones02",
-          title: "Colecciones",
-          component: <Colecciones02BO />,
-        },
-        {
-          id: "categoria01",
-          title: "Categoría 01",
-          component: <Categoria01BO />,
-        },
-        {
-          id: "categoria02",
-          title: "Categorías 02 (3 imagenes)",
-          component: <Categoria02BO />,
-        },
-        {
-          id: "categoria03",
-          title: "Categorías 03 (3 imagenes)",
-          component: <Categoria03BO />,
-        },
-        {
-          id: "categoria04",
-          title: "Categorías 04 (3 imagenes)",
-          component: <Categoria04BO />,
-        },
-        {
-          id: "categoria05",
-          title: "Categorías 05 (4 imagenes)",
-          component: <Categoria05BO />,
-        },
-        {
-          id: "categoria06",
-          title: "Categorías 06 (4 imagenes)",
-          component: <Categoria06BO />,
-        },
-        {
-          id: "categoria07",
-          title: "Categorías 07 (5 imagenes)",
-          component: <Categoria07BO />,
-        },
-        { id: "ubicacion", title: "Ubicación", component: <UbicacionBO /> },
-        {
-          id: "feedInstagram",
-          title: "Feed Instagram",
-          component: <FeedInstagramBO />,
-        },
-        { id: "parallax", title: "Parallax", component: <ParallaxBO /> } */
-        /* ,
-        { id: "bannerPrincipal04", title: "Barra Superior", component: <BannerPrincipal04BO /> },
-        { id: "cardsPage", title: "Hero 03", component: <CardsPage /> },
-        { id: "hero03", title: "Hero 03", component: <Hero03BO /> },
-        { id: "hero04", title: "Hero 04", component: <Hero04BO /> },
-        { id: "hero01", title: "Hero 01", component: <Hero01BO /> },
-        { id: "hero02", title: "Hero 02", component: <Hero02BO /> },
-        { id: "sinFoto01", title: "Sin Foto 01", component: <SinFoto01BO /> },
-        { id: "sinFoto02", title: "Sin Foto 02", component: <SinFoto02BO /> },
-        { id: "feedInstagram", title: "Feed Instagram", component: <FeedInstagramBO /> },
-        { id: "testimonios", title: "Testimonios", component: <TestimoniosBO /> },
-        { id: "categoria02", title: "Barra Superior", component: <Categoria02BO /> },
-        { id: "logosCarrusel", title: "Barra Superior", component: <LogosCarruselBO /> },
-        { id: "bannerMobile", title: "Banner Mobile", component: <BannerPrincipal02BOMobile /> },
-        { id: "sobreMi", title: "Sobre Mí", component: <Hero02BO /> },
-        { id: "frases", title: "Frases", component: <FrasesBO /> },  */
-      ].map((section) => (
+      {/* Panel de configuración con drag and drop */}
+      <div className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-6">
+        <div className="p-6">
+          {homeConfig && (
+            <HomeConfigManager
+              availableComponents={availableComponents}
+              config={homeConfig}
+              onConfigChange={handleConfigChange}
+              onSave={saveHomeConfig}
+              loading={loading}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Componentes ordenados */}
+      {orderedComponents.map((section: any) => (
         <div
           key={section.id}
           ref={(el) => (sectionRefs.current[section.id] = el)}
@@ -359,8 +718,6 @@ export default function BannerHome() {
             <div className="flex justify-between items-center w-full">
               <div className="flex gap-2">
                 <div>{section.title}</div>
-                {/*                 <div>/ Home</div>
-                 */}{" "}
               </div>
               {openSections[section.id] ? (
                 <svg

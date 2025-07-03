@@ -871,3 +871,214 @@ ol {
 .active-filter-badge button:hover {
   opacity: 0.8;
 }
+
+/* Estilos para drag and drop */
+.dragging {
+  transform: rotate(2deg);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+.drag-over {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.drag-handle {
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Animaciones suaves para transiciones */
+.component-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.component-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para estados vacíos */
+.empty-state {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px dashed #cbd5e1;
+}
+
+.empty-state:hover {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+/* Indicadores visuales para drag and drop */
+.drop-indicator {
+  height: 2px;
+  background-color: #3b82f6;
+  margin: 4px 0;
+  border-radius: 1px;
+  transition: all 0.2s ease;
+}
+
+.drop-indicator.active {
+  height: 4px;
+  background-color: #1d4ed8;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+/* Estilos para botones de acción */
+.action-button {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-button::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.action-button:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* Estilos para contadores y badges */
+.component-counter {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Estilos para categorías */
+.category-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Animaciones de carga */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Estilos para tooltips */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Estilos para scrollbars personalizados */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Estilos para responsive design */
+@media (max-width: 768px) {
+  .drag-container {
+    grid-template-columns: 1fr;
+  }
+
+  .component-card {
+    padding: 12px;
+  }
+
+  .action-button {
+    padding: 8px;
+  }
+}
+
+/* Estilos para modo oscuro */
+@media (prefers-color-scheme: dark) {
+  .empty-state {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+  }
+
+  .empty-state:hover {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  }
+
+  .category-badge {
+    background: #374151;
+    color: #9ca3af;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #374151;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #6b7280;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+}

@@ -28,6 +28,12 @@ import Hero03 from "@/components/PIXELUP/Hero/Hero03/Hero03";
 import Hero04 from "@/components/PIXELUP/Hero/Hero04/Hero04";
 import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 import FeedRRSS from "@/components/PIXELUP/FeedRRSS/FeedRRSS";
+import {
+  fetchHomeConfig,
+  getDefaultHomeConfig,
+  HomeConfig,
+} from "@/app/utils/homeConfig";
+import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -96,73 +102,17 @@ export default async function Page() {
   try {
     const seoData = await metadata();
 
+    // Cargar configuración del home
+    let homeConfig = await fetchHomeConfig();
+    if (!homeConfig) {
+      homeConfig = getDefaultHomeConfig();
+    }
+
     return (
       <>
-        <MarqueeTOP />
         <DynamicNavbar />
-        <Suspense fallback={<Banner />}>
-          <BannerPrincipal01 />
-        </Suspense>
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <Destacados01 text="Destacados" />
-        </Suspense>
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <Hero01 />
-        </Suspense>
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <Hero02 />
-        </Suspense>
-        <Suspense fallback={<Banner />}>
-          <Hero03 />
-        </Suspense>
-        <Suspense fallback={<Banner />}>
-          <Hero04 />
-        </Suspense>
-        <Suspense fallback={<Banner />}>
-          <Parallax />
-        </Suspense>
-        <Suspense fallback={<Banner />}>
-          <Colecciones02 />
-        </Suspense>
-        <Suspense fallback={<Banner />}>
-          <Categoria02 />
-        </Suspense>
-        <Suspense fallback={<Banner />}>
-          <Ubicacion />
-        </Suspense>
-        <Suspense fallback={<Banner />}>
-          <FeedInstagram />
-        </Suspense>
+        <DynamicHomeComponents config={homeConfig} />
         <DynamicFooter />
-        {/* 
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <SinFoto01 />
-        </Suspense>
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <Destacados01 text="Destacados" />
-        </Suspense>
-        <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
-          <Categoria02 />
-        </Suspense>
-        <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
-          <Frase01 />
-        </Suspense>
-        <Suspense fallback={<Destacados />}>
-          <Destacados01 text="Destacados" />
-        </Suspense>
-        <Suspense fallback={<div className="h-96 animate-pulse bg-gray-100" />}>
-          <Hero02 />
-        </Suspense>
-        <Suspense fallback={<div className="h-24 animate-pulse bg-gray-100" />}>
-          <Frase02 />
-        </Suspense> *
-        <Suspense fallback={<Banner />}>
-          <FeedRRSS />
-        </Suspense>
-        <DynamicFooter />
-
-        {/* <DiscountModal /> */}
-
         <WhatsAppButton />
       </>
     );
