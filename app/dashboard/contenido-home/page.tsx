@@ -699,23 +699,6 @@ export default function BannerHome() {
   return (
     <section className="gap-4 flex flex-col py-10 mx-4">
       <title>Content block - Home</title>
-
-      {/* Panel de configuración con drag and drop */}
-      <div className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-6">
-        <div className="p-6">
-          {homeConfig && (
-            <HomeConfigManager
-              availableComponents={availableComponents}
-              config={homeConfig}
-              onConfigChange={handleConfigChange}
-              onSave={saveHomeConfig}
-              onReset={resetHomeConfig}
-              loading={loading}
-            />
-          )}
-        </div>
-      </div>
-
       {/* Componentes ordenados */}
       {orderedComponents.map((section: any) => (
         <div
@@ -774,6 +757,23 @@ export default function BannerHome() {
           </div>
         </div>
       ))}
+      {/* Panel de configuración con drag and drop */}
+      <div className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-6">
+        <div className="p-6">
+          {homeConfig && (
+            <HomeConfigManager
+              availableComponents={availableComponents}
+              config={homeConfig}
+              onConfigChange={handleConfigChange}
+              onSave={saveHomeConfig}
+              onReset={resetHomeConfig}
+              loading={loading}
+            />
+          )}
+        </div>
+      </div>
+
+
     </section>
   );
 }
