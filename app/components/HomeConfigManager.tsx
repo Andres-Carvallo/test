@@ -44,14 +44,45 @@ function ComponentPreview({
   component,
   onClose,
   onAdd,
+  onNavigate,
+  currentIndex = 0,
+  totalComponents = 0,
 }: {
   component: ComponentConfig;
   onClose: () => void;
   onAdd: () => void;
+  onNavigate?: (direction: 'prev' | 'next') => void;
+  currentIndex?: number;
+  totalComponents?: number;
 }) {
   const [previewComponent, setPreviewComponent] =
     useState<React.ReactNode>(null);
   const [loading, setLoading] = useState(true);
+
+  // Navegación con teclado
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!onNavigate) return;
+      
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          onNavigate('prev');
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          onNavigate('next');
+          break;
+        case 'Escape':
+          event.preventDefault();
+          onClose();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onNavigate, onClose]);
 
   // Mapeo de componentes a sus respectivos componentes de vista previa
   const getPreviewComponent = async (componentId: string) => {
@@ -390,37 +421,64 @@ function ComponentPreview({
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
+            {/* Información del componente */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 {getCategoryIcon(component.category || "")}
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-xl font-semibold text-gray-900">
                   {component.title}
                 </h2>
                 {component.category && (
-                  <p className="text-sm text-gray-600">{component.category}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {component.category} • ID: {component.id}
+                  </p>
                 )}
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            
+            {/* Navegación y botón cerrar agrupados en la derecha */}
+            <div className="flex items-center space-x-3">
+              {/* Navegación: flecha izquierda, indicador, flecha derecha */}
+              {onNavigate && totalComponents > 1 && (
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => onNavigate('prev')}
+                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900"
+                    title="Componente anterior"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  
+                  <div className="text-sm text-gray-500 font-medium px-3 py-1 bg-gray-50 rounded-lg">
+                    {currentIndex + 1} de {totalComponents}
+                  </div>
+                  
+                  <button
+                    onClick={() => onNavigate('next')}
+                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900"
+                    title="Siguiente componente"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              
+              {/* Botón cerrar */}
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {component.description && (
@@ -461,7 +519,7 @@ function ComponentPreview({
               onClick={onClose}
               className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             >
-              Cancelar
+              Volver
             </button>
             <div className="flex gap-3">
               <button
@@ -506,8 +564,10 @@ function InactiveComponentsModal({
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [previewComponent, setPreviewComponent] =
     useState<ComponentConfig | null>(null);
+  const [currentComponentIndex, setCurrentComponentIndex] = useState(0);
 
   const getCategoryIcon = (category: string) => {
     const icons: { [key: string]: React.ReactNode } = {
@@ -723,6 +783,11 @@ function InactiveComponentsModal({
 
   const handlePreview = (component: ComponentConfig) => {
     setPreviewComponent(component);
+    
+    // Encontrar el índice del componente en la lista filtrada
+    const allFilteredComponents = filteredComponents;
+    const index = allFilteredComponents.findIndex(comp => comp.id === component.id);
+    setCurrentComponentIndex(index >= 0 ? index : 0);
   };
 
   const handleAddDirect = (componentId: string) => {
@@ -738,21 +803,41 @@ function InactiveComponentsModal({
     }
   };
 
+  const navigateToComponent = (direction: 'prev' | 'next') => {
+    const allFilteredComponents = filteredComponents;
+    if (allFilteredComponents.length === 0) return;
+    
+    let newIndex;
+    if (direction === 'prev') {
+      newIndex = currentComponentIndex > 0 ? currentComponentIndex - 1 : allFilteredComponents.length - 1;
+    } else {
+      newIndex = currentComponentIndex < allFilteredComponents.length - 1 ? currentComponentIndex + 1 : 0;
+    }
+    
+    setCurrentComponentIndex(newIndex);
+    setPreviewComponent(allFilteredComponents[newIndex]);
+  };
+
   if (!isOpen) return null;
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
+      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col">
           {/* Header */}
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Agregar Componentes
-              </h2>
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-b from-primary/80 to-primary/60">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  Agregar Componentes
+                </h2>
+                <p className="text-gray-600">
+                  Explora y selecciona los componentes que deseas agregar a tu página de inicio
+                </p>
+              </div>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full bg-gray-200 hover:bg-gray-100"
               >
                 <svg
                   className="w-6 h-6"
@@ -770,168 +855,345 @@ function InactiveComponentsModal({
               </button>
             </div>
 
-            {/* Buscador */}
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Buscar componentes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Filtro de categorías */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedCategory("all")}
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  selectedCategory === "all"
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Todas las categorías
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    selectedCategory === category
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {getCategoryIcon(category)}
-                    <span>{category}</span>
-                  </div>
-                </button>
-              ))}
+            {/* Buscador y controles */}
+            <div className="flex justify-between items-center gap-4">
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <svg
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Buscar componentes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
+                  />
+                </div>
+              </div>
+              
+              {/* Controles de vista */}
+              <div className="flex items-center space-x-4">
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === "grid"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      viewMode === "list"
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Contenido */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {Object.keys(groupedComponents).length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <svg
-                  className="w-12 h-12 mx-auto mb-4 text-gray-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                <p className="font-medium">No se encontraron componentes</p>
-                <p className="text-sm">
-                  Intenta con otros términos de búsqueda
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {Object.entries(groupedComponents).map(
-                  ([category, components]) => (
-                    <div key={category}>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <div className="flex items-center gap-2">
+          {/* Contenido principal con sidebar */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Sidebar - Categorías */}
+            <div className="w-64 bg-gray-50 border-r border-gray-200 overflow-y-auto">
+              <div className="p-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                  Categorías
+                </h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setSelectedCategory("all")}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center space-x-3 ${
+                      selectedCategory === "all"
+                        ? "bg-primary/30 text-primary border border-primary"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                    </svg>
+                    <span>Todas ({inactiveComponents.length})</span>
+                  </button>
+                  {categories.map((category) => {
+                    const categoryCount = inactiveComponents.filter(comp => comp.category === category).length;
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center space-x-3 ${
+                          selectedCategory === category
+                            ? "bg-primary/30 text-primary border border-primary"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        <div className="flex-shrink-0">
                           {getCategoryIcon(category)}
-                          <span>{category}</span>
                         </div>
-                        <span className="text-sm text-gray-500">
-                          ({components.length})
-                        </span>
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {components.map((component) => (
-                          <div
-                            key={component.id}
-                            className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition-all"
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-gray-900 mb-1">
-                                  {component.title}
-                                </h4>
-                                {component.description && (
-                                  <p className="text-sm text-gray-600">
-                                    {component.description}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handlePreview(component)}
-                                className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center justify-center gap-1"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                  />
-                                </svg>
-                                Vista Previa
-                              </button>
-                              <button
-                                onClick={() => handleAddDirect(component.id)}
-                                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium flex items-center justify-center gap-1"
-                              >
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                  />
-                                </svg>
-                                Agregar
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                )}
+                        <span>{category} ({categoryCount})</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Área principal de contenido */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {Object.keys(groupedComponents).length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-10 h-10 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="font-medium text-lg mb-2">No se encontraron componentes</p>
+                  <p className="text-sm text-gray-400">
+                    Intenta con otros términos de búsqueda o cambia de categoría
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {Object.entries(groupedComponents).map(
+                    ([category, components]) => (
+                      <div key={category}>
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white shadow-md">
+                            {getCategoryIcon(category)}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900">
+                              {category}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {components.length} componente{components.length !== 1 ? 's' : ''} disponible{components.length !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {/* Vista de componentes según el modo seleccionado */}
+                        {viewMode === "grid" ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {components.map((component) => (
+                              <div
+                                key={component.id}
+                                className="group block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
+                              >
+                                {/* Fondo decorativo con gradiente sutil */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                
+                                <div className="flex flex-col space-y-4 relative z-10">
+                                  {/* Información del componente */}
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3 mb-3">
+                                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                        {component.title.charAt(0)}
+                                      </div>
+                                      <div>
+                                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                          {component.title}
+                                        </h4>
+                                        <p className="text-xs text-gray-500 font-medium">
+                                          ID: {component.id}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    {component.description && (
+                                      <p className="text-sm text-gray-600 leading-relaxed">
+                                        {component.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Botones de acción */}
+                                  <div className="flex gap-3">
+                                    <button
+                                      onClick={() => handlePreview(component)}
+                                      className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                        />
+                                      </svg>
+                                      Vista Previa
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddDirect(component.id)}
+                                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                        />
+                                      </svg>
+                                      Agregar
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {components.map((component) => (
+                              <div
+                                key={component.id}
+                                className="group block w-full bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
+                              >
+                                {/* Fondo decorativo con gradiente sutil */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-50/20 via-transparent to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                
+                                <div className="flex items-center justify-between relative z-10">
+                                  {/* Información del componente */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                        {component.title.charAt(0)}
+                                      </div>
+                                      <div>
+                                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                          {component.title}
+                                        </h4>
+                                        <p className="text-xs text-gray-500 font-medium">
+                                          ID: {component.id}
+                                        </p>
+                                        {component.description && (
+                                          <p className="text-sm text-gray-600 mt-1 max-w-md">
+                                            {component.description}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Botones de acción */}
+                                  <div className="flex-shrink-0 flex gap-2">
+                                    <button
+                                      onClick={() => handlePreview(component)}
+                                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center gap-2 transition-all duration-200"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                        />
+                                      </svg>
+                                      Vista Previa
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddDirect(component.id)}
+                                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                    >
+                                      <svg
+                                        className="w-4 h-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                        />
+                                      </svg>
+                                      Agregar
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-gray-200">
+          <div className="p-6 border-t border-gray-200 bg-gray-50">
             <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-600">
-                {filteredComponents.length} de {inactiveComponents.length}{" "}
-                componentes disponibles
-              </p>
+              <div className="flex items-center gap-4">
+                <div className="bg-primary/30 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                  {filteredComponents.length} de {inactiveComponents.length} componentes
+                </div>
+                <p className="text-sm text-gray-600">
+                  Selecciona los componentes que deseas agregar a tu página
+                </p>
+              </div>
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                className="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
               >
                 Cerrar
               </button>
@@ -946,6 +1208,9 @@ function InactiveComponentsModal({
           component={previewComponent}
           onClose={() => setPreviewComponent(null)}
           onAdd={handleAddFromPreview}
+          onNavigate={navigateToComponent}
+          currentIndex={currentComponentIndex}
+          totalComponents={filteredComponents.length}
         />
       )}
     </>
@@ -1174,11 +1439,11 @@ function SortableComponent({
           <div
             {...attributes}
             {...listeners}
-            className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center drag-handle"
+            className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center drag-handle"
           >
-            <span className="text-blue-600 font-semibold text-sm">
-              {index + 1}
-            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -1490,7 +1755,7 @@ export default function HomeConfigManager({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+{/*       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-lg border border-gray-200 component-card">
           <div className="text-2xl font-bold text-blue-600">
             {activeComponents.length}
@@ -1509,7 +1774,7 @@ export default function HomeConfigManager({
           </div>
           <div className="text-sm text-gray-600">Total Disponibles</div>
         </div>
-      </div>
+      </div> */}
 
       {/* Componentes Activos */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1603,9 +1868,9 @@ export default function HomeConfigManager({
               <div className="component-card bg-white border border-gray-200 rounded-lg p-4 shadow-lg opacity-90">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold text-sm">
-                      📦
-                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-blue-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-900">
