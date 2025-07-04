@@ -14,6 +14,13 @@ const TableUsers = () => {
   const [usuarios, setUsuarios] = useState<UserData[]>([]);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState<string>("");
+  
+  // Estados para verificación de plan
+  const [hasProPlan, setHasProPlan] = useState(false);
+  const [hasAvanzadoPlan, setHasAvanzadoPlan] = useState(false);
+  const [hasInicialPlan, setHasInicialPlan] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState<string>("");
 
   const fetchData = async () => {
     try {
@@ -28,8 +35,83 @@ const TableUsers = () => {
     }
   };
 
+  const getUserLimit = () => {
+    if (hasProPlan) return Infinity; // Sin límite
+    if (hasAvanzadoPlan) return 3;
+    if (hasInicialPlan) return 1;
+    return 0; // Sin suscripción
+  };
+
+  const canCreateUser = () => {
+    const limit = getUserLimit();
+    const currentUserCount = usuarios.length; // Ya está filtrado sin el admin
+    return currentUserCount < limit;
+  };
+
+  const checkSubscriptionPlan = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar suscripciones activas
+      const activeSubscriptions = response.data.subscriptions.filter(
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+      );
+
+      // Verificar si tiene plan PRO
+      const proSubscription = activeSubscriptions.find((sub: any) =>
+        sub.name.toLowerCase().includes("pro")
+      );
+
+      // Verificar si tiene plan Avanzado
+      const avanzadoSubscription = activeSubscriptions.find((sub: any) =>
+        sub.name.toLowerCase().includes("avanzado")
+      );
+
+      // Verificar si tiene plan Inicial
+      const inicialSubscription = activeSubscriptions.find((sub: any) =>
+        sub.name.toLowerCase().includes("inicia")
+      );
+
+      // Determinar el plan actual
+      let planName = "Sin suscripción activa";
+      if (activeSubscriptions.length > 0) {
+        const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
+        if (subscription.name.toLowerCase().includes("pro")) {
+          planName = "Plan PRO";
+        } else if (subscription.name.toLowerCase().includes("avanzado")) {
+          planName = "Plan Avanzado";
+        } else if (subscription.name.toLowerCase().includes("inicia")) {
+          planName = "Plan Inicia";
+        } else {
+          planName = subscription.name;
+        }
+      }
+
+      setHasProPlan(!!proSubscription);
+      setHasAvanzadoPlan(!!avanzadoSubscription);
+      setHasInicialPlan(!!inicialSubscription);
+      setCurrentPlan(planName);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setHasProPlan(false);
+      setHasAvanzadoPlan(false);
+      setHasInicialPlan(false);
+      setCurrentPlan("Error al verificar plan");
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData(); // Llamada inicial dentro del useEffect
+    checkSubscriptionPlan();
 
     const handleEscKeyPress = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -84,10 +166,43 @@ const TableUsers = () => {
 
   return (
     <>
+
       <div className="mr-6 flex items-center justify-end pr-16 lg:pr-0">
-        <UserCanvas fetchData={fetchData} />
+        
+        <UserCanvas 
+          fetchData={fetchData} 
+          canCreateUser={canCreateUser()}
+          currentPlan={currentPlan}
+          userLimit={getUserLimit()}
+          currentUserCount={usuarios.length}
+        />
+        
       </div>
+      
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+              {/* Información del plan y límite de usuarios */}
+      {!subscriptionLoading && (
+        <div className="mb-6">
+            {/* Mensaje de recomendación */}
+            <div className="border-blue-200">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="h-4 w-4 text-blue-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-2">
+                  <p className="text-sm text-blue-700">
+                    <span className="font-medium">Recomendación:</span> Si necesita ampliar la cantidad de administradores, le recomendamos mejorar su plan de suscripción.
+                  </p>
+
+                </div>
+              </div>
+            </div>
+         
+        </div>
+      )}
+
         <div className="max-w-full overflow-x-auto">
           <table className="w-full table-auto">
             <thead>

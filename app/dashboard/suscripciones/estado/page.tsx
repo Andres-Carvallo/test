@@ -115,6 +115,20 @@ const RenovarSuscripcion = () => {
     }
   };
 
+  // Función para filtrar productos por categoría y ordenar por precio
+  const filterProductsByCategory = (products: Product[], category: string) => {
+    const filteredProducts = products.filter((product: Product) =>
+      product.name.toLowerCase().includes(category.toLowerCase())
+    );
+    
+    // Ordenar por precio de menor a mayor
+    return filteredProducts.sort((a: Product, b: Product) => {
+      const priceA = a.productPricings[0]?.amount || 0;
+      const priceB = b.productPricings[0]?.amount || 0;
+      return priceA - priceB;
+    });
+  };
+
   // Función para manejar la selección de un producto
   const handleSelectProduct = (productId: string) => {
     setSelectedProduct(productId);
@@ -198,71 +212,212 @@ const RenovarSuscripcion = () => {
         <div className="p-6 mt-10">
           <h1 className="text-xl font-bold mb-4">Suscripción Actual</h1>
           {subscriptionData ? (
-            <div className="bg-gray-50 p-4 rounded-xl shadow">
-              <p>
-                <strong>Nombre:</strong> {subscriptionData.name}
-              </p>
-
-              <p>
-                <strong>Estado:</strong> {subscriptionData.statusCode}
-              </p>
-              <p>
-                <strong>Fecha de inicio:</strong>{" "}
-                {new Date(subscriptionData.startDate).toLocaleDateString()}
-              </p>
-              <p>
-                <strong>Fecha de fin:</strong>{" "}
-                {new Date(subscriptionData.endDate).toLocaleDateString()}
-              </p>
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <span className="text-gray-600 text-sm font-medium w-24">Nombre:</span>
+                  <span className="text-gray-900 font-semibold">{subscriptionData.name}</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-center">
+                    <span className="text-gray-600 text-sm font-medium w-16">Estado:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      subscriptionData.statusCode === 'ACTIVE' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {subscriptionData.statusCode}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-600 text-sm font-medium w-16">Inicio:</span>
+                    <span className="text-gray-900 font-semibold">
+                      {new Date(subscriptionData.startDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-600 text-sm font-medium w-16">Fin:</span>
+                    <span className="text-gray-900 font-semibold">
+                      {new Date(subscriptionData.endDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
-            <p>No se encontró información de la suscripción.</p>
+            <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto text-center">
+              <p className="text-gray-500">No se encontró información de la suscripción.</p>
+            </div>
           )}
 
           <h1 className="text-xl font-bold mt-10">Opciones de Renovación</h1>
-          <h2 className="text-sm  mb-4">
-            Elige la opción que mejor se ajuste a tus necesidades
-          </h2>
+            <h2 className="text-sm  ">
+              Elige la opción que mejor se ajuste a tus necesidades
+            </h2>
+            <h3 className="text-sm mb-4">         Si no conoces el detalle de cada plan, te recomendamos visitar <a href="https://pixelup.cl/planes" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline"> Pixel Up Planes</a> 
+            </h3>
           {renewalOptions.length > 0 ? (
-            <ul className="pt-6">
-              {renewalOptions.map((product: any) => (
-                <li
-                  key={product.id}
-                  className="border-b last:border-0 py-4 mb-4 flex justify-between items-center cursor-pointer rounded-xl hover:bg-gray-100 p-6 bg-gray-50  shadow"
-                  onClick={() => handleSelectProduct(product.id)} // Hace clickeable todo el <li>
-                >
-                  <label
-                    htmlFor={product.id}
-                    className="flex flex-col flex-grow cursor-pointer mx-4" // Flex para hacer que el contenido crezca y ocupe todo el espacio
-                  >
-                    <p className="font-bold text-md">{product.name}</p>
-
-                    <p className=" font-bold text-rosa">
-                      {product.productPricings[0]?.amount
-                        ? product.productPricings[0].amount.toLocaleString(
-                            "es-CL",
-                            { style: "currency", currency: "CLP" }
-                          )
-                        : "N/A"}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+              {/* Columna 1 - Inicia */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-center mb-4 text-blue-600 border-b pb-2">
+                  Plan Inicia
+                </h3>
+                <div className="space-y-4">
+                  {filterProductsByCategory(renewalOptions, "inicia").map((product: any) => (
+                    <div
+                      key={product.id}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+                        selectedProduct === product.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-blue-300"
+                      }`}
+                      onClick={() => handleSelectProduct(product.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-grow">
+                          <p className="font-semibold text-sm">{product.name}</p>
+                     {/*      <p className="text-xs text-gray-600 mt-1">
+                            {product.description}
+                          </p> */}
+                          <p className="font-bold text-blue-600 mt-2">
+                            {product.productPricings[0]?.amount
+                              ? product.productPricings[0].amount.toLocaleString(
+                                  "es-CL",
+                                  { style: "currency", currency: "CLP" }
+                                )
+                              : "N/A"}
+                          </p>
+                        </div>
+                        <input
+                          type="radio"
+                          name="renewalOption"
+                          className="w-5 h-5 text-blue-600"
+                          value={product.id}
+                          checked={selectedProduct === product.id}
+                          onChange={() => handleSelectProduct(product.id)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {filterProductsByCategory(renewalOptions, "inicia").length === 0 && (
+                    <p className="text-gray-500 text-center text-sm py-4">
+                      No hay opciones disponibles
                     </p>
-                  </label>
-                  <input
-                    type="radio"
-                    id={product.id}
-                    name="renewalOption"
-                    className="w-6 h-6 ml-4" // Tamaño del radio button y margen izquierdo
-                    value={product.id}
-                    checked={selectedProduct === product.id}
-                    onChange={() => handleSelectProduct(product.id)}
-                  />
-                </li>
-              ))}
-            </ul>
+                  )}
+                </div>
+              </div>
+
+              {/* Columna 2 - Avanzado */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-center mb-4 border-b pb-2" style={{ color: '#FF3366' }}>
+                  Plan Avanzado
+                </h3>
+                <div className="space-y-4">
+                  {filterProductsByCategory(renewalOptions, "avanzado").map((product: any) => (
+                    <div
+                      key={product.id}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+                        selectedProduct === product.id
+                          ? "border-gray-200"
+                          : "border-gray-200"
+                      }`}
+                      style={{
+                        borderColor: selectedProduct === product.id ? '#FF3366' : undefined,
+                        backgroundColor: selectedProduct === product.id ? '#FFF5F7' : undefined,
+                      }}
+                      onClick={() => handleSelectProduct(product.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-grow">
+                          <p className="font-semibold text-sm">{product.name}</p>
+                              {/* <p className="text-xs text-gray-600 mt-1">
+                                {product.description}
+                              </p> */}
+                          <p className="font-bold mt-2" style={{ color: '#FF3366' }}>
+                            {product.productPricings[0]?.amount
+                              ? product.productPricings[0].amount.toLocaleString(
+                                  "es-CL",
+                                  { style: "currency", currency: "CLP" }
+                                )
+                              : "N/A"}
+                          </p>
+                        </div>
+                        <input
+                          type="radio"
+                          name="renewalOption"
+                          className="w-5 h-5"
+                          style={{ accentColor: '#FF3366' }}
+                          value={product.id}
+                          checked={selectedProduct === product.id}
+                          onChange={() => handleSelectProduct(product.id)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {filterProductsByCategory(renewalOptions, "avanzado").length === 0 && (
+                    <p className="text-gray-500 text-center text-sm py-4">
+                      No hay opciones disponibles
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Columna 3 - Pro */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-bold text-center mb-4 text-green-600 border-b pb-2">
+                  Plan Pro
+                </h3>
+                <div className="space-y-4">
+                  {filterProductsByCategory(renewalOptions, "pro").map((product: any) => (
+                    <div
+                      key={product.id}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+                        selectedProduct === product.id
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-200 hover:border-green-300"
+                      }`}
+                      onClick={() => handleSelectProduct(product.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-grow">
+                          <p className="font-semibold text-sm">{product.name}</p>
+                     {/*      <p className="text-xs text-gray-600 mt-1">
+                            {product.description}
+                          </p> */}
+                          <p className="font-bold text-green-600 mt-2">
+                            {product.productPricings[0]?.amount
+                              ? product.productPricings[0].amount.toLocaleString(
+                                  "es-CL",
+                                  { style: "currency", currency: "CLP" }
+                                )
+                              : "N/A"}
+                          </p>
+                        </div>
+                        <input
+                          type="radio"
+                          name="renewalOption"
+                          className="w-5 h-5 text-green-600"
+                          value={product.id}
+                          checked={selectedProduct === product.id}
+                          onChange={() => handleSelectProduct(product.id)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {filterProductsByCategory(renewalOptions, "pro").length === 0 && (
+                    <p className="text-gray-500 text-center text-sm py-4">
+                      No hay opciones disponibles
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           ) : (
             <p>No hay opciones de renovación disponibles.</p>
           )}
 
-          <div className="flex justify-center mb-20">
+          <div className="flex justify-center mb-10">
             <button
               onClick={handleRenewSubscription}
               className="mt-4 bg-dark px-4 py-2 text-white p-2 rounded hover:scale-105 transition-all"
@@ -270,6 +425,7 @@ const RenovarSuscripcion = () => {
               Confirmar Renovación
             </button>
           </div>
+
         </div>
       </div>
     </>

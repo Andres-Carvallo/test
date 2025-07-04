@@ -70,6 +70,9 @@ const ManualOrder: React.FC = () => {
   const [modalConfirmCallback, setModalConfirmCallback] = useState<
     (() => void) | null
   >(null);
+  const [hasProPlan, setHasProPlan] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState<string>("");
 
   const openModal = (productName: string, confirmCallback: () => void) => {
     setModalProductName(productName);
@@ -133,7 +136,56 @@ const ManualOrder: React.FC = () => {
   useEffect(() => {
     fetchProducts();
     fetchRegionsAndCommunes(false);
+    checkSubscriptionPlan();
   }, []);
+
+  const checkSubscriptionPlan = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar suscripciones activas
+      const activeSubscriptions = response.data.subscriptions.filter(
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+      );
+
+      // Verificar si tiene plan PRO
+      const proSubscription = activeSubscriptions.find((sub: any) =>
+        sub.name.toLowerCase().includes("pro")
+      );
+
+      // Determinar el plan actual
+      let planName = "Sin suscripción activa";
+      if (activeSubscriptions.length > 0) {
+        const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
+        if (subscription.name.toLowerCase().includes("pro")) {
+          planName = "Plan PRO";
+        } else if (subscription.name.toLowerCase().includes("avanzado")) {
+          planName = "Plan Avanzado";
+        } else if (subscription.name.toLowerCase().includes("inicia")) {
+          planName = "Plan Inicia";
+        } else {
+          planName = subscription.name;
+        }
+      }
+
+      setHasProPlan(!!proSubscription);
+      setCurrentPlan(planName);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setHasProPlan(false);
+      setCurrentPlan("Error al verificar plan");
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -637,7 +689,35 @@ const ManualOrder: React.FC = () => {
         <title>Crear Pedido</title>
         <div className="pb-12">
           <div className="p-10">
-            <div className="mt-10 bg-white rounded p-10 px-4 pt-8 lg:mt-0">
+            
+
+
+      {/* Mensaje de restricción para usuarios sin plan PRO */}
+      {!subscriptionLoading && !hasProPlan && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Crear Pedidos - Plan PRO
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>La creación de pedidos manuales es exclusiva del plan PRO.</p>
+                <p className="mt-1">
+                  Para configurar el monto mínimo de envío gratis, necesitas actualizar tu suscripción a un plan PRO.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+            <div className={`mt-10 bg-white rounded p-10 px-4 pt-8 lg:mt-0 ${
+              !hasProPlan ? 'opacity-50 pointer-events-none' : ''
+            }`}>
               <p className="text-xl font-medium">Datos Personales</p>
               <p className="text-gray-400">Completa tus datos de Personales</p>
               <div className="">
@@ -974,7 +1054,9 @@ const ManualOrder: React.FC = () => {
             {loading ? (
               <Loader />
             ) : (
-              <div className="px-4 pt-8 rounded bg-white mt-6 p-10">
+              <div className={`px-4 pt-8 rounded bg-white mt-6 p-10 ${
+                !hasProPlan ? 'opacity-50 pointer-events-none' : ''
+              }`}>
                 <p className="text-xl font-medium pb-3 border-b border-dark mb-4">
                   Detalle de la Orden
                 </p>
@@ -1029,10 +1111,14 @@ const ManualOrder: React.FC = () => {
                         ))}
                       <button
                         type="button"
-                        className="bg-dark text-white rounded p-2 w-full"
+                        className={`rounded p-2 w-full ${
+                          hasProPlan 
+                            ? 'bg-dark text-white hover:bg-gray-800' 
+                            : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                        }`}
                         onClick={handleAddItem}
                         disabled={
-                          selectedProduct.hasVariations && !selectedVariation
+                          !hasProPlan || (selectedProduct.hasVariations && !selectedVariation)
                         }
                       >
                         Agregar producto
@@ -1079,8 +1165,13 @@ const ManualOrder: React.FC = () => {
                       </span>
                       <button
                         type="button"
-                        className="bg-red-500 text-white rounded p-2"
+                        className={`rounded p-2 ${
+                          hasProPlan 
+                            ? 'bg-red-500 text-white hover:bg-red-600' 
+                            : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                        }`}
                         onClick={() => handleRemoveItem(item.skuId)}
+                        disabled={!hasProPlan}
                       >
                         Eliminar
                       </button>
@@ -1101,7 +1192,12 @@ const ManualOrder: React.FC = () => {
                 </div>
                 <button
                   onClick={handleSubmitOrder}
-                  className="mt-4 mb-8 w-full rounded-md bg-gray-900 px-6 py-3 font-medium text-white"
+                  disabled={!hasProPlan}
+                  className={`mt-4 mb-8 w-full rounded-md px-6 py-3 font-medium ${
+                    hasProPlan 
+                      ? 'bg-gray-900 text-white hover:bg-gray-800' 
+                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  }`}
                 >
                   Crear Orden
                 </button>

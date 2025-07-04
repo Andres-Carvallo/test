@@ -37,11 +37,53 @@ function Ofertas() {
   const [displayedOffers, setDisplayedOffers] = useState<Product[]>([]);
   const [currentOffersPage, setCurrentOffersPage] = useState(1);
   const [searchOffersText, setSearchOffersText] = useState("");
+  const [hasProPlan, setHasProPlan] = useState(false);
+  const [hasIniciaPlan, setHasIniciaPlan] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
 
   useEffect(() => {
     fetchProductos();
     fetchProductosEnOferta();
+    checkSubscriptionPlan();
   }, []);
+
+  const checkSubscriptionPlan = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar suscripciones activas
+      const activeSubscriptions = response.data.subscriptions.filter(
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+      );
+
+      // Verificar si tiene plan PRO
+      const hasPro = activeSubscriptions.some((sub: any) =>
+        sub.name.toLowerCase().includes("pro")
+      );
+
+      // Verificar si tiene plan INICIA
+      const hasInicia = activeSubscriptions.some((sub: any) =>
+        sub.name.toLowerCase().includes("inicia")
+      );
+
+      setHasProPlan(hasPro);
+      setHasIniciaPlan(hasInicia);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setHasProPlan(false);
+      setHasIniciaPlan(false);
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (allProducts.length > 0) {
@@ -146,10 +188,54 @@ function Ofertas() {
   return (
     <section className="mx-10 py-10">
       <Breadcrumb pageName="Ofertas" />
-      <div className="flex flex-col gap-10">
+      
+      {/* Mensaje de restricción para Configuración de Cuotas (solo PRO) */}
+      {!subscriptionLoading && !hasProPlan && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Configuración de Cuotas - Plan PRO
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>La configuración de cuotas es exclusiva del plan PRO.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={`flex flex-col gap-10 ${!hasProPlan ? 'opacity-50 pointer-events-none' : ''}`}>
         <Cuotas/>
       </div>
-      <div className="flex flex-col gap-10 mt-4">
+
+      {/* Mensaje de restricción para Configuración de Popup (solo PRO) */}
+      {!subscriptionLoading && !hasProPlan && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6 mt-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Configuración de Popup - Plan PRO
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>La configuración de popup es exclusiva del plan PRO.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className={`flex flex-col gap-10 mt-4 ${!hasProPlan ? 'opacity-50 pointer-events-none' : ''}`}>
         <Popup/>
       </div>
       <div className="rounded-lg p-4 bg-white my-6 overflow-x-auto">
@@ -356,7 +442,33 @@ function Ofertas() {
           </div>
         )}
       </div>
-      <section className="rounded-lg p-4 bg-white my-6 overflow-x-auto">
+      {/* Mensaje de restricción para Crear Ofertas (no disponible para plan Inicia) */}
+      {!subscriptionLoading && hasIniciaPlan && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Crear Ofertas - Plan Inicia
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>La creación de ofertas no está disponible para el plan Inicia.</p>
+                <p className="mt-1">
+                  Para crear ofertas, necesitas actualizar tu suscripción a un plan Avanzado o PRO.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <section className={`rounded-lg p-4 bg-white my-6 overflow-x-auto ${
+        hasIniciaPlan ? 'opacity-50 pointer-events-none' : ''
+      }`}>
         <div className="p-3 sm:p-5 relative">
           <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6">
             <div>Todos los productos</div>
@@ -458,11 +570,17 @@ function Ofertas() {
                           </div>
                         </td>
                         <td className="px-2 py-3 flex items-center justify-end space-x-2">
-                          <Link href={`/dashboard/ofertas/${product.id}`}>
-                            <div className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded">
+                          {hasIniciaPlan ? (
+                            <div className="bg-gray-400 text-gray-600 py-2 px-4 rounded cursor-not-allowed">
                               Crear Oferta
                             </div>
-                          </Link>
+                          ) : (
+                            <Link href={`/dashboard/ofertas/${product.id}`}>
+                              <div className="bg-primary hover:bg-secondary text-secondary text-center hover:text-primary py-2 px-4 rounded">
+                                Crear Oferta
+                              </div>
+                            </Link>
+                          )}
                         </td>
                       </tr>
                     ))}
