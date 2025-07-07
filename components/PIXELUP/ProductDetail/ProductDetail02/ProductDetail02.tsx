@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Destacados01 from "../../Destacados/Destacado01";
+import { useReviewSettings } from "@/hooks/useReviewSettings";
 import {
   fetchProductData,
   fetchStockData,
@@ -96,6 +97,7 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [cuotasEnabled, setCuotasEnabled] = useState(false);
   const [numeroCuotas, setNumeroCuotas] = useState(0);
+  const { isReviewEnabled } = useReviewSettings();
 
   const fetchStockForVariation = useCallback(async (productId: string, skuId: string) => {
     try {
@@ -1201,11 +1203,13 @@ const ProductDetail02: React.FC<ProductDetail02Props> = ({
         )}
 
         <Destacados01 text="TE PUEDE GUSTAR" />
-        <Stars
-          reviewAverageScore={reviewAverageScore}
-          totalReviews={totalReviews}
-          productId={selectedVariation?.product?.id || initialProduct?.skus?.[0]?.product?.id}
-        />
+        {isReviewEnabled && (
+          <Stars
+            reviewAverageScore={reviewAverageScore}
+            totalReviews={totalReviews}
+            productId={selectedVariation?.product?.id || initialProduct?.skus?.[0]?.product?.id}
+          />
+        )}
       </div>
       {showModal && (
         <div

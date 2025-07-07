@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Destacados01 from "../../Destacados/Destacado01";
+import { useReviewSettings } from "@/hooks/useReviewSettings";
 import {
   fetchProductData,
   fetchStockData,
@@ -97,6 +98,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [cuotasEnabled, setCuotasEnabled] = useState(false);
   const [numeroCuotas, setNumeroCuotas] = useState(0);
+  const { isReviewEnabled } = useReviewSettings();
 
   const fetchStockForVariation = useCallback(
     async (productId: string, skuId: string) => {
@@ -1025,7 +1027,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 </h1>
                 <p className="text-gray-500 text-sm flex gap-3">
                   Categoría: {categories.join(", ")}
-                  {reviewAverageScore !== null && totalReviews !== null && (
+                  {isReviewEnabled && reviewAverageScore !== null && totalReviews !== null && (
                     <span className="flex items-center ml-2">
                       {[...Array(5)].map((_, i) => (
                         <svg
@@ -1092,7 +1094,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
 
                 <p className="text-gray-500 text-sm flex gap-3">
                   Categoría: {categories.join(", ")}
-                  {reviewAverageScore !== null && totalReviews !== null && (
+                  {isReviewEnabled && reviewAverageScore !== null && totalReviews !== null && (
                     <span className="flex items-center ml-2">
                       {[...Array(5)].map((_, i) => (
                         <svg
@@ -1342,11 +1344,13 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
         )}
 
         <Destacados01 text="TE PUEDE GUSTAR" />
-        <Stars
-          reviewAverageScore={reviewAverageScore}
-          totalReviews={totalReviews}
-          productId={selectedVariation?.product?.id || initialProduct?.skus?.[0]?.product?.id}
-        />
+        {isReviewEnabled && (
+          <Stars
+            reviewAverageScore={reviewAverageScore}
+            totalReviews={totalReviews}
+            productId={selectedVariation?.product?.id || initialProduct?.skus?.[0]?.product?.id}
+          />
+        )}
       </div>
       {showModal && (
         <div

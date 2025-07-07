@@ -121,6 +121,8 @@ function ComponentPreview({
           import(
             "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02"
           ),
+        galeria01: () =>
+          import("@/components/PIXELUP/Galeria/Galeria01/Galeria01"),
         galeria02: () =>
           import("@/components/PIXELUP/Galeria/Galeria02/Galeria02"),
         nosotros01: () =>
@@ -139,8 +141,7 @@ function ComponentPreview({
           import("@/components/PIXELUP/Servicios/Servicios03/Servicios03"),
         servicios04: () =>
           import("@/components/PIXELUP/Servicios/Servicios04/Servicios04"),
-        galeria: () =>
-          import("@/components/PIXELUP/Galeria/Galeria01/Galeria01"),
+       
         sinFoto: () =>
           import("@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05"),
         sinFoto02: () =>
@@ -148,8 +149,12 @@ function ComponentPreview({
         hero06: () => import("@/components/PIXELUP/Hero/Hero06/Hero06"),
         materiales: () =>
           import("@/components/PIXELUP/SinFoto/Materiales/Materiales"),
-        logosCarrusel: () =>
+        logoscarrusel: () =>  
           import("@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarrusel"),
+        logosfijos: () =>
+          import("@/components/PIXELUP/Marcas/LogosFijos/LogosFijos"),
+        logosdinamicos: () =>
+          import("@/components/PIXELUP/Marcas/LogosDinamicos/LogosDinamicos"),
         hero07: () => import("@/components/PIXELUP/Hero/Hero07/Hero07"),
         hero08: () => import("@/components/PIXELUP/Hero/Hero08/Hero08"),
         hero09: () => import("@/components/PIXELUP/Hero/Hero09/Hero09"),

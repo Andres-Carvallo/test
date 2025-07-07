@@ -20,7 +20,7 @@ interface LogoImage {
   };
 }
 
-const LogosDinamicosBO: React.FC = () => {
+const LogosCarruselBO: React.FC = () => {
   const [logoData, setLogoData] = useState<LogoImage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -318,4 +318,4 @@ const LogosDinamicosBO: React.FC = () => {
   );
 };
 
-export default LogosDinamicosBO;
+export default LogosCarruselBO;

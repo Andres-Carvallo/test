@@ -30,7 +30,7 @@ const LogoSkeleton = () => (
   </div>
 );
 
-const LogosDinamicos: React.FC = () => {
+const LogosCarrusel: React.FC = () => {
   const [logoData, setLogoData] = useState<LogoImage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -113,4 +113,4 @@ const LogosDinamicos: React.FC = () => {
   );
 };
 
-export default LogosDinamicos;
+export default LogosCarrusel;

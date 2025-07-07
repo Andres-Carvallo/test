@@ -73,6 +73,18 @@ const FeedRRSS = dynamic(
   () => import("@/components/PIXELUP/FeedRRSS/FeedRRSS"),
   { ssr: false }
 );
+const LogosCarrusel = dynamic(
+  () => import("@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarrusel"),
+  { ssr: false }
+);
+const LogosFijos = dynamic(
+  () => import("@/components/PIXELUP/Marcas/LogosFijos/LogosFijos"),
+  { ssr: false }
+);
+  const LogosDinamicos = dynamic(
+  () => import("@/components/PIXELUP/Marcas/LogosDinamicos/LogosDinamicos"),
+  { ssr: false }
+);
 
 // Mapeo de componentes
 const componentMap: { [key: string]: React.ComponentType<any> } = {
@@ -92,6 +104,9 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   frase01: Frase01,
   frase02: Frase02,
   feedRRSS: FeedRRSS,
+  logoscarrusel: LogosCarrusel,
+  logosfijos: LogosFijos,
+  logosdinamicos: LogosDinamicos,
 };
 
 interface ClientHomeComponentsProps {

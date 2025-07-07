@@ -6,6 +6,8 @@ import Mantenimiento from "@/components/Core/Mantenimiento/Mantenimiento";
 import LogoEdit from "@/components/Core/LogoEdit/LogoEdit";
 import Tipografia from "@/components/Core/Tipografia/Tipografia";
 import Color from "@/components/Core/Color/Color";
+import ReviewSettings from "@/components/Core/ReviewSettings/ReviewSettings";
+
 export const metadata: Metadata = {
   title: "CRUD de Usuarios | PixelUP",
   description: "PixelUP",
@@ -33,6 +35,10 @@ const UsuariosPage = () => {
    
       </div> 
 
+      {/* Nueva sección para configuración de reviews */}
+      <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10">
+        <ReviewSettings />
+      </div>
 
       <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10 min-h-screen">
         <TableUsers />

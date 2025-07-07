@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import HomeConfigManager from "@/app/components/HomeConfigManager";
 import { HomeConfig } from "@/app/utils/homeConfig";
 
+
 const GaleriaBO = dynamic(
   () => import("@/components/PIXELUP/Galeria/Galeria01/Galeria01BO"),
   { ssr: false }
@@ -150,6 +151,14 @@ const Hero09BO = dynamic(
 );
 const SinFoto04BO = dynamic(
   () => import("@/components/PIXELUP/SinFoto/SinFoto04/SinFoto04BO"),
+  { ssr: false }
+);
+const LogosFijosBO = dynamic(
+  () => import("@/components/PIXELUP/Marcas/LogosFijos/LogosFijosBO"),
+  { ssr: false }
+);
+const LogosDinamicosBO = dynamic(
+  () => import("@/components/PIXELUP/Marcas/LogosDinamicos/LogosDinamicosBO"),
   { ssr: false }
 );
 
@@ -602,6 +611,7 @@ export default function BannerHome() {
           sinFoto04: <SinFoto04BO />,
           colecciones01: <Colecciones01BO />,
           colecciones02: <Colecciones02BO />,
+          galeria01: <GaleriaBO />,
           galeria02: <Galeria02BO />,
           nosotros01: <Nosotros01BO />,
           sinFoto06: <SinFoto06BO />,
@@ -616,7 +626,9 @@ export default function BannerHome() {
           sinFoto02: <SinFoto02BO />,
           hero06: <Hero06BO />,
           materiales: <MaterialesBO />,
-          logosCarrusel: <LogosCarruselBO />,
+          logoscarrusel: <LogosCarruselBO />,
+          logosfijos: <LogosFijosBO />,
+          logosdinamicos: <LogosDinamicosBO />,
           hero07: <Hero07BO />,
           hero08: <Hero08BO />,
           hero09: <Hero09BO />,
