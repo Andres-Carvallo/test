@@ -971,7 +971,7 @@ function PedidosBO() {
                                       />
                                     </svg>
                                     <span className="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 whitespace-nowrap bg-gray-800 text-white text-xs rounded px-2 py-1 invisible group-hover:visible">
-                                      {hasProPlan ? "Copiar Link de Pago" : "Copiar Link de Pago solo para Plan PRO"}
+                                      {hasProPlan ? "Copiar Link de Pago" : "Copiar Link de Pago exclusiva del Plan Pro"}
                                     </span>
                                   </button>
 

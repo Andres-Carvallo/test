@@ -396,16 +396,10 @@ function CuponForm() {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Funcionalidad Restringida
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>Estas funcionalidades son exclusivas del plan PRO.</p>
-                  <p className="mt-1">
-                    Para acceder a la gestión de cupones, necesitas actualizar tu suscripción a un plan PRO.
-                  </p>
-                </div>
+              <div className=" text-sm text-red-700">
+                <p>La función Cupones de Descuento es exclusiva del Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline"> Suscripción.</a> </p>
               </div>
+            </div>
             </div>
           </div>
         )}

@@ -249,10 +249,13 @@ const RenovarSuscripcion = () => {
               <p className="text-gray-500">No se encontró información de la suscripción.</p>
             </div>
           )}
+                      <h1 className="text-sm text-center mt-3">
+              *Si mejoras tu suscripción, las nuevas herramientas se activarán al finalizar el periodo establecido en tu plan actual.
+            </h1>
 
           <h1 className="text-xl font-bold mt-10">Opciones de Renovación</h1>
             <h2 className="text-sm  ">
-              Elige la opción que mejor se ajuste a tus necesidades
+              Elige la opción que mejor se ajuste a tus necesidades de tu negocio.
             </h2>
             <h3 className="text-sm mb-4">         Si no conoces el detalle de cada plan, te recomendamos visitar <a href="https://pixelup.cl/planes" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline"> Pixel Up Planes</a> 
             </h3>

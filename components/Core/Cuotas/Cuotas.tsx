@@ -123,7 +123,7 @@ const Cuotas: React.FC = () => {
   return (
     <div className="p-8 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Configuración de Cuotas
+        Visualización de Cuotas Sin Interés
       </h2>
       {cuotasOption ? (
         <div className="space-y-6">
@@ -131,7 +131,7 @@ const Cuotas: React.FC = () => {
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between min-h-[2rem]">
                 <label className="text-lg font-medium text-gray-700">
-                  Habilitar pago en cuotas sin interés 
+                  Habilitar información
                 </label>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input

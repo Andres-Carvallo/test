@@ -219,6 +219,9 @@ export default function BannerHome() {
   );
   const [homeConfig, setHomeConfig] = useState<HomeConfig | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hasAdvancedOrProPlan, setHasAdvancedOrProPlan] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState<string>("");
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Configuración de componentes disponibles con descripciones
@@ -441,6 +444,55 @@ export default function BannerHome() {
     },
   ];
 
+  // Verificar plan de suscripción
+  const checkSubscriptionPlan = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar suscripciones activas
+      const activeSubscriptions = response.data.subscriptions.filter(
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+      );
+
+      // Verificar si tiene plan Avanzado o PRO
+      const advancedOrProSubscription = activeSubscriptions.find((sub: any) =>
+        sub.name.toLowerCase().includes("avanzado") || sub.name.toLowerCase().includes("pro")
+      );
+
+      // Determinar el plan actual
+      let planName = "Sin suscripción activa";
+      if (activeSubscriptions.length > 0) {
+        const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
+        if (subscription.name.toLowerCase().includes("pro")) {
+          planName = "Plan PRO";
+        } else if (subscription.name.toLowerCase().includes("avanzado")) {
+          planName = "Plan Avanzado";
+        } else if (subscription.name.toLowerCase().includes("inicia")) {
+          planName = "Plan Inicia";
+        } else {
+          planName = subscription.name;
+        }
+      }
+
+      setHasAdvancedOrProPlan(!!advancedOrProSubscription);
+      setCurrentPlan(planName);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setHasAdvancedOrProPlan(false);
+      setCurrentPlan("Error al verificar plan");
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
+
   // Cargar configuración del home
   const fetchHomeConfig = async () => {
     try {
@@ -558,6 +610,8 @@ export default function BannerHome() {
 
   useEffect(() => {
     fetchHomeConfig();
+    checkSubscriptionPlan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleSection = (sectionId: string) => {
@@ -663,6 +717,9 @@ export default function BannerHome() {
   return (
     <section className="gap-4 flex flex-col py-10 mx-4">
       <title>Content block - Home</title>
+      
+
+      
       {/* Componentes ordenados */}
       {orderedComponents.map((section: any) => (
         <div
@@ -721,8 +778,29 @@ export default function BannerHome() {
           </div>
         </div>
       ))}
+
+
+            {/* Mensaje de restricción para usuarios sin plan Avanzado o Pro */}
+            {!subscriptionLoading && !hasAdvancedOrProPlan && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <div className="text-sm text-red-700">
+                <p>La configuración del Home es exclusiva del Plan Avanzado y Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline">Suscripción.</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Panel de configuración con drag and drop */}
-      <div className="rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-6">
+      <div className={`rounded-sm border w-full border-stroke bg-white shadow-default dark:border-black dark:bg-black mb-6 ${
+        !hasAdvancedOrProPlan ? 'opacity-50 pointer-events-none' : ''
+      }`}>
         <div className="p-6">
           {homeConfig && (
             <HomeConfigManager

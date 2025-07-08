@@ -7,6 +7,7 @@ import LogoEdit from "@/components/Core/LogoEdit/LogoEdit";
 import Tipografia from "@/components/Core/Tipografia/Tipografia";
 import Color from "@/components/Core/Color/Color";
 import ReviewSettings from "@/components/Core/ReviewSettings/ReviewSettings";
+import RedesSociales from "@/components/Core/RedesSociales/RedesSociales";
 
 export const metadata: Metadata = {
   title: "CRUD de Usuarios | PixelUP",
@@ -28,18 +29,13 @@ const UsuariosPage = () => {
         <Tipografia/>
         <LogoEdit/>
         </div>
+
         <Color/>
-        
-      </div>
-      <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10">
-   
-      </div> 
-
-      {/* Nueva sección para configuración de reviews */}
-      <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
         <ReviewSettings />
+        <RedesSociales/>
+        </div>
       </div>
-
       <div className="flex flex-col mt-4 md:mt-10 gap-4 md:gap-10 min-h-screen">
         <TableUsers />
       </div>

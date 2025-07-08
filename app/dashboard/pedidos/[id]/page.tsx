@@ -136,6 +136,41 @@ export default function DetalleOrdenes() {
   const imagePath = process.env.NEXT_PUBLIC_LOGO_COLOR;
   const [attributesMap, setAttributesMap] = useState<any>({});
 
+  // Estados para verificación de plan PRO
+  const [hasProPlan, setHasProPlan] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+
+  const checkSubscriptionPlan = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar suscripciones activas
+      const activeSubscriptions = response.data.subscriptions.filter(
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+      );
+
+      // Verificar si tiene plan PRO
+      const proSubscription = activeSubscriptions.find((sub: any) =>
+        sub.name.toLowerCase().includes("pro")
+      );
+
+      setHasProPlan(!!proSubscription);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setHasProPlan(false);
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
+
   const fetchAttributesForItems = async (items: any) => {
     const attributesData: { [key: string]: any } = {};
     for (const item of items) {
@@ -185,6 +220,7 @@ export default function DetalleOrdenes() {
     };
 
     fetchData();
+    checkSubscriptionPlan();
   }, [id]);
 
   const handleDownloadPdf = async () => {
@@ -292,7 +328,7 @@ export default function DetalleOrdenes() {
                     : "Delivery"
                 }</p>
                 {(pedido.statusCode === "CREATED" ||
-                  pedido.statusCode === "PAYMENT_PENDING") && (
+                  pedido.statusCode === "PAYMENT_PENDING") && hasProPlan && (
                   <button
                     onClick={() => handleCopyLink(pedido.id)}
                     className="text-blue-500 underline mt-2"

@@ -199,11 +199,8 @@ function Ofertas() {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Configuración de Cuotas - Plan PRO
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>La configuración de cuotas es exclusiva del plan PRO.</p>
+              <div className=" text-sm text-red-700">
+                <p>La función de visualización de Cuotas Sin Interés es exclusiva del Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline"> Suscripción.</a> </p>
               </div>
             </div>
           </div>
@@ -224,11 +221,8 @@ function Ofertas() {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Configuración de Popup - Plan PRO
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>La configuración de popup es exclusiva del plan PRO.</p>
+              <div className=" text-sm text-red-700">
+                <p>La función Popup es exclusiva del Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline"> Suscripción.</a> </p>
               </div>
             </div>
           </div>
@@ -452,14 +446,8 @@ function Ofertas() {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Crear Ofertas - Plan Inicia
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>La creación de ofertas no está disponible para el plan Inicia.</p>
-                <p className="mt-1">
-                  Para crear ofertas, necesitas actualizar tu suscripción a un plan Avanzado o PRO.
-                </p>
+              <div className=" text-sm text-red-700">
+                <p>La función Creación de Ofertas es exclusiva del Plan Avanzado y Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline"> Suscripción.</a> </p>
               </div>
             </div>
           </div>

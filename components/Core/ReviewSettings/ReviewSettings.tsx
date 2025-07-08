@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import toast from "react-hot-toast";
 import Loader from "@/components/common/Loader";
 
 interface ReviewSettingsProps {
@@ -10,15 +11,19 @@ interface ReviewSettingsProps {
 
 const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
   const [isReviewEnabled, setIsReviewEnabled] = useState<boolean>(false);
+  const [originalIsReviewEnabled, setOriginalIsReviewEnabled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [hasValidPlan, setHasValidPlan] = useState<boolean>(false);
   const [hasIniciaPlan, setHasIniciaPlan] = useState<boolean>(false);
   const [currentPlan, setCurrentPlan] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const token = getCookie("AdminTokenAuth");
+
+  // Función para detectar si hay cambios
+  const hasChanges = () => {
+    return isReviewEnabled !== originalIsReviewEnabled;
+  };
 
   // Verificar el plan de suscripción
   const checkSubscriptionPlan = async () => {
@@ -81,7 +86,7 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
       }
     } catch (error) {
       console.error("Error verificando plan de suscripción:", error);
-      setError("Error al verificar el plan de suscripción");
+      toast.error("Error al verificar el plan de suscripción");
       setHasValidPlan(false);
       setHasIniciaPlan(false);
     } finally {
@@ -105,14 +110,17 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
       if (response.data.contentBlock?.contentText) {
         const reviewConfig = JSON.parse(response.data.contentBlock.contentText);
         setIsReviewEnabled(reviewConfig.enabled);
+        setOriginalIsReviewEnabled(reviewConfig.enabled); // Guardar el valor original
       } else {
         // Si no existe la configuración, usar valor por defecto (deshabilitado)
         setIsReviewEnabled(false);
+        setOriginalIsReviewEnabled(false); // Guardar el valor por defecto
       }
     } catch (error) {
       console.error("Error cargando configuración de reviews:", error);
       // Si no existe la configuración, usar valor por defecto
       setIsReviewEnabled(false);
+      setOriginalIsReviewEnabled(false); // Guardar el valor por defecto
     }
   };
 
@@ -142,23 +150,25 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
 
       if (response.status === 200 || response.status === 201) {
         console.log("Reviews automáticamente deshabilitados para plan INICIA");
+        toast.success("Configuración automática aplicada para Plan Inicia");
+        // Actualizar el valor original después de guardar automáticamente
+        setOriginalIsReviewEnabled(false);
       }
     } catch (error) {
       console.error("Error guardando configuración automática para plan INICIA:", error);
+      toast.error("Error al aplicar configuración automática");
     }
   };
 
   // Guardar configuración de reviews
   const saveReviewSettings = async () => {
     if (!hasValidPlan) {
-      setError("No tienes un plan válido para acceder a esta funcionalidad");
+      toast.error("No tienes un plan válido para acceder a esta funcionalidad");
       return;
     }
 
     try {
       setSaving(true);
-      setError(null);
-      setSuccess(null);
 
       const contentBlockId = process.env.NEXT_PUBLIC_REVIEWSPRODUCTOS_CONTENTBLOCK || "REVIEWSPRODUCTOS";
       const reviewConfig = {
@@ -181,11 +191,13 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
       );
 
       if (response.status === 200 || response.status === 201) {
-        setSuccess(`Reviews de productos ${isReviewEnabled ? 'habilitados' : 'deshabilitados'} correctamente`);
+        toast.success(`Reviews de productos ${isReviewEnabled ? 'habilitados' : 'deshabilitados'} correctamente`);
+        // Actualizar el valor original después de guardar exitosamente
+        setOriginalIsReviewEnabled(isReviewEnabled);
       }
     } catch (error) {
       console.error("Error guardando configuración de reviews:", error);
-      setError("Error al guardar la configuración");
+      toast.error("Error al guardar la configuración");
     } finally {
       setSaving(false);
     }
@@ -197,7 +209,7 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="p-8 bg-white rounded-lg shadow-lg">
         <Loader />
       </div>
     );
@@ -205,7 +217,10 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
 
   if (!hasValidPlan && !hasIniciaPlan) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="p-8 bg-white rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+          Configuración de Reviews de Productos
+        </h2>
         <div className="text-center">
           <div className="mb-4">
             <svg
@@ -226,9 +241,6 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             Función no disponible
           </h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Tu plan actual ({currentPlan}) no incluye la funcionalidad de gestión de reviews de productos.
-          </p>
           <p className="text-sm text-gray-500">
             Para acceder a esta función, necesitas un plan Avanzado o PRO.
           </p>
@@ -238,27 +250,11 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Configuración de Reviews de Productos
-          </h3>
-          <p className="text-sm text-gray-500 mt-1">
-            Plan actual: {currentPlan}
-          </p>
-        </div>
-        <div className="flex items-center">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            hasIniciaPlan 
-              ? 'bg-yellow-100 text-yellow-800' 
-              : 'bg-green-100 text-green-800'
-          }`}>
-            {hasIniciaPlan ? 'Limitado' : 'Disponible'}
-          </span>
-        </div>
-      </div>
-
+    <div className="p-8 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        Configuración de Reviews de Productos
+      </h2>
+      
       {/* Mensaje de restricción para plan Inicia */}
       {hasIniciaPlan && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
@@ -269,124 +265,55 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Configuración de Reviews - Plan Inicia
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>La configuración de reviews de productos no está disponible para el plan Inicia.</p>
-                <p className="mt-1">
-                  Para habilitar/deshabilitar reviews, necesitas actualizar tu suscripción a un plan Avanzado o PRO.
-                </p>
-                <p className="mt-2 font-medium">
-                  ✅ Los reviews han sido automáticamente deshabilitados y guardados en la configuración.
-                </p>
+              <div className="text-sm text-red-700">
+                <p>La función Reviews de Productos es exclusiva del Plan Avanzado y Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline"> Suscripción.</a> </p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className={`space-y-6 ${hasIniciaPlan ? 'opacity-50 pointer-events-none' : ''}`}>
-        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div className="flex-1">
-            <h4 className="text-sm font-medium text-gray-900">
-              Habilitar Reviews de Productos
-            </h4>
-            <p className="text-sm text-gray-500 mt-1">
-              Permite a los clientes calificar y comentar sobre los productos comprados
-            </p>
-          </div>
-          <div className="flex items-center">
-            <button
-              type="button"
-              disabled={hasIniciaPlan}
-              className={`${
-                isReviewEnabled
-                  ? 'bg-blue-600'
-                  : 'bg-gray-200'
-              } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                hasIniciaPlan ? 'cursor-not-allowed opacity-50' : ''
-              }`}
-              role="switch"
-              aria-checked={isReviewEnabled}
-              onClick={() => !hasIniciaPlan && setIsReviewEnabled(!isReviewEnabled)}
-            >
-              <span
-                aria-hidden="true"
-                className={`${
-                  isReviewEnabled ? 'translate-x-5' : 'translate-x-0'
-                } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-              />
-            </button>
+      <div className="space-y-6">
+        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between min-h-[2rem]">
+              <div className="flex-1">
+                <label className="text-lg font-medium text-gray-700">
+                  Habilitar Reviews de Productos
+                </label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Permite a los clientes calificar y comentar sobre los productos comprados
+                </p>
+              </div>
+              <label className={`relative inline-flex items-center ${hasIniciaPlan ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                <input
+                  type="checkbox"
+                  checked={isReviewEnabled}
+                  onChange={(e) => !hasIniciaPlan && setIsReviewEnabled(e.target.checked)}
+                  disabled={hasIniciaPlan}
+                  className="sr-only peer"
+                />
+                <div className={`w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary ${hasIniciaPlan ? 'opacity-50' : ''}`}></div>
+              </label>
+            </div>
           </div>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-800">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-green-50 border border-green-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-green-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-green-800">{success}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-end">
-          {hasIniciaPlan ? (
+        {!hasIniciaPlan && (
+          <div className="flex justify-center w-full">
             <button
-              type="button"
-              disabled
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-400 bg-gray-300 cursor-not-allowed"
-            >
-              Guardar Configuración
-            </button>
-          ) : (
-            <button
-              type="button"
               onClick={saveReviewSettings}
-              disabled={saving}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={saving || !hasChanges()}
+              className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
+                hasChanges() && !saving
+                  ? 'bg-primary text-white hover:bg-primary/80 focus:ring-2 focus:ring-primary/20'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               {saving ? (
                 <>
                   <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -411,8 +338,8 @@ const ReviewSettings: React.FC<ReviewSettingsProps> = () => {
                 'Guardar Configuración'
               )}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

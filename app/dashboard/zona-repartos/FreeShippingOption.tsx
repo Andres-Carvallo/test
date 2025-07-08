@@ -212,14 +212,8 @@ const FreeShippingOption: React.FC<any> = ({}) => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Configuración de Envío Gratis - Plan PRO
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>La configuración de envío gratis es exclusiva del plan PRO.</p>
-                <p className="mt-1">
-                  Para configurar el monto mínimo de envío gratis, necesitas actualizar tu suscripción a un plan PRO.
-                </p>
+              <div className=" text-sm text-red-700">
+                <p>La función Envío Gratis es exclusiva del Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline"> Suscripción.</a> </p>
               </div>
             </div>
           </div>
