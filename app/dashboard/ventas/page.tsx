@@ -87,6 +87,9 @@ const ProductosMasVendidos = dynamic(
   }
 );
 
+// Tipos para el plan de suscripción
+type PlanType = "inicia" | "avanzado" | "pro" | "none";
+
 function StatsPage() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1; // Meses de 0 a 11, por eso se suma 1
@@ -130,6 +133,53 @@ function StatsPage() {
   const [currencyCodeId, setCurrencyCodeId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados para verificación de plan
+  const [currentPlan, setCurrentPlan] = useState<PlanType>("none");
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+
+  // Función para verificar el plan de suscripción
+  const checkSubscriptionPlan = async () => {
+    try {
+      setSubscriptionLoading(true);
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar suscripciones activas
+      const activeSubscriptions = response.data.subscriptions.filter(
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+      );
+
+      // Determinar el plan actual
+      let planType: PlanType = "none";
+      if (activeSubscriptions.length > 0) {
+        const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
+        const planName = subscription.name.toLowerCase();
+        
+        if (planName.includes("pro")) {
+          planType = "pro";
+        } else if (planName.includes("avanzado")) {
+          planType = "avanzado";
+        } else if (planName.includes("inicia")) {
+          planType = "inicia";
+        }
+      }
+
+      setCurrentPlan(planType);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setCurrentPlan("none");
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   const fetchCurrencyCode = async (token: any) => {
     try {
@@ -233,7 +283,37 @@ function StatsPage() {
     };
 
     fetchInitialData();
+    checkSubscriptionPlan(); // Verificar el plan al cargar el componente
   }, []); // Ejecuta solo al montar el componente
+
+  // Función para renderizar mensaje de restricción según el plan
+  const renderPlanRestrictionMessage = (requiredPlan: PlanType, featureName: string) => {
+    if (subscriptionLoading) return null;
+    
+    const planHierarchy = { "inicia": 1, "avanzado": 2, "pro": 3, "none": 0 };
+    const currentPlanLevel = planHierarchy[currentPlan];
+    const requiredPlanLevel = planHierarchy[requiredPlan];
+    
+    if (currentPlanLevel < requiredPlanLevel) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <div className="text-sm text-red-700">
+                <p>{featureName} es exclusivo del Plan {requiredPlan.charAt(0).toUpperCase() + requiredPlan.slice(1)} y superiores. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline">Suscripción.</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -253,6 +333,7 @@ function StatsPage() {
           </div>
         )}
 
+        {/* DASHBOARD PLAN INICIA - Siempre visible */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <VentasTotalesAnuales />
           <PedidosTotales />
@@ -262,35 +343,42 @@ function StatsPage() {
           <VentasMensuales />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <CompareSales />
+        {/* DASHBOARD PLAN PRO - Solo visible para plan Pro */}
+        {currentPlan === "pro" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <CompareSales />
+            </div>
+            <div>
+              <ProductosMasVendidos />
+            </div>
           </div>
-          <div>
-            <ProductosMasVendidos />
+        )}
+
+
+        {/* DASHBOARD PLAN AVANZADO - Solo visible para plan Avanzado y Pro */}
+        {(currentPlan === "avanzado" || currentPlan === "pro") && (
+          <div className="space-y-6">
+            <MostSoldProducts
+              salesData={mostSoldProducts}
+              startDateProducts={startDateProducts}
+              endDateProducts={endDateProducts}
+              setStartDateProducts={setStartDateProducts}
+              setEndDateProducts={setEndDateProducts}
+              fetchMostSoldProducts={() =>
+                fetchMostSoldProducts(startDateProducts, endDateProducts)
+              }
+            />
+
+            <SalesSummary
+              salesData={salesSummary}
+              startDate={startDate}
+              endDate={endDate}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+            />
           </div>
-        </div>
-
-        <div className="space-y-6">
-          <MostSoldProducts
-            salesData={mostSoldProducts}
-            startDateProducts={startDateProducts}
-            endDateProducts={endDateProducts}
-            setStartDateProducts={setStartDateProducts}
-            setEndDateProducts={setEndDateProducts}
-            fetchMostSoldProducts={() =>
-              fetchMostSoldProducts(startDateProducts, endDateProducts)
-            }
-          />
-
-          <SalesSummary
-            salesData={salesSummary}
-            startDate={startDate}
-            endDate={endDate}
-            setStartDate={setStartDate}
-            setEndDate={setEndDate}
-          />
-        </div>
+        )}
       </div>
     </div>
   );
