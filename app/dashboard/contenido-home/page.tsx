@@ -7,6 +7,8 @@ import { toast } from "react-hot-toast";
 import HomeConfigManager from "@/app/components/HomeConfigManager";
 import { HomeConfig } from "@/app/utils/homeConfig";
 import { AboutConfig } from "@/app/utils/aboutConfig";
+import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
+import { useSharedConfigs } from "@/hooks/useSharedConfigs";
 
 
 const GaleriaBO = dynamic(
@@ -220,11 +222,13 @@ export default function BannerHome() {
   );
   const [homeConfig, setHomeConfig] = useState<HomeConfig | null>(null);
   const [loading, setLoading] = useState(false);
-  const [hasAdvancedOrProPlan, setHasAdvancedOrProPlan] = useState(false);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
-  const [currentPlan, setCurrentPlan] = useState<string>("");
-  const [aboutVisibleComponents, setAboutVisibleComponents] = useState<string[]>([]);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  
+  // Usar el hook personalizado para verificación de suscripción
+  const { hasAdvancedOrProPlan, currentPlan, loading: subscriptionLoading, error: subscriptionError } = useSubscriptionPlan();
+  
+  // Usar el hook para configuraciones compartidas
+  const { aboutVisibleComponents, loading: sharedConfigsLoading, error: sharedConfigsError } = useSharedConfigs();
 
   // Configuración de componentes disponibles con descripciones
   const availableComponents = [
@@ -446,54 +450,7 @@ export default function BannerHome() {
     },
   ];
 
-  // Verificar plan de suscripción
-  const checkSubscriptionPlan = async () => {
-    try {
-      const token = getCookie("AdminTokenAuth");
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
 
-      // Buscar suscripciones activas
-      const activeSubscriptions = response.data.subscriptions.filter(
-        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
-      );
-
-      // Verificar si tiene plan Avanzado o PRO
-      const advancedOrProSubscription = activeSubscriptions.find((sub: any) =>
-        sub.name.toLowerCase().includes("avanzado") || sub.name.toLowerCase().includes("pro")
-      );
-
-      // Determinar el plan actual
-      let planName = "Sin suscripción activa";
-      if (activeSubscriptions.length > 0) {
-        const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
-        if (subscription.name.toLowerCase().includes("pro")) {
-          planName = "Plan PRO";
-        } else if (subscription.name.toLowerCase().includes("avanzado")) {
-          planName = "Plan Avanzado";
-        } else if (subscription.name.toLowerCase().includes("inicia")) {
-          planName = "Plan Inicia";
-        } else {
-          planName = subscription.name;
-        }
-      }
-
-      setHasAdvancedOrProPlan(!!advancedOrProSubscription);
-      setCurrentPlan(planName);
-    } catch (error) {
-      console.error("Error verificando plan de suscripción:", error);
-      setHasAdvancedOrProPlan(false);
-      setCurrentPlan("Error al verificar plan");
-    } finally {
-      setSubscriptionLoading(false);
-    }
-  };
 
   // Cargar configuración del home
   const fetchHomeConfig = async () => {
@@ -610,37 +567,10 @@ export default function BannerHome() {
     toast.success("Configuración restaurada por defecto");
   };
 
-  // Obtener configuración activa de About Us
-  const fetchAboutVisibleComponents = async () => {
-    try {
-      const token = getCookie("AdminTokenAuth");
-      const configId = process.env.NEXT_PUBLIC_ABOUT_CONFIG_CONTENTBLOCK || "about-config-default";
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${configId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      if (response.data.code === 0 && response.data.contentBlock) {
-        try {
-          const config: AboutConfig = JSON.parse(response.data.contentBlock.contentText);
-          if (config.visibleComponents) {
-            setAboutVisibleComponents(config.visibleComponents);
-          } else {
-            setAboutVisibleComponents([]);
-          }
-        } catch {
-          setAboutVisibleComponents([]);
-        }
-      } else {
-        setAboutVisibleComponents([]);
-      }
-    } catch {
-      setAboutVisibleComponents([]);
-    }
-  };
+
 
   useEffect(() => {
     fetchHomeConfig();
-    checkSubscriptionPlan();
-    fetchAboutVisibleComponents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -857,6 +787,7 @@ export default function BannerHome() {
               onSave={saveHomeConfig}
               onReset={resetHomeConfig}
               loading={loading}
+              aboutVisibleComponents={aboutVisibleComponents}
             />
           )}
         </div>

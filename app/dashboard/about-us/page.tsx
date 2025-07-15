@@ -6,6 +6,8 @@ import { getCookie } from "cookies-next";
 import { toast } from "react-hot-toast";
 import AboutConfigManager from "@/app/components/AboutConfigManager";
 import { AboutConfig } from "@/app/utils/aboutConfig";
+import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
+import { useSharedConfigs } from "@/hooks/useSharedConfigs";
 
 // Importaciones dinámicas para evitar problemas de SSR
 const About01BO = dynamic(
@@ -178,11 +180,13 @@ export default function AboutUsPage() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
   const [aboutConfig, setAboutConfig] = useState<AboutConfig | null>(null);
   const [loading, setLoading] = useState(false);
-  const [hasAdvancedOrProPlan, setHasAdvancedOrProPlan] = useState(false);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
-  const [currentPlan, setCurrentPlan] = useState<string>("");
-  const [homeActiveComponents, setHomeActiveComponents] = useState<string[]>([]);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  
+  // Usar el hook personalizado para verificación de suscripción
+  const { hasAdvancedOrProPlan, currentPlan, loading: subscriptionLoading, error: subscriptionError } = useSubscriptionPlan();
+  
+  // Usar el hook para configuraciones compartidas
+  const { homeActiveComponents, loading: sharedConfigsLoading, error: sharedConfigsError } = useSharedConfigs();
 
   // Configuración de componentes disponibles con descripciones
   const availableComponents = [
@@ -416,54 +420,7 @@ export default function AboutUsPage() {
     },
   ];
 
-  // Verificar plan de suscripción
-  const checkSubscriptionPlan = async () => {
-    try {
-      const token = getCookie("AdminTokenAuth");
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
 
-      // Buscar suscripciones activas
-      const activeSubscriptions = response.data.subscriptions.filter(
-        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
-      );
-
-      // Verificar si tiene plan Avanzado o PRO
-      const advancedOrProSubscription = activeSubscriptions.find((sub: any) =>
-        sub.name.toLowerCase().includes("avanzado") || sub.name.toLowerCase().includes("pro")
-      );
-
-      // Determinar el plan actual
-      let planName = "Sin suscripción activa";
-      if (activeSubscriptions.length > 0) {
-        const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
-        if (subscription.name.toLowerCase().includes("pro")) {
-          planName = "Plan PRO";
-        } else if (subscription.name.toLowerCase().includes("avanzado")) {
-          planName = "Plan Avanzado";
-        } else if (subscription.name.toLowerCase().includes("inicia")) {
-          planName = "Plan Inicia";
-        } else {
-          planName = subscription.name;
-        }
-      }
-
-      setHasAdvancedOrProPlan(!!advancedOrProSubscription);
-      setCurrentPlan(planName);
-    } catch (error) {
-      console.error("Error verificando plan de suscripción:", error);
-      setHasAdvancedOrProPlan(false);
-      setCurrentPlan("Error al verificar plan");
-    } finally {
-      setSubscriptionLoading(false);
-    }
-  };
 
   // Cargar configuración de About
   const fetchAboutConfig = async () => {
@@ -572,37 +529,10 @@ export default function AboutUsPage() {
     toast.success("Configuración restaurada por defecto");
   };
 
-  // Obtener configuración activa de Home
-  const fetchHomeActiveComponents = async () => {
-    try {
-      const token = getCookie("AdminTokenAuth");
-      const configId = process.env.NEXT_PUBLIC_HOME_CONFIG_CONTENTBLOCK || "home-config-default";
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${configId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      if (response.data.code === 0 && response.data.contentBlock) {
-        try {
-          const config = JSON.parse(response.data.contentBlock.contentText);
-          if (config.visibleComponents) {
-            setHomeActiveComponents(config.visibleComponents);
-          } else {
-            setHomeActiveComponents([]);
-          }
-        } catch {
-          setHomeActiveComponents([]);
-        }
-      } else {
-        setHomeActiveComponents([]);
-      }
-    } catch {
-      setHomeActiveComponents([]);
-    }
-  };
+
 
   useEffect(() => {
     fetchAboutConfig();
-    checkSubscriptionPlan();
-    fetchHomeActiveComponents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

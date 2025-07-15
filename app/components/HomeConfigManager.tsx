@@ -37,6 +37,7 @@ interface HomeConfigManagerProps {
   onSave: () => void;
   onReset: () => void;
   loading?: boolean;
+  aboutVisibleComponents?: string[];
 }
 
 // Componente de vista previa
@@ -561,11 +562,15 @@ function InactiveComponentsModal({
   onClose,
   inactiveComponents,
   onActivateComponent,
+  aboutVisibleComponents = [],
+  activeComponents = [],
 }: {
   isOpen: boolean;
   onClose: () => void;
   inactiveComponents: ComponentConfig[];
   onActivateComponent: (componentId: string) => void;
+  aboutVisibleComponents?: string[];
+  activeComponents?: ComponentConfig[];
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -1010,171 +1015,207 @@ function InactiveComponentsModal({
                         {/* Vista de componentes según el modo seleccionado */}
                         {viewMode === "grid" ? (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {components.map((component) => (
-                              <div
-                                key={component.id}
-                                className="group block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
-                              >
-                                {/* Fondo decorativo con gradiente sutil */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                
-                                <div className="flex flex-col space-y-4 relative z-10">
-                                  {/* Información del componente */}
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-3 mb-3">
-                                      <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
-                                        {component.title.charAt(0)}
-                                      </div>
-                                      <div>
-                                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
-                                          {component.title}
-                                        </h4>
-                                        <p className="text-xs text-gray-500 font-medium">
-                                          ID: {component.id}
-                                        </p>
+                            {components.map((component) => {
+                              const isActive = activeComponents.some(active => active.id === component.id);
+                              const isSharedWithAbout = aboutVisibleComponents && aboutVisibleComponents.includes(component.id);
+
+                              return (
+                                <div
+                                  key={component.id}
+                                  className="group block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
+                                >
+                                  {/* Fondo decorativo con gradiente sutil */}
+                                  <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                  
+                                  <div className="flex flex-col space-y-4 relative z-10">
+                                    {/* Información del componente */}
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-3 mb-3">
+                                        <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                          {component.title.charAt(0)}
+                                        </div>
+                                        <div>
+                                          <h4 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">
+                                            {component.title}
+                                          </h4>
+                                          <p className="text-xs text-gray-500 font-medium">
+                                            ID: {component.id}
+                                          </p>
+                                          {isActive && (
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
+                                              Activo
+                                            </span>
+                                          )}
+                                          {isSharedWithAbout && (
+                                            <div className="flex items-center gap-1 text-xs text-orange-600 mt-1">
+                                              <svg className="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                              </svg>
+                                              Compartido con About
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-{/*                                     {component.description && (
-                                      <p className="text-sm text-gray-600 leading-relaxed">
-                                        {component.description}
-                                      </p>
-                                    )} */}
-                                  </div>
-                                  
-                                  {/* Botones de acción */}
-                                  <div className="flex gap-3">
-                                    <button
-                                      onClick={() => handlePreview(component)}
-                                      className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200"
-                                    >
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                    
+                                    {/* Botones de acción */}
+                                    <div className="flex gap-3">
+                                      <button
+                                        onClick={() => handlePreview(component)}
+                                        className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200"
                                       >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                        />
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                        />
-                                      </svg>
-                                      Vista Previa
-                                    </button>
-                                    <button
-                                      onClick={() => handleAddDirect(component.id)}
-                                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/80 hover:to-primary text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                                    >
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                        <svg
+                                          className="w-4 h-4"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                          />
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                          />
+                                        </svg>
+                                        Vista Previa
+                                      </button>
+                                      <button
+                                        onClick={() => handleAddDirect(component.id)}
+                                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/80 hover:to-primary text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                                       >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                        />
-                                      </svg>
-                                      Agregar
-                                    </button>
+                                        <svg
+                                          className="w-4 h-4"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                          />
+                                        </svg>
+                                        Agregar
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            {components.map((component) => (
-                              <div
-                                key={component.id}
-                                className="group block w-full bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
-                              >
-                                {/* Fondo decorativo con gradiente sutil */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-50/20 via-transparent to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                
-                                <div className="flex items-center justify-between relative z-10">
-                                  {/* Información del componente */}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center space-x-3">
-                                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
-                                        {component.title.charAt(0)}
-                                      </div>
-                                      <div>
-                                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                          {component.title}
-                                        </h4>
-                                        <p className="text-xs text-gray-500 font-medium">
-                                          ID: {component.id}
-                                        </p>
-                                        {component.description && (
-                                          <p className="text-sm text-gray-600 mt-1 max-w-md">
-                                            {component.description}
+                            {components.map((component) => {
+                              const isActive = activeComponents.some(active => active.id === component.id);
+                              const isSharedWithAbout = aboutVisibleComponents && aboutVisibleComponents.includes(component.id);
+
+                              return (
+                                <div
+                                  key={component.id}
+                                  className="group block w-full bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-all duration-300 relative overflow-hidden"
+                                >
+                                  {/* Fondo decorativo con gradiente sutil */}
+                                  <div className="absolute inset-0 bg-gradient-to-r from-blue-50/20 via-transparent to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                  
+                                  <div className="flex items-center justify-between relative z-10">
+                                    {/* Información del componente */}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                          {component.title.charAt(0)}
+                                        </div>
+                                        <div>
+                                          <div className="flex items-center gap-2">
+                                            <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                              {component.title}
+                                            </h4>
+                                            <p className="text-xs text-gray-500 font-medium">
+                                              ID: {component.id}
+                                            </p>
+                                            {isActive && (
+                                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
+                                                Activo
+                                              </span>
+                                            )}
+                                            {isSharedWithAbout && (
+                                              <div className="flex items-center gap-1 text-xs text-orange-600 mt-1">
+                                                <svg className="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                </svg>
+                                                Compartido con About
+                                              </div>
+                                            )}
+                                          </div>
+                                          <p className="text-xs text-gray-500 font-medium">
+                                            ID: {component.id}
                                           </p>
-                                        )}
+                                          {component.description && (
+                                            <p className="text-sm text-gray-600 mt-1 max-w-md">
+                                              {component.description}
+                                            </p>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  
-                                  {/* Botones de acción */}
-                                  <div className="flex-shrink-0 flex gap-2">
-                                    <button
-                                      onClick={() => handlePreview(component)}
-                                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center gap-2 transition-all duration-200"
-                                    >
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                    
+                                    {/* Botones de acción */}
+                                    <div className="flex-shrink-0 flex gap-2">
+                                      <button
+                                        onClick={() => handlePreview(component)}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center gap-2 transition-all duration-200"
                                       >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                        />
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                        />
-                                      </svg>
-                                      Vista Previa
-                                    </button>
-                                    <button
-                                      onClick={() => handleAddDirect(component.id)}
-                                      className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                                    >
-                                      <svg
-                                        className="w-4 h-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                        <svg
+                                          className="w-4 h-4"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                          />
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                          />
+                                        </svg>
+                                        Vista Previa
+                                      </button>
+                                      <button
+                                        onClick={() => handleAddDirect(component.id)}
+                                        className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                                       >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                        />
-                                      </svg>
-                                      Agregar
-                                    </button>
+                                        <svg
+                                          className="w-4 h-4"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                          />
+                                        </svg>
+                                        Agregar
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -1539,6 +1580,7 @@ export default function HomeConfigManager({
   onSave,
   onReset,
   loading = false,
+  aboutVisibleComponents,
 }: HomeConfigManagerProps) {
   const [activeComponents, setActiveComponents] = useState<ComponentConfig[]>(
     []
@@ -1900,6 +1942,8 @@ export default function HomeConfigManager({
         onActivateComponent={(componentId) =>
           toggleComponent(componentId, true)
         }
+        aboutVisibleComponents={aboutVisibleComponents || []}
+        activeComponents={activeComponents}
       />
     </div>
   );
