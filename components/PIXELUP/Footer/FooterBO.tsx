@@ -4,7 +4,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import { toast } from "react-hot-toast";
 import { useLogo } from "@/context/LogoContext";
-import FooterPreview from "../FooterPreview";
+import FooterPreview from "./FooterPreview";
 import RedesSociales from "@/components/Core/RedesSociales/RedesSociales";
 import { useSocialNetworks } from "@/context/SocialNetworksContext";
 import { mainMenuConfig } from "@/app/config/menulinks";
@@ -34,7 +34,19 @@ interface FooterConfig {
   textColor: string;
   accentColor: string;
 
-  // Configuración de imagen de fondo
+  // Landing text para configuraciones avanzadas (JSON)
+  landingText: string;
+
+  // Configuración de enlaces personalizados
+  customLinks: {
+    title: string;
+    url: string;
+    enabled: boolean;
+  }[];
+}
+
+// Nueva interfaz para las configuraciones del landingText
+interface FooterDisplayConfig {
   backgroundImage: {
     enabled: boolean;
     url: string;
@@ -44,13 +56,6 @@ interface FooterConfig {
       opacity: number;
     };
   };
-
-  // Configuración de enlaces personalizados
-  customLinks: {
-    title: string;
-    url: string;
-    enabled: boolean;
-  }[];
 }
 
 const defaultConfig: FooterConfig = {
@@ -73,15 +78,17 @@ const defaultConfig: FooterConfig = {
   textColor: "#ffffff",
   accentColor: "#f59e0b",
 
-  backgroundImage: {
-    enabled: false,
-    url: "",
-    overlay: {
-      enabled: true,
-      color: "#000000",
-      opacity: 0.7,
+  landingText: JSON.stringify({
+    backgroundImage: {
+      enabled: false,
+      url: "",
+      overlay: {
+        enabled: true,
+        color: "#000000",
+        opacity: 0.7,
+      },
     },
-  },
+  }),
 
   customLinks: [
     {
@@ -166,6 +173,17 @@ const CollapsibleSectionHeader = ({
 
 export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   const [config, setConfig] = useState<FooterConfig>(defaultConfig);
+  const [displayConfig, setDisplayConfig] = useState<FooterDisplayConfig>({
+    backgroundImage: {
+      enabled: false,
+      url: "",
+      overlay: {
+        enabled: true,
+        color: "#000000",
+        opacity: 0.7,
+      },
+    },
+  });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -189,6 +207,83 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   const [showBackgroundSection, setShowBackgroundSection] = useState(false);
 
   const isBasicPlan = planType === "basic";
+
+  // Funciones de parsing para displayConfig (similar al banner principal)
+  const parseFooterDisplayConfig = (
+    landingText: string | undefined | null
+  ): FooterDisplayConfig => {
+    // Valores por defecto seguros
+    const defaultDisplayConfig: FooterDisplayConfig = {
+      backgroundImage: {
+        enabled: false,
+        url: "",
+        overlay: {
+          enabled: true,
+          color: "#000000",
+          opacity: 0.7,
+        },
+      },
+    };
+
+    try {
+      // Si no hay landingText o está vacío, retornar valores por defecto
+      if (!landingText || landingText.trim() === "") {
+        console.log("📝 landingText vacío, usando configuración por defecto");
+        return defaultDisplayConfig;
+      }
+
+      // Intentar parsear el JSON
+      const parsed = JSON.parse(landingText);
+
+      // Si no es un objeto válido, retornar valores por defecto
+      if (!parsed || typeof parsed !== "object") {
+        console.log(
+          "📝 landingText no es un objeto válido, usando configuración por defecto"
+        );
+        return defaultDisplayConfig;
+      }
+
+      // Construir la configuración con valores seguros
+      return {
+        backgroundImage: {
+          enabled:
+            parsed.backgroundImage?.enabled ??
+            defaultDisplayConfig.backgroundImage.enabled,
+          url:
+            parsed.backgroundImage?.url ||
+            defaultDisplayConfig.backgroundImage.url,
+          overlay: {
+            enabled:
+              parsed.backgroundImage?.overlay?.enabled ??
+              defaultDisplayConfig.backgroundImage.overlay.enabled,
+            color:
+              parsed.backgroundImage?.overlay?.color ||
+              defaultDisplayConfig.backgroundImage.overlay.color,
+            opacity:
+              parsed.backgroundImage?.overlay?.opacity ??
+              defaultDisplayConfig.backgroundImage.overlay.opacity,
+          },
+        },
+      };
+    } catch (error) {
+      console.log(
+        "📝 Error al parsear landingText, usando configuración por defecto:",
+        error
+      );
+      return defaultDisplayConfig;
+    }
+  };
+
+  const updateFooterDisplayConfig = (updates: Partial<FooterDisplayConfig>) => {
+    const newDisplayConfig = { ...displayConfig, ...updates };
+    setDisplayConfig(newDisplayConfig);
+
+    // Actualizar también el config.landingText
+    setConfig((prev) => ({
+      ...prev,
+      landingText: JSON.stringify(newDisplayConfig),
+    }));
+  };
 
   // Templates disponibles
   const templates = [
@@ -237,10 +332,18 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
           const savedConfig = JSON.parse(
             response.data.contentBlock.contentText
           );
-          setConfig({ ...defaultConfig, ...savedConfig });
+          const mergedConfig = { ...defaultConfig, ...savedConfig };
+          setConfig(mergedConfig);
+
+          // Parsear displayConfig desde landingText
+          const parsedDisplayConfig = parseFooterDisplayConfig(
+            mergedConfig.landingText
+          );
+          setDisplayConfig(parsedDisplayConfig);
         } catch (error) {
           console.error("Error al parsear configuración del footer:", error);
           setConfig(defaultConfig);
+          setDisplayConfig(parseFooterDisplayConfig(defaultConfig.landingText));
         }
       }
     } catch (error) {
@@ -335,35 +438,101 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       const token = getCookie("AdminTokenAuth");
       const bannerId = process.env.NEXT_PUBLIC_FOOTER_BANNER_ID;
 
-      if (!bannerId) {
-        console.log("No se ha configurado FOOTER_BANNER_ID");
+      console.log("🔍 Footer Banner Debug:", {
+        bannerId,
+        token: token ? "Token presente" : "Token faltante",
+        apiUrl: process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE,
+        siteId: process.env.NEXT_PUBLIC_API_URL_SITEID,
+      });
+
+      if (!bannerId || bannerId === "PENDIENTE_CONFIGURAR") {
+        console.warn(
+          "⚠️ No se ha configurado NEXT_PUBLIC_FOOTER_BANNER_ID en las variables de entorno"
+        );
+        toast.error(
+          "Para usar imágenes de fondo, primero debes configurar NEXT_PUBLIC_FOOTER_BANNER_ID en el archivo .env.local"
+        );
         return;
       }
 
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      if (!token) {
+        console.warn("⚠️ Token de autenticación no encontrado");
+        toast.error("No se encontró token de autenticación");
+        return;
+      }
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+      console.log("📡 Realizando petición a:", url);
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("📥 Respuesta de banner:", {
+        status: response.status,
+        code: response.data.code,
+        bannerImages: response.data.bannerImages,
+        totalImages: response.data.bannerImages?.length || 0,
+      });
 
       const bannerImages = response.data.bannerImages;
       if (bannerImages && bannerImages.length > 0) {
+        console.log("✅ Banner images encontradas:", {
+          totalImages: bannerImages.length,
+          firstImageUrl: bannerImages[0].mainImage?.url,
+          firstImageData: bannerImages[0].mainImage
+            ? "Imagen presente"
+            : "Sin imagen",
+        });
+
         setBannerData(bannerImages);
+
         // Actualizar configuración con la URL de la imagen
-        setConfig((prev) => ({
-          ...prev,
+        const imageUrl = bannerImages[0].mainImage?.url || "";
+        updateFooterDisplayConfig({
           backgroundImage: {
-            ...prev.backgroundImage,
-            url: bannerImages[0].mainImage?.url || "",
+            ...displayConfig.backgroundImage,
+            url: imageUrl,
           },
-        }));
+        });
+
+        if (imageUrl) {
+          console.log("🖼️ Imagen de fondo del footer cargada:", imageUrl);
+          toast.success("Imagen de fondo del footer cargada exitosamente");
+        } else {
+          console.warn("⚠️ Banner encontrado pero sin imagen URL");
+          toast("Banner encontrado pero sin imagen configurada");
+        }
+      } else {
+        console.warn("⚠️ No se encontraron imágenes en el banner");
+        toast("No se encontraron imágenes en el banner del footer");
       }
     } catch (error) {
-      console.error("Error al cargar banner del footer:", error);
+      console.error("❌ Error al cargar banner del footer:", error);
+
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const message = error.response?.data?.message || error.message;
+
+        if (status === 401) {
+          toast.error("Error de autenticación. Verifica tu sesión.");
+        } else if (status === 404) {
+          toast.error("Banner no encontrado. Verifica el ID configurado.");
+        } else {
+          toast.error(`Error al cargar imagen: ${message}`);
+        }
+
+        console.error("Detalles del error:", {
+          status,
+          message,
+          config: error.config?.url,
+        });
+      } else {
+        toast.error("Error de red al cargar la imagen de fondo");
+      }
     } finally {
       setBannerLoading(false);
     }
@@ -440,13 +609,12 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   // Limpiar imagen
   const handleClearImage = () => {
     setBackgroundImage(null);
-    setConfig((prev) => ({
-      ...prev,
+    updateFooterDisplayConfig({
       backgroundImage: {
-        ...prev.backgroundImage,
+        ...displayConfig.backgroundImage,
         url: "",
       },
-    }));
+    });
   };
 
   // Guardar imagen en el banner
@@ -456,33 +624,36 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     try {
       const token = getCookie("AdminTokenAuth");
       const bannerId = process.env.NEXT_PUBLIC_FOOTER_BANNER_ID;
-      const bannerImageId = process.env.NEXT_PUBLIC_FOOTER_BANNER_IMGID || "1";
 
       if (!bannerId) {
-        toast.error("No se ha configurado el ID del banner del footer");
+        toast.error("NEXT_PUBLIC_FOOTER_BANNER_ID no configurado");
         return;
       }
+
+      // Convertir base64 a blob para obtener el tamaño real
+      const response = await fetch(backgroundImage);
+      const blob = await response.blob();
 
       const imageInfo = {
         name: "footerBG",
         type: "image/jpeg",
-        size: null,
+        size: blob.size, // Tamaño real del archivo
         data: backgroundImage,
       };
 
       const imageData = {
         title: "Footer Background",
         landingText: "Footer Background Image",
-        buttonLink: "",
-        buttonText: "",
-        mainImageLink: "",
+        buttonLink: "#", // Valor por defecto consistente
+        buttonText: "Footer Background", // Valor por defecto consistente
+        mainImageLink: "#", // Valor por defecto consistente
         orderNumber: 1,
         mainImage: imageInfo,
       };
 
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
-        imageData,
+      // Primero obtener el banner para ver si ya tiene imágenes
+      const bannerResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -490,6 +661,35 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
           },
         }
       );
+
+      const existingImages = bannerResponse.data?.bannerImages || [];
+
+      if (existingImages.length > 0) {
+        // Actualizar la primera imagen existente
+        const firstImageId = existingImages[0].id;
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${firstImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          imageData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else {
+        // Crear nueva imagen si no existe ninguna
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          imageData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
 
       // Recargar banner para obtener la URL actualizada
       await fetchFooterBanner();
@@ -597,8 +797,8 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     menuItems: realMenuItems,
     // Incluir imagen de fondo si está disponible desde el banner
     backgroundImage: {
-      ...config.backgroundImage,
-      url: bannerData?.[0]?.mainImage?.url || config.backgroundImage.url,
+      ...displayConfig.backgroundImage,
+      url: bannerData?.[0]?.mainImage?.url || displayConfig.backgroundImage.url,
     },
   };
 
@@ -930,6 +1130,61 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
         {showBackgroundSection && (
           <div className="space-y-6">
+            {/* Verificación de configuración */}
+            {(!process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ||
+              process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ===
+                "PENDIENTE_CONFIGURAR") && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <svg
+                    className="w-5 h-5 text-yellow-600 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-yellow-800 mb-2">
+                      ⚙️ Configuración Requerida
+                    </h4>
+                    <p className="text-sm text-yellow-700 mb-3">
+                      Para usar imágenes de fondo en el footer, necesitas
+                      configurar las variables de entorno.
+                    </p>
+                    <div className="text-xs text-yellow-600 space-y-1">
+                      <p>
+                        <strong>1.</strong> Ve a tu archivo{" "}
+                        <code>.env.local</code>
+                      </p>
+                      <p>
+                        <strong>2.</strong> Encuentra las líneas que empiezan
+                        con <code>NEXT_PUBLIC_FOOTER_BANNER_ID</code>
+                      </p>
+                      <p>
+                        <strong>3.</strong> Reemplaza{" "}
+                        <code>PENDIENTE_CONFIGURAR</code> con un ID de banner
+                        válido
+                      </p>
+                      <p>
+                        <strong>4.</strong> Reinicia el servidor de desarrollo
+                      </p>
+                    </div>
+                    <div className="mt-3 p-2 bg-yellow-100 rounded text-xs font-mono text-yellow-800">
+                      NEXT_PUBLIC_FOOTER_BANNER_ID=tu-banner-id-aqui
+                      <br />
+                      NEXT_PUBLIC_FOOTER_BANNER_IMGID=tu-banner-img-id-aqui
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Switch para activar imagen de fondo */}
             <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
               <div className="flex items-center space-x-3">
@@ -951,21 +1206,20 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                 <span className="font-medium">Usar Imagen de Fondo</span>
               </div>
               <SectionSwitch
-                checked={config.backgroundImage.enabled}
+                checked={displayConfig.backgroundImage.enabled}
                 onChange={(checked) =>
-                  setConfig((prev) => ({
-                    ...prev,
+                  updateFooterDisplayConfig({
                     backgroundImage: {
-                      ...prev.backgroundImage,
+                      ...displayConfig.backgroundImage,
                       enabled: checked,
                     },
-                  }))
+                  })
                 }
               />
             </div>
 
             {/* Configuración de imagen (solo si está activada) */}
-            {config.backgroundImage.enabled && (
+            {displayConfig.backgroundImage.enabled && (
               <>
                 {/* Upload de imagen */}
                 <div className="space-y-4">
@@ -1062,24 +1316,23 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                       Activar Overlay Oscuro
                     </label>
                     <SectionSwitch
-                      checked={config.backgroundImage.overlay.enabled}
+                      checked={displayConfig.backgroundImage.overlay.enabled}
                       onChange={(checked) =>
-                        setConfig((prev) => ({
-                          ...prev,
+                        updateFooterDisplayConfig({
                           backgroundImage: {
-                            ...prev.backgroundImage,
+                            ...displayConfig.backgroundImage,
                             overlay: {
-                              ...prev.backgroundImage.overlay,
+                              ...displayConfig.backgroundImage.overlay,
                               enabled: checked,
                             },
                           },
-                        }))
+                        })
                       }
                     />
                   </div>
 
                   {/* Configuración de overlay (solo si está activado) */}
-                  {config.backgroundImage.overlay.enabled && (
+                  {displayConfig.backgroundImage.overlay.enabled && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Color del overlay */}
                       <div>
@@ -1088,18 +1341,17 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                         </label>
                         <input
                           type="color"
-                          value={config.backgroundImage.overlay.color}
+                          value={displayConfig.backgroundImage.overlay.color}
                           onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
+                            updateFooterDisplayConfig({
                               backgroundImage: {
-                                ...prev.backgroundImage,
+                                ...displayConfig.backgroundImage,
                                 overlay: {
-                                  ...prev.backgroundImage.overlay,
+                                  ...displayConfig.backgroundImage.overlay,
                                   color: e.target.value,
                                 },
                               },
-                            }))
+                            })
                           }
                           className="w-full h-10 border rounded-md"
                         />
@@ -1110,7 +1362,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Opacidad:{" "}
                           {Math.round(
-                            config.backgroundImage.overlay.opacity * 100
+                            displayConfig.backgroundImage.overlay.opacity * 100
                           )}
                           %
                         </label>
@@ -1119,18 +1371,17 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                           min="0"
                           max="1"
                           step="0.1"
-                          value={config.backgroundImage.overlay.opacity}
+                          value={displayConfig.backgroundImage.overlay.opacity}
                           onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
+                            updateFooterDisplayConfig({
                               backgroundImage: {
-                                ...prev.backgroundImage,
+                                ...displayConfig.backgroundImage,
                                 overlay: {
-                                  ...prev.backgroundImage.overlay,
+                                  ...displayConfig.backgroundImage.overlay,
                                   opacity: parseFloat(e.target.value),
                                 },
                               },
-                            }))
+                            })
                           }
                           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                         />
@@ -1143,6 +1394,60 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                   💡 <strong>Consejo:</strong> Una imagen de fondo con overlay
                   mejora la legibilidad del texto del footer. Recomendamos usar
                   una opacidad del 70-80% para mantener un buen contraste.
+                </div>
+
+                {/* Botón de debug */}
+                <div className="border-t pt-4 space-y-3">
+                  <button
+                    onClick={() => {
+                      console.log(
+                        "🔄 Recargando imagen de fondo del footer..."
+                      );
+                      fetchFooterBanner();
+                    }}
+                    disabled={bannerLoading}
+                    className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 transition-colors text-sm"
+                  >
+                    {bannerLoading
+                      ? "Cargando..."
+                      : "🔍 Debug: Recargar Imagen"}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      console.log("🔧 Footer Debug - Config actual:", config);
+                      console.log(
+                        "🔧 Footer Debug - DisplayConfig actual:",
+                        displayConfig
+                      );
+                      console.log(
+                        "🔧 Footer Debug - LandingText:",
+                        config.landingText
+                      );
+                      try {
+                        const parsed = JSON.parse(config.landingText || "{}");
+                        console.log(
+                          "🔧 Footer Debug - LandingText parseado:",
+                          parsed
+                        );
+                        console.log(
+                          "🔧 Footer Debug - Overlay config:",
+                          parsed.backgroundImage?.overlay
+                        );
+                      } catch (e) {
+                        console.error("❌ Error al parsear landingText:", e);
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    🔧 Debug: Mostrar Configuración
+                  </button>
+
+                  <p className="text-xs text-gray-500">
+                    Usa estos botones para depurar la configuración del footer.
+                    Revisa la consola del navegador para ver los logs
+                    detallados.
+                  </p>
                 </div>
               </>
             )}

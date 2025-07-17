@@ -5,7 +5,7 @@ import { useSubscriptionPlan } from "@/hooks/useSubscriptionPlan";
 
 // Importación dinámica para evitar problemas de SSR
 const Footer01BO = dynamic(
-  () => import("@/components/PIXELUP/Footer/Footer01/Footer01BO"),
+  () => import("@/components/PIXELUP/Footer/FooterBO"),
   { ssr: false }
 );
 

@@ -24,8 +24,22 @@ interface FooterConfig {
     url: string;
     enabled: boolean;
   }[];
+  // Nuevos campos para imagen de fondo
+  landingText: string;
   // Redes sociales se cargan dinámicamente desde el componente RedesSociales
   socialNetworks?: any[];
+}
+
+interface FooterDisplayConfig {
+  backgroundImage: {
+    enabled: boolean;
+    url: string;
+    overlay: {
+      enabled: boolean;
+      color: string;
+      opacity: number;
+    };
+  };
 }
 
 const defaultConfig: FooterConfig = {
@@ -47,6 +61,17 @@ const defaultConfig: FooterConfig = {
   newsletterTitle: "Suscríbete a nuestro newsletter",
   newsletterDescription: "Recibe las últimas novedades y ofertas",
   newsletterPlaceholder: "Tu email",
+  landingText: JSON.stringify({
+    backgroundImage: {
+      enabled: false,
+      url: "",
+      overlay: {
+        enabled: true,
+        color: "#000000",
+        opacity: 0.7,
+      },
+    },
+  }),
   customLinks: [
     {
       title: "Política de Privacidad",
@@ -66,6 +91,99 @@ export function useFooterConfig() {
   const [config, setConfig] = useState<FooterConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [displayConfig, setDisplayConfig] = useState<FooterDisplayConfig>({
+    backgroundImage: {
+      enabled: false,
+      url: "",
+      overlay: {
+        enabled: true,
+        color: "#000000",
+        opacity: 0.7,
+      },
+    },
+  });
+  const [bannerImage, setBannerImage] = useState<string | null>(null);
+
+  // Función para parsear displayConfig desde landingText
+  const parseFooterDisplayConfig = (
+    landingText: string
+  ): FooterDisplayConfig => {
+    try {
+      if (!landingText || landingText.trim() === "") {
+        return {
+          backgroundImage: {
+            enabled: false,
+            url: "",
+            overlay: {
+              enabled: true,
+              color: "#000000",
+              opacity: 0.7,
+            },
+          },
+        };
+      }
+
+      const parsed = JSON.parse(landingText);
+      return {
+        backgroundImage: {
+          enabled: parsed.backgroundImage?.enabled ?? false,
+          url: parsed.backgroundImage?.url ?? "",
+          overlay: {
+            enabled: parsed.backgroundImage?.overlay?.enabled ?? true,
+            color: parsed.backgroundImage?.overlay?.color ?? "#000000",
+            opacity: parsed.backgroundImage?.overlay?.opacity ?? 0.7,
+          },
+        },
+      };
+    } catch (error) {
+      console.error("Error al parsear displayConfig:", error);
+      return {
+        backgroundImage: {
+          enabled: false,
+          url: "",
+          overlay: {
+            enabled: true,
+            color: "#000000",
+            opacity: 0.7,
+          },
+        },
+      };
+    }
+  };
+
+  // Función para cargar imagen del banner del footer
+  const fetchFooterBanner = async () => {
+    try {
+      const bannerId = process.env.NEXT_PUBLIC_FOOTER_BANNER_ID;
+
+      if (!bannerId) {
+        console.log("📝 Variable NEXT_PUBLIC_FOOTER_BANNER_ID no configurada");
+        return null;
+      }
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+
+      // Seguir la misma estructura que BannerPrincipal01.tsx
+      if (
+        response.data?.banner?.images &&
+        response.data.banner.images.length > 0
+      ) {
+        // Tomar la primera imagen del banner
+        const firstImage = response.data.banner.images[0];
+        if (firstImage?.mainImage?.url) {
+          const imageUrl = firstImage.mainImage.url;
+          setBannerImage(imageUrl);
+          return imageUrl;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error al cargar imagen del banner del footer:", error);
+      return null;
+    }
+  };
 
   // Cargar configuración de redes sociales
   const fetchSocialNetworksConfig = async () => {
@@ -100,13 +218,15 @@ export function useFooterConfig() {
         process.env.NEXT_PUBLIC_FOOTER_CONFIG_CONTENTBLOCK ||
         "footer-config-default";
 
-      // Cargar configuración del footer y redes sociales en paralelo
-      const [footerResponse, socialNetworks] = await Promise.all([
-        axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-        ),
-        fetchSocialNetworksConfig(),
-      ]);
+      // Cargar configuración del footer, redes sociales e imagen en paralelo
+      const [footerResponse, socialNetworks, bannerImageUrl] =
+        await Promise.all([
+          axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+          ),
+          fetchSocialNetworksConfig(),
+          fetchFooterBanner(),
+        ]);
 
       let footerConfig = defaultConfig;
 
@@ -120,6 +240,25 @@ export function useFooterConfig() {
           console.error("Error al parsear configuración del footer:", error);
         }
       }
+
+      // Parsear displayConfig desde landingText
+      const parsedDisplayConfig = parseFooterDisplayConfig(
+        footerConfig.landingText
+      );
+
+      console.log("🔍 Footer Debug - footerConfig:", footerConfig);
+      console.log("🔍 Footer Debug - landingText:", footerConfig.landingText);
+      console.log(
+        "🔍 Footer Debug - parsedDisplayConfig:",
+        parsedDisplayConfig
+      );
+
+      // Si hay imagen del banner, actualizar la URL en displayConfig
+      if (bannerImageUrl && parsedDisplayConfig.backgroundImage.enabled) {
+        parsedDisplayConfig.backgroundImage.url = bannerImageUrl;
+      }
+
+      setDisplayConfig(parsedDisplayConfig);
 
       // Combinar configuración del footer con redes sociales
       const combinedConfig = {
@@ -151,6 +290,8 @@ export function useFooterConfig() {
 
   return {
     config,
+    displayConfig,
+    bannerImage,
     loading,
     error,
     refreshConfig,
