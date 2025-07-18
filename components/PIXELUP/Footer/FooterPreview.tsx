@@ -118,27 +118,27 @@ const BackgroundOverlay = ({ config }: { config: any }) => {
 // Componente de vista previa para Footer01 (Clásico)
 const Footer01Preview = ({ config, logo }: { config: any; logo: any }) => (
   <div
-    className="p-6"
+    className="p-4"
     style={getBackgroundStyle(config)}
   >
     <BackgroundOverlay config={config} />
 
     {/* Contenido del footer */}
     <div className="relative z-10">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Logo y Descripción */}
         {(config.showLogo || config.showDescription) && (
           <div className="lg:col-span-3 flex flex-col items-center lg:items-start">
             {config.showLogo && (
               <img
                 alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-                className="h-16 object-contain max-w-[140px]"
+                className="h-12 object-contain max-w-[120px]"
                 src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
               />
             )}
             {config.showDescription && config.description && (
               <p
-                className="mt-3 text-sm leading-relaxed"
+                className="mt-2 text-xs leading-relaxed"
                 style={{ color: config.textColor }}
               >
                 {config.description}
@@ -153,22 +153,22 @@ const Footer01Preview = ({ config, logo }: { config: any; logo: any }) => (
             config.showLogo || config.showDescription ? "9" : "12"
           }`}
         >
-          <div className="flex flex-col lg:flex-row lg:justify-start lg:space-x-16 space-y-8 lg:space-y-0">
+          <div className="flex flex-col lg:flex-row lg:justify-start lg:space-x-12 space-y-4 lg:space-y-0">
             {/* Enlaces del Menú Principal */}
             {config.showMenuLinks && config.menuItems && (
               <div className="flex-shrink-0">
                 <h3
-                  className="text-lg font-semibold mb-4"
+                  className="text-sm font-semibold mb-2"
                   style={{ color: config.textColor }}
                 >
                   Navegación
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {config.menuItems.map((item: any, index: number) => (
                     <li key={index}>
                       <a
                         href={item.path}
-                        className="text-sm hover:underline block"
+                        className="text-xs hover:underline block"
                         style={{ color: config.textColor }}
                       >
                         {item.title}
@@ -183,19 +183,19 @@ const Footer01Preview = ({ config, logo }: { config: any; logo: any }) => (
             {config.showLinks && config.customLinks && (
               <div className="flex-shrink-0">
                 <h3
-                  className="text-lg font-semibold mb-4"
+                  className="text-sm font-semibold mb-2"
                   style={{ color: config.textColor }}
                 >
                   Enlaces
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {config.customLinks
                     .filter((link: any) => link.enabled)
                     .map((link: any, index: number) => (
                       <li key={index}>
                         <a
                           href={link.url}
-                          className="text-sm hover:underline block"
+                          className="text-xs hover:underline block"
                           style={{ color: config.textColor }}
                         >
                           {link.title}
@@ -212,14 +212,14 @@ const Footer01Preview = ({ config, logo }: { config: any; logo: any }) => (
               config.collections.length > 0 && (
                 <div className="flex-shrink-0">
                   <h3
-                    className="text-lg font-semibold mb-4"
+                    className="text-sm font-semibold mb-2"
                     style={{ color: config.textColor }}
                   >
                     Colecciones
                   </h3>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1">
                     {config.collections
-                      .slice(0, 4)
+                      .slice(0, 3)
                       .map((collection: any, index: number) => (
                         <li key={collection.id || index}>
                           <a
@@ -229,7 +229,7 @@ const Footer01Preview = ({ config, logo }: { config: any; logo: any }) => (
                                 .toLowerCase()
                                 .replace(/\s+/g, "-")
                             }`}
-                            className="text-sm hover:underline block"
+                            className="text-xs hover:underline block"
                             style={{ color: config.textColor }}
                           >
                             {collection.title}
@@ -250,10 +250,10 @@ const Footer01Preview = ({ config, logo }: { config: any; logo: any }) => (
 
       {/* Copyright y Redes Sociales */}
       <div
-        className="mt-8 pt-6 border-t"
+        className="mt-4 pt-3 border-t"
         style={{ borderTopColor: config.accentColor }}
       >
-        <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2">
           <p
             className="text-xs"
             style={{ color: config.textColor }}
@@ -292,21 +292,21 @@ const Footer01Preview = ({ config, logo }: { config: any; logo: any }) => (
 // Componente de vista previa para Footer02 (Moderno)
 const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
   <div
-    className="p-8"
+    className="p-4"
     style={getBackgroundStyle(config)}
   >
     <BackgroundOverlay config={config} />
 
     <div className="relative z-10">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Logo y Descripción */}
           {(config.showLogo || config.showDescription) && (
             <div className="lg:col-span-4">
               {config.showLogo && (
                 <img
                   alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-                  className="h-16 object-contain mb-4"
+                  className="h-12 object-contain mb-2"
                   src={
                     logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR
                   }
@@ -314,7 +314,7 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
               )}
               {config.showDescription && config.description && (
                 <p
-                  className="text-sm leading-relaxed mb-6"
+                  className="text-xs leading-relaxed mb-3"
                   style={{ color: config.textColor }}
                 >
                   {config.description}
@@ -329,22 +329,22 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
               config.showLogo || config.showDescription ? "8" : "12"
             }`}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Enlaces del Menú Principal */}
               {config.showMenuLinks && config.menuItems && (
                 <div>
                   <h3
-                    className="text-lg font-semibold mb-4"
+                    className="text-sm font-semibold mb-2"
                     style={{ color: config.textColor }}
                   >
                     Navegación
                   </h3>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1">
                     {config.menuItems.map((item: any, index: number) => (
                       <li key={index}>
                         <a
                           href={item.path}
-                          className="text-sm hover:underline transition-colors block"
+                          className="text-xs hover:underline transition-colors block"
                           style={{ color: config.textColor }}
                         >
                           {item.title}
@@ -359,19 +359,19 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
               {config.showLinks && config.customLinks && (
                 <div>
                   <h3
-                    className="text-lg font-semibold mb-4"
+                    className="text-sm font-semibold mb-2"
                     style={{ color: config.textColor }}
                   >
                     Enlaces Útiles
                   </h3>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1">
                     {config.customLinks
                       .filter((link: any) => link.enabled)
                       .map((link: any, index: number) => (
                         <li key={index}>
                           <a
                             href={link.url}
-                            className="text-sm hover:underline transition-colors block"
+                            className="text-xs hover:underline transition-colors block"
                             style={{ color: config.textColor }}
                           >
                             {link.title}
@@ -388,14 +388,14 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
                 config.collections.length > 0 && (
                   <div>
                     <h3
-                      className="text-lg font-semibold mb-4"
+                      className="text-sm font-semibold mb-2"
                       style={{ color: config.textColor }}
                     >
-                      Colecciones ({config.collections.length})
+                      Colecciones
                     </h3>
-                    <ul className="space-y-2">
+                    <ul className="space-y-1">
                       {config.collections
-                        .slice(0, 4)
+                        .slice(0, 3)
                         .map((collection: any, index: number) => (
                           <li key={collection.id || index}>
                             <a
@@ -405,7 +405,7 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
                                   .toLowerCase()
                                   .replace(/\s+/g, "-")
                               }`}
-                              className="text-sm hover:underline transition-colors block"
+                              className="text-xs hover:underline transition-colors block"
                               style={{ color: config.textColor }}
                             >
                               {collection.title}
@@ -421,10 +421,10 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
 
         {/* Copyright y Redes Sociales */}
         <div
-          className="mt-8 pt-6 border-t"
+          className="mt-4 pt-3 border-t"
           style={{ borderTopColor: config.accentColor }}
         >
-          <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2">
             <p
               className="text-xs"
               style={{ color: config.textColor }}
@@ -464,7 +464,7 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
 // Componente de vista previa para Footer03 (Minimalista)
 const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
   <div
-    className="p-6"
+    className="p-4"
     style={getBackgroundStyle(config)}
   >
     <BackgroundOverlay config={config} />
@@ -473,17 +473,17 @@ const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
       <div className="max-w-4xl mx-auto text-center">
         {/* Logo y Descripción */}
         {(config.showLogo || config.showDescription) && (
-          <div className="mb-6 text-center">
+          <div className="mb-3 text-center">
             {config.showLogo && (
               <img
                 alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-                className="h-12 object-contain mx-auto mb-3"
+                className="h-10 object-contain mx-auto mb-2"
                 src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
               />
             )}
             {config.showDescription && config.description && (
               <p
-                className="text-sm max-w-md mx-auto"
+                className="text-xs max-w-md mx-auto"
                 style={{ color: config.textColor }}
               >
                 {config.description}
@@ -493,15 +493,15 @@ const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
         )}
 
         {/* Enlaces, menú y colecciones en línea */}
-        <div className="mb-6 space-y-4">
+        <div className="mb-3 space-y-2">
           {/* Enlaces del Menú Principal */}
           {config.showMenuLinks && config.menuItems && (
-            <div className="flex flex-wrap justify-center gap-6">
+            <div className="flex flex-wrap justify-center gap-3">
               {config.menuItems.map((item: any, index: number) => (
                 <a
                   key={index}
                   href={item.path}
-                  className="text-sm hover:underline"
+                  className="text-xs hover:underline"
                   style={{ color: config.textColor }}
                 >
                   {item.title}
@@ -512,14 +512,14 @@ const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
 
           {/* Enlaces Personalizados */}
           {config.showLinks && config.customLinks && (
-            <div className="flex flex-wrap justify-center gap-6">
+            <div className="flex flex-wrap justify-center gap-3">
               {config.customLinks
                 .filter((link: any) => link.enabled)
                 .map((link: any, index: number) => (
                   <a
                     key={index}
                     href={link.url}
-                    className="text-sm hover:underline"
+                    className="text-xs hover:underline"
                     style={{ color: config.textColor }}
                   >
                     {link.title}
@@ -532,9 +532,9 @@ const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
           {config.showCollections &&
             config.collections &&
             config.collections.length > 0 && (
-              <div className="flex flex-wrap justify-center gap-6">
+              <div className="flex flex-wrap justify-center gap-3">
                 {config.collections
-                  .slice(0, 4)
+                  .slice(0, 3)
                   .map((collection: any, index: number) => (
                     <a
                       key={collection.id || index}
@@ -554,10 +554,10 @@ const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
 
         {/* Copyright y Redes Sociales */}
         <div
-          className="pt-4 border-t"
+          className="pt-2 border-t"
           style={{ borderTopColor: config.accentColor }}
         >
-          <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2">
             <p
               className="text-xs"
               style={{ color: config.textColor }}
@@ -597,20 +597,20 @@ const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
 // Componente de vista previa para Footer04 (Descriptivo)
 const Footer04Preview = ({ config, logo }: { config: any; logo: any }) => (
   <div
-    className="p-6"
+    className="p-4"
     style={getBackgroundStyle(config)}
   >
     <BackgroundOverlay config={config} />
 
     <div className="relative z-10">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Logo */}
           {config.showLogo && (
             <div className="lg:col-span-2">
               <img
                 alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-                className="h-16 object-contain"
+                className="h-12 object-contain"
                 src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
               />
             </div>
@@ -620,17 +620,17 @@ const Footer04Preview = ({ config, logo }: { config: any; logo: any }) => (
           {config.showMenuLinks && config.menuItems && (
             <div className="lg:col-span-2">
               <h3
-                className="text-sm font-bold tracking-wider uppercase mb-3"
+                className="text-xs font-bold tracking-wider uppercase mb-2"
                 style={{ color: config.textColor }}
               >
                 Navegación
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-1">
                 {config.menuItems.map((item: any, index: number) => (
                   <li key={index}>
                     <a
                       href={item.path}
-                      className="text-sm hover:underline block"
+                      className="text-xs hover:underline block"
                       style={{ color: config.textColor }}
                     >
                       {item.title}
@@ -645,19 +645,19 @@ const Footer04Preview = ({ config, logo }: { config: any; logo: any }) => (
           {config.showLinks && config.customLinks && (
             <div className="lg:col-span-2">
               <h3
-                className="text-sm font-bold tracking-wider uppercase mb-3"
+                className="text-xs font-bold tracking-wider uppercase mb-2"
                 style={{ color: config.textColor }}
               >
                 Enlaces
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-1">
                 {config.customLinks
                   .filter((link: any) => link.enabled)
                   .map((link: any, index: number) => (
                     <li key={index}>
                       <a
                         href={link.url}
-                        className="text-sm hover:underline block"
+                        className="text-xs hover:underline block"
                         style={{ color: config.textColor }}
                       >
                         {link.title}
@@ -674,14 +674,14 @@ const Footer04Preview = ({ config, logo }: { config: any; logo: any }) => (
             config.collections.length > 0 && (
               <div className="lg:col-span-2">
                 <h3
-                  className="text-sm font-bold tracking-wider uppercase mb-3"
+                  className="text-xs font-bold tracking-wider uppercase mb-2"
                   style={{ color: config.textColor }}
                 >
                   Colecciones
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-1">
                   {config.collections
-                    .slice(0, 4)
+                    .slice(0, 3)
                     .map((collection: any, index: number) => (
                       <li key={collection.id || index}>
                         <a
@@ -689,7 +689,7 @@ const Footer04Preview = ({ config, logo }: { config: any; logo: any }) => (
                             collection.slug ||
                             collection.title.toLowerCase().replace(/\s+/g, "-")
                           }`}
-                          className="text-sm hover:underline block"
+                          className="text-xs hover:underline block"
                           style={{ color: config.textColor }}
                         >
                           {collection.title}
@@ -702,15 +702,15 @@ const Footer04Preview = ({ config, logo }: { config: any; logo: any }) => (
 
           {/* Descripción prominente */}
           {config.showDescription && config.description && (
-            <div className="lg:col-span-6">
+            <div className="lg:col-span-4">
               <h3
-                className="text-sm font-bold tracking-wider uppercase mb-3"
+                className="text-xs font-bold tracking-wider uppercase mb-2"
                 style={{ color: config.textColor }}
               >
                 Sobre Nosotros
               </h3>
               <p
-                className="text-sm leading-relaxed"
+                className="text-xs leading-relaxed"
                 style={{ color: config.textColor }}
               >
                 {config.description}
@@ -721,7 +721,7 @@ const Footer04Preview = ({ config, logo }: { config: any; logo: any }) => (
 
         {/* Redes sociales y copyright */}
         <div
-          className="mt-6 pt-6 border-t"
+          className="mt-3 pt-3 border-t"
           style={{ borderTopColor: config.accentColor }}
         >
           <div className="flex flex-col sm:flex-row sm:justify-between items-center">

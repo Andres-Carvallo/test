@@ -187,6 +187,9 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<string>(
+    config.selectedTemplate
+  );
   const [showStyleSection, setShowStyleSection] = useState(false);
   const [showSocialSection, setShowSocialSection] = useState(false);
   const [showCustomLinksSection, setShowCustomLinksSection] = useState(false);
@@ -811,6 +814,11 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     // Las redes sociales se cargan automáticamente desde el contexto
   }, []);
 
+  // Sincronizar previewTemplate con la plantilla seleccionada
+  useEffect(() => {
+    setPreviewTemplate(config.selectedTemplate);
+  }, [config.selectedTemplate]);
+
   // Todas las secciones siempre inician cerradas - expansión solo manual
 
   // Obtener enlaces del menú de navegación real
@@ -1089,7 +1097,10 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                   </div>
                   {!isBasicPlan && (
                     <button
-                      onClick={() => setShowTemplateModal(true)}
+                      onClick={() => {
+                        setPreviewTemplate(config.selectedTemplate);
+                        setShowTemplateModal(true);
+                      }}
                       className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors flex items-center space-x-1"
                     >
                       <svg
@@ -1368,7 +1379,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       {/* Configuración General */}
       <div className="border rounded-lg p-4">
         <CollapsibleSectionHeader
-          title="Configuración General"
+          title="Descripción"
           isOpen={showGeneralSection}
           onToggle={() => setShowGeneralSection(!showGeneralSection)}
         />
@@ -1389,9 +1400,6 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                 placeholder="Descripción que aparecerá en el footer..."
               />
               <p className="text-xs text-gray-500 mt-2">
-                Esta descripción aparecerá junto con el logo cuando esté
-                activada. En la plantilla Footer04 aparece como sección
-                separada.
                 {isBasicPlan && " Disponible en todos los planes."}
               </p>
             </div>
@@ -1487,96 +1495,116 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       {/* Modal de Selección de Plantilla */}
       {showTemplateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[95vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-xl font-semibold">
                 Seleccionar Plantilla del Footer
               </h3>
-              <button
-                onClick={() => setShowTemplateModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {templates.map((template) => (
-                  <div
-                    key={template.id}
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                      config.selectedTemplate === template.id
-                        ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-                        : "border-gray-200 hover:border-gray-300 hover:shadow-md"
-                    }`}
+              <div className="flex items-center space-x-3">
+                {config.selectedTemplate !== previewTemplate && (
+                  <button
                     onClick={() => {
-                      handleConfigChange("selectedTemplate", template.id);
+                      handleConfigChange("selectedTemplate", previewTemplate);
                       setShowTemplateModal(false);
                       toast.success(
-                        `Plantilla "${template.name}" seleccionada`
+                        `Plantilla "${
+                          templates.find((t) => t.id === previewTemplate)?.name
+                        }" seleccionada`
                       );
                     }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
-                    <div className="aspect-video bg-gray-100 rounded mb-3 flex items-center justify-center overflow-hidden">
-                      <img
-                        src={template.image}
-                        alt={template.name}
-                        className="w-full h-full object-cover rounded"
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 225'%3E%3Crect width='400' height='225' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%236b7280' font-family='Arial' font-size='14'%3E" +
-                            template.name +
-                            "%3C/text%3E%3C/svg%3E";
-                        }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-lg">{template.name}</h4>
-                      {config.selectedTemplate === template.id && (
-                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                          <svg
-                            className="w-4 h-4 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">
-                      {template.description}
-                    </p>
-                    {config.selectedTemplate === template.id ? (
-                      <div className="w-full py-2 px-4 bg-blue-600 text-white rounded-md text-center text-sm font-medium">
-                        Seleccionado
-                      </div>
-                    ) : (
-                      <div className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-md text-center text-sm font-medium hover:bg-gray-50">
-                        Seleccionar
-                      </div>
-                    )}
+                    Seleccionar Esta Plantilla
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowTemplateModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col h-[520px]">
+              {/* Vista Previa - Arriba */}
+              <div className="h-80 p-2 border-b">
+                {/* Preview Container */}
+                <div className="h-full border rounded-lg overflow-hidden bg-white">
+                  <div className="w-full h-full overflow-auto">
+                    <FooterPreview
+                      config={{
+                        ...configWithSocialNetworks,
+                        selectedTemplate: previewTemplate,
+                      }}
+                      selectedTemplate={previewTemplate}
+                    />
                   </div>
-                ))}
+                </div>
+              </div>
+
+              {/* Lista de Plantillas - Abajo */}
+              <div className="flex-1 p-4 flex flex-col justify-center">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {templates.map((template) => (
+                    <div
+                      key={template.id}
+                      className={`p-3 rounded-lg cursor-pointer transition-all border ${
+                        previewTemplate === template.id
+                          ? "bg-blue-100 border-blue-300 border-2"
+                          : config.selectedTemplate === template.id
+                          ? "bg-green-50 border-green-300 border-2"
+                          : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                      }`}
+                      onClick={() => setPreviewTemplate(template.id)}
+                    >
+                      <div className="text-center">
+                        <div className="flex items-center justify-center mb-2">
+                          {config.selectedTemplate === template.id && (
+                            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
+                              <svg
+                                className="w-4 h-4 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                          <h5 className="font-medium text-gray-900">
+                            {template.name}
+                          </h5>
+                          {previewTemplate === template.id &&
+                            config.selectedTemplate !== template.id && (
+                              <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700 text-center">
+                  💡 Haz click en una plantilla para ver la vista previa arriba
+                </div>
               </div>
             </div>
           </div>
