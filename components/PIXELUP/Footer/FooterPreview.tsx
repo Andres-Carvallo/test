@@ -107,7 +107,7 @@ const BackgroundOverlay = ({ config }: { config: any }) => {
     <div
       className="absolute inset-0"
       style={{
-        backgroundColor: config.backgroundImage.overlay.color,
+        backgroundColor: config.backgroundColor, // Usar el color de fondo como overlay
         opacity: config.backgroundImage.overlay.opacity,
         zIndex: 1,
       }}

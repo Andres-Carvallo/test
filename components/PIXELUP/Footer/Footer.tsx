@@ -170,8 +170,7 @@ export default function Footer() {
       const imageUrl = displayConfig.backgroundImage.url || (bannerImage ?? "");
       const overlayEnabled =
         displayConfig.backgroundImage.overlay?.enabled ?? true;
-      const overlayColor =
-        displayConfig.backgroundImage.overlay?.color ?? "#000000";
+      const overlayColor = config.backgroundColor ?? "#000000"; // Usar el color de fondo como overlay
       const overlayOpacity =
         displayConfig.backgroundImage.overlay?.opacity ?? 0.7;
 

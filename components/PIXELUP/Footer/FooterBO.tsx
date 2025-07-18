@@ -204,7 +204,6 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [showBackgroundSection, setShowBackgroundSection] = useState(false);
 
   const isBasicPlan = planType === "basic";
 
@@ -219,7 +218,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         url: "",
         overlay: {
           enabled: true,
-          color: "#000000",
+          color: "#000000", // Se mantiene por compatibilidad, pero se usa backgroundColor
           opacity: 0.7,
         },
       },
@@ -256,9 +255,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
             enabled:
               parsed.backgroundImage?.overlay?.enabled ??
               defaultDisplayConfig.backgroundImage.overlay.enabled,
-            color:
-              parsed.backgroundImage?.overlay?.color ||
-              defaultDisplayConfig.backgroundImage.overlay.color,
+            color: "#000000", // Se mantiene por compatibilidad, pero se usa backgroundColor
             opacity:
               parsed.backgroundImage?.overlay?.opacity ??
               defaultDisplayConfig.backgroundImage.overlay.opacity,
@@ -283,6 +280,23 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       ...prev,
       landingText: JSON.stringify(newDisplayConfig),
     }));
+  };
+
+  // Función para sincronizar el color del overlay con el backgroundColor
+  const updateBackgroundColor = (color: string) => {
+    // Actualizar el color de fondo
+    handleConfigChange("backgroundColor", color);
+
+    // Actualizar también el color del overlay para que coincida
+    updateFooterDisplayConfig({
+      backgroundImage: {
+        ...displayConfig.backgroundImage,
+        overlay: {
+          ...displayConfig.backgroundImage.overlay,
+          color: color,
+        },
+      },
+    });
   };
 
   // Templates disponibles
@@ -432,7 +446,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   };
 
   // Cargar imagen de fondo del footer desde banner
-  const fetchFooterBanner = async () => {
+  const fetchFooterBanner = async (silent = false) => {
     try {
       setBannerLoading(true);
       const token = getCookie("AdminTokenAuth");
@@ -501,10 +515,14 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
         if (imageUrl) {
           console.log("🖼️ Imagen de fondo del footer cargada:", imageUrl);
-          toast.success("Imagen de fondo del footer cargada exitosamente");
+          if (!silent) {
+            toast.success("Imagen de fondo del footer cargada exitosamente");
+          }
         } else {
           console.warn("⚠️ Banner encontrado pero sin imagen URL");
-          toast("Banner encontrado pero sin imagen configurada");
+          if (!silent) {
+            toast("Banner encontrado pero sin imagen configurada");
+          }
         }
       } else {
         console.warn("⚠️ No se encontraron imágenes en el banner");
@@ -618,7 +636,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   };
 
   // Guardar imagen en el banner
-  const saveFooterBannerImage = async () => {
+  const saveFooterBannerImage = async (silent = false) => {
     if (!backgroundImage) return;
 
     try {
@@ -692,11 +710,15 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       }
 
       // Recargar banner para obtener la URL actualizada
-      await fetchFooterBanner();
-      toast.success("Imagen de fondo guardada correctamente");
+      await fetchFooterBanner(true); // silent = true
+      if (!silent) {
+        toast.success("Imagen de fondo guardada correctamente");
+      }
     } catch (error) {
       console.error("Error al guardar imagen de fondo:", error);
-      toast.error("Error al guardar la imagen de fondo");
+      if (!silent) {
+        toast.error("Error al guardar la imagen de fondo");
+      }
     }
   };
 
@@ -705,10 +727,25 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     try {
       setSaving(true);
       const token = getCookie("AdminTokenAuth");
+
+      // 1. Primero guardar la imagen si hay una pendiente
+      if (backgroundImage) {
+        try {
+          console.log("💾 Guardando imagen de fondo...");
+          await saveFooterBannerImage(true); // silent = true
+        } catch (error) {
+          console.error("Error al guardar imagen:", error);
+          toast.error("Error al guardar la imagen de fondo");
+          return; // No continuar si falla la imagen
+        }
+      }
+
+      // 2. Luego guardar la configuración del content block
       const contentBlockId =
         process.env.NEXT_PUBLIC_FOOTER_CONFIG_CONTENTBLOCK ||
         "footer-config-default";
 
+      console.log("💾 Guardando configuración del footer...");
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
@@ -724,7 +761,9 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       );
 
       if (response.data.code === 0) {
-        toast.success("Configuración del footer guardada exitosamente");
+        toast.success("Footer guardado exitosamente");
+        // Limpiar imagen temporal después de guardar
+        setBackgroundImage(null);
         // Revalidar cache
         await fetch("/api/revalidate", {
           method: "POST",
@@ -768,7 +807,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   useEffect(() => {
     fetchFooterConfig();
     fetchCollections();
-    fetchFooterBanner();
+    fetchFooterBanner(false); // mostrar toast normalmente en carga inicial
     // Las redes sociales se cargan automáticamente desde el contexto
   }, []);
 
@@ -829,11 +868,6 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
           config={configWithSocialNetworks}
           selectedTemplate={config.selectedTemplate}
         />
-        <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-          💡 <strong>Vista previa con datos reales:</strong> Los enlaces de
-          navegación y colecciones se obtienen directamente de tu configuración
-          de tienda.
-        </div>
       </div>
 
       {/* Secciones Visibles - PRIMERA SECCIÓN */}
@@ -1030,427 +1064,303 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         />
 
         {showStyleSection && (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              {!isBasicPlan && (
-                <button
-                  onClick={() => setShowTemplateModal(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2 ml-auto"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                    />
-                  </svg>
-                  <span>Cambiar Plantilla</span>
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Color de Fondo
-                </label>
-                <input
-                  type="color"
-                  value={config.backgroundColor}
-                  onChange={(e) =>
-                    handleConfigChange("backgroundColor", e.target.value)
-                  }
-                  className="w-full h-10 border rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Color de Texto
-                </label>
-                <input
-                  type="color"
-                  value={config.textColor}
-                  onChange={(e) =>
-                    handleConfigChange("textColor", e.target.value)
-                  }
-                  className="w-full h-10 border rounded-md"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Color de Acento
-                </label>
-                <input
-                  type="color"
-                  value={config.accentColor}
-                  onChange={(e) =>
-                    handleConfigChange("accentColor", e.target.value)
-                  }
-                  className="w-full h-10 border rounded-md"
-                />
-              </div>
-            </div>
-
-            <div className="p-3 bg-gray-50 rounded-md">
-              <div className="flex items-center space-x-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{
-                    backgroundColor:
-                      selectedTemplate.id === "Footer01"
-                        ? "#10b981"
-                        : "#6b7280",
-                  }}
-                ></div>
-                <span className="text-sm font-medium">
-                  Plantilla actual: {selectedTemplate.name}
-                </span>
-              </div>
-              <p className="text-xs text-gray-600 mt-1">
-                {selectedTemplate.description}
-              </p>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Configuración de Imagen de Fondo */}
-      <div className="border rounded-lg p-4">
-        <CollapsibleSectionHeader
-          title="Imagen de Fondo"
-          isOpen={showBackgroundSection}
-          onToggle={() => setShowBackgroundSection(!showBackgroundSection)}
-        />
-
-        {showBackgroundSection && (
-          <div className="space-y-6">
-            {/* Verificación de configuración */}
-            {(!process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ||
-              process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ===
-                "PENDIENTE_CONFIGURAR") && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-start space-x-3">
-                  <svg
-                    className="w-5 h-5 text-yellow-600 mt-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                    />
-                  </svg>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-yellow-800 mb-2">
-                      ⚙️ Configuración Requerida
-                    </h4>
-                    <p className="text-sm text-yellow-700 mb-3">
-                      Para usar imágenes de fondo en el footer, necesitas
-                      configurar las variables de entorno.
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Columna Izquierda: Plantilla y Colores */}
+            <div className="space-y-4">
+              {/* Plantilla */}
+              <div className="border rounded-lg p-3 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{
+                        backgroundColor:
+                          selectedTemplate.id === "Footer01"
+                            ? "#10b981"
+                            : "#6b7280",
+                      }}
+                    ></div>
+                    <p className="text-sm font-medium text-gray-700">
+                      Plantilla Activa:
                     </p>
-                    <div className="text-xs text-yellow-600 space-y-1">
-                      <p>
-                        <strong>1.</strong> Ve a tu archivo{" "}
-                        <code>.env.local</code>
-                      </p>
-                      <p>
-                        <strong>2.</strong> Encuentra las líneas que empiezan
-                        con <code>NEXT_PUBLIC_FOOTER_BANNER_ID</code>
-                      </p>
-                      <p>
-                        <strong>3.</strong> Reemplaza{" "}
-                        <code>PENDIENTE_CONFIGURAR</code> con un ID de banner
-                        válido
-                      </p>
-                      <p>
-                        <strong>4.</strong> Reinicia el servidor de desarrollo
-                      </p>
-                    </div>
-                    <div className="mt-3 p-2 bg-yellow-100 rounded text-xs font-mono text-yellow-800">
-                      NEXT_PUBLIC_FOOTER_BANNER_ID=tu-banner-id-aqui
-                      <br />
-                      NEXT_PUBLIC_FOOTER_BANNER_IMGID=tu-banner-img-id-aqui
-                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {selectedTemplate.name}
+                    </span>
+                  </div>
+                  {!isBasicPlan && (
+                    <button
+                      onClick={() => setShowTemplateModal(true)}
+                      className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors flex items-center space-x-1"
+                    >
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                        />
+                      </svg>
+                      <span>Cambiar</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Colores */}
+              <div className="border rounded-lg p-3 bg-gray-50">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Colores
+                </label>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Color de Fondo
+                    </label>
+                    <input
+                      type="color"
+                      value={config.backgroundColor}
+                      onChange={(e) => updateBackgroundColor(e.target.value)}
+                      className="w-full h-8 border rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Color de Texto
+                    </label>
+                    <input
+                      type="color"
+                      value={config.textColor}
+                      onChange={(e) =>
+                        handleConfigChange("textColor", e.target.value)
+                      }
+                      className="w-full h-8 border rounded"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Color de Acento
+                    </label>
+                    <input
+                      type="color"
+                      value={config.accentColor}
+                      onChange={(e) =>
+                        handleConfigChange("accentColor", e.target.value)
+                      }
+                      className="w-full h-8 border rounded"
+                    />
                   </div>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  El color de fondo se usa también para el overlay
+                </p>
               </div>
-            )}
-
-            {/* Switch para activar imagen de fondo */}
-            <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-emerald-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <span className="font-medium">Usar Imagen de Fondo</span>
-              </div>
-              <SectionSwitch
-                checked={displayConfig.backgroundImage.enabled}
-                onChange={(checked) =>
-                  updateFooterDisplayConfig({
-                    backgroundImage: {
-                      ...displayConfig.backgroundImage,
-                      enabled: checked,
-                    },
-                  })
-                }
-              />
             </div>
 
-            {/* Configuración de imagen (solo si está activada) */}
-            {displayConfig.backgroundImage.enabled && (
-              <>
-                {/* Upload de imagen */}
-                <div className="space-y-4">
-                  <h4 className="text-md font-medium text-gray-700">
-                    Imagen de Fondo
-                  </h4>
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    id="footerBackgroundImage"
-                    className="hidden"
-                    onChange={handleImageChange}
+            {/* Columna Derecha: Imagen de Fondo */}
+            <div className="space-y-4">
+              <div className="border rounded-lg p-3 bg-gray-50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">
+                      Imagen de Fondo
+                    </span>
+                  </div>
+                  <SectionSwitch
+                    checked={displayConfig.backgroundImage.enabled}
+                    onChange={(checked) =>
+                      updateFooterDisplayConfig({
+                        backgroundImage: {
+                          ...displayConfig.backgroundImage,
+                          enabled: checked,
+                        },
+                      })
+                    }
                   />
+                </div>
 
-                  {/* Vista previa de imagen actual */}
-                  {bannerData?.[0]?.mainImage?.url || backgroundImage ? (
-                    <div className="space-y-3">
-                      <div className="relative w-full h-40 rounded-lg overflow-hidden border border-gray-200">
-                        <img
-                          src={backgroundImage || bannerData[0]?.mainImage?.url}
-                          alt="Footer Background"
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                          <span className="text-white text-sm font-medium">
-                            Vista previa
-                          </span>
+                {displayConfig.backgroundImage.enabled && (
+                  <div className="space-y-3">
+                    {/* Advertencia compacta */}
+                    {(!process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ||
+                      process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ===
+                        "PENDIENTE_CONFIGURAR") && (
+                      <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+                        ⚠️ Configura NEXT_PUBLIC_FOOTER_BANNER_ID en .env.local
+                      </div>
+                    )}
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="footerBackgroundImage"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+
+                    {/* Upload/Preview */}
+                    {bannerData?.[0]?.mainImage?.url || backgroundImage ? (
+                      <div className="space-y-2">
+                        <div className="relative w-full h-24 rounded overflow-hidden border">
+                          <img
+                            src={
+                              backgroundImage || bannerData[0]?.mainImage?.url
+                            }
+                            alt="Footer Background"
+                            className="w-full h-full object-cover"
+                          />
+                          {/* Overlay preview con color y opacidad reales */}
+                          {displayConfig.backgroundImage.overlay.enabled && (
+                            <div
+                              className="absolute inset-0"
+                              style={{
+                                backgroundColor: config.backgroundColor,
+                                opacity:
+                                  displayConfig.backgroundImage.overlay.opacity,
+                              }}
+                            />
+                          )}
+                          {/* Indicador de vista previa */}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className=" px-2 py-1 rounded text-white text-xs">
+                              Vista previa
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <label
+                            htmlFor="footerBackgroundImage"
+                            className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 cursor-pointer"
+                          >
+                            Cambiar
+                          </label>
+
+                          {backgroundImage && (
+                            <button
+                              onClick={() => saveFooterBannerImage(false)}
+                              className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                            >
+                              Guardar
+                            </button>
+                          )}
                         </div>
                       </div>
-
-                      <div className="flex gap-2">
-                        <label
-                          htmlFor="footerBackgroundImage"
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer text-sm"
-                        >
-                          Cambiar Imagen
-                        </label>
-                        <button
-                          onClick={handleClearImage}
-                          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
-                        >
-                          Eliminar
-                        </button>
-                        {backgroundImage && (
-                          <button
-                            onClick={saveFooterBannerImage}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+                    ) : (
+                      <label
+                        htmlFor="footerBackgroundImage"
+                        className="border-dashed border-2 border-gray-300 rounded p-4 text-center cursor-pointer hover:border-gray-400 transition-colors block"
+                      >
+                        <div className="flex flex-col items-center">
+                          <svg
+                            className="w-6 h-6 text-gray-400 mb-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            Guardar Imagen
-                          </button>
-                        )}
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                            />
+                          </svg>
+                          <p className="text-gray-600 text-xs font-medium">
+                            Subir Imagen
+                          </p>
+                          <p className="text-xs text-gray-400">1920x800px</p>
+                        </div>
+                      </label>
+                    )}
+
+                    {/* Configuración de Overlay */}
+                    <div className="space-y-3 pt-2 border-t">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-xs font-medium text-gray-600">
+                            Overlay
+                          </span>
+                          <p className="text-xs text-gray-400">
+                            Usa color de fondo
+                          </p>
+                        </div>
+                        <SectionSwitch
+                          checked={
+                            displayConfig.backgroundImage.overlay.enabled
+                          }
+                          onChange={(checked) =>
+                            updateFooterDisplayConfig({
+                              backgroundImage: {
+                                ...displayConfig.backgroundImage,
+                                overlay: {
+                                  ...displayConfig.backgroundImage.overlay,
+                                  enabled: checked,
+                                },
+                              },
+                            })
+                          }
+                        />
                       </div>
-                    </div>
-                  ) : (
-                    <label
-                      htmlFor="footerBackgroundImage"
-                      className="border-dashed border-2 border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors bg-gray-50"
-                    >
-                      <div className="flex flex-col items-center">
-                        <svg
-                          className="w-12 h-12 text-gray-400 mb-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+
+                      {/* Opacidad */}
+                      {displayConfig.backgroundImage.overlay.enabled && (
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-medium text-gray-600">
+                              Opacidad
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {Math.round(
+                                displayConfig.backgroundImage.overlay.opacity *
+                                  100
+                              )}
+                              %
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.1"
+                            value={
+                              displayConfig.backgroundImage.overlay.opacity
+                            }
+                            onChange={(e) =>
+                              updateFooterDisplayConfig({
+                                backgroundImage: {
+                                  ...displayConfig.backgroundImage,
+                                  overlay: {
+                                    ...displayConfig.backgroundImage.overlay,
+                                    opacity: parseFloat(e.target.value),
+                                  },
+                                },
+                              })
+                            }
+                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                           />
-                        </svg>
-                        <p className="text-gray-600 font-medium">
-                          Subir Imagen de Fondo
-                        </p>
-                        <p className="text-sm text-gray-400">
-                          PNG, JPG o WebP (Recomendado: 1920x800px)
-                        </p>
-                      </div>
-                    </label>
-                  )}
-                </div>
-
-                {/* Configuración de overlay */}
-                <div className="space-y-4 border-t pt-4">
-                  <h4 className="text-md font-medium text-gray-700">
-                    Configuración de Overlay
-                  </h4>
-
-                  {/* Switch para overlay */}
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">
-                      Activar Overlay Oscuro
-                    </label>
-                    <SectionSwitch
-                      checked={displayConfig.backgroundImage.overlay.enabled}
-                      onChange={(checked) =>
-                        updateFooterDisplayConfig({
-                          backgroundImage: {
-                            ...displayConfig.backgroundImage,
-                            overlay: {
-                              ...displayConfig.backgroundImage.overlay,
-                              enabled: checked,
-                            },
-                          },
-                        })
-                      }
-                    />
-                  </div>
-
-                  {/* Configuración de overlay (solo si está activado) */}
-                  {displayConfig.backgroundImage.overlay.enabled && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Color del overlay */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Color del Overlay
-                        </label>
-                        <input
-                          type="color"
-                          value={displayConfig.backgroundImage.overlay.color}
-                          onChange={(e) =>
-                            updateFooterDisplayConfig({
-                              backgroundImage: {
-                                ...displayConfig.backgroundImage,
-                                overlay: {
-                                  ...displayConfig.backgroundImage.overlay,
-                                  color: e.target.value,
-                                },
-                              },
-                            })
-                          }
-                          className="w-full h-10 border rounded-md"
-                        />
-                      </div>
-
-                      {/* Opacidad del overlay */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Opacidad:{" "}
-                          {Math.round(
-                            displayConfig.backgroundImage.overlay.opacity * 100
-                          )}
-                          %
-                        </label>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.1"
-                          value={displayConfig.backgroundImage.overlay.opacity}
-                          onChange={(e) =>
-                            updateFooterDisplayConfig({
-                              backgroundImage: {
-                                ...displayConfig.backgroundImage,
-                                overlay: {
-                                  ...displayConfig.backgroundImage.overlay,
-                                  opacity: parseFloat(e.target.value),
-                                },
-                              },
-                            })
-                          }
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-                  💡 <strong>Consejo:</strong> Una imagen de fondo con overlay
-                  mejora la legibilidad del texto del footer. Recomendamos usar
-                  una opacidad del 70-80% para mantener un buen contraste.
-                </div>
-
-                {/* Botón de debug */}
-                <div className="border-t pt-4 space-y-3">
-                  <button
-                    onClick={() => {
-                      console.log(
-                        "🔄 Recargando imagen de fondo del footer..."
-                      );
-                      fetchFooterBanner();
-                    }}
-                    disabled={bannerLoading}
-                    className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 transition-colors text-sm"
-                  >
-                    {bannerLoading
-                      ? "Cargando..."
-                      : "🔍 Debug: Recargar Imagen"}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      console.log("🔧 Footer Debug - Config actual:", config);
-                      console.log(
-                        "🔧 Footer Debug - DisplayConfig actual:",
-                        displayConfig
-                      );
-                      console.log(
-                        "🔧 Footer Debug - LandingText:",
-                        config.landingText
-                      );
-                      try {
-                        const parsed = JSON.parse(config.landingText || "{}");
-                        console.log(
-                          "🔧 Footer Debug - LandingText parseado:",
-                          parsed
-                        );
-                        console.log(
-                          "🔧 Footer Debug - Overlay config:",
-                          parsed.backgroundImage?.overlay
-                        );
-                      } catch (e) {
-                        console.error("❌ Error al parsear landingText:", e);
-                      }
-                    }}
-                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-                  >
-                    🔧 Debug: Mostrar Configuración
-                  </button>
-
-                  <p className="text-xs text-gray-500">
-                    Usa estos botones para depurar la configuración del footer.
-                    Revisa la consola del navegador para ver los logs
-                    detallados.
-                  </p>
-                </div>
-              </>
-            )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
