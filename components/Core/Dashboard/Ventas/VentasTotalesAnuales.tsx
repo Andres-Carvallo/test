@@ -81,9 +81,9 @@ const VentasTotalesAnuales: React.FC = () => {
   }, [token, currencyCodeId]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full ">
+    <>
       {totalYearlySales !== null ? (
-        <>
+        <div className="transform hover:scale-105 transition-all duration-300">
           <CardDataStats
             title="Ventas Totales en el Año"
             total={totalYearlySales.toLocaleString("es-CL", {
@@ -106,11 +106,13 @@ const VentasTotalesAnuales: React.FC = () => {
               />
             </svg>
           </CardDataStats>
-        </>
+        </div>
       ) : (
-        <Loader />
+        <div className="transform hover:scale-105 transition-all duration-300">
+          <Loader />
+        </div>
       )}
-    </div>
+    </>
   );
 };
 
