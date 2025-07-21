@@ -76,6 +76,17 @@ const getSocialNetworkIcon = (networkName: string, color: string) => {
   }
 };
 
+// Función para obtener el estilo del logo basada en logoSize (píxeles)
+const getLogoStyle = (logoSize: number = 64) => {
+  // logoSize ahora es directamente el valor en píxeles de altura
+  // El ancho máximo será proporcional (altura * 2)
+  const maxWidth = Math.round(logoSize * 2);
+  return {
+    height: `${logoSize}px`,
+    maxWidth: `${maxWidth}px`,
+  };
+};
+
 export default function Footer() {
   const { config, displayConfig, bannerImage, loading, error, refreshConfig } =
     useFooterConfig();
@@ -253,17 +264,9 @@ export default function Footer() {
             logo={logo}
           />
         );
-      case "Footer04":
-        return (
-          <Footer04Template
-            config={fullConfig}
-            logo={logo}
-          />
-        );
-      case "Footer01":
       default:
         return (
-          <Footer01Template
+          <Footer02Template
             config={fullConfig}
             logo={logo}
           />
@@ -273,162 +276,6 @@ export default function Footer() {
 
   return <footer>{renderFooterContainer(renderFooter())}</footer>;
 }
-
-// Template Footer01 (Clásico)
-const Footer01Template = ({ config, logo }: { config: any; logo: any }) => (
-  <div className="p-6 max-w-6xl mx-auto">
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* Logo y Descripción */}
-      {(config.showLogo || config.showDescription) && (
-        <div className="lg:col-span-3 flex flex-col items-center lg:items-start">
-          {config.showLogo && (
-            <img
-              alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-              className="h-16 object-contain max-w-[140px]"
-              src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
-            />
-          )}
-          {config.showDescription && config.description && (
-            <p
-              className="mt-3 text-sm leading-relaxed"
-              style={{ color: config.textColor }}
-            >
-              {config.description}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Contenido */}
-      <div
-        className={`lg:col-span-${
-          config.showLogo || config.showDescription ? "9" : "12"
-        }`}
-      >
-        <div className="flex flex-col lg:flex-row lg:justify-start lg:space-x-16 space-y-8 lg:space-y-0">
-          {/* Enlaces del Menú Principal */}
-          {config.showMenuLinks && config.menuItems && (
-            <div className="flex-shrink-0">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: config.textColor }}
-              >
-                Navegación
-              </h3>
-              <ul className="space-y-2">
-                {config.menuItems.map((item: any, index: number) => (
-                  <li key={index}>
-                    <a
-                      href={item.path}
-                      className="text-sm hover:underline block"
-                      style={{ color: config.textColor }}
-                    >
-                      {item.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Enlaces Personalizados */}
-          {config.showLinks && config.customLinks && (
-            <div className="flex-shrink-0">
-              <h3
-                className="text-lg font-semibold mb-4"
-                style={{ color: config.textColor }}
-              >
-                Enlaces
-              </h3>
-              <ul className="space-y-2">
-                {config.customLinks
-                  .filter((link: any) => link.enabled)
-                  .map((link: any, index: number) => (
-                    <li key={index}>
-                      <a
-                        href={link.url}
-                        className="text-sm hover:underline block"
-                        style={{ color: config.textColor }}
-                      >
-                        {link.title}
-                      </a>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Colecciones */}
-          {config.showCollections &&
-            config.collections &&
-            config.collections.length > 0 && (
-              <div className="flex-shrink-0">
-                <h3
-                  className="text-lg font-semibold mb-4"
-                  style={{ color: config.textColor }}
-                >
-                  Colecciones
-                </h3>
-                <ul className="space-y-2">
-                  {config.collections
-                    .slice(0, 4)
-                    .map((collection: any, index: number) => (
-                      <li key={collection.id || index}>
-                        <a
-                          href={`/tienda/colecciones/${collection.slug}`}
-                          className="text-sm hover:underline block"
-                          style={{ color: config.textColor }}
-                        >
-                          {collection.title}
-                        </a>
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            )}
-        </div>
-      </div>
-    </div>
-
-    {/* Copyright y Redes Sociales */}
-    <div
-      className="mt-8 pt-6 border-t"
-      style={{ borderTopColor: config.accentColor }}
-    >
-      <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
-        <p
-          className="text-xs"
-          style={{ color: config.textColor }}
-        >
-          © {new Date().getFullYear()}{" "}
-          {process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Mi Tienda"} | Todos los
-          derechos reservados.
-        </p>
-
-        {/* Redes Sociales */}
-        {config.showSocial &&
-          config.socialNetworks &&
-          config.socialNetworks.some((network: any) => network.enabled) && (
-            <div className="flex gap-3">
-              {config.socialNetworks
-                .filter((network: any) => network.enabled)
-                .map((network: any, index: number) => (
-                  <a
-                    key={index}
-                    href={network.url}
-                    className="p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-colors"
-                    style={{ color: config.accentColor }}
-                    title={network.name}
-                  >
-                    {getSocialNetworkIcon(network.name, config.accentColor)}
-                  </a>
-                ))}
-            </div>
-          )}
-      </div>
-    </div>
-  </div>
-);
 
 // Template Footer02 (Moderno) - similar estructura pero diferente layout
 const Footer02Template = ({ config, logo }: { config: any; logo: any }) => (
@@ -441,7 +288,8 @@ const Footer02Template = ({ config, logo }: { config: any; logo: any }) => (
             {config.showLogo && (
               <img
                 alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-                className="h-16 object-contain mb-4"
+                className="object-contain mb-4"
+                style={getLogoStyle(config.logoSize)}
                 src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
               />
             )}
@@ -458,9 +306,11 @@ const Footer02Template = ({ config, logo }: { config: any; logo: any }) => (
 
         {/* Contenido principal */}
         <div
-          className={`lg:col-span-${
-            config.showLogo || config.showDescription ? "8" : "12"
-          }`}
+          className={
+            config.showLogo || config.showDescription
+              ? "lg:col-span-8"
+              : "lg:col-span-12"
+          }
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Enlaces del Menú Principal */}
@@ -598,7 +448,8 @@ const Footer03Template = ({ config, logo }: { config: any; logo: any }) => (
           {config.showLogo && (
             <img
               alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-              className="h-12 object-contain mx-auto mb-3"
+              className="object-contain mx-auto mb-3"
+              style={getLogoStyle(config.logoSize)}
               src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
             />
           )}
@@ -613,66 +464,102 @@ const Footer03Template = ({ config, logo }: { config: any; logo: any }) => (
         </div>
       )}
 
-      {/* Enlaces, menú y colecciones en línea */}
-      <div className="mb-6 space-y-4">
-        {/* Enlaces del Menú Principal */}
+      {/* Navegación organizada en secciones */}
+      <div
+        className={`mb-8 space-y-6 ${
+          !(config.showLogo || config.showDescription) ? "pt-4" : ""
+        }`}
+      >
+        {/* Enlaces del Menú Principal - Primera fila */}
         {config.showMenuLinks && config.menuItems && (
-          <div className="flex flex-wrap justify-center gap-6">
-            {config.menuItems.map((item: any, index: number) => (
-              <a
-                key={index}
-                href={item.path}
-                className="text-sm hover:underline"
-                style={{ color: config.textColor }}
-              >
-                {item.title}
-              </a>
-            ))}
-          </div>
-        )}
-
-        {/* Enlaces Personalizados */}
-        {config.showLinks && config.customLinks && (
-          <div className="flex flex-wrap justify-center gap-6">
-            {config.customLinks
-              .filter((link: any) => link.enabled)
-              .map((link: any, index: number) => (
+          <div className="text-center">
+            <h4
+              className="text-sm font-medium uppercase tracking-wider mb-3 opacity-75"
+              style={{ color: config.textColor }}
+            >
+              Navegación
+            </h4>
+            <div className="flex flex-wrap justify-center gap-6">
+              {config.menuItems.map((item: any, index: number) => (
                 <a
                   key={index}
-                  href={link.url}
-                  className="text-sm hover:underline"
+                  href={item.path}
+                  className="text-sm hover:underline transition-colors"
                   style={{ color: config.textColor }}
                 >
-                  {link.title}
+                  {item.title}
                 </a>
               ))}
+            </div>
           </div>
         )}
 
-        {/* Colecciones */}
-        {config.showCollections &&
-          config.collections &&
-          config.collections.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-6">
-              {config.collections
-                .slice(0, 4)
-                .map((collection: any, index: number) => (
-                  <a
-                    key={collection.id || index}
-                    href={`/tienda/colecciones/${collection.slug}`}
-                    className="text-sm hover:underline"
-                    style={{ color: config.textColor }}
-                  >
-                    {collection.title}
-                  </a>
-                ))}
-            </div>
-          )}
+        {/* Enlaces Personalizados y Colecciones - Segunda fila */}
+        <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-12">
+          {/* Enlaces Personalizados */}
+          {config.showLinks &&
+            config.customLinks &&
+            config.customLinks.filter((link: any) => link.enabled).length >
+              0 && (
+              <div className="text-center">
+                <h4
+                  className="text-sm font-medium uppercase tracking-wider mb-3 opacity-75"
+                  style={{ color: config.textColor }}
+                >
+                  Enlaces
+                </h4>
+                <div className="space-y-2">
+                  {config.customLinks
+                    .filter((link: any) => link.enabled)
+                    .map((link: any, index: number) => (
+                      <div key={index}>
+                        <a
+                          href={link.url}
+                          className="text-sm hover:underline transition-colors block"
+                          style={{ color: config.textColor }}
+                        >
+                          {link.title}
+                        </a>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+          {/* Colecciones */}
+          {config.showCollections &&
+            config.collections &&
+            config.collections.length > 0 && (
+              <div className="text-center">
+                <h4
+                  className="text-sm font-medium uppercase tracking-wider mb-3 opacity-75"
+                  style={{ color: config.textColor }}
+                >
+                  Colecciones
+                </h4>
+                <div className="space-y-2">
+                  {config.collections
+                    .slice(0, 4)
+                    .map((collection: any, index: number) => (
+                      <div key={collection.id || index}>
+                        <a
+                          href={`/tienda/colecciones/${collection.slug}`}
+                          className="text-sm hover:underline transition-colors block"
+                          style={{ color: config.textColor }}
+                        >
+                          {collection.title}
+                        </a>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+        </div>
       </div>
 
       {/* Copyright y Redes Sociales */}
       <div
-        className="pt-4 border-t"
+        className="pt-6 mt-6 border-t"
         style={{ borderTopColor: config.accentColor }}
       >
         <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
@@ -686,162 +573,6 @@ const Footer03Template = ({ config, logo }: { config: any; logo: any }) => (
           </p>
 
           {/* Redes Sociales */}
-          {config.showSocial &&
-            config.socialNetworks &&
-            config.socialNetworks.some((network: any) => network.enabled) && (
-              <div className="flex gap-3">
-                {config.socialNetworks
-                  .filter((network: any) => network.enabled)
-                  .map((network: any, index: number) => (
-                    <a
-                      key={index}
-                      href={network.url}
-                      className="p-2 rounded-full hover:bg-white hover:bg-opacity-10 transition-colors"
-                      style={{ color: config.accentColor }}
-                      title={network.name}
-                    >
-                      {getSocialNetworkIcon(network.name, config.accentColor)}
-                    </a>
-                  ))}
-              </div>
-            )}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// Template Footer04 (Descriptivo)
-const Footer04Template = ({ config, logo }: { config: any; logo: any }) => (
-  <div className="p-6">
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Logo */}
-        {config.showLogo && (
-          <div className="lg:col-span-2">
-            <img
-              alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-              className="h-16 object-contain"
-              src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
-            />
-          </div>
-        )}
-
-        {/* Enlaces del Menú Principal */}
-        {config.showMenuLinks && config.menuItems && (
-          <div className="lg:col-span-2">
-            <h3
-              className="text-sm font-bold tracking-wider uppercase mb-3"
-              style={{ color: config.textColor }}
-            >
-              Navegación
-            </h3>
-            <ul className="space-y-2">
-              {config.menuItems.map((item: any, index: number) => (
-                <li key={index}>
-                  <a
-                    href={item.path}
-                    className="text-sm hover:underline block"
-                    style={{ color: config.textColor }}
-                  >
-                    {item.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Enlaces Personalizados */}
-        {config.showLinks && config.customLinks && (
-          <div className="lg:col-span-2">
-            <h3
-              className="text-sm font-bold tracking-wider uppercase mb-3"
-              style={{ color: config.textColor }}
-            >
-              Enlaces
-            </h3>
-            <ul className="space-y-2">
-              {config.customLinks
-                .filter((link: any) => link.enabled)
-                .map((link: any, index: number) => (
-                  <li key={index}>
-                    <a
-                      href={link.url}
-                      className="text-sm hover:underline block"
-                      style={{ color: config.textColor }}
-                    >
-                      {link.title}
-                    </a>
-                  </li>
-                ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Colecciones */}
-        {config.showCollections &&
-          config.collections &&
-          config.collections.length > 0 && (
-            <div className="lg:col-span-2">
-              <h3
-                className="text-sm font-bold tracking-wider uppercase mb-3"
-                style={{ color: config.textColor }}
-              >
-                Colecciones
-              </h3>
-              <ul className="space-y-2">
-                {config.collections
-                  .slice(0, 4)
-                  .map((collection: any, index: number) => (
-                    <li key={collection.id || index}>
-                      <a
-                        href={`/tienda/colecciones/${collection.slug}`}
-                        className="text-sm hover:underline block"
-                        style={{ color: config.textColor }}
-                      >
-                        {collection.title}
-                      </a>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
-
-        {/* Descripción prominente */}
-        {config.showDescription && config.description && (
-          <div className="lg:col-span-4">
-            <h3
-              className="text-sm font-bold tracking-wider uppercase mb-3"
-              style={{ color: config.textColor }}
-            >
-              Sobre Nosotros
-            </h3>
-            <p
-              className="text-sm leading-relaxed"
-              style={{ color: config.textColor }}
-            >
-              {config.description}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Redes sociales y copyright */}
-      <div
-        className="mt-6 pt-6 border-t"
-        style={{ borderTopColor: config.accentColor }}
-      >
-        <div className="flex flex-col sm:flex-row sm:justify-between items-center">
-          <p
-            className="text-xs mb-3 sm:mb-0"
-            style={{ color: config.textColor }}
-          >
-            © {new Date().getFullYear()}{" "}
-            {process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Mi Tienda"} | Todos los
-            derechos reservados.
-          </p>
-
           {config.showSocial &&
             config.socialNetworks &&
             config.socialNetworks.some((network: any) => network.enabled) && (

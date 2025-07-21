@@ -33,6 +33,7 @@ interface FooterConfig {
   backgroundColor: string;
   textColor: string;
   accentColor: string;
+  logoSize: number; // Tamaño del logo (1-5)
 
   // Landing text para configuraciones avanzadas (JSON)
   landingText: string;
@@ -65,7 +66,7 @@ const defaultConfig: FooterConfig = {
     process.env.NEXT_PUBLIC_NOMBRE_TIENDA || "Mi Tienda"
   } | Todos los derechos reservados.`,
 
-  selectedTemplate: "Footer01",
+  selectedTemplate: "Footer02",
 
   showLogo: true,
   showMenuLinks: true,
@@ -77,6 +78,7 @@ const defaultConfig: FooterConfig = {
   backgroundColor: "#1f2937",
   textColor: "#ffffff",
   accentColor: "#f59e0b",
+  logoSize: 64, // Tamaño por defecto en píxeles
 
   landingText: JSON.stringify({
     backgroundImage: {
@@ -186,6 +188,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [displayConfigLoaded, setDisplayConfigLoaded] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<string>(
     config.selectedTemplate
@@ -305,12 +308,6 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   // Templates disponibles
   const templates = [
     {
-      id: "Footer01",
-      name: "Clásico",
-      description: "Diseño tradicional con logo, enlaces y redes sociales",
-      image: "/components/PIXELUP/Footer/Footer01/Footer01.png",
-    },
-    {
       id: "Footer02",
       name: "Moderno",
       description: "Diseño moderno con layout más espacioso",
@@ -322,18 +319,13 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       description: "Diseño limpio y minimalista",
       image: "/components/PIXELUP/Footer/Footer03/Footer03.png",
     },
-    {
-      id: "Footer04",
-      name: "Descriptivo",
-      description: "Diseño con descripción prominente",
-      image: "/components/PIXELUP/Footer/Footer04/Footer01.png",
-    },
   ];
 
   // Las redes sociales ahora se obtienen del contexto automáticamente
 
   // Cargar configuración del footer
   const fetchFooterConfig = async () => {
+    console.log("🚀 Iniciando fetchFooterConfig...");
     try {
       setLoading(true);
       const contentBlockId =
@@ -344,30 +336,74 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
 
+      console.log(
+        "📥 Respuesta del content block:",
+        response.data.contentBlock
+      );
+
       if (response.data.contentBlock?.contentText) {
         try {
           const savedConfig = JSON.parse(
             response.data.contentBlock.contentText
           );
           const mergedConfig = { ...defaultConfig, ...savedConfig };
+
+          // Si el template es Footer01 o Footer04 (eliminados), cambiar a Footer02
+          if (
+            mergedConfig.selectedTemplate === "Footer01" ||
+            mergedConfig.selectedTemplate === "Footer04"
+          ) {
+            mergedConfig.selectedTemplate = "Footer02";
+          }
+
           setConfig(mergedConfig);
 
           // Parsear displayConfig desde landingText
           const parsedDisplayConfig = parseFooterDisplayConfig(
             mergedConfig.landingText
           );
+          console.log("📥 DisplayConfig cargado:", parsedDisplayConfig);
+          console.log("📥 LandingText original:", mergedConfig.landingText);
+          console.log(
+            "📥 Imagen enabled:",
+            parsedDisplayConfig.backgroundImage.enabled
+          );
           setDisplayConfig(parsedDisplayConfig);
+          setDisplayConfigLoaded(true);
         } catch (error) {
           console.error("Error al parsear configuración del footer:", error);
+          const fallbackDisplayConfig = parseFooterDisplayConfig(
+            defaultConfig.landingText
+          );
+          console.log("📥 DisplayConfig fallback:", fallbackDisplayConfig);
           setConfig(defaultConfig);
-          setDisplayConfig(parseFooterDisplayConfig(defaultConfig.landingText));
+          setDisplayConfig(fallbackDisplayConfig);
+          setDisplayConfigLoaded(true);
         }
+      } else {
+        console.log(
+          "📥 No hay configuración guardada, usando valores por defecto"
+        );
+        const defaultDisplayConfig = parseFooterDisplayConfig(
+          defaultConfig.landingText
+        );
+        console.log("📥 Default DisplayConfig:", defaultDisplayConfig);
+        setConfig(defaultConfig);
+        setDisplayConfig(defaultDisplayConfig);
+        setDisplayConfigLoaded(true);
       }
     } catch (error) {
       console.error("Error al cargar configuración del footer:", error);
+      const errorDisplayConfig = parseFooterDisplayConfig(
+        defaultConfig.landingText
+      );
+      console.log("📥 Error DisplayConfig:", errorDisplayConfig);
       setConfig(defaultConfig);
+      setDisplayConfig(errorDisplayConfig);
+      setDisplayConfigLoaded(true);
     } finally {
       setLoading(false);
+      console.log("✅ fetchFooterConfig terminado");
     }
   };
 
@@ -450,6 +486,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
   // Cargar imagen de fondo del footer desde banner
   const fetchFooterBanner = async (silent = false) => {
+    console.log("🚀 Iniciando fetchFooterBanner...");
     try {
       setBannerLoading(true);
       const token = getCookie("AdminTokenAuth");
@@ -507,14 +544,21 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
         setBannerData(bannerImages);
 
-        // Actualizar configuración con la URL de la imagen
+        // Actualizar solo la URL de la imagen, manteniendo el estado enabled existente
         const imageUrl = bannerImages[0].mainImage?.url || "";
-        updateFooterDisplayConfig({
+        console.log("🔄 fetchFooterBanner - Actualizando solo URL:", imageUrl);
+        console.log(
+          "🔄 fetchFooterBanner - displayConfig actual:",
+          displayConfig
+        );
+
+        setDisplayConfig((prevDisplayConfig) => ({
+          ...prevDisplayConfig,
           backgroundImage: {
-            ...displayConfig.backgroundImage,
+            ...prevDisplayConfig.backgroundImage,
             url: imageUrl,
           },
-        });
+        }));
 
         if (imageUrl) {
           console.log("🖼️ Imagen de fondo del footer cargada:", imageUrl);
@@ -556,6 +600,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       }
     } finally {
       setBannerLoading(false);
+      console.log("✅ fetchFooterBanner terminado");
     }
   };
 
@@ -748,12 +793,20 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         process.env.NEXT_PUBLIC_FOOTER_CONFIG_CONTENTBLOCK ||
         "footer-config-default";
 
+      // Asegurar que config.landingText esté sincronizado con displayConfig
+      const configToSave = {
+        ...config,
+        landingText: JSON.stringify(displayConfig),
+      };
+
       console.log("💾 Guardando configuración del footer...");
+      console.log("💾 DisplayConfig a guardar:", displayConfig);
+
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: "Configuración del Footer",
-          contentText: JSON.stringify(config),
+          contentText: JSON.stringify(configToSave),
         },
         {
           headers: {
@@ -803,14 +856,45 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     }));
   };
 
+  // Agregar nuevo enlace personalizado
+  const addCustomLink = () => {
+    setConfig((prev) => ({
+      ...prev,
+      customLinks: [
+        ...prev.customLinks,
+        {
+          title: "",
+          url: "",
+          enabled: true, // Mantener para compatibilidad con el backend
+        },
+      ],
+    }));
+  };
+
+  // Eliminar enlace personalizado
+  const removeCustomLink = (index: number) => {
+    setConfig((prev) => ({
+      ...prev,
+      customLinks: prev.customLinks.filter((_, i) => i !== index),
+    }));
+  };
+
   // Obtener el template seleccionado
   const selectedTemplate =
     templates.find((t) => t.id === config.selectedTemplate) || templates[0];
 
   useEffect(() => {
-    fetchFooterConfig();
-    fetchCollections();
-    fetchFooterBanner(false); // mostrar toast normalmente en carga inicial
+    const initializeFooter = async () => {
+      // Cargar configuración primero
+      await fetchFooterConfig();
+      // Luego cargar colecciones e imagen en paralelo
+      await Promise.all([
+        fetchCollections(),
+        fetchFooterBanner(false), // mostrar toast normalmente en carga inicial
+      ]);
+    };
+
+    initializeFooter();
     // Las redes sociales se cargan automáticamente desde el contexto
   }, []);
 
@@ -880,7 +964,6 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
       {/* Secciones Visibles - PRIMERA SECCIÓN */}
       <div className="border rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-6">Secciones Visibles</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Logo */}
           <div className="flex items-center justify-between p-3 border rounded-lg bg-white">
@@ -1121,7 +1204,43 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                   )}
                 </div>
               </div>
-
+              {/* Tamaño del Logo - Solo visible si showLogo está activo */}
+              {config.showLogo && (
+                <div className="border rounded-lg p-3 bg-gray-50">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Tamaño del Logo
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-500">Pequeño</span>
+                      <span className="text-xs font-medium text-gray-700">
+                        {config.logoSize}px
+                      </span>
+                      <span className="text-xs text-gray-500">Grande</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="32"
+                      max="120"
+                      step="4"
+                      value={config.logoSize}
+                      onChange={(e) =>
+                        handleConfigChange("logoSize", parseInt(e.target.value))
+                      }
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>32px</span>
+                      <span>64px</span>
+                      <span>96px</span>
+                      <span>120px</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Ajusta el tamaño del logo en píxeles (altura)
+                  </p>
+                </div>
+              )}
               {/* Colores */}
               <div className="border rounded-lg p-3 bg-gray-50">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1194,182 +1313,190 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                       Imagen de Fondo
                     </span>
                   </div>
-                  <SectionSwitch
-                    checked={displayConfig.backgroundImage.enabled}
-                    onChange={(checked) =>
-                      updateFooterDisplayConfig({
-                        backgroundImage: {
-                          ...displayConfig.backgroundImage,
-                          enabled: checked,
-                        },
-                      })
-                    }
-                  />
+                  {displayConfigLoaded ? (
+                    <SectionSwitch
+                      checked={displayConfig.backgroundImage.enabled}
+                      onChange={(checked) => {
+                        console.log("🔄 Switch cambió a:", checked);
+                        updateFooterDisplayConfig({
+                          backgroundImage: {
+                            ...displayConfig.backgroundImage,
+                            enabled: checked,
+                          },
+                        });
+                      }}
+                    />
+                  ) : (
+                    <div className="w-11 h-6 bg-gray-200 rounded-full animate-pulse"></div>
+                  )}
                 </div>
 
-                {displayConfig.backgroundImage.enabled && (
-                  <div className="space-y-3">
-                    {/* Advertencia compacta */}
-                    {(!process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ||
-                      process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ===
-                        "PENDIENTE_CONFIGURAR") && (
-                      <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
-                        ⚠️ Configura NEXT_PUBLIC_FOOTER_BANNER_ID en .env.local
-                      </div>
-                    )}
+                {displayConfigLoaded &&
+                  displayConfig.backgroundImage.enabled && (
+                    <div className="space-y-3">
+                      {/* Advertencia compacta */}
+                      {(!process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ||
+                        process.env.NEXT_PUBLIC_FOOTER_BANNER_ID ===
+                          "PENDIENTE_CONFIGURAR") && (
+                        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+                          ⚠️ Configura NEXT_PUBLIC_FOOTER_BANNER_ID en
+                          .env.local
+                        </div>
+                      )}
 
-                    <input
-                      type="file"
-                      accept="image/*"
-                      id="footerBackgroundImage"
-                      className="hidden"
-                      onChange={handleImageChange}
-                    />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        id="footerBackgroundImage"
+                        className="hidden"
+                        onChange={handleImageChange}
+                      />
 
-                    {/* Upload/Preview */}
-                    {bannerData?.[0]?.mainImage?.url || backgroundImage ? (
-                      <div className="space-y-2">
-                        <div className="relative w-full h-24 rounded overflow-hidden border">
-                          <img
-                            src={
-                              backgroundImage || bannerData[0]?.mainImage?.url
-                            }
-                            alt="Footer Background"
-                            className="w-full h-full object-cover"
-                          />
-                          {/* Overlay preview con color y opacidad reales */}
-                          {displayConfig.backgroundImage.overlay.enabled && (
-                            <div
-                              className="absolute inset-0"
-                              style={{
-                                backgroundColor: config.backgroundColor,
-                                opacity:
-                                  displayConfig.backgroundImage.overlay.opacity,
-                              }}
+                      {/* Upload/Preview */}
+                      {bannerData?.[0]?.mainImage?.url || backgroundImage ? (
+                        <div className="space-y-2">
+                          <div className="relative w-full h-24 rounded overflow-hidden border">
+                            <img
+                              src={
+                                backgroundImage || bannerData[0]?.mainImage?.url
+                              }
+                              alt="Footer Background"
+                              className="w-full h-full object-cover"
                             />
-                          )}
-                          {/* Indicador de vista previa */}
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className=" px-2 py-1 rounded text-white text-xs">
-                              Vista previa
+                            {/* Overlay preview con color y opacidad reales */}
+                            {displayConfig.backgroundImage.overlay.enabled && (
+                              <div
+                                className="absolute inset-0"
+                                style={{
+                                  backgroundColor: config.backgroundColor,
+                                  opacity:
+                                    displayConfig.backgroundImage.overlay
+                                      .opacity,
+                                }}
+                              />
+                            )}
+                            {/* Indicador de vista previa */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className=" px-2 py-1 rounded text-white text-xs">
+                                Vista previa
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex gap-1">
-                          <label
-                            htmlFor="footerBackgroundImage"
-                            className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 cursor-pointer"
-                          >
-                            Cambiar
-                          </label>
-
-                          {backgroundImage && (
-                            <button
-                              onClick={() => saveFooterBannerImage(false)}
-                              className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                          <div className="flex gap-1">
+                            <label
+                              htmlFor="footerBackgroundImage"
+                              className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 cursor-pointer"
                             >
-                              Guardar
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <label
-                        htmlFor="footerBackgroundImage"
-                        className="border-dashed border-2 border-gray-300 rounded p-4 text-center cursor-pointer hover:border-gray-400 transition-colors block"
-                      >
-                        <div className="flex flex-col items-center">
-                          <svg
-                            className="w-6 h-6 text-gray-400 mb-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                            />
-                          </svg>
-                          <p className="text-gray-600 text-xs font-medium">
-                            Subir Imagen
-                          </p>
-                          <p className="text-xs text-gray-400">1920x800px</p>
-                        </div>
-                      </label>
-                    )}
+                              Cambiar
+                            </label>
 
-                    {/* Configuración de Overlay */}
-                    <div className="space-y-3 pt-2 border-t">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-xs font-medium text-gray-600">
-                            Overlay
-                          </span>
-                          <p className="text-xs text-gray-400">
-                            Usa color de fondo
-                          </p>
-                        </div>
-                        <SectionSwitch
-                          checked={
-                            displayConfig.backgroundImage.overlay.enabled
-                          }
-                          onChange={(checked) =>
-                            updateFooterDisplayConfig({
-                              backgroundImage: {
-                                ...displayConfig.backgroundImage,
-                                overlay: {
-                                  ...displayConfig.backgroundImage.overlay,
-                                  enabled: checked,
-                                },
-                              },
-                            })
-                          }
-                        />
-                      </div>
-
-                      {/* Opacidad */}
-                      {displayConfig.backgroundImage.overlay.enabled && (
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs font-medium text-gray-600">
-                              Opacidad
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {Math.round(
-                                displayConfig.backgroundImage.overlay.opacity *
-                                  100
-                              )}
-                              %
-                            </span>
+                            {backgroundImage && (
+                              <button
+                                onClick={() => saveFooterBannerImage(false)}
+                                className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                              >
+                                Guardar
+                              </button>
+                            )}
                           </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.1"
-                            value={
-                              displayConfig.backgroundImage.overlay.opacity
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="footerBackgroundImage"
+                          className="border-dashed border-2 border-gray-300 rounded p-4 text-center cursor-pointer hover:border-gray-400 transition-colors block"
+                        >
+                          <div className="flex flex-col items-center">
+                            <svg
+                              className="w-6 h-6 text-gray-400 mb-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                            <p className="text-gray-600 text-xs font-medium">
+                              Subir Imagen
+                            </p>
+                            <p className="text-xs text-gray-400">1920x800px</p>
+                          </div>
+                        </label>
+                      )}
+
+                      {/* Configuración de Overlay */}
+                      <div className="space-y-3 pt-2 border-t">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-medium text-gray-600">
+                              Overlay
+                            </span>
+                            <p className="text-xs text-gray-400">
+                              Usa color de fondo
+                            </p>
+                          </div>
+                          <SectionSwitch
+                            checked={
+                              displayConfig.backgroundImage.overlay.enabled
                             }
-                            onChange={(e) =>
+                            onChange={(checked) =>
                               updateFooterDisplayConfig({
                                 backgroundImage: {
                                   ...displayConfig.backgroundImage,
                                   overlay: {
                                     ...displayConfig.backgroundImage.overlay,
-                                    opacity: parseFloat(e.target.value),
+                                    enabled: checked,
                                   },
                                 },
                               })
                             }
-                            className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                           />
                         </div>
-                      )}
+
+                        {/* Opacidad */}
+                        {displayConfig.backgroundImage.overlay.enabled && (
+                          <div>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs font-medium text-gray-600">
+                                Opacidad
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {Math.round(
+                                  displayConfig.backgroundImage.overlay
+                                    .opacity * 100
+                                )}
+                                %
+                              </span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.1"
+                              value={
+                                displayConfig.backgroundImage.overlay.opacity
+                              }
+                              onChange={(e) =>
+                                updateFooterDisplayConfig({
+                                  backgroundImage: {
+                                    ...displayConfig.backgroundImage,
+                                    overlay: {
+                                      ...displayConfig.backgroundImage.overlay,
+                                      opacity: parseFloat(e.target.value),
+                                    },
+                                  },
+                                })
+                              }
+                              className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             </div>
           </div>
@@ -1385,11 +1512,8 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         />
 
         {showGeneralSection && (
-          <div className="max-w-md">
+          <div className="w-full">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Descripción
-              </label>
               <textarea
                 value={config.description}
                 onChange={(e) =>
@@ -1445,48 +1569,152 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
           {showCustomLinksSection && (
             <div className="space-y-4">
-              {config.customLinks.map((link, index) => (
-                <div
-                  key={index}
-                  className="border rounded p-3"
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={link.enabled}
-                        onChange={(e) =>
-                          handleCustomLinkChange(
-                            index,
-                            "enabled",
-                            e.target.checked
-                          )
-                        }
-                        className="rounded"
-                      />
-                      <span className="text-sm font-medium">Habilitado</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Título del enlace"
-                      value={link.title}
-                      onChange={(e) =>
-                        handleCustomLinkChange(index, "title", e.target.value)
-                      }
-                      className="px-3 py-2 border rounded-md text-sm"
+              {/* Encabezado con contador y botón agregar */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                <div className="flex items-center space-x-2">
+                  <svg
+                    className="w-4 h-4 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
                     />
-                    <input
-                      type="url"
-                      placeholder="URL del enlace"
-                      value={link.url}
-                      onChange={(e) =>
-                        handleCustomLinkChange(index, "url", e.target.value)
-                      }
-                      className="px-3 py-2 border rounded-md text-sm"
-                    />
-                  </div>
+                  </svg>
+                  <span className="text-sm font-medium text-gray-700">
+                    Enlaces ({config.customLinks.length})
+                  </span>
                 </div>
-              ))}
+                <button
+                  onClick={addCustomLink}
+                  className="flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                  <span>Agregar Enlace</span>
+                </button>
+              </div>
+
+              {/* Lista de enlaces */}
+              {config.customLinks.length === 0 ? (
+                <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                  <svg
+                    className="w-8 h-8 text-gray-400 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                    />
+                  </svg>
+                  <p className="text-gray-500 text-sm">
+                    No hay enlaces personalizados
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    Haz clic en el botón de arriba para crear uno
+                  </p>
+                </div>
+              ) : (
+                config.customLinks.map((link, index) => (
+                  <div
+                    key={index}
+                    className="border rounded-lg p-4 bg-white relative"
+                  >
+                    {/* Botón eliminar */}
+                    <button
+                      onClick={() => removeCustomLink(index)}
+                      className="absolute top-2 right-2 w-6 h-6 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors flex items-center justify-center"
+                      title="Eliminar enlace"
+                    >
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+
+                    {/* Número del enlace */}
+                    <div className="flex items-center space-x-2 mb-3">
+                      <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
+                        {index + 1}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">
+                        Enlace {index + 1}
+                      </span>
+                    </div>
+
+                    {/* Campos del enlace */}
+                    <div className="space-y-3">
+                      {/* Título y URL */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Título del enlace
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Ej: Política de Privacidad"
+                            value={link.title}
+                            onChange={(e) =>
+                              handleCustomLinkChange(
+                                index,
+                                "title",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 border rounded-md text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            URL del enlace
+                          </label>
+                          <input
+                            type="url"
+                            placeholder="https://ejemplo.com/politica"
+                            value={link.url}
+                            onChange={(e) =>
+                              handleCustomLinkChange(
+                                index,
+                                "url",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-3 py-2 border rounded-md text-sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
         </div>
@@ -1538,7 +1766,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
               </div>
             </div>
 
-            <div className="flex flex-col h-[520px]">
+            <div className="flex flex-col h-[470px]">
               {/* Vista Previa - Arriba */}
               <div className="h-80 p-2 border-b">
                 {/* Preview Container */}
@@ -1556,8 +1784,8 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
               </div>
 
               {/* Lista de Plantillas - Abajo */}
-              <div className="flex-1 p-4 flex flex-col justify-center">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="flex-1 p-4 flex flex-col ">
+                <div className="grid grid-cols-2  gap-3">
                   {templates.map((template) => (
                     <div
                       key={template.id}

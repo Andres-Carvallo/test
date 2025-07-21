@@ -16,6 +16,7 @@ interface FooterConfig {
   backgroundColor: string;
   textColor: string;
   accentColor: string;
+  logoSize: number; // Tamaño del logo (1-5)
   newsletterTitle: string;
   newsletterDescription: string;
   newsletterPlaceholder: string;
@@ -48,7 +49,7 @@ const defaultConfig: FooterConfig = {
   copyrightText: `© ${new Date().getFullYear()} ${
     process.env.NEXT_PUBLIC_NOMBRE_TIENDA
   } | Todos los derechos reservados.`,
-  selectedTemplate: "Footer01",
+  selectedTemplate: "Footer02",
   showLogo: true,
   showMenuLinks: true,
   showLinks: true,
@@ -58,6 +59,7 @@ const defaultConfig: FooterConfig = {
   backgroundColor: "#1f2937",
   textColor: "#ffffff",
   accentColor: "#f59e0b",
+  logoSize: 64, // Tamaño por defecto en píxeles
   newsletterTitle: "Suscríbete a nuestro newsletter",
   newsletterDescription: "Recibe las últimas novedades y ofertas",
   newsletterPlaceholder: "Tu email",
@@ -236,6 +238,14 @@ export function useFooterConfig() {
             footerResponse.data.contentBlock.contentText
           );
           footerConfig = { ...defaultConfig, ...savedConfig };
+
+          // Si el template es Footer01 o Footer04 (eliminados), cambiar a Footer02
+          if (
+            footerConfig.selectedTemplate === "Footer01" ||
+            footerConfig.selectedTemplate === "Footer04"
+          ) {
+            footerConfig.selectedTemplate = "Footer02";
+          }
         } catch (error) {
           console.error("Error al parsear configuración del footer:", error);
         }
