@@ -205,6 +205,8 @@ const CreditChecker = () => {
             <span className="font-bold">¡Importante!</span> Los PixelCoins se actualizan 1 vez al día.
           </div>
         </div>
+
+
                     {summary.creditsBalance === 0 ? (
                       <div className="flex flex-col md:flex-row gap-8">
                         <div className="flex-1 p-6 rounded-xl bg-gray-50 hover:scale-105 transition-all duration-300 border border-gray-200 shadow-sm">
@@ -224,7 +226,9 @@ const CreditChecker = () => {
                               <p className="text-gray-800 mt-1">
                                 {new Date(summary.lastUpdated).toLocaleString()}
                               </p>
+                
                             </div>
+                            
                           </div>
                         </div>
 
@@ -278,6 +282,7 @@ const CreditChecker = () => {
                                 {new Date(summary.lastUpdated).toLocaleString()}
                               </p>
                             </div>
+                            
                           </div>
                         </div>
 
@@ -310,8 +315,13 @@ const CreditChecker = () => {
                             </div>
                           </div>
                         </div>
+                        
                       </div>
+                      
                     )}
+                            <h1 className="text-sm text-center mt-6">
+              *Si tienes más de un Sitio Web, aquí se mostrará el total de PixelCoins acomulados en todos tus sitios. 
+            </h1>
                   </div>
                 ))}
               </div>

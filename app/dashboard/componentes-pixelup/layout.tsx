@@ -13,9 +13,9 @@ export default function RootLayout({
   return (
     <RevalidationProvider>
       <div>
-        <DynamicNavbar />
+
         {children}
-        <DynamicFooter />
+ 
       </div>
     </RevalidationProvider>
   );

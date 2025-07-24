@@ -9,6 +9,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { obtenerUsuarioPorID } from "@/app/utils/obtenerUsuarioID";
 import { jwtDecode } from "jwt-decode";
 import NextTopLoader from "nextjs-toploader";
+import { SocialNetworksProvider } from "@/context/SocialNetworksContext";
 export default function RootLayout({
   children,
 }: {
@@ -29,7 +30,9 @@ export default function RootLayout({
     const token = getCookie("AdminTokenAuth")?.toString();
 
     if (!token) {
-      const currentPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
+      const currentPath =
+        pathname +
+        (searchParams.toString() ? `?${searchParams.toString()}` : "");
       setCookie("redirectAfterLogin", currentPath);
       router.push("/admin/login");
     } else {
@@ -70,22 +73,23 @@ export default function RootLayout({
   }
 
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark bg-[#e9f0ee]">
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
-            <NextTopLoader showSpinner={false}/>
-{/*           <Header
+    <SocialNetworksProvider>
+      <div className="dark:bg-boxdark-2 dark:text-bodydark bg-[#e9f0ee]">
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
-          /> */}
+          />
+          <NextTopLoader showSpinner={false} />
+          {/*           <Header
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+            /> */}
           <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          <main className="mx-auto w-full">{children}</main>
+            <main className="mx-auto w-full">{children}</main>
           </div>
-
+        </div>
       </div>
-    </div>
+    </SocialNetworksProvider>
   );
 }

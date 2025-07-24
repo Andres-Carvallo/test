@@ -21,6 +21,8 @@ function CuponForm() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [editingCuponId, setEditingCuponId] = useState<string | null>(null);
+  const [hasProPlan, setHasProPlan] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [couponToDelete, setCouponToDelete] = useState<any>(null);
@@ -112,7 +114,36 @@ function CuponForm() {
 
   useEffect(() => {
     fetchCupones();
+    checkSubscriptionPlan();
   }, []);
+
+  const checkSubscriptionPlan = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar una suscripción activa que contenga la palabra "pro"
+      const activeSubscription = response.data.subscriptions.find(
+        (sub: any) =>
+          (sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED") &&
+          sub.name.toLowerCase().includes("pro")
+      );
+
+      setHasProPlan(!!activeSubscription);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setHasProPlan(false);
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   const fetchCupones = async () => {
     try {
@@ -354,8 +385,28 @@ function CuponForm() {
       <title>Cupones</title>
       <section className=" mx-4 py-10">
         <Breadcrumb pageName="Cupones" />
+        
+        {/* Mensaje de restricción para usuarios sin plan PRO */}
+        {!subscriptionLoading && !hasProPlan && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+              <div className=" text-sm text-red-700">
+                <p>La función Cupones de Descuento es exclusiva del Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline"> Suscripción.</a> </p>
+              </div>
+            </div>
+            </div>
+          </div>
+        )}
         <div
-          className=" p-4 bg-white my-6 overflow-x-auto shadow-md"
+          className={`p-4 bg-white my-6 overflow-x-auto shadow-md ${
+            !hasProPlan ? 'opacity-50 pointer-events-none' : ''
+          }`}
           style={{ borderRadius: "var(--radius)" }}
         >
           <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
@@ -428,7 +479,12 @@ function CuponForm() {
                   <td className="px-6 py-4 md:whitespace-nowrap space-x-2">
                     <button
                       onClick={() => handleEdit(cupon)}
-                      className="bg-primary hover:bg-dark text-secondary hover:bg-secondary hover:text-primary font-bold py-2 px-4 rounded"
+                      disabled={!hasProPlan}
+                      className={`font-bold py-2 px-4 rounded ${
+                        hasProPlan 
+                          ? 'bg-primary hover:bg-dark text-secondary hover:bg-secondary hover:text-primary' 
+                          : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      }`}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -447,7 +503,12 @@ function CuponForm() {
                     </button>
                     <button
                       onClick={() => showDeleteModal(cupon)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                      disabled={!hasProPlan}
+                      className={`font-bold py-2 px-4 rounded ${
+                        hasProPlan 
+                          ? 'bg-red-500 hover:bg-red-700 text-white' 
+                          : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      }`}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -472,7 +533,9 @@ function CuponForm() {
         </div>
         <div
           ref={productsRef}
-          className="p-4 bg-white"
+          className={`p-4 bg-white ${
+            !hasProPlan ? 'opacity-50 pointer-events-none' : ''
+          }`}
         >
           <form
             onSubmit={(e) => handleSubmit(e)}
@@ -619,7 +682,12 @@ function CuponForm() {
             <div className="flex justify-between gap-4">
               <button
                 onClick={handleSubmit}
-                className="w-full shadow bg-primary uppercase text-secondary hover:bg-secondary hover:text-primary font-bold py-2 px-4 rounded flex-wrap"
+                disabled={!hasProPlan}
+                className={`w-full shadow font-bold py-2 px-4 rounded flex-wrap ${
+                  hasProPlan 
+                    ? 'bg-primary uppercase text-secondary hover:bg-secondary hover:text-primary' 
+                    : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                }`}
               >
                 {editingCuponId ? "Actualizar Cupón" : "Crear Cupón"}
               </button>
@@ -629,7 +697,12 @@ function CuponForm() {
                   onClick={() => {
                     resetForm();
                   }}
-                  className="w-full shadow bg-secondary uppercase text-primary hover:bg-primary hover:text-secondary font-bold py-2 px-4 rounded flex-wrap"
+                  disabled={!hasProPlan}
+                  className={`w-full shadow font-bold py-2 px-4 rounded flex-wrap ${
+                    hasProPlan 
+                      ? 'bg-secondary uppercase text-primary hover:bg-primary hover:text-secondary' 
+                      : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  }`}
                 >
                   Cancelar
                 </button>

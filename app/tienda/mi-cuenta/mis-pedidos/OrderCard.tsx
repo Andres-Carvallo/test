@@ -7,6 +7,7 @@ import { getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 import Loader from "@/components/common/Loader-t";
+import { useReviewSettings } from "@/hooks/useReviewSettings";
 
 interface Order {
   id: number;
@@ -44,6 +45,7 @@ export default function OrderData() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const { isReviewEnabled } = useReviewSettings();
 
   const token = getCookie("ClientTokenAuth");
   const decodeToken = token ? jwtDecode(token) : null;
@@ -86,40 +88,42 @@ export default function OrderData() {
           setError("Failed to fetch orders. Please try again.");
         }
 
-        // Fetch pending reviews
-        const responsePendingReviews = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/products?pageNumber=1&pageSize=50&siteId=${siteId}&hasValorations=false`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (responsePendingReviews.data.code === 0) {
-          setPendingReviewsCount(
-            responsePendingReviews.data.purchasedProducts.length
+        // Fetch pending reviews only if reviews are enabled
+        if (isReviewEnabled) {
+          const responsePendingReviews = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/products?pageNumber=1&pageSize=50&siteId=${siteId}&hasValorations=false`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
           );
-        } else {
-          setError("Failed to fetch pending reviews. Please try again.");
-        }
 
-        // Fetch total reviews
-        const responseTotalReviews = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/products?pageNumber=1&pageSize=50&siteId=${siteId}&hasValorations=true`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+          if (responsePendingReviews.data.code === 0) {
+            setPendingReviewsCount(
+              responsePendingReviews.data.purchasedProducts.length
+            );
+          } else {
+            setError("Failed to fetch pending reviews. Please try again.");
           }
-        );
 
-        if (responseTotalReviews.data.code === 0) {
-          setTotalReviewsCount(
-            responseTotalReviews.data.purchasedProducts.length
+          // Fetch total reviews
+          const responseTotalReviews = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/customers/${id}/products?pageNumber=1&pageSize=50&siteId=${siteId}&hasValorations=true`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
           );
-        } else {
-          setError("Failed to fetch total reviews. Please try again.");
+
+          if (responseTotalReviews.data.code === 0) {
+            setTotalReviewsCount(
+              responseTotalReviews.data.purchasedProducts.length
+            );
+          } else {
+            setError("Failed to fetch total reviews. Please try again.");
+          }
         }
       } catch (err) {
         setError("An error occurred. Please try again.");
@@ -137,78 +141,82 @@ export default function OrderData() {
   return (
     <div>
       <div className="max-w-6xl mx-auto">
-        {/* Nuevo bloque para mostrar la sección de opiniones */}
-        <div
-          className="mx-4 lg:mx-0 border overflow-hidden shadow-md mb-4"
-          style={{ borderRadius: "var(--radius)" }}
-        >
-          <div className="bg-white p-4 flex justify-between items-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 w-full">
-              <div className="flex items-center gap-4 w-full">
-                <svg
-                  className="w-6 h-6 text-yellow-500 ml-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
-                </svg>
-                <p className="text-m text-gray-700">
-                  {pendingReviewsCount <= 1 ? (
+        {/* Nuevo bloque para mostrar la sección de opiniones - solo si reviews están habilitados */}
+        {isReviewEnabled && (
+          <>
+            <div
+              className="mx-4 lg:mx-0 border overflow-hidden shadow-md mb-4"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <div className="bg-white p-4 flex justify-between items-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 w-full">
+                  <div className="flex items-center gap-4 w-full">
+                    <svg
+                      className="w-6 h-6 text-yellow-500 ml-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
+                    </svg>
                     <p className="text-m text-gray-700">
-                      {pendingReviewsCount} producto espera tu opinión
+                      {pendingReviewsCount <= 1 ? (
+                        <p className="text-m text-gray-700">
+                          {pendingReviewsCount} producto espera tu opinión
+                        </p>
+                      ) : (
+                        <p className="text-m text-gray-700">
+                          {pendingReviewsCount} productos esperan tu opinión
+                        </p>
+                      )}
                     </p>
-                  ) : (
-                    <p className="text-m text-gray-700">
-                      {pendingReviewsCount} productos esperan tu opinión
-                    </p>
-                  )}
-                </p>
-              </div>
-              <div className=" flex justify-end ">
-                <Link
-                  href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
-                  className="px-4 py-2 bg-primary text-secondary w-full md:w-auto mt-4 md:mt-0 hover:bg-secondary hover:text-primary transition duration-300"
-                  style={{ borderRadius: "var(--radius)" }}
-                >
-                  Calificar
-                </Link>
+                  </div>
+                  <div className=" flex justify-end ">
+                    <Link
+                      href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
+                      className="px-4 py-2 bg-primary text-secondary w-full md:w-auto mt-4 md:mt-0 hover:bg-secondary hover:text-primary transition duration-300"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
+                      Calificar
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <div
-          className="mx-4 lg:mx-0 border overflow-hidden shadow-md mb-4"
-          style={{ borderRadius: "var(--radius)" }}
-        >
-          <div className="bg-white p-4 flex justify-between items-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 w-full">
-              <div className="flex items-center gap-4 w-full">
-                <svg
-                  className="w-6 h-6 text-yellow-500 ml-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
-                </svg>
-                <p className="text-m text-gray-700">
-                  Has realizado {totalReviewsCount} calificaciones
-                </p>
-              </div>
+            <div
+              className="mx-4 lg:mx-0 border overflow-hidden shadow-md mb-4"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              <div className="bg-white p-4 flex justify-between items-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 w-full">
+                  <div className="flex items-center gap-4 w-full">
+                    <svg
+                      className="w-6 h-6 text-yellow-500 ml-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M9.049.775a1 1 0 011.902 0l1.823 5.609a1 1 0 00.95.69h5.885a1 1 0 01.592 1.81l-4.75 3.456a1 1 0 00-.364 1.118l1.823 5.608a1 1 0 01-1.541 1.118L10 15.927l-4.751 3.456a1 1 0 01-1.54-1.118l1.823-5.608a1 1 0 00-.364-1.118L.418 8.885a1 1 0 01.592-1.81h5.885a1 1 0 00.95-.69L9.049.775z" />
+                    </svg>
+                    <p className="text-m text-gray-700">
+                      Has realizado {totalReviewsCount} calificaciones
+                    </p>
+                  </div>
 
-              <div className=" flex justify-end ">
-                <Link
-                  href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
-                  className="px-4 py-2 bg-primary text-secondary w-full md:w-auto mt-4 md:mt-0 hover:bg-secondary hover:text-primary transition duration-300"
-                  style={{ borderRadius: "var(--radius)" }}
-                >
-                  Ver Calificaciones
-                </Link>
+                  <div className=" flex justify-end ">
+                    <Link
+                      href="/tienda/mi-cuenta/mis-pedidos/calificaciones"
+                      className="px-4 py-2 bg-primary text-secondary w-full md:w-auto mt-4 md:mt-0 hover:bg-secondary hover:text-primary transition duration-300"
+                      style={{ borderRadius: "var(--radius)" }}
+                    >
+                      Ver Calificaciones
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
         {/* Iteración sobre los pedidos */}
         {orders.map((order, index) => (

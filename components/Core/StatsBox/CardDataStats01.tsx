@@ -20,76 +20,116 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
   children,
 }) => {
   return (
-    <div className="rounded-sm border w-full border-stroke bg-white py-3 px-4 md:py-6 md:px-8 shadow-default dark:border-black dark:bg-black">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-meta-4">
-        {children}
-      </div>
+    <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transform hover:scale-105 transition-all duration-300">
+      {/* Gradiente de fondo sutil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-      <div className="mt-4 flex items-end justify-between flex-wrap">
-        <div>
-          <h4 className="text-xl font-bold text-black dark:text-white">
-            {total}
-          </h4>
-          <span className="text-sm font-medium">{title}</span>
+      {/* Contenido principal */}
+      <div className="relative p-6 md:p-8">
+        {/* Icono mejorado */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
+            <div className="text-white text-xl">{children}</div>
+          </div>
+
+          {/* Indicador de cambio */}
+          {percentageChange !== undefined && (
+            <div
+              className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                percentageChange > 0
+                  ? "bg-green-100 text-green-700"
+                  : percentageChange < 0
+                  ? "bg-red-100 text-red-700"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              <div className="flex items-center space-x-1">
+                {percentageChange > 0 ? (
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : percentageChange < 0 ? (
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : null}
+                <span>{Math.abs(percentageChange).toFixed(1)}%</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        <span
-          className={`flex items-center gap-1 text-sm font-medium ${
-            levelUp ? "text-md text-green-500" : ""
-          } ${levelDown ? "text-md text-red-500" : ""}`}
-        >
-          {rate}
+        {/* Métricas principales */}
+        <div className="space-y-2">
+          <h4 className="text-3xl md:text-4xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+            {total}
+          </h4>
+          <p className="text-gray-600 font-medium text-lg">{title}</p>
 
-          {levelUp && (
-            <svg
-              aria-label="increase"
-              className="fill-current"
-              width="10"
-              height="11"
-              viewBox="0 0 10 11"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M4.35716 2.47737L0.908974 5.82987L5.0443e-07 4.94612L5 0.0848689L10 4.94612L9.09103 5.82987L5.64284 2.47737L5.64284 10.0849L4.35716 10.0849L4.35716 2.47737Z"
-                fill="currentColor"
-              />
-            </svg>
+          {/* Información adicional */}
+          {rate && (
+            <div className="pt-2">
+              <span
+                className={`inline-flex items-center text-sm font-medium ${
+                  levelUp
+                    ? "text-green-600"
+                    : levelDown
+                    ? "text-red-600"
+                    : "text-gray-600"
+                }`}
+              >
+                {rate}
+                {levelUp && (
+                  <svg
+                    aria-label="increase"
+                    className="ml-2 w-4 h-4 fill-current"
+                    viewBox="0 0 10 11"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4.35716 2.47737L0.908974 5.82987L5.0443e-07 4.94612L5 0.0848689L10 4.94612L9.09103 5.82987L5.64284 2.47737L5.64284 10.0849L4.35716 10.0849L4.35716 2.47737Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                )}
+                {levelDown && (
+                  <svg
+                    aria-label="decrease"
+                    className="ml-2 w-4 h-4 fill-current"
+                    viewBox="0 0 10 11"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M5.64284 7.69237L9.09102 4.33987L10 5.22362L5 10.0849L-8.98488e-07 5.22362L0.908973 4.33987L4.35716 7.69237L4.35716 0.0848701L5.64284 0.0848704L5.64284 7.69237Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                )}
+              </span>
+            </div>
           )}
-          {levelDown && (
-            <svg
-              aria-label="decrease"
-              className="fill-current"
-              width="10"
-              height="11"
-              viewBox="0 0 10 11"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M5.64284 7.69237L9.09102 4.33987L10 5.22362L5 10.0849L-8.98488e-07 5.22362L0.908973 4.33987L4.35716 7.69237L4.35716 0.0848701L5.64284 0.0848704L5.64284 7.69237Z"
-                fill="currentColor"
-              />
-            </svg>
-          )}
-        </span>
+        </div>
 
-        {percentageChange !== undefined && (
-          <div className="mt-4">
-            <p
-              className={
-                percentageChange > 0 ? "text-green-700" : "text-red-500"
-              }
-            >
-              {percentageChange.toFixed(2)}%
-              {percentageChange > 0 ? (
-                <span className="ml-2">▲</span>
-              ) : (
-                <span className="ml-2">▼</span>
-              )}
-            </p>
-          </div>
-        )}
+        {/* Línea decorativa inferior */}
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
       </div>
     </div>
   );

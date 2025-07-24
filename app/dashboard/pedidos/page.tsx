@@ -55,6 +55,11 @@ function PedidosBO() {
 
   const [isMobile, setIsMobile] = useState(false);
 
+  // Estados para verificación de plan PRO
+  const [hasProPlan, setHasProPlan] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState<string>("");
+
   // Nuevos estados para el modal de exportación
   const [isExportModalVisible, setIsExportModalVisible] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -104,7 +109,56 @@ function PedidosBO() {
 
   useEffect(() => {
     fetchPedidos(); // Llama a la función cuando el componente se monta
+    checkSubscriptionPlan();
   }, [fetchPedidos]);
+
+  const checkSubscriptionPlan = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/subscriptions?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Buscar suscripciones activas
+      const activeSubscriptions = response.data.subscriptions.filter(
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+      );
+
+      // Verificar si tiene plan PRO
+      const proSubscription = activeSubscriptions.find((sub: any) =>
+        sub.name.toLowerCase().includes("pro")
+      );
+
+      // Determinar el plan actual
+      let planName = "Sin suscripción activa";
+      if (activeSubscriptions.length > 0) {
+        const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
+        if (subscription.name.toLowerCase().includes("pro")) {
+          planName = "Plan PRO";
+        } else if (subscription.name.toLowerCase().includes("avanzado")) {
+          planName = "Plan Avanzado";
+        } else if (subscription.name.toLowerCase().includes("inicia")) {
+          planName = "Plan Inicia";
+        } else {
+          planName = subscription.name;
+        }
+      }
+
+      setHasProPlan(!!proSubscription);
+      setCurrentPlan(planName);
+    } catch (error) {
+      console.error("Error verificando plan de suscripción:", error);
+      setHasProPlan(false);
+      setCurrentPlan("Error al verificar plan");
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   const paginatedPedidos = useMemo(() => {
     // Aplicar filtros y búsqueda
@@ -894,10 +948,10 @@ function PedidosBO() {
                                   <button
                                     onClick={() => handleCopyLink(pedido.id)}
                                     disabled={
-                                      pedido.statusCode === "PAYMENT_COMPLETED"
+                                      pedido.statusCode === "PAYMENT_COMPLETED" || !hasProPlan
                                     }
                                     className={`focus:outline-none relative group ${
-                                      pedido.statusCode === "PAYMENT_COMPLETED"
+                                      pedido.statusCode === "PAYMENT_COMPLETED" || !hasProPlan
                                         ? "opacity-50 cursor-not-allowed"
                                         : ""
                                     }`}
@@ -917,7 +971,7 @@ function PedidosBO() {
                                       />
                                     </svg>
                                     <span className="absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 whitespace-nowrap bg-gray-800 text-white text-xs rounded px-2 py-1 invisible group-hover:visible">
-                                      Copiar Link de Pago
+                                      {hasProPlan ? "Copiar Link de Pago" : "Copiar Link de Pago exclusiva del Plan Pro"}
                                     </span>
                                   </button>
 
@@ -1087,10 +1141,10 @@ function PedidosBO() {
                               <button
                                 onClick={() => handleCopyLink(pedido.id)}
                                 disabled={
-                                  pedido.statusCode === "PAYMENT_COMPLETED"
+                                  pedido.statusCode === "PAYMENT_COMPLETED" || !hasProPlan
                                 }
                                 className={`w-full xs:w-auto flex items-center justify-center space-x-1 py-2 px-4 rounded-lg border ${
-                                  pedido.statusCode === "PAYMENT_COMPLETED"
+                                  pedido.statusCode === "PAYMENT_COMPLETED" || !hasProPlan
                                     ? "opacity-50 cursor-not-allowed text-gray-400 border-gray-200"
                                     : "text-gray-600 hover:text-primary border-gray-200 hover:bg-gray-50"
                                 }`}
@@ -1109,7 +1163,7 @@ function PedidosBO() {
                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                   />
                                 </svg>
-                                <span>Pago</span>
+                                <span>{hasProPlan ? "Pago" : "Pago (PRO)"}</span>
                               </button>
 
                               <button

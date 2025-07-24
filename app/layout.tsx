@@ -29,6 +29,7 @@ import { LogoProvider, useLogo } from "@/context/LogoContext";
 import { getCookie } from "cookies-next";
 import { jwtDecode } from "jwt-decode";
 import DynamicColorStyles from "@/components/Core/Color/DynamicColorStyles";
+import { SocialNetworksProvider } from "@/context/SocialNetworksContext";
 const SiteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
 const robotoMono = Roboto_Mono({
@@ -416,16 +417,18 @@ export default function RootLayout({
               <LogoProvider>
                 <TypographyProvider>
                   <ColorProvider>
-                    <APIContextProvider SiteId={SiteId}>
-                      <DynamicFavicon />
-                      <DynamicColorStyles />
-                      <Toaster />
-                      <NextTopLoader showSpinner={false} />
-                      <ColorLoader>
-                        <div className="md:min-h-screen ">{children}</div>
-                      </ColorLoader>
-                      {showPopup && <PopVisual />}
-                    </APIContextProvider>
+                    <SocialNetworksProvider>
+                      <APIContextProvider SiteId={SiteId}>
+                        <DynamicFavicon />
+                        <DynamicColorStyles />
+                        <Toaster />
+                        <NextTopLoader showSpinner={false} />
+                        <ColorLoader>
+                          <div className="md:min-h-screen ">{children}</div>
+                        </ColorLoader>
+                        {showPopup && <PopVisual />}
+                      </APIContextProvider>
+                    </SocialNetworksProvider>
                   </ColorProvider>
                 </TypographyProvider>
               </LogoProvider>

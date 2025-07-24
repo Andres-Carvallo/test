@@ -878,7 +878,7 @@ const Popup: React.FC = () => {
   return (
     <div className="p-8 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Configuración del Popup
+        Configuración de Popup
       </h2>
       {popupConfig ? (
         <div className="space-y-6">
@@ -886,7 +886,7 @@ const Popup: React.FC = () => {
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between min-h-[2rem]">
                 <label className="text-lg font-medium text-gray-700">
-                  Habilitar popup en el sitio
+                  Habilitar Popup
                 </label>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input

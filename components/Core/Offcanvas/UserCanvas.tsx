@@ -3,7 +3,13 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import CrearUsuarioForm from "@/components/Core/Offcanvas/form/CrearUsuarioForm";
 
-function UserCanvas({ fetchData }: any) {
+function UserCanvas({ 
+  fetchData, 
+  canCreateUser = true, 
+  currentPlan = "", 
+  userLimit = Infinity, 
+  currentUserCount = 0 
+}: any) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const offcanvasRef = useRef<HTMLDivElement>(null);
 
@@ -44,13 +50,18 @@ function UserCanvas({ fetchData }: any) {
 
   return (
     <div>
-      <Link
-        href="#"
-        onClick={handleMenuOpen}
-        className="menu-open-btn ease-in-up rounded-sm bg-primary px-8 py-3 text-base font-medium text-secondary shadow-btn transition duration-300 hover:bg-secondary hover:text-primary hover:shadow-btn-hover md:block md:px-9 lg:px-6 xl:px-9"
+      <button
+        onClick={canCreateUser ? handleMenuOpen : undefined}
+        disabled={!canCreateUser}
+        className={`ease-in-up rounded-sm px-8 py-3 text-base font-medium shadow-btn transition duration-300 md:block md:px-9 lg:px-6 xl:px-9 ${
+          canCreateUser
+            ? "bg-primary text-secondary hover:bg-secondary hover:text-primary hover:shadow-btn-hover"
+            : "bg-gray-400 text-gray-600 cursor-not-allowed opacity-50"
+        }`}
+        title={!canCreateUser ? `Límite de administradores alcanzado (${currentUserCount}/${userLimit === Infinity ? '∞' : userLimit})` : "Crear Administrador"}
       >
         Crear Usuario
-      </Link>
+      </button>
       <div
         ref={offcanvasRef}
         className={`offcanvas-menu fixed z-99 bg-primary h-screen dark:border-strokedark dark:bg-form-strokedark top-20 right-0 p-6 w-2/3 md:w-[430px] ease-in-out duration-1000 shadow-md flex items-center ${
@@ -81,10 +92,50 @@ function UserCanvas({ fetchData }: any) {
           <h1 className="text-secondary text-2xl font-bold text-center mb-8">
             Crear Nuevo Usuario
           </h1>
-          <CrearUsuarioForm
-            onClose={handleMenuClose}
-            fetchData={fetchData}
-          />
+          {!canCreateUser ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-6 w-6 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-lg font-medium text-red-800">
+                    Límite de Usuarios Alcanzado
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>Tu plan actual ({currentPlan}) permite un máximo de {userLimit === Infinity ? 'administradores ilimitados' : `${userLimit} administradores`}.</p>
+                    <p className="mt-1">Actualmente tienes {currentUserCount} administradores creados.</p>
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-red-800 mb-2">Límites de Administradores por Plan:</h4>
+                      <ul className="text-sm space-y-1">
+                        <li>• Plan Inicial: 1 administrador</li>
+                        <li>• Plan Avanzado: 3 administradores</li>
+                        <li>• Plan PRO: Administradores ilimitados</li>
+                      </ul>
+                    </div>
+                    <div className="mt-4">
+                      <a
+                        href="/dashboard/suscripciones"
+                        className="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        Actualizar Plan
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <CrearUsuarioForm
+              onClose={handleMenuClose}
+              fetchData={fetchData}
+            />
+          )}
         </div>
       </div>
     </div>
