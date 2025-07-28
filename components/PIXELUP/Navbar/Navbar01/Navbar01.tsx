@@ -206,6 +206,11 @@ export default function Navbar() {
               {menuItems.map((item, index) => {
                 // Si es un menú desplegable de colecciones
                 if (item.isDropdown && item.dropdownType === "collections") {
+                  // Solo mostrar el menú de colecciones si hay colecciones disponibles
+                  if (filteredCollections.length === 0) {
+                    return null;
+                  }
+                  
                   return (
                     <li
                       key={index}
@@ -562,7 +567,7 @@ export default function Navbar() {
 
       {/* Menú móvil */}
       <div
-        className={`fixed inset-0 z-50 bg-white dark:bg-gray-800 ${
+        className={`fixed inset-0 z-50 bg-white dark:bg-gray-800 overflow-y-auto ${
           isOpen ? "block" : "hidden"
         }`}
       >
@@ -587,7 +592,7 @@ export default function Navbar() {
             </svg>
           </button>
         </div>
-        <div className="pt-2 pb-3 space-y-1 px-6 text-3xl">
+        <div className="pt-2 pb-6 space-y-1 px-6 text-3xl">
           <div className="flex-shrink-0 flex justify-center items-center">
             <Link
               href="/"
@@ -601,10 +606,15 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <ul className="flex flex-col text-center pb-8">
+          <ul className="flex flex-col space-y-1 pb-4">
             {menuItems.map((item, index) => {
               // Si es un menú desplegable de colecciones en versión móvil
               if (item.isDropdown && item.dropdownType === "collections") {
+                // Solo mostrar el menú de colecciones si hay colecciones disponibles
+                if (filteredCollections.length === 0) {
+                  return null;
+                }
+                
                 return (
                   <li
                     key={index}
@@ -615,53 +625,84 @@ export default function Navbar() {
                     }`}
                   >
                     <button
-                      className={`relative flex items-center ${hoverColorClass} text-base font-medium w-full py-2 uppercase ${
+                      className={`relative flex items-center justify-between w-full py-3 px-4 text-left text-base font-medium uppercase border-b border-gray-100 dark:border-gray-700 ${
                         pathname.includes("/tienda/colecciones")
                           ? activeColorClass
-                          : ""
-                      }`}
+                          : "text-gray-900 dark:text-white"
+                      } ${hoverColorClass}`}
                       onClick={toggleVisibility}
                     >
-                      <span className="w-full text-center">
-                        {item.title.toUpperCase()}
-                      </span>
-                      <span className="absolute right-0 top-1/2 -translate-y-1/2 mr-2 flex-shrink-0">
-                        {isVisible ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-4"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-4"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                            />
-                          </svg>
-                        )}
-                      </span>
+                      <span>{item.title}</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className={`size-5 transition-transform duration-200 ${
+                          isVisible ? "rotate-180" : ""
+                        }`}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                        />
+                      </svg>
                     </button>
+                    
+                    {/* Submenú de colecciones */}
+                    {isVisible && (
+                      <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                        <ul className="py-2">
+                          {filteredCollections.map((collection) => {
+                            const collectionPath = `/tienda/colecciones/${slugify(
+                              collection.title
+                            )}`;
+                            return (
+                              <li
+                                key={collection.id}
+                                className={`${
+                                  pathname === collectionPath
+                                    ? "bg-gray-100 dark:bg-gray-700"
+                                    : ""
+                                }`}
+                              >
+                                <Link
+                                  href={collectionPath}
+                                  className={`flex items-center px-8 py-2 text-sm font-medium ${
+                                    pathname === collectionPath
+                                      ? activeColorClass
+                                      : "text-gray-700 dark:text-gray-300"
+                                  } ${hoverColorClass}`}
+                                  onClick={() => setIsOpen(false)}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="size-4 mr-2"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                    />
+                                  </svg>
+                                  {collection.title}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
                   </li>
                 );
               }
+              
               // Si es un menú desplegable de categorías en versión móvil
               if (item.isDropdown && item.dropdownType === "categories") {
                 return (
@@ -674,51 +715,139 @@ export default function Navbar() {
                     }`}
                   >
                     <button
-                      className={`relative flex items-center ${hoverColorClass} text-base font-medium w-full py-2 uppercase ${
-                        pathname.includes("categoria=") ? activeColorClass : ""
-                      }`}
+                      className={`relative flex items-center justify-between w-full py-3 px-4 text-left text-base font-medium uppercase border-b border-gray-100 dark:border-gray-700 ${
+                        pathname.includes("categoria=")
+                          ? activeColorClass
+                          : "text-gray-900 dark:text-white"
+                      } ${hoverColorClass}`}
                       onClick={toggleCategoriesVisibility}
                     >
-                      <span className="w-full text-center">
-                        {item.title.toUpperCase()}
-                      </span>
-                      <span className="absolute right-0 top-1/2 -translate-y-1/2 mr-2 flex-shrink-0">
-                        {isCategoriesVisible ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-4"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m4.5 15.75 7.5-7.5 7.5 7.5"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-4"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                            />
-                          </svg>
-                        )}
-                      </span>
+                      <span>{item.title}</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className={`size-5 transition-transform duration-200 ${
+                          isCategoriesVisible ? "rotate-180" : ""
+                        }`}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                        />
+                      </svg>
                     </button>
+                    
+                    {/* Submenú de categorías */}
+                    {isCategoriesVisible && (
+                      <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                        <ul className="py-2">
+                          {filteredCategories.map((category) => {
+                            const categoryPath = `/tienda?categoria=${slugify(
+                              category.name
+                            )}`;
+                            return (
+                              <li
+                                key={category.id}
+                                className={`${
+                                  pathname.includes(
+                                    `categoria=${slugify(category.name)}`
+                                  )
+                                    ? "bg-gray-100 dark:bg-gray-700"
+                                    : ""
+                                }`}
+                              >
+                                <Link
+                                  href={categoryPath}
+                                  className={`flex items-center px-8 py-2 text-sm font-medium ${
+                                    pathname.includes(
+                                      `categoria=${slugify(category.name)}`
+                                    )
+                                      ? activeColorClass
+                                      : "text-gray-700 dark:text-gray-300"
+                                  } ${hoverColorClass}`}
+                                  onClick={() => {
+                                    setIsOpen(false);
+                                    // Scroll hacia la sección de productos después de la navegación
+                                    setTimeout(() => {
+                                      const productSection = document.querySelector(
+                                        ".product-grid-section"
+                                      );
+                                      if (productSection) {
+                                        productSection.scrollIntoView({
+                                          behavior: "smooth",
+                                        });
+                                      }
+                                    }, 100);
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="size-4 mr-2"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                    />
+                                  </svg>
+                                  {category.name}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                          
+                          {/* Enlace "Ver todos" al final del dropdown móvil */}
+                          <li className="border-t border-gray-200 dark:border-gray-600 mt-2 pt-2">
+                            <Link
+                              href="/tienda"
+                              className={`flex items-center px-8 py-2 text-sm font-medium ${hoverColorClass}`}
+                              onClick={() => {
+                                setIsOpen(false);
+                                // Scroll hacia la sección de productos después de la navegación
+                                setTimeout(() => {
+                                  const productSection = document.querySelector(
+                                    ".product-grid-section"
+                                  );
+                                  if (productSection) {
+                                    productSection.scrollIntoView({
+                                      behavior: "smooth",
+                                    });
+                                  }
+                                }, 100);
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-4 mr-2"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                                />
+                              </svg>
+                              Ver todos
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
                   </li>
                 );
               }
+              
               // Si es un enlace normal en versión móvil
               return (
                 <li
@@ -731,177 +860,21 @@ export default function Navbar() {
                 >
                   <Link
                     href={item.path}
-                    className={`${hoverColorClass} text-base font-medium ${
-                      isActive(item.path) ? activeColorClass : ""
-                    }`}
+                    className={`block py-3 px-4 text-base font-medium uppercase border-b border-gray-100 dark:border-gray-700 ${
+                      isActive(item.path) 
+                        ? activeColorClass 
+                        : "text-gray-900 dark:text-white"
+                    } ${hoverColorClass}`}
                     onClick={() => setIsOpen(false)}
                   >
-                    {item.title.toUpperCase()}
+                    {item.title}
                   </Link>
                 </li>
               );
             })}
-
-            {isVisible && (
-              <div className="border-t border-gray-200 dark:border-gray-700 py-3 mt-2 bg-gray-50 dark:bg-gray-700 rounded-md">
-                {filteredCollections.length > 0 && (
-                  <ul className="flex flex-col space-y-2 text-center px-4">
-                    {filteredCollections.map((collection) => {
-                      const collectionPath = `/tienda/colecciones/${collection.id}`;
-                      return (
-                        <li
-                          key={collection.id}
-                          className={`${
-                            pathname === collectionPath
-                              ? `${activeColorClass} ${activeFontWeight}`
-                              : ""
-                          } transition-colors duration-200`}
-                        >
-                          <Link
-                            href={collectionPath}
-                            className={`flex items-center justify-center ${hoverColorClass} text-base font-medium uppercase py-1 ${
-                              pathname === collectionPath
-                                ? activeColorClass
-                                : ""
-                            }`}
-                            onClick={() => setIsOpen(false)}
-                          >
-                            <span className="mr-2">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="size-3"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                                />
-                              </svg>
-                            </span>
-                            {collection.title}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-            )}
-
-            {isCategoriesVisible && (
-              <div className="border-t border-gray-200 dark:border-gray-700 py-3 mt-2 bg-gray-50 dark:bg-gray-700 rounded-md">
-                {filteredCategories.length > 0 && (
-                  <ul className="flex flex-col space-y-2 text-center px-4">
-                    {filteredCategories.map((category) => {
-                      const categoryPath = `/tienda?categoria=${slugify(
-                        category.name
-                      )}`;
-                      return (
-                        <li
-                          key={category.id}
-                          className={`${
-                            pathname.includes(
-                              `categoria=${slugify(category.name)}`
-                            )
-                              ? `${activeColorClass} ${activeFontWeight}`
-                              : ""
-                          } transition-colors duration-200`}
-                        >
-                          <Link
-                            href={categoryPath}
-                            className={`flex items-center justify-center ${hoverColorClass} text-base font-medium uppercase py-1 ${
-                              pathname.includes(
-                                `categoria=${slugify(category.name)}`
-                              )
-                                ? activeColorClass
-                                : ""
-                            }`}
-                            onClick={() => {
-                              setIsOpen(false);
-                              // Scroll hacia la sección de productos después de la navegación
-                              setTimeout(() => {
-                                const productSection = document.querySelector(
-                                  ".product-grid-section"
-                                );
-                                if (productSection) {
-                                  productSection.scrollIntoView({
-                                    behavior: "smooth",
-                                  });
-                                }
-                              }, 100);
-                            }}
-                          >
-                            <span className="mr-2">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="size-3"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                                />
-                              </svg>
-                            </span>
-                            {category.name}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                    {/* Enlace "Ver todos" al final del dropdown móvil */}
-                    <li className="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2">
-                      <Link
-                        href="/tienda"
-                        className={`flex items-center justify-center ${hoverColorClass} text-base font-medium uppercase py-1`}
-                        onClick={() => {
-                          setIsOpen(false);
-                          // Scroll hacia la sección de productos después de la navegación
-                          setTimeout(() => {
-                            const productSection = document.querySelector(
-                              ".product-grid-section"
-                            );
-                            if (productSection) {
-                              productSection.scrollIntoView({
-                                behavior: "smooth",
-                              });
-                            }
-                          }, 100);
-                        }}
-                      >
-                        <span className="mr-2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-3"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                            />
-                          </svg>
-                        </span>
-                        Ver todos
-                      </Link>
-                    </li>
-                  </ul>
-                )}
-              </div>
-            )}
           </ul>
 
-          <div className="w-full py-4 flex flex-col items-center">
+          <div className="w-full py-4 flex flex-col items-center mt-4">
             <div className="w-full flex justify-center items-center mb-4">
               {AdminToken ? (
                 <DropdownAdminMobile toggleMenu={toggleMenu} />
