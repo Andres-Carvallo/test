@@ -4,46 +4,160 @@ import React, { useEffect, useState } from "react";
 import { getCookie } from "cookies-next";
 import axios from "axios";
 
-// Componente Skeleton mejorado
+// Componente Skeleton simple
 const SkeletonComponent = ({ className }: { className?: string }) => (
-  <div
-    className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-xl ${className}`}
-  >
-    <div className="h-full w-full bg-gradient-to-r from-transparent via-white to-transparent animate-shimmer"></div>
+  <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
+);
+
+// Skeleton para Comparación de Ventas
+const CompareSalesSkeleton = () => (
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
+    <div className="flex items-center justify-between mb-6">
+      <SkeletonComponent className="h-6 w-48" />
+      <SkeletonComponent className="h-8 w-32" />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="p-4 border rounded-lg">
+        <SkeletonComponent className="h-4 w-24 mb-2" />
+        <SkeletonComponent className="h-8 w-32 mb-2" />
+        <SkeletonComponent className="h-3 w-20" />
+      </div>
+      <div className="p-4 border rounded-lg">
+        <SkeletonComponent className="h-4 w-24 mb-2" />
+        <SkeletonComponent className="h-8 w-32 mb-2" />
+        <SkeletonComponent className="h-3 w-20" />
+      </div>
+    </div>
+    <SkeletonComponent className="h-64 w-full" />
+  </div>
+);
+
+// Skeleton para Productos Más Vendidos
+const ProductosMasVendidosSkeleton = () => (
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
+    <div className="flex items-center justify-between mb-6">
+      <SkeletonComponent className="h-6 w-48" />
+      <SkeletonComponent className="h-8 w-32" />
+    </div>
+    <div className="space-y-4">
+      {[1, 2, 3, 4, 5].map((item) => (
+        <div key={item} className="flex items-center space-x-4 p-3 border rounded-lg">
+          <SkeletonComponent className="h-12 w-12 rounded" />
+          <div className="flex-1">
+            <SkeletonComponent className="h-4 w-32 mb-2" />
+            <SkeletonComponent className="h-3 w-24" />
+          </div>
+          <SkeletonComponent className="h-6 w-20" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Skeleton para Productos Vendidos y Detalles por Fecha
+const MostSoldProductsSkeleton = () => (
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
+    <div className="flex items-center justify-between mb-6">
+      <SkeletonComponent className="h-6 w-48" />
+      <div className="flex space-x-2">
+        <SkeletonComponent className="h-8 w-32" />
+        <SkeletonComponent className="h-8 w-32" />
+      </div>
+    </div>
+    <div className="overflow-x-auto">
+      <table className="min-w-full">
+        <thead>
+          <tr className="border-b">
+            <th className="text-left py-3 px-4">
+              <SkeletonComponent className="h-4 w-20" />
+            </th>
+            <th className="text-left py-3 px-4">
+              <SkeletonComponent className="h-4 w-24" />
+            </th>
+            <th className="text-left py-3 px-4">
+              <SkeletonComponent className="h-4 w-20" />
+            </th>
+            <th className="text-left py-3 px-4">
+              <SkeletonComponent className="h-4 w-16" />
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {[1, 2, 3, 4, 5].map((item) => (
+            <tr key={item} className="border-b">
+              <td className="py-3 px-4">
+                <div className="flex items-center space-x-3">
+                  <SkeletonComponent className="h-10 w-10 rounded" />
+                  <SkeletonComponent className="h-4 w-32" />
+                </div>
+              </td>
+              <td className="py-3 px-4">
+                <SkeletonComponent className="h-4 w-20" />
+              </td>
+              <td className="py-3 px-4">
+                <SkeletonComponent className="h-4 w-24" />
+              </td>
+              <td className="py-3 px-4">
+                <SkeletonComponent className="h-4 w-16" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+// Skeleton para Resumen de Ventas
+const SalesSummarySkeleton = () => (
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
+    <div className="flex items-center justify-between mb-6">
+      <SkeletonComponent className="h-6 w-48" />
+      <div className="flex space-x-2">
+        <SkeletonComponent className="h-8 w-32" />
+        <SkeletonComponent className="h-8 w-32" />
+      </div>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="p-4 border rounded-lg">
+        <SkeletonComponent className="h-4 w-24 mb-2" />
+        <SkeletonComponent className="h-8 w-32 mb-2" />
+        <SkeletonComponent className="h-3 w-20" />
+      </div>
+      <div className="p-4 border rounded-lg">
+        <SkeletonComponent className="h-4 w-24 mb-2" />
+        <SkeletonComponent className="h-8 w-32 mb-2" />
+        <SkeletonComponent className="h-3 w-20" />
+      </div>
+      <div className="p-4 border rounded-lg">
+        <SkeletonComponent className="h-4 w-24 mb-2" />
+        <SkeletonComponent className="h-8 w-32 mb-2" />
+        <SkeletonComponent className="h-3 w-20" />
+      </div>
+    </div>
+    <SkeletonComponent className="h-64 w-full" />
   </div>
 );
 
 const SalesSummary = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/SalesSummary"),
-  {
+  { 
     ssr: false,
-    loading: () => (
-      <div className="w-full p-8 bg-white rounded-2xl shadow-lg border border-gray-100 animate-pulse">
-        <SkeletonComponent className="h-[400px]" />
-      </div>
-    ),
+    loading: () => <SalesSummarySkeleton />
   }
 );
 
 const MostSoldProducts = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/MostSoldProducts"),
   {
-    loading: () => (
-      <div className="w-full p-8 bg-white rounded-2xl shadow-lg border border-gray-100 animate-pulse">
-        <SkeletonComponent className="h-[300px]" />
-      </div>
-    ),
+    loading: () => <MostSoldProductsSkeleton />
   }
 );
 
 const CompareSales = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/CompareSales"),
   {
-    loading: () => (
-      <div className="w-full p-8 bg-white rounded-2xl shadow-lg border border-gray-100 animate-pulse">
-        <SkeletonComponent className="h-[250px]" />
-      </div>
-    ),
+    loading: () => <CompareSalesSkeleton />
   }
 );
 
@@ -51,10 +165,10 @@ const PedidosTotales = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/PedidosTotales"),
   {
     loading: () => (
-      <div className="w-full p-6 bg-white rounded-2xl shadow-lg border border-gray-100 animate-pulse">
-        <SkeletonComponent className="h-[120px]" />
+      <div className="w-full p-4 bg-white rounded-lg shadow-sm animate-pulse">
+        <SkeletonComponent className="h-[100px]" />
       </div>
-    ),
+    )
   }
 );
 
@@ -62,10 +176,10 @@ const VentasMensuales = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/VentasMensuales"),
   {
     loading: () => (
-      <div className="w-full p-8 bg-white rounded-2xl shadow-lg border border-gray-100 animate-pulse">
+      <div className="w-full p-6 bg-white rounded-lg shadow-sm animate-pulse">
         <SkeletonComponent className="h-[300px]" />
       </div>
-    ),
+    )
   }
 );
 
@@ -73,21 +187,17 @@ const VentasTotalesAnuales = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/VentasTotalesAnuales"),
   {
     loading: () => (
-      <div className="w-full p-6 bg-white rounded-2xl shadow-lg border border-gray-100 animate-pulse">
-        <SkeletonComponent className="h-[120px]" />
+      <div className="w-full p-4 bg-white rounded-lg shadow-sm animate-pulse">
+        <SkeletonComponent className="h-[100px]" />
       </div>
-    ),
+    )
   }
 );
 
 const ProductosMasVendidos = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/ProductosMasVendidos"),
   {
-    loading: () => (
-      <div className="w-full p-8 bg-white rounded-2xl shadow-lg border border-gray-100 animate-pulse">
-        <SkeletonComponent className="h-[250px]" />
-      </div>
-    ),
+    loading: () => <ProductosMasVendidosSkeleton />
   }
 );
 
@@ -158,8 +268,7 @@ function StatsPage() {
 
       // Buscar suscripciones activas
       const activeSubscriptions = response.data.subscriptions.filter(
-        (sub: any) =>
-          sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
+        (sub: any) => sub.statusCode === "ACTIVE" || sub.statusCode === "EXPIRED"
       );
 
       // Determinar el plan actual
@@ -167,7 +276,7 @@ function StatsPage() {
       if (activeSubscriptions.length > 0) {
         const subscription = activeSubscriptions[0]; // Tomar la primera suscripción activa
         const planName = subscription.name.toLowerCase();
-
+        
         if (planName.includes("pro")) {
           planType = "pro";
         } else if (planName.includes("avanzado")) {
@@ -248,8 +357,9 @@ function StatsPage() {
 
   const fetchMostSoldProducts = async (startDate: any, endDate: any) => {
     try {
-      const token = getCookie("AdminTokenAuth");
+      const token = getCookie("AdminTokenAuth"); // Obtén el token de las cookies
 
+      // Configuración de la solicitud
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -257,8 +367,10 @@ function StatsPage() {
         },
       };
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/most-selled-products?statusCode=PAYMENT_COMPLETED&startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currencyCodeId}&orderBy=amount&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+      // Construye la URL con las fechas y orden por defecto
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/reports/most-selled-products?startDate=${startDate}&endDate=${endDate}&currencyCodeId=${currencyCodeId}&orderBy=amount&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
 
+      // Realiza la solicitud GET
       const response = await axios.get(url, config);
 
       const products = response.data.products;
@@ -288,293 +400,120 @@ function StatsPage() {
     checkSubscriptionPlan(); // Verificar el plan al cargar el componente
   }, []); // Ejecuta solo al montar el componente
 
-  // Función para renderizar mensaje de restricción según el plan
-  const renderPlanRestrictionMessage = (
-    requiredPlan: PlanType,
-    featureName: string
-  ) => {
-    if (subscriptionLoading) return null;
-
-    const planHierarchy = { inicia: 1, avanzado: 2, pro: 3, none: 0 };
-    const currentPlanLevel = planHierarchy[currentPlan];
-    const requiredPlanLevel = planHierarchy[requiredPlan];
-
-    if (currentPlanLevel < requiredPlanLevel) {
-      return (
-        <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl p-8 mb-8 shadow-lg">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="h-6 w-6 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div className="ml-4">
-              <div className="text-sm text-red-700">
-                <p className="font-medium text-base mb-1">
-                  Funcionalidad Restringida
-                </p>
-                <p>
-                  {featureName} es exclusivo del Plan{" "}
-                  {requiredPlan.charAt(0).toUpperCase() + requiredPlan.slice(1)}{" "}
-                  y superiores. Puedes actualizar tu plan en la sección{" "}
-                  <a
-                    href="/dashboard/suscripciones/estado"
-                    rel="noopener noreferrer"
-                    className="underline font-medium text-red-800 hover:text-red-900 transition-colors"
-                  >
-                    Suscripción.
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
         {error && (
-          <div className="bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400 p-6 mb-8 rounded-r-xl shadow-lg animate-slide-in">
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
             <div className="flex">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <svg
-                    className="h-5 w-5 text-red-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Error de Carga
-                </h3>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* MÉTRICAS PRINCIPALES - Plan Inicia (siempre visible) */}
-        <div className="animate-fade-in ">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Métricas Principales
-            </h2>
-            <p className="text-gray-600">
-              Resumen ejecutivo de tu rendimiento comercial
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Primera fila: Ventas Totales y Total de Pedidos */}
-            <VentasTotalesAnuales />
-            <PedidosTotales />
-
-            {/* Segunda fila: Métricas mensuales */}
-            <VentasMensuales />
-          </div>
+        {/* DASHBOARD PLAN INICIA - Siempre visible */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <VentasTotalesAnuales />
+          <PedidosTotales />
         </div>
 
-        {/* TOP PRODUCTOS - Visible para Plan Pro y Avanzado */}
-        {(currentPlan === "avanzado" || currentPlan === "pro") && (
-          <div className="animate-fade-in">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full text-sm font-medium mb-4">
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        <div className="bg-gray-50 rounded-lg ">
+          <VentasMensuales />
+        </div>
+
+        {/* DASHBOARD PLAN PRO - Mostrar skeleton si no es plan Pro */}
+        {!subscriptionLoading && currentPlan !== "pro" && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
-                Top Productos del Año
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Productos Más Vendidos
-              </h2>
-              <p className="text-gray-600">
-                Los productos estrella de tu negocio
-              </p>
-            </div>
-
-            <div className="transform hover:scale-105 transition-all duration-300">
-              <ProductosMasVendidos />
-            </div>
-          </div>
-        )}
-
-        {/* DASHBOARD PLAN PRO - Análisis Avanzado de Comparación */}
-        {currentPlan === "pro" && (
-          <div className="space-y-8 animate-fade-in">
-            <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium mb-4">
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                Plan Pro - Análisis Comparativo
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Comparación de Períodos
-              </h2>
-              <p className="text-gray-600">
-                Herramientas profesionales para comparar rendimiento
-              </p>
-            </div>
-
-            <div className="transform hover:scale-105 transition-all duration-300">
-              <CompareSales />
-            </div>
-          </div>
-        )}
-
-        {renderPlanRestrictionMessage(
-          "pro",
-          "Análisis Avanzado de Comparación de Períodos"
-        )}
-
-        {/* DASHBOARD PLAN AVANZADO - Reportes Detallados a Todo el Ancho */}
-        {(currentPlan === "avanzado" || currentPlan === "pro") && (
-          <div className="space-y-8 animate-fade-in">
-            <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full text-sm font-medium mb-4">
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Plan Avanzado - Reportes Detallados
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Análisis Profundo
-              </h2>
-              <p className="text-gray-600">
-                Información detallada sobre productos y tendencias de venta
-              </p>
-            </div>
-
-            <div className="space-y-8">
-              <div className="transform hover:scale-105 transition-all duration-300">
-                <MostSoldProducts
-                  salesData={mostSoldProducts}
-                  startDateProducts={startDateProducts}
-                  endDateProducts={endDateProducts}
-                  setStartDateProducts={setStartDateProducts}
-                  setEndDateProducts={setEndDateProducts}
-                  fetchMostSoldProducts={() =>
-                    fetchMostSoldProducts(startDateProducts, endDateProducts)
-                  }
-                />
-              </div>
-
-              <div className="transform hover:scale-105 transition-all duration-300">
-                <SalesSummary
-                  salesData={salesSummary}
-                  startDate={startDate}
-                  endDate={endDate}
-                  setStartDate={setStartDate}
-                  setEndDate={setEndDate}
-                />
+              <div className="ml-3">
+                <div className="text-sm text-red-700">
+                  <p>La función de Comparación de Ventas y Productos Más Vendidos es exclusiva del Plan Pro. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline">Suscripción.</a></p>
+                </div>
               </div>
             </div>
           </div>
         )}
+        {!subscriptionLoading && currentPlan !== "pro" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <CompareSalesSkeleton />
+            </div>
+            <div>
+              <ProductosMasVendidosSkeleton />
+            </div>
+          </div>
+        ) : (
+          currentPlan === "pro" && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <CompareSales />
+              </div>
+              <div>
+                <ProductosMasVendidos />
+              </div>
+            </div>
+          )
+        )}
 
-        {renderPlanRestrictionMessage(
-          "avanzado",
-          "Reportes Detallados de Productos y Resumen de Ventas"
+        {/* DASHBOARD PLAN AVANZADO - Mostrar skeleton si no es plan Avanzado o Pro */}
+        {!subscriptionLoading && (currentPlan !== "avanzado" && currentPlan !== "pro") && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <div className="text-sm text-red-700">
+                  <p>La función de Productos Vendidos y Detalles por fecha es exclusiva del Plan Avanzado. Puedes actualizar tu plan en la sección <a href="/dashboard/suscripciones/estado" rel="noopener noreferrer" className="underline">Suscripción.</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {!subscriptionLoading && (currentPlan !== "avanzado" && currentPlan !== "pro") ? (
+          <div className="space-y-6">
+            <MostSoldProductsSkeleton />
+            <SalesSummarySkeleton />
+          </div>
+        ) : (
+          (currentPlan === "avanzado" || currentPlan === "pro") && (
+            <div className="space-y-6">
+              <MostSoldProducts
+                salesData={mostSoldProducts}
+                startDateProducts={startDateProducts}
+                endDateProducts={endDateProducts}
+                setStartDateProducts={setStartDateProducts}
+                setEndDateProducts={setEndDateProducts}
+                fetchMostSoldProducts={() =>
+                  fetchMostSoldProducts(startDateProducts, endDateProducts)
+                }
+              />
+
+              <SalesSummary
+                salesData={salesSummary}
+                startDate={startDate}
+                endDate={endDate}
+                setStartDate={setStartDate}
+                setEndDate={setEndDate}
+              />
+            </div>
+          )
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-in {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-shimmer {
-          animation: shimmer 1.5s ease-in-out infinite;
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out;
-        }
-
-        .animate-slide-in {
-          animation: slide-in 0.5s ease-out;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.7s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

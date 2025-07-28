@@ -99,7 +99,7 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   colecciones02: Colecciones02,
   categoria02: Categoria02,
   ubicacion: Ubicacion,
-  feedInstagram: FeedInstagram,
+  feedinstagram: FeedInstagram,
   sinFoto01: SinFoto01,
   frase01: Frase01,
   frase02: Frase02,
