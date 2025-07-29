@@ -285,8 +285,9 @@ export default function RootLayout({
             }
           }
 
+          // Solo redirigir si no hay usuario logueado Y el sitio no tiene suscripción activa
           if (
-            userEmail !== "hola.pixelup@gmail.com" &&
+            !userEmail &&
             siteResponse.data.site.statusCode !== "SUBSCRIPTION_ACTIVE"
           ) {
             router.push("/subscription-pending");

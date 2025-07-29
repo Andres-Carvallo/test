@@ -1073,7 +1073,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 </div>
 
                 <div
-                  className=" md:block w-full md:w-[500px] md:h-[500px] bg-gray-100 flex items-center justify-center shadow-md"
+                  className="hidden md:block w-full md:w-[500px] md:h-[500px] bg-gray-100 flex items-center justify-center shadow-md"
                   style={{ borderRadius: "var(--radius)" }}
                 >
                   <img
