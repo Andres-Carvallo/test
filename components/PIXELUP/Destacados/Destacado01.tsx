@@ -192,7 +192,7 @@ const Destacados01: React.FC<any> = ({
           <span className="text-sm uppercase tracking-wider text-gray-500">
             Descubre
           </span>
-          <h2 className="text-3xl md:text-4xl text-primary font-bold mt-2 uppercase">
+          <h2 className="text-3xl md:text-4xl text-white font-bold mt-2 uppercase">
             {text}
           </h2>
         </div>
