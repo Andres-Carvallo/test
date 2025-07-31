@@ -125,6 +125,15 @@ const SinFoto11 = dynamic(
   () => import("@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11"),
   { ssr: false }
 );
+const Hero11 = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero11/Hero11"),
+  { ssr: false }
+);
+const Hero12 = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero12/Hero12"),
+  { ssr: false }
+);
+
 // Mapeo de componentes
 const componentMap: { [key: string]: React.ComponentType<any> } = {
   marqueeTOP: MarqueeTOP,
@@ -156,6 +165,8 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   sinFoto10: SinFoto10,
   hero10: Hero10,
   sinFoto11: SinFoto11,
+  hero11: Hero11,
+  hero12: Hero12,
 };
 
 interface ClientHomeComponentsProps {

@@ -199,6 +199,8 @@ function ComponentPreview({
         sinFoto10: () => import("@/components/PIXELUP/SinFoto/SinFoto10/SinFoto10"),
         hero10: () => import("@/components/PIXELUP/Hero/Hero10/Hero10"),
         sinFoto11: () => import("@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11"),
+        hero11: () => import("@/components/PIXELUP/Hero/Hero11/Hero11"),
+        hero12: () => import("@/components/PIXELUP/Hero/Hero12/Hero12"),
       };
 
       const importFunction = componentMap[componentId];

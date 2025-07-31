@@ -69,6 +69,8 @@ import SinFoto09 from "@/components/PIXELUP/SinFoto/SinFoto09/SinFoto09";
 import SinFoto10 from "@/components/PIXELUP/SinFoto/SinFoto10/SinFoto10";
 import Hero10 from "@/components/PIXELUP/Hero/Hero10/Hero10";
 import SinFoto11 from "@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11";
+import Hero11 from "@/components/PIXELUP/Hero/Hero11/Hero11";
+import Hero12 from "@/components/PIXELUP/Hero/Hero12/Hero12";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -254,6 +256,14 @@ export default async function Page() {
         <h1 className="text-2xl font-bold text-center border">Hero10 </h1>
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
          <Hero10/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero11 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero11/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero12 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero12/>
         </Suspense>
 </div>
 

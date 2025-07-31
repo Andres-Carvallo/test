@@ -255,6 +255,14 @@ const SinFoto11BO = dynamic(
   () => import("@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11BO"),
   { ssr: false }
 );
+const Hero11BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero11/Hero11BO"),
+  { ssr: false }
+);
+const Hero12BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero12/Hero12BO"),
+  { ssr: false }
+);
 
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
@@ -548,6 +556,18 @@ export default function BannerHome() {
       description: "Sin Foto 11 de la página",
       category: "Contenido",
     },
+    {
+      id: "hero11",
+      title: "Hero 11",
+      description: "Hero de la página",
+      category: "Contenido",
+    },
+    {
+      id: "hero12",
+      title: "Hero 12",
+      description: "Hero de la página",
+      category: "Contenido",
+    },
   ];
 
 
@@ -773,6 +793,8 @@ export default function BannerHome() {
           sinFoto10: <SinFoto10BO />,
           hero10: <Hero10BO />,
           sinFoto11: <SinFoto11BO />,
+          hero11: <Hero11BO />,
+          hero12: <Hero12BO />,
         };
 
         return {
