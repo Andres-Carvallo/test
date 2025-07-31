@@ -61,6 +61,14 @@ const SinFoto01 = dynamic(
   () => import("@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01"),
   { ssr: false }
 );
+const SinFoto05 = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05"),
+  { ssr: false }
+);
+const SinFoto08 = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto08/SinFoto08"),
+  { ssr: false }
+);
 const Frase01 = dynamic(
   () => import("@/components/PIXELUP/Frases/Frase01/Frase01"),
   { ssr: false }
@@ -85,7 +93,38 @@ const LogosFijos = dynamic(
   () => import("@/components/PIXELUP/Marcas/LogosDinamicos/LogosDinamicos"),
   { ssr: false }
 );
-
+const Categoria08 = dynamic(
+  () => import("@/components/PIXELUP/Categorias/Categoria08/Categoria08"),
+  { ssr: false }
+);
+const SinFoto09 = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto09/SinFoto09"),
+  { ssr: false }
+);
+const Testimonios05 = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios05/Testimonios05"),
+  { ssr: false }
+);
+const Ubicacion03 = dynamic(
+  () => import("@/components/PIXELUP/Ubicacion/Ubicacion03/Ubicacion03"),
+  { ssr: false }
+);
+const Categoria09 = dynamic(
+  () => import("@/components/PIXELUP/Categorias/Categoria09/Categoria09"),
+  { ssr: false }
+);
+const SinFoto10 = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto10/SinFoto10"),
+  { ssr: false }
+);
+const Hero10 = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero10/Hero10"),
+  { ssr: false }
+);
+const SinFoto11 = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11"),
+  { ssr: false }
+);
 // Mapeo de componentes
 const componentMap: { [key: string]: React.ComponentType<any> } = {
   marqueeTOP: MarqueeTOP,
@@ -98,7 +137,9 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   parallax: Parallax,
   colecciones02: Colecciones02,
   categoria02: Categoria02,
+  categoria08: Categoria08,
   ubicacion: Ubicacion,
+  ubicacion03: Ubicacion03,
   feedinstagram: FeedInstagram,
   sinFoto01: SinFoto01,
   frase01: Frase01,
@@ -107,6 +148,14 @@ const componentMap: { [key: string]: React.ComponentType<any> } = {
   logoscarrusel: LogosCarrusel,
   logosfijos: LogosFijos,
   logosdinamicos: LogosDinamicos,
+  sinFoto05: SinFoto05,
+  sinFoto08: SinFoto08,
+  sinFoto09: SinFoto09,
+  testimonios05: Testimonios05,
+  categoria09: Categoria09,
+  sinFoto10: SinFoto10,
+  hero10: Hero10,
+  sinFoto11: SinFoto11,
 };
 
 interface ClientHomeComponentsProps {

@@ -189,10 +189,20 @@ function ComponentPreview({
         feedInstagram: () =>
           import("@/components/PIXELUP/FeedInstagram/FeedInstagram"),
         parallax: () => import("@/components/PIXELUP/Parallax/Parallax"),
+        categoria08: () => import("@/components/PIXELUP/Categorias/Categoria08/Categoria08"),
+        sinFoto08: () => import("@/components/PIXELUP/SinFoto/SinFoto08/SinFoto08"),
+        sinFoto05: () => import("@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05"),
+        sinFoto09: () => import("@/components/PIXELUP/SinFoto/SinFoto09/SinFoto09"),
+        testimonios05: () => import("@/components/PIXELUP/Testimonios/Testimonios05/Testimonios05"),
+        ubicacion03: () => import("@/components/PIXELUP/Ubicacion/Ubicacion03/Ubicacion03"),
+        categoria09: () => import("@/components/PIXELUP/Categorias/Categoria09/Categoria09"),
+        sinFoto10: () => import("@/components/PIXELUP/SinFoto/SinFoto10/SinFoto10"),
+        hero10: () => import("@/components/PIXELUP/Hero/Hero10/Hero10"),
+        sinFoto11: () => import("@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11"),
       };
 
       const importFunction = componentMap[componentId];
-      if (importFunction) {
+      if (importFunction) { 
         try {
           const importedModule = await importFunction();
           const Component = importedModule.default;

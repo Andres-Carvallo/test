@@ -104,7 +104,7 @@ const Hero05 = () => {
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div className="space-y-4">
             <div>
-              <span className="text-[#81C4BA] text-sm uppercase tracking-widest mb-4 block">
+              <span className="text-primary/70 text-sm uppercase tracking-widest mb-4 block">
                 {additionalData.subtitle}
               </span>
               <h1 className="text-4xl font-light text-primary leading-12">
@@ -141,7 +141,7 @@ const Hero05 = () => {
               style={{ borderRadius: "var(--radius)" }}
             />
             <div className="absolute -bottom-8 left-4 md:-left-8 bg-white p-4 md:p-6 shadow-lg max-w-[180px] md:max-w-[200px]" style={{ borderRadius: "var(--radius)" }}>
-              <span className="text-[#81C4BA] text-xs md:text-sm font-medium">
+              <span className="text-primary/70 text-xs md:text-sm font-medium">
                 {additionalData.newServiceSubtitle}
               </span>
               <h3 className="text-primary text-sm md:text-base font-medium mt-1 md:mt-2">

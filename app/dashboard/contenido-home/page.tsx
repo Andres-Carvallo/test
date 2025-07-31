@@ -55,6 +55,10 @@ const Categoria02BO = dynamic(
   () => import("@/components/PIXELUP/Categorias/Categoria02/CategoriaBO02"),
   { ssr: false }
 );
+const Categoria08BO = dynamic(
+  () => import("@/components/PIXELUP/Categorias/Categoria08/CategoriaBO08"),
+  { ssr: false }
+);
 const FeedInstagramBO = dynamic(
   () => import("@/components/PIXELUP/FeedInstagram/FeedInstagramBO"),
   { ssr: false }
@@ -215,6 +219,42 @@ const DestacadosCatBO = dynamic(
   () => import("@/components/PIXELUP/Destacados/DestacadosCat/DestacadosCatBO"),
   { ssr: false }
 );
+const SinFoto08BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto08/SinFotoBO08"),
+  { ssr: false }
+);
+const SinFoto05BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05BO"),
+  { ssr: false }
+);
+const SinFoto09BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto09/SinFoto09BO"),
+  { ssr: false }
+);
+const Testimonios05BO = dynamic(
+  () => import("@/components/PIXELUP/Testimonios/Testimonios05/Testimonios05BO"),
+  { ssr: false }
+);
+const Ubicacion03BO = dynamic(
+  () => import("@/components/PIXELUP/Ubicacion/Ubicacion03/Ubicacion03BO"),
+  { ssr: false }
+);
+const Categoria09BO = dynamic(
+  () => import("@/components/PIXELUP/Categorias/Categoria09/Categoria09BO"),
+  { ssr: false }
+);
+const SinFoto10BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto10/SinFoto10BO"),
+  { ssr: false }
+);
+const Hero10BO = dynamic(
+  () => import("@/components/PIXELUP/Hero/Hero10/Hero10BO"),
+  { ssr: false }
+);
+const SinFoto11BO = dynamic(
+  () => import("@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11BO"),
+  { ssr: false }
+);
 
 export default function BannerHome() {
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>(
@@ -255,6 +295,24 @@ export default function BannerHome() {
       title: "Parallax",
       description: "Parallax de la página",
       category: "Banners",
+    },
+    {
+      id: "sinFoto05",
+      title: "Sin Foto 05",
+      description: "Sin Foto 05 de la página",
+      category: "Contenido",
+    },
+    {
+      id: "sinFoto08",
+      title: "Sin Foto 08",
+      description: "Sin Foto 08 de la página",
+      category: "Contenido",
+    },
+    {
+      id: "sinFoto09",
+      title: "Sin Foto 09",
+      description: "Sin Foto 09 de la página",
+      category: "Contenido",
     },
     {
       id: "hero01",
@@ -389,6 +447,12 @@ export default function BannerHome() {
       category: "Social",
     },
     {
+      id: "testimonios05",
+      title: "Testimonios 05",
+      description: "Testimonios de la página",
+      category: "Social",
+    },
+    {
       id: "feedinstagram",
       title: "Feed Instagram",
       description: "Feed Instagram de la página",
@@ -437,6 +501,12 @@ export default function BannerHome() {
       category: "Categorías Colecciones",
     },
     {
+      id: "categoria08",
+      title: "Categoría 08",
+      description: "Categoría de la página",
+      category: "Categorías Colecciones",
+    },
+    {
       id: "colecciones01",
       title: "Colecciones 01",
       description: "Colecciones de la página",
@@ -447,6 +517,36 @@ export default function BannerHome() {
       title: "Colecciones 02",
       description: "Colecciones de la página",
       category: "Categorías Colecciones",
+    },
+    {
+      id: "ubicacion03",
+      title: "Ubicación 03",
+      description: "Ubicación de la página",
+      category: "Ubicación",
+    },
+    {
+      id: "categoria09",
+      title: "Categoría 09",
+      description: "Categoría de la página",
+      category: "Categorías Colecciones",
+    },
+    {
+      id: "sinFoto10",
+      title: "Sin Foto 10",
+      description: "Sin Foto 10 de la página",
+      category: "Contenido",
+    },
+    {
+      id: "hero10",
+      title: "Hero 10",
+      description: "Hero de la página",
+      category: "Contenido",
+    },
+    {
+      id: "sinFoto11",
+      title: "Sin Foto 11",
+      description: "Sin Foto 11 de la página",
+      category: "Contenido",
     },
   ];
 
@@ -622,6 +722,7 @@ export default function BannerHome() {
           testimonios03: <Testimonios03BO />,
           testimonios: <Testimonios01BO />,
           testimonios04: <Testimonios04BO />,
+          testimonios05: <Testimonios05BO />,
           sinFoto04: <SinFoto04BO />,
           colecciones01: <Colecciones01BO />,
           colecciones02: <Colecciones02BO />,
@@ -630,7 +731,9 @@ export default function BannerHome() {
           nosotros01: <Nosotros01BO />,
           sinFoto06: <SinFoto06BO />,
           sinFoto07: <SinFoto07BO />,
+          sinFoto08: <SinFoto08BO />,
           ubicacion02: <Ubicacion02BO />,
+          ubicacion03: <Ubicacion03BO />,
           servicios01: <Servicios01BO />,
           servicios02: <Servicios02BO />,
           servicios03: <Servicios03BO />,
@@ -638,6 +741,8 @@ export default function BannerHome() {
           galeria: <GaleriaBO />,
           sinFoto: <SinFotoBO />,
           sinFoto02: <SinFoto02BO />,
+          sinFoto05: <SinFoto05BO />,
+          sinFoto09: <SinFoto09BO />,
           hero06: <Hero06BO />,
           materiales: <MaterialesBO />,
           logoscarrusel: <LogosCarruselBO />,
@@ -661,8 +766,13 @@ export default function BannerHome() {
           categoria05: <Categoria05BO />,
           categoria06: <Categoria06BO />,
           categoria07: <Categoria07BO />,
+          categoria08: <Categoria08BO />,
+          categoria09: <Categoria09BO />,
           feedInstagram: <FeedInstagramBO />,
           parallax: <ParallaxBO />,
+          sinFoto10: <SinFoto10BO />,
+          hero10: <Hero10BO />,
+          sinFoto11: <SinFoto11BO />,
         };
 
         return {

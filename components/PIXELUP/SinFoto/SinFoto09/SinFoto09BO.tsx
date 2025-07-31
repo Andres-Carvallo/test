@@ -21,8 +21,6 @@ interface ContentData {
   box1: BoxContent;
   box2: BoxContent;
   box3: BoxContent;
-  textoBoton: string;
-  linkBoton: string;
 }
 
 interface ApiResponse {
@@ -35,8 +33,8 @@ interface ApiResponse {
 }
 
 
-const SinFoto05BO: React.FC = () => {
-  const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO05_CONTENTBLOCK || "";
+const SinFoto09BO: React.FC = () => {
+  const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO09_CONTENTBLOCK || "";
   const [loading, setLoading] = useState<boolean>(true);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -97,11 +95,9 @@ const SinFoto05BO: React.FC = () => {
     epigrafe: "",
     titulo: "",
     contenido: "",
-    box1: { title: "", contentText: "", icon: "Handshake" },
-    box2: { title: "", contentText: "", icon: "Shield" },
-    box3: { title: "", contentText: "", icon: "Store" },
-    textoBoton: "",
-    linkBoton: "",
+    box1: { title: "", contentText: "", icon: "Heart" },
+    box2: { title: "", contentText: "", icon: "Settings" },
+    box3: { title: "", contentText: "", icon: "Smile" },
   });
 
   const fetchData = async () => {
@@ -148,7 +144,7 @@ const SinFoto05BO: React.FC = () => {
       const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID;
 
       // Formatear el link del botón antes de enviar
-      const formattedLinkBoton = formatURL(formData.linkBoton);
+      // const formattedLinkBoton = formatURL(formData.linkBoton); // Eliminado
 
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${ContentBlockId}?siteId=${siteId}`,
@@ -156,7 +152,7 @@ const SinFoto05BO: React.FC = () => {
           title: "SinFoto Content",
           contentText: JSON.stringify({
             ...formData,
-            linkBoton: formattedLinkBoton,
+            // linkBoton: formattedLinkBoton, // Eliminado
           }),
         },
         {
@@ -234,48 +230,34 @@ const SinFoto05BO: React.FC = () => {
         {showPreview && (
           <div className="mb-8 overflow-x-auto">
             <h3 className="font-medium text-gray-700 mb-4">Vista Previa:</h3>
-            <section className="py-12 bg-white">
-              <div className="mx-auto px-4">
-                <div className="max-w-3xl mx-auto text-center">
-                  <h2 className="text-2xl font-bold text-primary mt-2 mb-4">
-                    {formData.epigrafe}
-                  </h2>
-                  <p className="text-gray-600 mb-8">
-                    {formData.contenido}
-                  </p>
-                </div>
+            <section className="px-4 text-center mx-4 pt-20">
+            <p className="text-lg text-gray-600 font-kalam mb-2">
+                {formData.epigrafe}
+              </p>
+              <h2 className="text-4xl font-bold text-gray-800 mb-4 font-kalam">
+                {formData.titulo}
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+                {formData.contenido}
+              </p>
+     
 
-                <div className="max-w-4xl mx-auto">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-                    {/* Líneas separadoras */}
-                    <div className="hidden md:block absolute top-1/2 left-1/3 w-px h-16 bg-gray-200 transform -translate-y-1/2"></div>
-                    <div className="hidden md:block absolute top-1/2 left-2/3 w-px h-16 bg-gray-200 transform -translate-y-1/2"></div>
-
-                    {[formData.box1, formData.box2, formData.box3].map((box, index) => (
-                      <div key={index} className="flex flex-col items-center text-center p-4">
-                        <div className="bg-primary/10 rounded-full p-3 mb-4">
-                          {renderIcon(box.icon || "Circle", "text-2xl text-primary")}
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                          {box.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          {box.contentText}
-                        </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                {[formData.box1, formData.box2, formData.box3].map((box, index) => (
+                  <div key={index} className="bg-white p-4 rounded-lg border shadow-sm">
+                    <div className="flex justify-center mb-4">
+                      <div className="bg-white rounded-full p-2 shadow-md text-primary">
+                        {renderIcon(box.icon || "Circle", "w-6 h-6")}
                       </div>
-                    ))}
+                    </div>
+                    <h3 className="text-[16px] font-semibold  mb-2">
+                      {box.title}
+                    </h3>
+                    <p className="text-gray-600 text-[14px] leading-6">
+                      {box.contentText}
+                    </p>
                   </div>
-
-                  <div className="text-center mt-8">
-                    <Link
-                      href={formData.linkBoton || '#'}
-                      className="inline-block bg-primary text-white px-6 py-2 text-sm hover:bg-primary/90 transition-colors duration-300"
-                      style={{ borderRadius: "var(--radius)" }}
-                    >
-                      {formData.textoBoton || 'Conoce más sobre nosotros'}
-                    </Link>
-                  </div>
-                </div>
+                ))}
               </div>
             </section>
           </div>
@@ -299,6 +281,20 @@ const SinFoto05BO: React.FC = () => {
 
           <div>
             <h3 className="font-normal text-primary">
+              Título <span className="text-primary">*</span>
+            </h3>
+            <input
+              type="text"
+              value={formData.titulo}
+              onChange={(e) => handleChange("titulo", e.target.value)}
+              className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
+              style={{ borderRadius: "var(--radius)" }}
+              placeholder="Texto del título"
+            />
+          </div>
+
+          <div>
+            <h3 className="font-normal text-primary">
               Texto Principal <span className="text-primary">*</span>
             </h3>
             <textarea
@@ -311,38 +307,7 @@ const SinFoto05BO: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-normal text-primary">
-                Texto del Botón <span className="text-primary">*</span>
-              </h3>
-              <input
-                type="text"
-                value={formData.textoBoton}
-                onChange={(e) => handleChange("textoBoton", e.target.value)}
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
-                placeholder="Texto del botón"
-              />
-            </div>
-            <div>
-              <h3 className="font-normal text-primary">
-                Link del Botón <span className="text-primary">*</span>
-              </h3>
-              <input
-                type="text"
-                value={formData.linkBoton}
-                onChange={(e) => handleChange("linkBoton", e.target.value)}
-                onBlur={(e) => {
-                  const formattedLink = formatURL(e.target.value);
-                  handleChange("linkBoton", formattedLink);
-                }}
-                className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300"
-                style={{ borderRadius: "var(--radius)" }}
-                placeholder="URL del botón"
-              />
-            </div>
-          </div>
+          {/* Eliminado el botón de link */}
           
 
           {/* Boxes Forms */}
@@ -428,4 +393,4 @@ const SinFoto05BO: React.FC = () => {
   );
 };
 
-export default SinFoto05BO;
+export default SinFoto09BO;
