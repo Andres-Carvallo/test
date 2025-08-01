@@ -55,11 +55,11 @@ function InactiveComponentsModal({
     useState<ComponentConfig | null>(null);
   const [currentComponentIndex, setCurrentComponentIndex] = useState(0);
 
-  // Usar el hook de categorías
-  const { getCategoryIcon, getCategoryColor, getAllCategories } = useComponentCategories([...inactiveComponents, ...activeComponents]);
-
   // Combinar todos los componentes disponibles
   const allComponents = [...activeComponents, ...inactiveComponents];
+
+  // Usar el hook de categorías
+  const { getCategoryIcon, getCategoryColor, getAllCategories } = useComponentCategories(allComponents);
 
   // Obtener categorías únicas
   const categories = Array.from(
