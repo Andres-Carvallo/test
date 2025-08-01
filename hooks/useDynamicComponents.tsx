@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { ComponentConfig, getComponentsForPage } from '@/app/config/availableComponents';
+import { availableComponents, ComponentConfig } from '@/app/config/availableComponents';
 
 interface UseDynamicComponentsOptions {
   page: 'home' | 'about';
@@ -8,79 +8,78 @@ interface UseDynamicComponentsOptions {
 }
 
 export const useDynamicComponents = ({ page, type }: UseDynamicComponentsOptions) => {
-  const pageComponents = useMemo(() => {
-    return getComponentsForPage(page);
+  const [components, setComponents] = useState<ComponentConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Filtrar componentes según la página y tipo
+    const filteredComponents = availableComponents.filter(component => {
+      if (page === 'home' && !component.showInHome) return false;
+      if (page === 'about' && !component.showInAbout) return false;
+      return true;
+    });
+
+    setComponents(filteredComponents);
+    setLoading(false);
   }, [page]);
 
   const renderComponent = (componentId: string, props?: Record<string, any>) => {
-    const component = pageComponents.find(comp => comp.id === componentId);
+    const component = components.find(comp => comp.id === componentId);
     
     if (!component) {
-      console.warn(`Componente no encontrado: ${componentId}`);
+      console.error(`❌ Componente no encontrado: ${componentId}`);
       return (
-        <div className="p-4 border border-yellow-200 bg-yellow-50 rounded">
-          <p className="text-yellow-600">Componente {componentId} no disponible</p>
+        <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          <strong>Error:</strong> Componente "{componentId}" no encontrado
         </div>
       );
     }
 
-    const componentPath = type === 'front' ? component.frontComponent : component.backComponent;
+    const importFunction = type === 'front' ? component.frontComponent : component.backComponent;
     
-    if (!componentPath) {
-      console.warn(`Ruta no definida para componente ${componentId}`);
+    if (!importFunction) {
+      console.error(`❌ Función de importación no disponible para: ${componentId} (${type})`);
       return (
-        <div className="p-4 border border-yellow-200 bg-yellow-50 rounded">
-          <p className="text-yellow-600">Ruta no definida para {componentId}</p>
+        <div className="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+          <strong>Advertencia:</strong> Función de importación no disponible para "{componentId}" ({type})
         </div>
       );
     }
 
-    try {
-      const DynamicComponent = dynamic(
-        () => import(componentPath)
+    const DynamicComponent = dynamic(
+      () => {
+        console.log(`🔄 Iniciando carga dinámica de: ${componentId} (${type})`);
+        return importFunction()
           .then((module) => {
-            if (module.default) {
-              return module;
-            } else {
-              throw new Error(`Componente ${componentId} no tiene exportación por defecto`);
-            }
+            console.log(`✅ Componente cargado exitosamente: ${componentId}`);
+            return module.default || module;
           })
-          .catch((error) => {
-            console.warn(`Error al cargar componente ${componentId} desde ${componentPath}:`, error);
-            return Promise.resolve({
-              default: () => (
-                <div className="p-4 border border-red-200 bg-red-50 rounded">
-                  <p className="text-red-600">Error: Componente {componentId} no encontrado</p>
-                  <p className="text-xs text-red-500 mt-1">Ruta: {componentPath}</p>
-                </div>
-              )
-            });
-          }),
-        {
-          ssr: false,
-          loading: () => <div className="animate-pulse bg-gray-200 h-32 rounded"></div>
-        }
-      );
+          .catch((error: any) => {
+            console.error(`❌ Error al cargar componente ${componentId}:`, error);
+            throw new Error(`Error al cargar componente ${componentId}: ${error.message}`);
+          });
+      },
+      { 
+        ssr: false, 
+        loading: () => (
+          <div className="p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
+            <strong>Cargando:</strong> {component.title}...
+          </div>
+        ) 
+      }
+    );
 
-      return <DynamicComponent {...props} />;
-    } catch (error) {
-      console.error(`Error renderizando componente ${componentId}:`, error);
-      return (
-        <div className="p-4 border border-red-200 bg-red-50 rounded">
-          <p className="text-red-600">Error al renderizar {componentId}</p>
-        </div>
-      );
-    }
+    return <DynamicComponent {...props} />;
   };
 
-  const getComponentProps = (componentId: string) => {
-    const component = pageComponents.find(comp => comp.id === componentId);
-    return component?.props || {};
+  const getComponentById = (componentId: string) => {
+    return components.find(comp => comp.id === componentId);
   };
 
   return {
+    components,
+    loading,
     renderComponent,
-    getComponentProps,
-    availableComponentIds: pageComponents.map(comp => comp.id)
+    getComponentById,
   };
 }; 

@@ -28,8 +28,8 @@ interface ComponentConfig {
   description?: string;
   icon?: string;
   category?: string;
-  frontComponent?: string;
-  backComponent?: string;
+  frontComponent?: () => Promise<any>;
+  backComponent?: () => Promise<any>;
   showInHome: boolean;
   showInAbout: boolean;
   props?: Record<string, any>;
@@ -100,8 +100,8 @@ function ComponentPreview({
       const componentConfig = component;
       
       if (componentConfig?.frontComponent) {
-        const importedModule = await import(componentConfig.frontComponent);
-        const Component = importedModule.default;
+        const importedModule = await componentConfig.frontComponent();
+        const Component = importedModule.default || importedModule;
         setPreviewComponent(<Component {...componentConfig.props} />);
       } else {
         setPreviewComponent(

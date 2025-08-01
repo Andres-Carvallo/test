@@ -12,13 +12,14 @@ interface ClientHomeComponentsProps {
 export default function ClientHomeComponents({
   config,
 }: ClientHomeComponentsProps) {
-  const { renderComponent, getComponentProps } = useDynamicComponents({
+  const { renderComponent, getComponentById } = useDynamicComponents({
     page: 'home',
     type: 'front'
   });
 
   const renderComponentWithProps = (componentId: string) => {
-    const props = getComponentProps(componentId);
+    const component = getComponentById(componentId);
+    const props = component?.props || {};
     
     return (
       <Suspense
