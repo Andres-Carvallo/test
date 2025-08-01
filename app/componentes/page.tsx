@@ -71,6 +71,21 @@ import Hero10 from "@/components/PIXELUP/Hero/Hero10/Hero10";
 import SinFoto11 from "@/components/PIXELUP/SinFoto/SinFoto11/SinFoto11";
 import Hero11 from "@/components/PIXELUP/Hero/Hero11/Hero11";
 import Hero12 from "@/components/PIXELUP/Hero/Hero12/Hero12";
+import SinFoto12 from "@/components/PIXELUP/SinFoto/SinFoto12/SinFoto12";
+import Hero13 from "@/components/PIXELUP/Hero/Hero13/Hero13";
+import Categoria10 from "@/components/PIXELUP/Categorias/Categoria10/Categoria10";
+import Ubicacion04 from "@/components/PIXELUP/Ubicacion/Ubicacion04/Ubicacion04";
+import SinFoto13 from "@/components/PIXELUP/SinFoto/SinFoto13/SinFoto13";
+import Hero14 from "@/components/PIXELUP/Hero/Hero14/Hero14";
+import Ubicacion05 from "@/components/PIXELUP/Ubicacion/Ubicacion05/Ubicacion05";
+import Hero15 from "@/components/PIXELUP/Hero/Hero15/Hero15";
+import Materiales02 from "@/components/PIXELUP/SinFoto/Materiales02/Materiales02";
+import SinFoto14 from "@/components/PIXELUP/SinFoto/SinFoto14/SinFoto14";
+import Hero16 from "@/components/PIXELUP/Hero/Hero16/Hero16";
+import Hero17 from "@/components/PIXELUP/Hero/Hero17/Hero17";
+import Hero18 from "@/components/PIXELUP/Hero/Hero18/Hero18";
+import Hero19 from "@/components/PIXELUP/Hero/Hero19/Hero19";
+import BannerPrincipal03 from "@/components/PIXELUP/BannerPrincipal/BannerPrincipal03/BannerPrincipal03";
 
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -84,7 +99,7 @@ export default async function Page() {
     
 
     return (
-      <>
+      <div className="w-full">        
         <DynamicNavbar />
 
         <h1 className="text-2xl font-bold text-center border">ABOUT 01 FALTANTE</h1>
@@ -96,7 +111,13 @@ export default async function Page() {
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
         </Suspense>
 
-
+<div className="flex flex-col gap-4">
+    <h1 className="text-2xl font-bold text-center border border-primary py-8">Carpeta BannerPrincipal</h1>
+<h1 className="text-2xl font-bold text-center border">BannerPrincipal03 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <BannerPrincipal03/>
+        </Suspense>
+</div>
 <div className="flex flex-col gap-4">
     <h1 className="text-2xl font-bold text-center border border-primary py-8">Carpeta Categorias</h1>
 <h1 className="text-2xl font-bold text-center border">Categoria01 </h1>
@@ -141,6 +162,10 @@ export default async function Page() {
         <h1 className="text-2xl font-bold text-center border">Categoria09 </h1>
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
          <Categoria09/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Categoria10 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Categoria10/>
         </Suspense>
 </div>
 
@@ -265,6 +290,34 @@ export default async function Page() {
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
          <Hero12/>
         </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero13 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero13/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero14 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero14/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero15 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero15/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero16 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero16/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero17 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero17/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero18 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero18/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Hero19 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Hero19/>
+        </Suspense>
 </div>
 
 
@@ -357,6 +410,10 @@ export default async function Page() {
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
          <Materiales/>
         </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Materiales02 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Materiales02/>
+        </Suspense>
 <h1 className="text-2xl font-bold text-center border">SinFoto01 </h1>
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
          <SinFoto01/>
@@ -401,6 +458,18 @@ export default async function Page() {
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
          <SinFoto11/>
         </Suspense>
+        <h1 className="text-2xl font-bold text-center border">SinFoto12 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <SinFoto12/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">SinFoto13 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <SinFoto13/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">SinFoto14 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <SinFoto14/>
+        </Suspense>
 </div>
 
 <div className="flex flex-col gap-4">
@@ -441,6 +510,14 @@ export default async function Page() {
          <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
          <Ubicacion03/>
         </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Ubicacion04 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Ubicacion04/>
+        </Suspense>
+        <h1 className="text-2xl font-bold text-center border">Ubicacion05 </h1>
+         <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100" />}>
+         <Ubicacion05/>
+        </Suspense>
 </div>
 
 
@@ -448,7 +525,7 @@ export default async function Page() {
 
         {/* <DiscountModal /> */}
         <WhatsAppButton />
-      </>
+      </div>
     );
   } catch (error) {
     console.error("Error en Page:", error);

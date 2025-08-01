@@ -68,7 +68,7 @@ const SinFoto11: React.FC = () => {
   }
 
   return (
-    <section className="pt-20 px-4 md:px-8 lg:px-16 w-full mx-auto relative">
+    <section className="pt-20 px-4 md:px-8 lg:px-16 max-w-7xl mx-auto relative">
       {/* Hoja decorativa */}
 
 

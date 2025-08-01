@@ -9,34 +9,10 @@ import imageCompression from "browser-image-compression";
 import { getCroppedImg } from "@/lib/cropImage";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
-import toast, { Toaster } from 'react-hot-toast';
-
-interface LandingTextData {
-  content: string;
-  subtitle: string;
-  text2: string;
-}
-
-interface FormDataHero {
-  landingText: string;
-  title: string;
-  subtitle: string;
-  text2: string;
-  buttonText: string;
-  buttonLink: string;
-  mainImageLink: string;
-  orderNumber: number;
-  mainImage?: {
-    name: string;
-    type: string;
-    size: number | null;
-    data: string;
-  };
-}
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
-const Hero12BO: React.FC = () => {
+const Hero18BO: React.FC = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
   const [mainImageHero, setMainImageHero] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,24 +22,42 @@ const Hero12BO: React.FC = () => {
   const [isMainImageUploaded, setIsMainImageUploaded] = useState(false);
   const [originalFileName, setOriginalFileName] = useState<string>("");
 
-  const [formDataHero, setFormDataHero] = useState<FormDataHero>({
+  const [formDataHero, setFormDataHero] = useState<any>({
     landingText: "",
-    title: "Pixel Up",
-    subtitle: "",
-    text2: "",
+    title: "Huella Sustentable",
     buttonText: "Conoce más",
     buttonLink: "#",
-    mainImageLink: "",
-    orderNumber: 1,
+    // Nuevos campos para el contenido estructurado
+    epigrafe: "",
+    titulo: "",
+    parrafo: "",
+    linkBoton: "",
+    textoBoton: "",
+    cards: [
+      {
+        titulo: "",
+        texto: ""
+      },
+      {
+        titulo: "",
+        texto: ""
+      },
+      {
+        titulo: "",
+        texto: ""
+      },
+      {
+        titulo: "",
+        texto: ""
+      }
+    ]
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [updatedBannerData, setUpdatedBannerData] = useState({
     landingText: "",
     mainImageLink: "",
     orderNumber: 1,
-    title: "Pixel Up",
-    subtitle: "",
-    text2: "",
+    title: "Huella Sustentable",
     buttonText: "Conoce más",
     buttonLink: "#",
     mainImage: {
@@ -78,8 +72,8 @@ const Hero12BO: React.FC = () => {
     try {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_HERO12_ID}`;
-      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO12_IMGID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO18_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO18_IMGID}`;
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
@@ -93,28 +87,51 @@ const Hero12BO: React.FC = () => {
 
       const bannerImage = productTypeResponse.data.bannerImage;
       setBannerData(bannerImage);
+      
+      // Parsear el landingText si existe y tiene contenido estructurado
+      let parsedData = {
+        epigrafe: "",
+        titulo: "",
+        parrafo: "",
+        linkBoton: "",
+        textoBoton: "",
+        cards: [
+          { titulo: "", texto: "" },
+          { titulo: "", texto: "" },
+          { titulo: "", texto: "" },
+          { titulo: "", texto: "" }
+        ]
+      };
 
-      // Parsear el landingText si es un string JSON
-      let parsedLandingText;
-      try {
-        parsedLandingText = JSON.parse(bannerImage.landingText);
-      } catch {
-        parsedLandingText = { content: bannerImage.landingText || '', subtitle: '', text2: '' };
+      if (bannerImage.landingText) {
+        try {
+          // Intentar parsear como JSON
+          const parsed = JSON.parse(bannerImage.landingText);
+          if (parsed.epigrafe || parsed.titulo || parsed.parrafo || parsed.cards) {
+            parsedData = { ...parsedData, ...parsed };
+          }
+        } catch (e) {
+          // Si no es JSON válido, usar como texto plano
+          parsedData.parrafo = bannerImage.landingText;
+        }
       }
 
-      setFormDataHero({
-        landingText: bannerImage.landingText || '',
-        mainImageLink: bannerImage.mainImageLink || "",
-        orderNumber: 1,
-        title: bannerImage.title || "Pixel Up",
-        subtitle: parsedLandingText.subtitle || '',
-        text2: parsedLandingText.text2 || '',
-        buttonText: bannerImage.buttonText || "Conoce más",
-        buttonLink: bannerImage.buttonLink || "#",
-      });
+              setFormDataHero({
+          landingText: bannerImage.landingText || "",
+          mainImageLink: bannerImage.mainImageLink || "",
+          orderNumber: 1,
+          title: bannerImage.title || "Huella Sustentable",
+          buttonText: bannerImage.buttonText || "Conoce más",
+          buttonLink: bannerImage.buttonLink || "#",
+          epigrafe: parsedData.epigrafe,
+          titulo: parsedData.titulo,
+          parrafo: parsedData.parrafo,
+          linkBoton: parsedData.linkBoton,
+          textoBoton: parsedData.textoBoton,
+          cards: parsedData.cards
+        });
     } catch (error) {
       console.error("Error al obtener los tipos de producto:", error);
-      toast.error("Error al cargar el banner");
     } finally {
       setLoading(false);
     }
@@ -124,17 +141,19 @@ const Hero12BO: React.FC = () => {
     fetchBannerHome();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement> | string) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
     if (typeof e === 'string') {
-      // Si es un cambio en el editor ReactQuill
-      setFormDataHero(prev => ({
-        ...prev,
-        landingText: e
-      }));
+      setFormDataHero({ ...formDataHero, landingText: e });
     } else {
       const { name, value } = e.target;
-      setFormDataHero((prev: FormDataHero) => ({ ...prev, [name]: value }));
+      setFormDataHero({ ...formDataHero, [name]: value });
     }
+  };
+
+  const handleCardChange = (index: number, field: string, value: string) => {
+    const updatedCards = [...formDataHero.cards];
+    updatedCards[index] = { ...updatedCards[index], [field]: value };
+    setFormDataHero({ ...formDataHero, cards: updatedCards });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,16 +162,19 @@ const Hero12BO: React.FC = () => {
       setLoading(true);
       const token = getCookie("AdminTokenAuth");
 
-      // Crear el objeto landingText con todos los campos
-      const landingTextObj = {
-        content: formDataHero.landingText,
-        subtitle: formDataHero.subtitle,
-        text2: formDataHero.text2
+      // Crear el JSON estructurado para landingText
+      const structuredContent = {
+        epigrafe: formDataHero.epigrafe,
+        titulo: formDataHero.titulo,
+        parrafo: formDataHero.parrafo,
+        linkBoton: formDataHero.linkBoton,
+        textoBoton: formDataHero.textoBoton,
+        cards: formDataHero.cards
       };
 
       const updatedDataWithoutImage = {
         ...formDataHero,
-        landingText: JSON.stringify(landingTextObj),
+        landingText: JSON.stringify(structuredContent),
         orderNumber: formDataHero.orderNumber,
       };
 
@@ -160,8 +182,8 @@ const Hero12BO: React.FC = () => {
         delete updatedDataWithoutImage.mainImage;
       }
 
-      const bannerId = `${process.env.NEXT_PUBLIC_HERO12_ID}`;
-      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO12_IMGID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_HERO18_ID}`;
+      const bannerImageId = `${process.env.NEXT_PUBLIC_HERO18_IMGID}`;
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         updatedDataWithoutImage,
@@ -174,10 +196,8 @@ const Hero12BO: React.FC = () => {
       );
 
       fetchBannerHome();
-      toast.success("Banner actualizado exitosamente");
     } catch (error) {
       console.error("Error updating banner:", error);
-      toast.error("Error al actualizar el banner");
     } finally {
       setLoading(false);
       setIsMainImageUploaded(false);
@@ -249,14 +269,13 @@ const Hero12BO: React.FC = () => {
       );
       if (!croppedImage) {
         console.error("Error al recortar la imagen: croppedImage es null");
-        toast.error("Error al recortar la imagen");
         return;
       }
       const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1200,
+        maxSizeMB: 1, // Ajusta el tamaño máximo permitido
+        maxWidthOrHeight: 1200, // Ajusta las dimensiones máximas permitidas
         useWebWorker: true,
-        initialQuality: 0.95,
+        initialQuality: 0.95, // Ajusta la calidad inicial para mantener mejor calidad visual
       };
       const compressedFile = await imageCompression(
         croppedImage as File,
@@ -281,10 +300,8 @@ const Hero12BO: React.FC = () => {
       setMainImageHero(base64);
       setIsModalOpen(false);
       setIsMainImageUploaded(true);
-      toast.success("Imagen procesada exitosamente");
     } catch (error) {
       console.error("Error al recortar/comprimir la imagen:", error);
-      toast.error("Error al procesar la imagen");
     }
   };
 
@@ -319,73 +336,61 @@ const Hero12BO: React.FC = () => {
       id="banner"
       className="w-full"
     >
-      <Toaster />
-      <section className="w-full bg-foreground/5">
-        <div className="text-gray-600 body-font">
-          {bannerData && (
-            <div className=" py-10 mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                {/* Columna de imagen */}
-                <div className="order-2 lg:order-1 col-span-1">
-                  <img
-                    className="w-full h-auto object-contain"
-                    alt="hero"
-                    src={bannerData.mainImage.url}
-                    style={{ borderRadius: "var(--radius)" }}
-                  />
-                </div>
+      {/* Vista Previa con el diseño de diseño.tsx */}
+      <section className="py-20 bg-gray-100" id="metodologia">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
+          <div className="mb-10 text-center">
+            <span className="inline-block mb-2 text-primary font-semibold text-xl uppercase">
+              {formDataHero.epigrafe || "Conoce mi enfoque"}
+            </span>
+            <h2 className="text-4xl max-w-3xl mx-auto md:text-5xl uppercase font-ubuntu font-bold text-dark mb-4 leading-tight">
+              {formDataHero.titulo || "Conoce mi enfoque"}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-4xl mx-auto mb-8">
+              {formDataHero.parrafo || "Te escucho con atención, evalúo tu historia, tus hábitos, tus emociones para ayudarte a identificar el origen de tus síntomas, no solo a silenciarlos."}
+            </p>
+          </div>
 
-                {/* Columna de Texto */}
-                <div className="order-1 lg:order-2 col-span-1">
-                  <div className="text-gray-700">
-                    <h2 className="text-3xl md:text-4xl text-primary/80 mb-4 font-lilita-one">
-                      {bannerData.title}
-                    </h2>
-                    <div className="h-1 w-20 bg-primary  mb-6"></div>
-
-                    <div className="space-y-4">
-                      <div 
-                        className="leading-tight text-[14px]"
-                        dangerouslySetInnerHTML={{ __html: (() => {
-                          try {
-                            const parsed = JSON.parse(bannerData.landingText);
-                            return parsed.content || '';
-                          } catch (e) {
-                            console.log('Error parsing JSON:', e);
-                            return bannerData.landingText || '';
-                          }
-                        })() }}
-                      />
-                      <p className="text-2xl text-primary mb-2 font-lilita-one">
-                        {(() => {
-                          try {
-                            const parsed = JSON.parse(bannerData.landingText);
-                            return parsed.subtitle || '';
-                          } catch {
-                            return '';
-                          }
-                        })()}
-                      </p>
-
-              
-
-                        <p className="leading-tight ">
-                          {(() => {
-                            try {
-                              const parsed = JSON.parse(bannerData.landingText);
-                              return parsed.text2 || '';
-                            } catch {
-                              return '';
-                            }
-                          })()}
-                        </p>
-                     
-                    </div>
+          <div className="flex flex-col lg:flex-row items-center gap-12 mb-10">
+            {/* Listado de características */}
+            <div className="flex-1 space-y-6">
+              {formDataHero.cards.map((card: any, index: number) => (
+                <div key={index} className="bg-white p-6 mb-4 shadow flex items-center min-h-[100px]" style={{ borderRadius: "var(--radius)" }}>
+                  <div>
+                    <h4 className="text-xl font-bold text-dark mb-1">
+                      {card.titulo || `Card ${index + 1}`}
+                    </h4>
+                    <p className="text-gray-600 text-[15px] leading-tight">
+                      {card.texto || `Texto de la card ${index + 1}`}
+                    </p>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Imagen al lado */}
+            <div className="flex-1 flex justify-center">
+              <div className="relative w-full max-h-[600px] overflow-hidden shadow-xl" style={{ borderRadius: "var(--radius)" }}>
+                <img
+                  src={bannerData?.mainImage?.url || "/pixelup.webp"}
+                  alt="Imagen Hero 18"
+                  className="w-full h-full object-cover object-top"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
               </div>
             </div>
-          )}
+          </div>
+
+          <div className="text-center">
+            <a
+              href={formDataHero.linkBoton || "#"}
+              target="_blank"
+              className="bg-primary hover:scale-105 text-white font-bold px-8 py-4  shadow-lg transition inline-block"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              {formDataHero.textoBoton || "Agenda tu consulta personalizada"}
+            </a>
+          </div>
         </div>
       </section>
 
@@ -400,69 +405,130 @@ const Hero12BO: React.FC = () => {
           onChange={handleChange}
           className="hidden w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
         />
-        <div className="grid gap-4">
+        
+        <div className="grid gap-6">
+          {/* Epígrafe */}
           <div>
-            <h3 className="font-normal text-primary">
+            <h3 className="font-normal text-primary mb-2">
+              Epígrafe <span className="text-primary">*</span>
+            </h3>
+            <input
+              type="text"
+              name="epigrafe"
+              value={formDataHero.epigrafe}
+              onChange={handleChange}
+              placeholder="Ingresa el epígrafe"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          {/* Título */}
+          <div>
+            <h3 className="font-normal text-primary mb-2">
               Título <span className="text-primary">*</span>
             </h3>
             <input
               type="text"
-              name="title"
-              value={formDataHero.title}
+              name="titulo"
+              value={formDataHero.titulo}
               onChange={handleChange}
-              className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Ingrese el título"
+              placeholder="Ingresa el título principal"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
+
+          {/* Párrafo */}
           <div>
-            <h3 className="font-normal text-primary">
-              Contenido <span className="text-primary">*</span>
+            <h3 className="font-normal text-primary mb-2">
+              Párrafo <span className="text-primary">*</span>
             </h3>
-            <div className="mt-2">
-              <ReactQuill
-                theme="snow"
-                value={(() => {
-                  try {
-                    const parsed = JSON.parse(formDataHero.landingText);
-                    return parsed.content || '';
-                  } catch {
-                    return formDataHero.landingText || '';
-                  }
-                })()}
-                onChange={handleChange}
-                className="h-64 mb-12"
-              />
+            <textarea
+              name="parrafo"
+              value={formDataHero.parrafo}
+              onChange={handleChange}
+              placeholder="Ingresa el párrafo descriptivo"
+              rows={4}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
+          {/* Botón Genérico */}
+          <div>
+            <h3 className="font-normal text-primary mb-2">
+              Botón de Acción <span className="text-primary">*</span>
+            </h3>
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Texto del Botón
+                </label>
+                <input
+                  type="text"
+                  name="textoBoton"
+                  value={formDataHero.textoBoton}
+                  onChange={handleChange}
+                  placeholder="Ej: Agenda tu consulta personalizada"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Link del Botón
+                </label>
+                <input
+                  type="text"
+                  name="linkBoton"
+                  value={formDataHero.linkBoton}
+                  onChange={handleChange}
+                  placeholder="Ej: /contacto o https://ejemplo.com"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
             </div>
           </div>
+
+          {/* Cards */}
           <div>
-            <h3 className="font-normal text-primary">
-              Subtítulo <span className="text-primary">*</span>
+            <h3 className="font-normal text-primary mb-4">
+              Cards <span className="text-primary">*</span>
             </h3>
-            <input
-              type="text"
-              name="subtitle"
-              value={formDataHero.subtitle}
-              onChange={handleChange}
-              className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Ingrese el subtítulo"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {formDataHero.cards.map((card: any, index: number) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <h4 className="font-medium text-gray-700 mb-3">Card {index + 1}</h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Título
+                      </label>
+                      <input
+                        type="text"
+                        value={card.titulo}
+                        onChange={(e) => handleCardChange(index, 'titulo', e.target.value)}
+                        placeholder={`Título ${index + 1}`}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Texto
+                      </label>
+                      <textarea
+                        value={card.texto}
+                        onChange={(e) => handleCardChange(index, 'texto', e.target.value)}
+                        placeholder={`Texto ${index + 1}`}
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <div>
-            <h3 className="font-normal text-primary">
-              Texto 2 <span className="text-primary">*</span>
-            </h3>
-            <input
-              type="text"
-              name="text2"
-              value={formDataHero.text2}
-              onChange={handleChange}
-              className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
-              placeholder="Ingrese el texto 2"
-            />
-          </div>
-
-
         </div>
         <input
           type="text"
@@ -475,7 +541,7 @@ const Hero12BO: React.FC = () => {
           <input
             type="file"
             accept="image/*"
-            id="mainImageHero12"
+            id="mainImageHero"
             className="hidden"
             onChange={(e) =>
               handleImageChange(e, setMainImageHero, "mainImage")
@@ -487,7 +553,7 @@ const Hero12BO: React.FC = () => {
                 Tu fotografía{" "}
                 <span className="text-dark">
                   {" "}
-                  {formDataHero.mainImage?.name || ''}
+                  {formDataHero.mainImage.name}
                 </span>{" "}
                 ya ha sido cargada.
                 <br /> Actualiza para ver los cambios.
@@ -520,7 +586,7 @@ const Hero12BO: React.FC = () => {
                 Foto <span className="text-primary">*</span>
               </h3>
               <label
-                htmlFor="mainImageHero12"
+                htmlFor="mainImageHero"
                 className="border-primary shadow flex mt-3 flex-col bg-white justify-center items-center pt-5 pb-6 border border-dashed rounded-lg cursor-pointer w-full z-10"
               >
                 <div className="flex flex-col justify-center items-center">
@@ -577,92 +643,61 @@ const Hero12BO: React.FC = () => {
         </button>
       </form>
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-          <div className="relative w-[95%] md:w-[80%] max-w-3xl bg-white rounded-lg shadow-xl overflow-hidden">
-            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-800">Recortar Imagen</h2>
-              </div>
+        <Modal
+          showModal={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          <div className="relative h-96 w-full">
+            <Cropper
+              image={mainImageHero || ""} // Asegurar que se pasa una cadena no nula
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={handleCropComplete}
+            />
+            <div className="controls"></div>
+          </div>
+          <div className="flex flex-col  justify-end ">
+            <div className="w-full py-6">
+              <input
+                type="range"
+                value={zoom}
+                min={1}
+                max={3}
+                step={0.01}
+                aria-labelledby="Zoom"
+                onChange={(e) => {
+                  setZoom(parseFloat(e.target.value));
+                }}
+                className="zoom-range w-full custom-range "
+              />
+            </div>
+
+            <div className="flex justify-between w-full ">
+              <button
+                onClick={handleCrop}
+                className="bg-primary hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Recortar y Subir
+              </button>
               <button
                 onClick={() => {
                   setMainImageHero(null);
                   setIsMainImageUploaded(false);
                   setIsModalOpen(false);
                 }}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                Cancelar
               </button>
             </div>
-            <div className="p-6">
-              <div className="relative h-96 w-full">
-                <Cropper
-                  image={mainImageHero || ""}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={22/17}
-                  onCropChange={setCrop}
-                  onZoomChange={setZoom}
-                  onCropComplete={handleCropComplete}
-                />
-              </div>
-              <div className="mt-6 space-y-4">
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Zoom
-                  </label>
-                  <input
-                    type="range"
-                    value={zoom}
-                    min={1}
-                    max={3}
-                    step={0.01}
-                    aria-labelledby="Zoom"
-                    onChange={(e) => {
-                      setZoom(parseFloat(e.target.value));
-                    }}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                </div>
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={handleCrop}
-                    className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Recortar y Continuar
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMainImageHero(null);
-                      setIsMainImageUploaded(false);
-                      setIsModalOpen(false);
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
     </section>
   );
 };
 
-export default Hero12BO;
+export default Hero18BO;

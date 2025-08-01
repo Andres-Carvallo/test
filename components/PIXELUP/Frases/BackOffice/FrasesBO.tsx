@@ -31,7 +31,7 @@ function FrasesBO() {
     event.preventDefault();
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_ID}`;
+      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_CONTENTBLOCK}`;
       // Enviar los datos al endpoint
       const token = getCookie("AdminTokenAuth");
       await axios.put(
@@ -68,7 +68,7 @@ function FrasesBO() {
   const fetchMarquee = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_ID}`; 
+      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_CONTENTBLOCK}`; 
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -108,7 +108,7 @@ function FrasesBO() {
             </section>
           </div> */}
           <section>
-            <div className=" flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
+            <div className=" flex text-center items-center max-md:flex-col font-medium text-primary px-6 font-sans">
               {/*  <div className="max-md:mt-4">
     <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
       {bannerData?.title}
@@ -146,18 +146,18 @@ function FrasesBO() {
       {bannerData?.title}
     </h3>
   </div>*/}
-                <p className="m-4 text-2xl font-semibold flex-1 italic">
+ {/*                <p className="m-4 text-2xl font-semibold flex-1 italic">
                   « {marqueeData?.title} »
-                </p>
+                </p> */}
               </div>
             </section>
-            <input
+{/*             <input
               type="text"
               name="title"
               onChange={handleChangeMarquee}
               className=" w-full px-4 py-2 mb-4 border border-gray-300 rounded-md"
               placeholder="Contenido frase número 2..."
-            />
+            /> */}
 
             <button
               type="submit"
