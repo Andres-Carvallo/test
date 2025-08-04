@@ -48,7 +48,7 @@ const Categoria09Preview = () => {
                     : "bg-[#134b42] hover:bg-[#134b42]/90 text-white"
                 }`}
               >
-                {image.buttonText || "Ver más"}
+                {"Ver más"}
               </Link>
             </div>
           </div>
