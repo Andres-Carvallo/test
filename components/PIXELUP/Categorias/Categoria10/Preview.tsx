@@ -30,7 +30,7 @@ const Categoria10Preview = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-70"></div>
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white text-right">
                 <h3 className="font-poiret text-3xl mb-2">
-                  {getDefaultBanner(index).landingText}
+                  {getDefaultBanner(index).title}
                 </h3>
                 <div className="inline-flex items-center justify-end gap-1">
                   <a

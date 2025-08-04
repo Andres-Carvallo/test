@@ -16,6 +16,16 @@ export interface ComponentConfig {
 
 export const availableComponents: ComponentConfig[] = [
   {
+    id: "Destacados",
+    title: "Destacados",
+    description: "Destacados de la página",
+    category: "Contenido",
+    frontComponent: () => import('@/components/PIXELUP/Destacados/Destacado01'),
+    previewComponent: () => import('@/components/PIXELUP/Destacados/Preview'),
+    showInHome: true,
+    showInAbout: true,
+  },
+  {
     id: "marqueeTOP",
     title: "Marquee",
     description: "Banner de texto deslizante en la parte superior",

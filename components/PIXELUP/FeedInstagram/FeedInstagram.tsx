@@ -65,14 +65,14 @@ export default function FeedInstagram() {
   if (!posts.length) return null;
 
   return (
-    <section className="bg-gray-100  py-10">
+    <section className=" py-10">
       {" "}
       {/* bg-[#F5F7F2] */}
       <div className="mx-auto px-6 py-4">
         <h2 className="text-4xl   mb-12 text-center text-primary">
           {" "}
           {/* font-kalam text-[#4A6741] */}
-          <span className="text-sm uppercase tracking-[0.3em] block mb-3 text-[#f64b85] ">
+          <span className="text-sm uppercase tracking-[0.3em] block mb-3 text-primary/80">
             {" "}
             {/* font-montserrat text-[#8BA888] */}
             Social

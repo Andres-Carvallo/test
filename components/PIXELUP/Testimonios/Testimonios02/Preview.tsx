@@ -106,7 +106,7 @@ const Testimonios02Preview = () => {
                     </div>
                   </div>
                   <div className="text-gray-600 text-sm md:text-base leading-relaxed mb-3 md:mb-4">
-                    "{testimonio.texto}"
+                    &ldquo;{testimonio.texto}&rdquo;
                   </div>
                   <div className="flex gap-1 mt-3 md:mt-4">
                     {[...Array(5)].map((_, i) => (

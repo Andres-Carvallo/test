@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <>
       <MarqueeTOP />
-      <DynamicNavbar/>
+  {/*     <DynamicNavbar/> */}
       <div>{children}</div>
       {/* <Footer01 /> */}
       <DynamicFooter/> 

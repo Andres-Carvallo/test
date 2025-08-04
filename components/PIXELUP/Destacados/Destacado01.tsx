@@ -4,11 +4,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Link from "next/link";
-import ProductCard02 from "../ProductCards/ProductCards02/ProductCard02";
-import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import ProductCard05 from "../ProductCards/ProductCards05/ProductCards05";
+import { getActiveComponents } from "@/app/config/GlobalConfig";
+
 interface Product {
   id: string;
   skuId: string;
@@ -18,14 +17,13 @@ interface Product {
 
 const Destacados01: React.FC<any> = ({
   text,
-  ProductCardComponent = ProductCard05,
 }) => {
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<Error | null>(null);
   const { addToCartHandler } = useAPI();
   const [products, setProducts] = useState<Product[]>([]);
   const [autoplay, setAutoplay] = useState(true);
+  const { ProductCard } = getActiveComponents();
 
   const fetchStockForVariation = async (productId: string, skuId: string) => {
     try {
@@ -220,7 +218,7 @@ const Destacados01: React.FC<any> = ({
             renderButtonGroupOutside={true}
           >
             {products.map((product: any) => (
-              <ProductCardComponent
+              <ProductCard
                 key={product.id}
                 product={product}
                 addToCartHandler={addToCartHandler}
