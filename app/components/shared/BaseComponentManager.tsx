@@ -30,6 +30,7 @@ interface ComponentConfig {
   category?: string;
   frontComponent?: () => Promise<any>;
   backComponent?: () => Promise<any>;
+  previewComponent?: () => Promise<any>; // Componente específico para vista previa
   showInHome: boolean;
   showInAbout: boolean;
   props?: Record<string, any>;
@@ -64,6 +65,8 @@ function ComponentPreview({
 }) {
   const [previewComponent, setPreviewComponent] = useState<React.ReactNode>(null);
   const [loading, setLoading] = useState(true);
+  const [componentSize, setComponentSize] = useState<{ width: number; height: number } | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { getCategoryIcon } = useComponentCategories([component]);
 
   // Navegación con teclado
@@ -82,14 +85,32 @@ function ComponentPreview({
           break;
         case 'Escape':
           event.preventDefault();
-          onClose();
+          if (isFullscreen) {
+            setIsFullscreen(false);
+          } else {
+            onClose();
+          }
+          break;
+        case 'f':
+        case 'F':
+          event.preventDefault();
+          setIsFullscreen(!isFullscreen);
           break;
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onNavigate, onClose]);
+  }, [onNavigate, onClose, isFullscreen]);
+
+  // Función para medir el tamaño del componente
+  const measureComponent = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    setComponentSize({
+      width: rect.width,
+      height: rect.height
+    });
+  };
 
   // Mapeo de componentes a sus respectivos componentes de vista previa
   const getPreviewComponent = async (componentId: string) => {
@@ -99,8 +120,11 @@ function ComponentPreview({
       // Buscar el componente en la configuración
       const componentConfig = component;
       
-      if (componentConfig?.frontComponent) {
-        const importedModule = await componentConfig.frontComponent();
+      // Priorizar previewComponent si está disponible, sino usar frontComponent como fallback
+      const componentToLoad = componentConfig?.previewComponent || componentConfig?.frontComponent;
+      
+      if (componentToLoad) {
+        const importedModule = await componentToLoad();
         const Component = importedModule.default || importedModule;
         setPreviewComponent(<Component {...componentConfig.props} />);
       } else {
@@ -126,65 +150,151 @@ function ComponentPreview({
     getPreviewComponent(component.id);
   }, [component.id]);
 
+  // Calcular el tamaño óptimo del modal basado en el componente
+  const getModalSize = () => {
+    if (isFullscreen) {
+      return {
+        width: '95vw',
+        height: '95vh',
+        maxWidth: '95vw',
+        maxHeight: '95vh',
+      };
+    }
+
+    if (!componentSize) {
+      // Tamaño por defecto si no se ha medido el componente
+      return {
+        width: '90vw',
+        maxWidth: '1200px',
+        height: '80vh',
+        maxHeight: '800px'
+      };
+    }
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Margen mínimo del modal
+    const margin = 80;
+    const maxWidth = viewportWidth - margin;
+    const maxHeight = viewportHeight - margin;
+    
+    // Calcular el tamaño óptimo manteniendo la proporción del componente
+    let modalWidth = componentSize.width;
+    let modalHeight = componentSize.height;
+    
+    // Si el componente es más ancho que el viewport disponible
+    if (modalWidth > maxWidth) {
+      const scale = maxWidth / modalWidth;
+      modalWidth = maxWidth;
+      modalHeight = componentSize.height * scale;
+    }
+    
+    // Si el componente es más alto que el viewport disponible
+    if (modalHeight > maxHeight) {
+      const scale = maxHeight / modalHeight;
+      modalHeight = maxHeight;
+      modalWidth = Math.min(modalWidth * scale, maxWidth);
+    }
+    
+    // Asegurar un tamaño mínimo
+    const minWidth = 400;
+    const minHeight = 300;
+    
+    return {
+      width: `${Math.max(modalWidth, minWidth)}px`,
+      height: `${Math.max(modalHeight, minHeight)}px`,
+      maxWidth: `${maxWidth}px`,
+      maxHeight: `${maxHeight}px`
+    };
+  };
+
+  const modalSize = getModalSize();
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col">
+      <div 
+        className={`bg-white rounded-lg shadow-xl flex flex-col ${isFullscreen ? 'rounded-none' : ''}`}
+        style={{
+          width: modalSize.width,
+          height: modalSize.height,
+          maxWidth: modalSize.maxWidth,
+          maxHeight: modalSize.maxHeight,
+        }}
+      >
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200 flex-shrink-0">
           <div className="flex justify-between items-center">
             {/* Información del componente */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 {getCategoryIcon(component.category || "")}
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-gray-900">
                   {component.title}
                 </h2>
                 {component.category && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     {component.category} • ID: {component.id}
                   </p>
                 )}
               </div>
             </div>
             
-            {/* Navegación y botón cerrar agrupados en la derecha */}
-            <div className="flex items-center gap-3">
+            {/* Navegación y botones agrupados en la derecha */}
+            <div className="flex items-center gap-2">
               {/* Navegación */}
               {onNavigate && totalComponents > 1 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={() => onNavigate('prev')}
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                    className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
                     title="Componente anterior (←)"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  <span className="text-sm text-gray-500 min-w-[60px] text-center">
+                  <span className="text-xs text-gray-500 min-w-[40px] text-center">
                     {currentIndex + 1} / {totalComponents}
                   </span>
                   <button
                     onClick={() => onNavigate('next')}
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                    className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
                     title="Siguiente componente (→)"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
               )}
               
+              {/* Botón vista completa */}
+              <button
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
+                title={isFullscreen ? "Salir vista completa (F)" : "Vista completa (F)"}
+              >
+                {isFullscreen ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                )}
+              </button>
+              
               {/* Botón cerrar */}
               <button
                 onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100"
                 title="Cerrar (ESC)"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -196,14 +306,22 @@ function ComponentPreview({
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-auto">
             {loading ? (
-              <div className="flex items-center justify-center h-64">
+              <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Cargando vista previa...</p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-600">Cargando vista previa...</p>
                 </div>
               </div>
             ) : (
-              <div className="p-6">
+              <div 
+                className="h-full w-full"
+                ref={(el) => {
+                  if (el && !componentSize && !isFullscreen) {
+                    // Medir el componente después de que se renderice
+                    setTimeout(() => measureComponent(el), 100);
+                  }
+                }}
+              >
                 {previewComponent}
               </div>
             )}
@@ -211,22 +329,22 @@ function ComponentPreview({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <div className="flex justify-between items-center">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              className="px-3 py-1.5 bg-gray-600 text-white rounded text-sm hover:bg-gray-700"
             >
               Volver
             </button>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={onAdd}
                 disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1"
               >
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
