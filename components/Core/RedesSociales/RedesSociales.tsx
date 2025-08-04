@@ -394,10 +394,10 @@ const RedesSociales: React.FC<ReviewSettingsProps> = () => {
           </div>
           <div className="ml-3">
             <p className="text-sm text-blue-800">
-              Esta configuración se sincroniza automáticamente con el footer y
+            Esta configuración se sincroniza automáticamente con el footer y
               otros componentes de la tienda.{" "}
               <strong>
-                Los cambios se ven inmediatamente en la vista previa
+                Los cambios se ven inmediatamente en la vista previa {" "} 
               </strong>
               y se aplicarán permanentemente al guardar.
             </p>

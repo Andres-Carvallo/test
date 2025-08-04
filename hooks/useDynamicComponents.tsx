@@ -9,7 +9,6 @@ interface UseDynamicComponentsOptions {
 
 export const useDynamicComponents = ({ page, type }: UseDynamicComponentsOptions) => {
   const [components, setComponents] = useState<ComponentConfig[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Filtrar componentes según la página y tipo
@@ -20,7 +19,6 @@ export const useDynamicComponents = ({ page, type }: UseDynamicComponentsOptions
     });
 
     setComponents(filteredComponents);
-    setLoading(false);
   }, [page]);
 
   const renderComponent = (componentId: string, props?: Record<string, any>) => {
@@ -60,12 +58,7 @@ export const useDynamicComponents = ({ page, type }: UseDynamicComponentsOptions
           });
       },
       { 
-        ssr: false, 
-        loading: () => (
-          <div className="p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded">
-            <strong>Cargando:</strong> {component.title}...
-          </div>
-        ) 
+        ssr: false
       }
     );
 
@@ -78,7 +71,6 @@ export const useDynamicComponents = ({ page, type }: UseDynamicComponentsOptions
 
   return {
     components,
-    loading,
     renderComponent,
     getComponentById,
   };
