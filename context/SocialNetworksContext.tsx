@@ -72,10 +72,19 @@ export const SocialNetworksProvider: React.FC<SocialNetworksProviderProps> = ({
       }
 
       if (response.data.contentBlock?.contentText) {
-        const savedNetworks = JSON.parse(
-          response.data.contentBlock.contentText
-        );
-        setSocialNetworks(savedNetworks);
+        try {
+          const savedNetworks = JSON.parse(
+            response.data.contentBlock.contentText
+          );
+          setSocialNetworks(savedNetworks);
+        } catch (parseError) {
+          console.warn("El contenido no es JSON válido, usando configuración por defecto:", response.data.contentBlock.contentText);
+          // Configuración por defecto si el contenido no es JSON válido
+          setSocialNetworks([
+            { name: "Instagram", url: "", enabled: false },
+            { name: "Facebook", url: "", enabled: false },
+          ]);
+        }
       } else {
         // Configuración por defecto
         setSocialNetworks([
