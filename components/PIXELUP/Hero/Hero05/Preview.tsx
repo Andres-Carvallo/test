@@ -6,29 +6,69 @@ import { previewData, previewDataExtended } from "@/app/config/previewData";
 const Hero05Preview = () => {
   const previewCategories = previewDataExtended.categorias.slice(0, 1);
 
+  // Datos adicionales simulados para el preview
+  const additionalData = {
+    subtitle: "Peluquería canina de especialidad",
+    newServiceTitle: "Spa Day Canino",
+    newServiceSubtitle: "NUEVO",
+    newServiceDescription: "Incluye baño relajante y masaje",
+    primaryButtonText: "Reserva tu cita",
+    secondaryButtonText: "Nuestros servicios",
+  };
+
   return (
-    <section className="w-full bg-gray-100">
-      <div className="max-w-6xl mx-auto w-full px-4 md:px-0 py-8 lg:py-24 flex flex-col-reverse lg:flex-row items-center justify-center">
-        {/* Contenedor de imagen */}
-        <div className="flex w-full md:flex-1 items-center justify-center mt-6 lg:mt-0 lg:order-1">
-          <img
-            alt={previewData.titulo || "Hero Image"}
-            className="object-cover shadow-lg rounded-lg w-96"
-            src={previewCategories[0]?.mainImage.url || "/img/placeholder.webp"}
-            style={{ borderRadius: "var(--radius)" }}
-          />
-        </div>
-        {/* Contenedor de texto */}
-        <div className="w-full md:flex-1 flex flex-col items-center text-center lg:items-start lg:text-left lg:order-2 mt-4 md:mt-8 lg:mt-0">
-          <h4 className="text-primary text-lg md:text-xl">
-            {previewData.epigrafe || "Descubre"}
-          </h4>
-          <h1 className="mt-2 text-3xl md:text-5xl font-bold leading-tight text-foreground">
-            {previewData.titulo || "Título Principal del Hero"}
-          </h1>
-          <p className="text-base md:text-lg text-foreground py-3 mx-2 md:mx-8 lg:mx-0">
-            {previewData.texto || "Este es un texto descriptivo para el hero principal que explica el contenido de la sección."}
-          </p>
+    <section className="py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="space-y-4">
+            <div>
+              <span className="text-primary/70 text-sm uppercase tracking-widest mb-4 block">
+                {additionalData.subtitle}
+              </span>
+              <h1 className="text-4xl font-light text-primary leading-12">
+                {previewData.titulo || "Título Principal del Hero"}
+              </h1>
+            </div>
+            <p className="text-lg text-gray-600">
+              {previewData.texto || "Este es un texto descriptivo para el hero principal que explica el contenido de la sección."}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                href="pixelup.cl"
+                className="bg-primary text-white px-8 py-4 rounded hover:bg-primary/90 transition-all"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                {additionalData.primaryButtonText}
+              </Link>
+              <Link
+                href="/servicios"
+                className="border-2 border-primary text-primary px-8 py-4 rounded hover:bg-primary hover:text-white transition-all"
+                style={{ borderRadius: "var(--radius)" }}
+              >
+                {additionalData.secondaryButtonText}
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative">
+            <img
+              src={previewCategories[0]?.mainImage.url || "/img/placeholder.webp"}
+              alt={previewData.titulo || "Hero Image"}
+              className="shadow-xl w-full h-auto object-cover"
+              style={{ borderRadius: "var(--radius)" }}
+            />
+            <div className="absolute -bottom-8 left-4 md:-left-8 bg-white p-4 md:p-6 shadow-lg max-w-[180px] md:max-w-[200px]" style={{ borderRadius: "var(--radius)" }}>
+              <span className="text-primary/70 text-xs md:text-sm font-medium">
+                {additionalData.newServiceSubtitle}
+              </span>
+              <h3 className="text-primary text-sm md:text-base font-medium mt-1 md:mt-2">
+                {additionalData.newServiceTitle}
+              </h3>
+              <p className="text-gray-500 text-xs md:text-sm mt-1">
+                {additionalData.newServiceDescription}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
