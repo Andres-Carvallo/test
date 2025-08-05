@@ -275,7 +275,7 @@ function CartCanvas() {
             </div>
             <div className="p-6 absolute bottom-20 md:bottom-0 w-full border-t bg-white">
                           {/* Mensaje de cuánto falta para envío gratis */}
-                          {freeShippingAmount && (
+        {/*                   {freeShippingAmount && (
                 <div className="flex items-center gap-4 mb-4 text-md font-bold text-primary">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -297,7 +297,7 @@ function CartCanvas() {
                     `Añade ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(freeShippingAmount - subtotalAmount)} más a tu carrito para envío gratis`
                   )}
                 </div>
-              )}
+              )} */}
               <ul className="text-[#333] divide-y">
                 {/* Subtotal del carrito */}
                 <li className="flex flex-wrap gap-4 text-2xl font-bold">

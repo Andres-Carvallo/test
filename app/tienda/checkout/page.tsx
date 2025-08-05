@@ -713,7 +713,7 @@ const Checkout: React.FC = () => {
               <p className="text-xl font-medium">Detalle Orden</p>
               <p className="text-gray-400 mb-4">Listado de tu carrito</p>
                                               {/* Mensaje de cuánto falta para envío gratis */}
-                                              {freeShippingAmount && (
+                                       {/*        {freeShippingAmount && (
                     <div className="flex items-center gap-4 mt-4 text-md font-bold text-primary">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -735,7 +735,7 @@ const Checkout: React.FC = () => {
                         `Añade ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(freeShippingAmount - (cartData?.totals?.subtotalAmount || 0))} más a tu carrito para envío gratis`
                       )}
                     </div>
-                  )}
+                  )} */}
               <div className="w-full bg-white shadow-lg relative ml-auto h-auto">
                 <div className="overflow-auto p-6">
                   <Suspense fallback={<Loader />}>
