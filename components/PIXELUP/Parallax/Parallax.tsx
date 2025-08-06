@@ -1,6 +1,6 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Link from "next/link";
 
@@ -48,10 +48,66 @@ const Parallax: React.FC = () => {
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">(
     "left"
   );
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [scrollY, setScrollY] = useState<number>(0);
+  const sectionRef = useRef<HTMLElement>(null);
 
   // Agregar constantes para valores por defecto
   const DEFAULT_TITLE = "Banner";
   const DEFAULT_BUTTON_LINK = "#";
+
+  // Detectar si es un dispositivo móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isIOS = /iphone|ipad|ipod/.test(userAgent);
+      const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+      const isMobileDevice = /mobile|android|iphone|ipad|ipod/.test(userAgent);
+      
+      // En dispositivos móviles, especialmente Safari en iOS, usar parallax alternativo
+      setIsMobile(isMobileDevice || (isIOS && isSafari));
+    };
+
+    checkMobile();
+    
+    // Escuchar cambios de orientación
+    window.addEventListener('orientationchange', checkMobile);
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('orientationchange', checkMobile);
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // Efecto parallax para móviles usando scroll
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleScroll = () => {
+      if (sectionRef.current) {
+        const rect = sectionRef.current.getBoundingClientRect();
+        const sectionTop = rect.top;
+        const sectionHeight = rect.height;
+        const windowHeight = window.innerHeight;
+        
+        // Calcular el progreso del scroll dentro de la sección
+        const progress = Math.max(0, Math.min(1, 
+          (windowHeight - sectionTop) / (windowHeight + sectionHeight)
+        ));
+        
+        // Efecto parallax más pronunciado para móviles
+        setScrollY(progress * 200);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Llamar inmediatamente para establecer posición inicial
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isMobile]);
 
   const fetchBannerHome = async () => {
     try {
@@ -268,6 +324,7 @@ const Parallax: React.FC = () => {
 
   return (
     <section
+      ref={sectionRef}
       className="relative overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -279,15 +336,20 @@ const Parallax: React.FC = () => {
           return (
             <div
               key={index}
-              className="absolute inset-0"
+              className={`absolute inset-0 ${isMobile ? 'fixed' : ''}`}
               style={{
                 backgroundImage: `url(${image.mainImage.url})`,
-                backgroundAttachment: "fixed",
+                backgroundAttachment: isMobile ? "scroll" : "fixed",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "cover",
                 opacity: index === currentIndex ? 1 : 0,
                 transition: "opacity 1000ms ease-in-out",
+                // Efecto parallax alternativo para móviles
+                top: isMobile ? `${scrollY * 0.5}px` : "0",
+                transform: isMobile ? "none" : "none",
+                willChange: isMobile ? "top" : "auto",
+                zIndex: isMobile ? -1 : "auto",
               }}
             >
               {shouldShowOverlay(image) && index === currentIndex && (
