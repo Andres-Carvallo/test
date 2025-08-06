@@ -20,7 +20,7 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
   children,
 }) => {
   return (
-    <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transform hover:scale-105 transition-all duration-300">
+    <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transform  transition-all duration-300">
       {/* Gradiente de fondo sutil */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -28,7 +28,7 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
       <div className="relative p-6 md:p-8">
         {/* Icono mejorado */}
         <div className="flex items-start justify-between mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 ">
             <div className="text-white text-xl">{children}</div>
           </div>
 
@@ -129,7 +129,7 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
         </div>
 
         {/* Línea decorativa inferior */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0  transition-transform duration-300 origin-left"></div>
       </div>
     </div>
   );

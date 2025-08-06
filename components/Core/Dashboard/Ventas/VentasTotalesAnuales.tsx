@@ -83,7 +83,7 @@ const VentasTotalesAnuales: React.FC = () => {
   return (
     <>
       {totalYearlySales !== null ? (
-        <div className="transform hover:scale-105 transition-all duration-300">
+        <div className="transform transition-all duration-300">
           <CardDataStats
             title="Ventas Totales en el Año"
             total={totalYearlySales.toLocaleString("es-CL", {
@@ -108,7 +108,7 @@ const VentasTotalesAnuales: React.FC = () => {
           </CardDataStats>
         </div>
       ) : (
-        <div className="transform hover:scale-105 transition-all duration-300">
+        <div className="transform  transition-all duration-300">
           <Loader />
         </div>
       )}

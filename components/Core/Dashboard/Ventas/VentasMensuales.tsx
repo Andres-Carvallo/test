@@ -121,7 +121,7 @@ const VentasMensuales: React.FC = () => {
     <>
       {currentMonthSales !== null && previousMonthSales !== null ? (
         <>
-          <div className="transform hover:scale-105 transition-all duration-300">
+          <div className="transform  transition-all duration-300">
             <CardDataStats
               title="Venta del Mes Anterior"
               total={previousMonthSales?.toLocaleString("es-CL", {
@@ -145,7 +145,7 @@ const VentasMensuales: React.FC = () => {
               </svg>
             </CardDataStats>
           </div>
-          <div className="transform hover:scale-105 transition-all duration-300">
+          <div className="transform  transition-all duration-300">
             <CardDataStats
               title="Venta del Mes"
               total={currentMonthSales.toLocaleString("es-CL", {
