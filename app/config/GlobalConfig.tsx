@@ -14,7 +14,7 @@ export const globalConfig: GlobalConfig = {
   activeFooter: "Footer01",
   activeNavbar: "Navbar01",
   activeProductCard: "ProductCard02",
-  activeProductDetail: "ProductDetail01",
+  activeProductDetail: "ProductDetail04",
   whatsappButton: {
     isActive: true,
     link: process.env.NEXT_PUBLIC_WHATSAPP_LINK || "",
@@ -33,7 +33,7 @@ export const globalConfig: GlobalConfig = {
     mobile: "9/5",
   },
   bannerTiendaAspects: {
-    desktop: "16/4",
+    desktop: "16/3",
     mobile: "3/2",
   },
 };
@@ -53,7 +53,8 @@ type ProductCardType =
 type ProductDetailType =
   | "ProductDetail01"
   | "ProductDetail02"
-  | "ProductDetail03";
+  | "ProductDetail03"
+  | "ProductDetail04";
 
 // **************************************************
 // ************** Componentes de Carga **************
@@ -158,6 +159,13 @@ const productDetailComponents = {
     () =>
       import(
         "@/components/PIXELUP/ProductDetail/ProductDetail03/ProductDetail03"
+      ),
+    { loading: LoadingComponent, ssr: true }
+  ),
+  ProductDetail04: dynamic(
+    () =>
+      import(
+        "@/components/PIXELUP/ProductDetail/ProductDetail04/ProductDetail04"
       ),
     { loading: LoadingComponent, ssr: true }
   ),

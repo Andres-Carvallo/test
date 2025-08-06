@@ -13,7 +13,7 @@ export default function ClientAboutComponents({
   config,
 }: ClientAboutComponentsProps) {
   const { renderComponent, getComponentById } = useDynamicComponents({
-    page: 'home',
+    page: 'about',
     type: 'front'
   });
 
@@ -25,7 +25,7 @@ export default function ClientAboutComponents({
     if (componentId === 'aboutUs') {
       props = {
         ...props,
-        contentBlockId: process.env.NEXT_PUBLIC_HOME_CONFIG_CONTENTBLOCK
+        contentBlockId: process.env.NEXT_PUBLIC_ABOUT_CONFIG_CONTENTBLOCK
       };
     }
     

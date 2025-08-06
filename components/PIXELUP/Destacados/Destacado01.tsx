@@ -187,11 +187,11 @@ const Destacados01: React.FC<any> = ({
     <div className="py-8 px-4">
       <div className="mx-auto max-w-6xl relative">
         <div className="text-center mb-4">
-          <span className="text-sm uppercase tracking-wider text-gray-500">
+  {/*         <span className="text-sm uppercase tracking-wider text-gray-500">
             Descubre
-          </span>
-          <h2 className="text-3xl md:text-4xl text-white font-bold mt-2 uppercase">
-            {text}
+          </span> */}
+          <h2 className="text-3xl md:text-4xl text-gray-500 font-bold mt-2 uppercase">
+            Descubre
           </h2>
         </div>
         <div className="relative">

@@ -437,7 +437,7 @@ const ProductGridShop = ({
           {/* Controles de vista y ordenamiento */}
           <div className="hidden view-controls lg:flex flex-col sm:flex-row gap-4 lg:order-3">
             {/* Selector de columnas (solo visible en modo grid) */}
-            <div
+{/*             <div
               className="view-control-group"
               style={{ borderRadius: "var(--radius)" }}
             >
@@ -454,10 +454,10 @@ const ProductGridShop = ({
                 <option value={3}>3</option>
                 <option value={4}>4</option>
               </select>
-            </div>
+            </div> */}
 
             {/* Selector de productos por página */}
-            <div
+{/*             <div
               className="view-control-group"
               style={{ borderRadius: "var(--radius)" }}
             >
@@ -477,7 +477,7 @@ const ProductGridShop = ({
                 <option value={8}>8</option>
                 <option value={12}>12</option>
               </select>
-            </div>
+            </div> */}
 
             {/* Ordenamiento */}
             <div

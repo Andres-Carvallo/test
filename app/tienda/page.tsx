@@ -3,6 +3,7 @@ import React from "react";
 import ProductGridShop from "@/components/Core/ProductGridHome/ProductGridShop";
 import { RevalidationProvider } from "@/app/Context/RevalidationContext";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
+import MarqueeTOP from "@/components/conMantenedor/MarqueeTOP";
 
 // Metadatos para SEO
 export const metadata = {
@@ -54,6 +55,7 @@ export default async function Tienda({
 
   return (
     <RevalidationProvider>
+      {/*   <MarqueeTOP /> */}
       <div className="w-full min-h-screen bg-gray-50">
         <BannerTienda01 />
         <ProductGridShop

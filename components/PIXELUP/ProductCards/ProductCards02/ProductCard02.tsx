@@ -229,7 +229,7 @@ const ProductCard02: React.FC<ProductCardProps> = ({
         className="group block overflow-hidden"
         style={{ borderRadius: "var(--radius)" }}
       >
-        <Link href={`/tienda/productosv1/${slugify(product.name)}`}>
+        <Link href={`/tienda/productos/${slugify(product.name)}`}>
           <img
             src={product.mainImageUrl}
             alt={product.name}

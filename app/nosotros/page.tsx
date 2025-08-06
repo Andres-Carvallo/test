@@ -1,56 +1,61 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import BannerTienda from "../dashboard/tienda/page";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import Marquee from "react-fast-marquee";
-import { getCookie } from "cookies-next";
-import BannerAbout from "@/components/PIXELUP/BannerAbout/BannerAbout/BannerAbout";
+import { AboutConfig, fetchAboutConfig, getDefaultAboutConfig } from "@/app/utils/aboutConfig";
+import ClientAboutComponents from "@/app/components/AboutHomeComponents";
 
 function Nosotros() {
-  const [loading, setLoading] = useState(false);
-  const [bannerData, setBannerData] = useState<any | null>(null);
+  const [config, setConfig] = useState<AboutConfig | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchMarqueeHome = async () => {
+  const loadAboutConfig = async () => {
     try {
-      setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_CONTENT_ABOUT_ID}`;
-      const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-      );
-      const bannerImage = productTypeResponse.data.contentBlock;
-      setBannerData(bannerImage);
+      setLoading(true);
+      const aboutConfig = await fetchAboutConfig();
+      
+      if (aboutConfig) {
+        setConfig(aboutConfig);
+      } else {
+        // Usar configuración por defecto si no hay configuración guardada
+        setConfig(getDefaultAboutConfig());
+      }
     } catch (error) {
-      console.error("Error al obtener maruqetop:", error);
-      // Manejar el error según sea necesario
+      console.error("Error al cargar configuración de About:", error);
+      // Usar configuración por defecto en caso de error
+      setConfig(getDefaultAboutConfig());
     } finally {
-      setLoading(false); // Ocultar el indicador de carga
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMarqueeHome();
+    loadAboutConfig();
+  }, []);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Debería ejecutarse solo en el montaje inicial
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando página...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!config) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <p className="text-gray-600">Error al cargar la configuración</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="">
-      <BannerAbout/>
-      <div className="bg-white min-h-[475px] text-[#333] font-[sans-serif] pt-16 pb-32">
-        <div className=" justify-center items-center text-center gap-8">
-          <div className="max-w-4xl mx-auto p-4 ">
-            <h2 className="text-3xl md:text-3xl font-extrabold my-6 uppercase">
-              {bannerData?.title}
-            </h2>
-            <p
-              className="text-base"
-              dangerouslySetInnerHTML={{ __html: bannerData?.contentText }}
-            />
-          </div>
-        </div>
-      </div>
+      <ClientAboutComponents config={config} />
     </div>
   );
 }
