@@ -1181,14 +1181,15 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
                 ) : (
                   <div className="w-full flex items-center gap-2">
                     <div className="flex flex-col">
-             
+                      <div className="text-[0.5rem] uppercase text-gray-400 tracking-wide font-semibold">
+                        Cantidad
+                      </div>
                       <div className="relative w-[80px]">
                         <select
                           onChange={(e) =>
                             setQuantity(parseInt(e.target.value))
                           }
-                          className="cursor-pointer w-full appearance-none border border-gray-200 h-14 flex items-center justify-center text-center text-base "
-                          style={{ borderRadius: "var(--radius)" }}
+                          className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
                         >
                           {Array.from({ length: 10 }, (_, i) => (
                             <option

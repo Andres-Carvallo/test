@@ -21,6 +21,7 @@ export const availableComponents: ComponentConfig[] = [
     description: "Destacados de la página",
     category: "Contenido",
     frontComponent: () => import('@/components/PIXELUP/Destacados/Destacado01'),
+    backComponent: () => import('@/components/PIXELUP/Destacados/Destacado01BO'),
     previewComponent: () => import('@/components/PIXELUP/Destacados/Preview'),
     showInHome: true,
     showInAbout: true,
