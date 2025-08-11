@@ -45,9 +45,9 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
     title: {
       text: "Evolución de Ventas",
       textStyle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        color: "#1f2937",
+        fontSize: 18,
+        fontWeight: "600",
+        color: "#374151",
       },
       left: "0%",
       top: "5%",
@@ -55,9 +55,9 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
     tooltip: {
       trigger: "axis",
       backgroundColor: "rgba(255, 255, 255, 0.95)",
-      borderColor: "#e5e7eb",
+      borderColor: "#d1d5db",
       borderWidth: 1,
-      borderRadius: 12,
+      borderRadius: 8,
       padding: [12, 16],
       textStyle: {
         color: "#374151",
@@ -66,11 +66,11 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       formatter: function (params: any) {
         const data = params[0];
         return `
-          <div style="font-weight: bold; margin-bottom: 8px; color: #111827;">
+          <div style="font-weight: 600; margin-bottom: 8px; color: #111827;">
             ${data.name}
           </div>
           <div style="display: flex; align-items: center;">
-            <div style="width: 12px; height: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; margin-right: 8px;"></div>
+            <div style="width: 12px; height: 12px; background: #6b7280; border-radius: 50%; margin-right: 8px;"></div>
             <span style="font-weight: 500;">Ventas: $${data.value.toLocaleString()}</span>
           </div>
         `;
@@ -78,7 +78,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       axisPointer: {
         type: "cross",
         crossStyle: {
-          color: "#6b7280",
+          color: "#9ca3af",
         },
       },
     },
@@ -99,18 +99,18 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       }),
       axisLine: {
         lineStyle: {
-          color: "#e5e7eb",
+          color: "#d1d5db",
         },
       },
       axisTick: {
         lineStyle: {
-          color: "#e5e7eb",
+          color: "#d1d5db",
         },
       },
       axisLabel: {
         color: "#6b7280",
         fontSize: 12,
-        fontWeight: 500,
+        fontWeight: "500",
       },
     },
     yAxis: {
@@ -130,7 +130,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
       axisLabel: {
         color: "#6b7280",
         fontSize: 12,
-        fontWeight: 500,
+        fontWeight: "500",
         formatter: function (value: any) {
           if (value >= 1000000) {
             return `$${(value / 1000000).toFixed(1)}M`;
@@ -148,23 +148,13 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
         type: "line",
         smooth: true,
         symbol: "circle",
-        symbolSize: 8,
+        symbolSize: 6,
         lineStyle: {
-          width: 4,
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 1,
-            y2: 0,
-            colorStops: [
-              { offset: 0, color: "#3b82f6" },
-              { offset: 1, color: "#1d4ed8" },
-            ],
-          },
+          width: 3,
+          color: "#6b7280",
         },
         itemStyle: {
-          color: "#3b82f6",
+          color: "#6b7280",
           borderColor: "#ffffff",
           borderWidth: 2,
         },
@@ -176,18 +166,18 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: "rgba(59, 130, 246, 0.3)" },
-              { offset: 1, color: "rgba(59, 130, 246, 0.05)" },
+              { offset: 0, color: "rgba(107, 114, 128, 0.2)" },
+              { offset: 1, color: "rgba(107, 114, 128, 0.05)" },
             ],
           },
         },
         emphasis: {
           itemStyle: {
-            color: "#1d4ed8",
+            color: "#374151",
             borderColor: "#ffffff",
             borderWidth: 3,
-            shadowColor: "rgba(59, 130, 246, 0.5)",
-            shadowBlur: 10,
+            shadowColor: "rgba(107, 114, 128, 0.3)",
+            shadowBlur: 8,
           },
         },
       },
@@ -210,13 +200,13 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
   }, []); // Este useEffect se ejecuta solo al montar el componente
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6">
-        <div className="flex items-center mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center mb-4">
+          <div className="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center mr-3">
             <svg
-              className="w-6 h-6 text-white"
+              className="w-5 h-5 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -230,7 +220,7 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
             </svg>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900">
               Detalle de Ventas
             </h2>
             <p className="text-gray-600 text-sm">
@@ -240,57 +230,57 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
         </div>
 
         {/* Filtros de fecha mejorados */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
               Fecha Inicio
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-colors duration-200 text-gray-900 text-sm"
             />
           </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
               Fecha Fin
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-colors duration-200 text-gray-900 text-sm"
             />
           </div>
         </div>
       </div>
 
       {/* Contenido principal */}
-      <div className="p-8">
+      <div className="p-6">
         {filteredData.length > 0 ? (
           <>
             {/* Métrica total destacada */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 mb-8 border border-green-100">
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600 mb-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">
                     Total del Período
                   </p>
-                  <p className="text-3xl font-bold text-green-700">
+                  <p className="text-2xl font-bold text-gray-900">
                     {totalAmount.toLocaleString("es-CL", {
                       style: "currency",
                       currency: "CLP",
                     })}
                   </p>
-                  <p className="text-sm text-green-600 mt-1">
+                  <p className="text-sm text-gray-600 mt-1">
                     {filteredData.length}{" "}
                     {filteredData.length === 1 ? "día" : "días"} de ventas
                   </p>
                 </div>
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center">
                   <svg
-                    className="w-8 h-8 text-white"
+                    className="w-6 h-6 text-white"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -306,19 +296,19 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
             </div>
 
             {/* Gráfico mejorado */}
-            <div className="bg-white rounded-xl p-4">
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
               <ReactECharts
                 option={chartOptions}
-                style={{ height: "400px", width: "100%" }}
+                style={{ height: "350px", width: "100%" }}
                 opts={{ renderer: "svg" }}
               />
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <svg
-                className="w-12 h-12 text-gray-400"
+                className="w-8 h-8 text-gray-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -331,12 +321,11 @@ const SalesSummary: React.FC<SalesSummaryProps> = ({
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">
               No hay datos disponibles
             </h3>
-            <p className="text-gray-500 text-center">
+            <p className="text-gray-500 text-center text-sm">
               No se encontraron ventas para el rango de fechas seleccionado.
-              <br />
               Intenta ajustar las fechas o verifica que existan ventas en este
               período.
             </p>

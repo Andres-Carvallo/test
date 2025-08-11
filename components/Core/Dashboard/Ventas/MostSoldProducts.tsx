@@ -115,13 +115,13 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
   const { totalProducts, totalQuantity, totalAmount } = getTotalStats();
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-8 py-6">
-        <div className="flex items-center mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center mb-4">
+          <div className="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center mr-3">
             <svg
-              className="w-6 h-6 text-white"
+              className="w-5 h-5 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -135,7 +135,7 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
             </svg>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900">
               Productos por Período
             </h2>
             <p className="text-gray-600 text-sm">
@@ -145,37 +145,37 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
         </div>
 
         {/* Filtros mejorados */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
               Fecha Inicio
             </label>
             <input
               type="date"
               value={startDateProducts}
               onChange={(e) => setStartDateProducts(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-colors duration-200 text-gray-900 text-sm"
             />
           </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
               Fecha Fin
             </label>
             <input
               type="date"
               value={endDateProducts}
               onChange={(e) => setEndDateProducts(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-colors duration-200 text-gray-900 text-sm"
             />
           </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
               Ordenar por
             </label>
             <select
               value={orderBy}
               onChange={(e) => setOrderBy(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-gray-900"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-colors duration-200 text-gray-900 text-sm"
             >
               <option value="amount">💰 Monto de Ventas</option>
               <option value="quantity">📦 Cantidad Vendida</option>
@@ -185,12 +185,12 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
 
         {/* Resumen de estadísticas */}
         {filteredData.length > 0 && (
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl p-4 border border-indigo-100">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="bg-white rounded-md p-3 border border-gray-200">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center mr-2">
                   <svg
-                    className="w-5 h-5 text-indigo-600"
+                    className="w-4 h-4 text-gray-600"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -202,18 +202,18 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total Productos</p>
-                  <p className="text-xl font-bold text-indigo-600">
+                  <p className="text-xs text-gray-600">Total Productos</p>
+                  <p className="text-lg font-semibold text-gray-900">
                     {totalProducts}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-blue-100">
+            <div className="bg-white rounded-md p-3 border border-gray-200">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center mr-2">
                   <svg
-                    className="w-5 h-5 text-blue-600"
+                    className="w-4 h-4 text-gray-600"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -225,18 +225,18 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Unidades Vendidas</p>
-                  <p className="text-xl font-bold text-blue-600">
+                  <p className="text-xs text-gray-600">Unidades Vendidas</p>
+                  <p className="text-lg font-semibold text-gray-900">
                     {totalQuantity.toLocaleString()}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl p-4 border border-green-100">
+            <div className="bg-white rounded-md p-3 border border-gray-200">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center mr-2">
                   <svg
-                    className="w-5 h-5 text-green-600"
+                    className="w-4 h-4 text-gray-600"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -249,8 +249,8 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Ingresos Totales</p>
-                  <p className="text-xl font-bold text-green-600">
+                  <p className="text-xs text-gray-600">Ingresos Totales</p>
+                  <p className="text-lg font-semibold text-gray-900">
                     {formatCurrency(totalAmount)}
                   </p>
                 </div>
@@ -261,13 +261,13 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
       </div>
 
       {/* Contenido principal */}
-      <div className="p-8">
+      <div className="p-6">
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className="animate-pulse flex items-center space-x-4"
+                className="animate-pulse flex items-center space-x-3"
               >
                 <div className="w-8 h-8 bg-gray-200 rounded"></div>
                 <div className="flex-1 space-y-2">
@@ -280,40 +280,40 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
             ))}
           </div>
         ) : filteredData.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Información del período */}
-            <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-100 mb-6">
+            <div className="bg-gray-50 rounded-md p-3 border border-gray-200 mb-4">
               <p className="text-sm text-gray-600">
                 📅 Mostrando resultados del{" "}
-                <span className="font-semibold">
+                <span className="font-medium">
                   {formatDate(startDateProducts)}
                 </span>{" "}
                 al{" "}
-                <span className="font-semibold">
+                <span className="font-medium">
                   {formatDate(endDateProducts)}
                 </span>
               </p>
             </div>
 
             {/* Tabla moderna */}
-            <div className="overflow-hidden rounded-xl border border-gray-200">
-              <div className="overflow-x-auto max-h-96 custom-scrollbar">
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <div className="overflow-x-auto max-h-80">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gradient-to-r from-gray-50 to-slate-50 sticky top-0 z-10">
+                  <thead className="bg-gray-50 sticky top-0 z-10">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                         #
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Producto
                       </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Cantidad
                       </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Ingresos
                       </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">
                         Participación
                       </th>
                     </tr>
@@ -325,18 +325,18 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
                       return (
                         <tr
                           key={`${product.productId}-${index}`}
-                          className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200 group"
+                          className="hover:bg-gray-50 transition-colors duration-200 group"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center justify-center w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-bold rounded-full">
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="inline-flex items-center justify-center w-6 h-6 bg-gray-600 text-white text-xs font-medium rounded-full">
                               {index + 1}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-3">
                             <div className="flex items-center">
-                              <div className="w-10 h-10 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mr-3">
+                              <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center mr-2">
                                 <svg
-                                  className="w-5 h-5 text-gray-500"
+                                  className="w-4 h-4 text-gray-500"
                                   fill="currentColor"
                                   viewBox="0 0 20 20"
                                 >
@@ -347,8 +347,8 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
                                   />
                                 </svg>
                               </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 group-hover:text-gray-700 transition-colors duration-200 truncate">
                                   {product.productName}
                                 </p>
                                 <p className="text-xs text-gray-500">
@@ -357,27 +357,27 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-center">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
                               {product.quantity.toLocaleString()}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                          <td className="px-4 py-3 text-center">
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
                               {formatCurrency(product.amount)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-center">
+                          <td className="px-4 py-3 text-center">
                             <div className="flex items-center justify-center">
-                              <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                              <div className="w-12 bg-gray-200 rounded-full h-1.5 mr-2">
                                 <div
-                                  className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                                  className="bg-gray-600 h-1.5 rounded-full transition-all duration-300"
                                   style={{
                                     width: `${Math.min(participation, 100)}%`,
                                   }}
                                 ></div>
                               </div>
-                              <span className="text-sm font-medium text-gray-700">
+                              <span className="text-xs font-medium text-gray-700">
                                 {participation.toFixed(1)}%
                               </span>
                             </div>
@@ -391,10 +391,10 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <svg
-                className="w-12 h-12 text-indigo-400"
+                className="w-8 h-8 text-gray-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -407,37 +407,17 @@ const MostSoldProducts: React.FC<MostSoldProductsProps> = ({
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">
               No hay productos en este período
             </h3>
-            <p className="text-gray-500 text-center">
+            <p className="text-gray-500 text-center text-sm">
               No se encontraron productos vendidos en el rango de fechas
-              seleccionado.
-              <br />
-              Intenta ajustar las fechas o verifica que existan ventas en este
+              seleccionado. Intenta ajustar las fechas o verifica que existan ventas en este
               período.
             </p>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-          height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #6366f1, #8b5cf6);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #4f46e5, #7c3aed);
-        }
-      `}</style>
     </div>
   );
 };

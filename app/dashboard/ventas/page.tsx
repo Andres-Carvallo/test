@@ -11,18 +11,18 @@ const SkeletonComponent = ({ className }: { className?: string }) => (
 
 // Skeleton para Comparación de Ventas
 const CompareSalesSkeleton = () => (
-  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
-    <div className="flex items-center justify-between mb-6">
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="flex items-center justify-between mb-4">
       <SkeletonComponent className="h-6 w-48" />
       <SkeletonComponent className="h-8 w-32" />
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-      <div className="p-4 border rounded-lg">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="p-4 border border-gray-200 rounded-lg">
         <SkeletonComponent className="h-4 w-24 mb-2" />
         <SkeletonComponent className="h-8 w-32 mb-2" />
         <SkeletonComponent className="h-3 w-20" />
       </div>
-      <div className="p-4 border rounded-lg">
+      <div className="p-4 border border-gray-200 rounded-lg">
         <SkeletonComponent className="h-4 w-24 mb-2" />
         <SkeletonComponent className="h-8 w-32 mb-2" />
         <SkeletonComponent className="h-3 w-20" />
@@ -34,15 +34,15 @@ const CompareSalesSkeleton = () => (
 
 // Skeleton para Productos Más Vendidos
 const ProductosMasVendidosSkeleton = () => (
-  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
-    <div className="flex items-center justify-between mb-6">
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="flex items-center justify-between mb-4">
       <SkeletonComponent className="h-6 w-48" />
       <SkeletonComponent className="h-8 w-32" />
     </div>
-    <div className="space-y-4">
+    <div className="space-y-3">
       {[1, 2, 3, 4, 5].map((item) => (
-        <div key={item} className="flex items-center space-x-4 p-3 border rounded-lg">
-          <SkeletonComponent className="h-12 w-12 rounded" />
+        <div key={item} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg">
+          <SkeletonComponent className="h-10 w-10 rounded" />
           <div className="flex-1">
             <SkeletonComponent className="h-4 w-32 mb-2" />
             <SkeletonComponent className="h-3 w-24" />
@@ -56,8 +56,8 @@ const ProductosMasVendidosSkeleton = () => (
 
 // Skeleton para Productos Vendidos y Detalles por Fecha
 const MostSoldProductsSkeleton = () => (
-  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
-    <div className="flex items-center justify-between mb-6">
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="flex items-center justify-between mb-4">
       <SkeletonComponent className="h-6 w-48" />
       <div className="flex space-x-2">
         <SkeletonComponent className="h-8 w-32" />
@@ -67,7 +67,7 @@ const MostSoldProductsSkeleton = () => (
     <div className="overflow-x-auto">
       <table className="min-w-full">
         <thead>
-          <tr className="border-b">
+          <tr className="border-b border-gray-200">
             <th className="text-left py-3 px-4">
               <SkeletonComponent className="h-4 w-20" />
             </th>
@@ -84,10 +84,10 @@ const MostSoldProductsSkeleton = () => (
         </thead>
         <tbody>
           {[1, 2, 3, 4, 5].map((item) => (
-            <tr key={item} className="border-b">
+            <tr key={item} className="border-b border-gray-200">
               <td className="py-3 px-4">
                 <div className="flex items-center space-x-3">
-                  <SkeletonComponent className="h-10 w-10 rounded" />
+                  <SkeletonComponent className="h-8 w-8 rounded" />
                   <SkeletonComponent className="h-4 w-32" />
                 </div>
               </td>
@@ -110,26 +110,26 @@ const MostSoldProductsSkeleton = () => (
 
 // Skeleton para Resumen de Ventas
 const SalesSummarySkeleton = () => (
-  <div className="w-full p-6 bg-white rounded-lg shadow-sm">
-    <div className="flex items-center justify-between mb-6">
+  <div className="w-full p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="flex items-center justify-between mb-4">
       <SkeletonComponent className="h-6 w-48" />
       <div className="flex space-x-2">
         <SkeletonComponent className="h-8 w-32" />
         <SkeletonComponent className="h-8 w-32" />
       </div>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <div className="p-4 border rounded-lg">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="p-4 border border-gray-200 rounded-lg">
         <SkeletonComponent className="h-4 w-24 mb-2" />
         <SkeletonComponent className="h-8 w-32 mb-2" />
         <SkeletonComponent className="h-3 w-20" />
       </div>
-      <div className="p-4 border rounded-lg">
+      <div className="p-4 border border-gray-200 rounded-lg">
         <SkeletonComponent className="h-4 w-24 mb-2" />
         <SkeletonComponent className="h-8 w-32 mb-2" />
         <SkeletonComponent className="h-3 w-20" />
       </div>
-      <div className="p-4 border rounded-lg">
+      <div className="p-4 border border-gray-200 rounded-lg">
         <SkeletonComponent className="h-4 w-24 mb-2" />
         <SkeletonComponent className="h-8 w-32 mb-2" />
         <SkeletonComponent className="h-3 w-20" />
@@ -165,7 +165,7 @@ const PedidosTotales = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/PedidosTotales"),
   {
     loading: () => (
-      <div className="w-full p-4 bg-white rounded-lg shadow-sm animate-pulse">
+      <div className="w-full p-4 bg-white rounded-lg shadow-sm border border-gray-200 animate-pulse">
         <SkeletonComponent className="h-[100px]" />
       </div>
     )
@@ -176,7 +176,7 @@ const VentasMensuales = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/VentasMensuales"),
   {
     loading: () => (
-      <div className="w-full p-6 bg-white rounded-lg shadow-sm animate-pulse">
+      <div className="w-full p-6 bg-white rounded-lg shadow-sm border border-gray-200 animate-pulse">
         <SkeletonComponent className="h-[300px]" />
       </div>
     )
@@ -187,7 +187,7 @@ const VentasTotalesAnuales = dynamic(
   () => import("@/components/Core/Dashboard/Ventas/VentasTotalesAnuales"),
   {
     loading: () => (
-      <div className="w-full p-4 bg-white rounded-lg shadow-sm animate-pulse">
+      <div className="w-full p-4 bg-white rounded-lg shadow-sm border border-gray-200 animate-pulse">
         <SkeletonComponent className="h-[100px]" />
       </div>
     )
@@ -402,7 +402,7 @@ function StatsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {error && (
           <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
             <div className="flex">
@@ -424,13 +424,13 @@ function StatsPage() {
           <PedidosTotales />
         </div>
 
-        <div className="bg-gray-50 rounded-lg ">
+        <div className="bg-gray-50 rounded-lg">
           <VentasMensuales />
         </div>
 
         {/* DASHBOARD PLAN PRO - Mostrar skeleton si no es plan Pro */}
         {!subscriptionLoading && currentPlan !== "pro" && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -446,8 +446,8 @@ function StatsPage() {
           </div>
         )}
         {!subscriptionLoading && currentPlan !== "pro" ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2">
               <CompareSalesSkeleton />
             </div>
             <div>
@@ -456,8 +456,8 @@ function StatsPage() {
           </div>
         ) : (
           currentPlan === "pro" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <div className="xl:col-span-2">
                 <CompareSales />
               </div>
               <div>
@@ -469,7 +469,7 @@ function StatsPage() {
 
         {/* DASHBOARD PLAN AVANZADO - Mostrar skeleton si no es plan Avanzado o Pro */}
         {!subscriptionLoading && (currentPlan !== "avanzado" && currentPlan !== "pro") && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">

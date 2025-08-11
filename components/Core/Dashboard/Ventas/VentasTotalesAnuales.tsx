@@ -108,7 +108,7 @@ const VentasTotalesAnuales: React.FC = () => {
           </CardDataStats>
         </div>
       ) : (
-        <div className="transform  transition-all duration-300">
+        <div className="transform transition-all duration-300">
           <Loader />
         </div>
       )}
