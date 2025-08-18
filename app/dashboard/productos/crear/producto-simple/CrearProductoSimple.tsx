@@ -32,6 +32,7 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { defaultPreviewImage } from "@/app/config/IMGdefault";
 import { slugify } from "@/app/utils/slugify";
+import ProductInfoBoxesConfig from "@/app/dashboard/zona-repartos/ProductInfoBoxesConfig";
 
 const CrearProductoSimple: React.FC = ({}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -542,8 +543,54 @@ const CrearProductoSimple: React.FC = ({}) => {
 
   useEffect(() => {
     fetchProducTypes();
+    fetchFreeShippingAmount();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const fetchFreeShippingAmount = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      
+      // Obtener el estado global del envío gratis desde la API de opciones
+      const optionsResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/options?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const option = optionsResponse.data.options.find(
+        (opt: any) => opt.code === "FREE_SHIPPING_MINIMUM_AMOUNT"
+      );
+
+      if (option) {
+        const isEnabled = option.value !== null;
+        setIsFreeShippingEnabled(isEnabled);
+        
+        // Si está habilitado, obtener el monto desde el content block
+        if (isEnabled) {
+          const contentBlockId = process.env.NEXT_PUBLIC_MONTOENVIOGRATIS_CONTENTBLOCK;
+          const contentBlockResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          
+          const contentText = contentBlockResponse.data.contentBlock.contentText;
+          if (contentText && contentText.trim() !== "" && contentText !== "DISABLED") {
+            setFreeShippingAmount(contentText);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching free shipping amount:", error);
+    }
+  };
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -617,6 +664,16 @@ const CrearProductoSimple: React.FC = ({}) => {
     name: "",
     description: JSON.stringify({ content: "", enabled: true }),
     additionalData1: JSON.stringify({ content: "", enabled: true }),
+    additionalData2: JSON.stringify({
+      showInfoBoxes: true,
+      boxesConfig: {
+        freeShipping: true,
+        warranty: true,
+        returns: true
+      },
+      warrantyText: "Cobertura completa",
+      returnsText: "30 días sin preguntas"
+    }),
     statusCode: "ACTIVE",
     enabledForDelivery: false,
     enabledForWithdrawal: false,
@@ -850,6 +907,8 @@ const CrearProductoSimple: React.FC = ({}) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [freeShippingAmount, setFreeShippingAmount] = useState<string | null>(null);
+  const [isFreeShippingEnabled, setIsFreeShippingEnabled] = useState(true);
 
   const handleSubmit = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -1241,6 +1300,16 @@ const CrearProductoSimple: React.FC = ({}) => {
           additionalData1: JSON.stringify({
             content: shortDescriptionContent,
             enabled: shortDescriptionEnabled
+          }),
+          additionalData2: productData.additionalData2 || JSON.stringify({
+            showInfoBoxes: true,
+            boxesConfig: {
+              freeShipping: true,
+              warranty: true,
+              returns: true
+            },
+            warrantyText: "Cobertura completa",
+            returnsText: "30 días sin preguntas"
           }),
           enabledForDelivery: productData.enabledForDelivery,
           enabledForWithdrawal: productData.enabledForWithdrawal,
@@ -2071,6 +2140,17 @@ const CrearProductoSimple: React.FC = ({}) => {
               </div>
             </div>
           </div>
+          
+          {/* Configuración de Cajas Informativas */}
+          <div className="mt-8">
+            <ProductInfoBoxesConfig
+              value={formData.additionalData2}
+              onChange={(value) => setFormData({ ...formData, additionalData2: value })}
+              freeShippingAmount={freeShippingAmount}
+              isFreeShippingEnabled={isFreeShippingEnabled}
+            />
+          </div>
+          
           <div
             className={`grid ${
               isEditMode ? "grid-cols-2" : "grid-cols-1"

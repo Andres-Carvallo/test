@@ -55,6 +55,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   const [isOutOfStock, setIsOutOfStock] = useState(false);
   const [variationsStock, setVariationsStock] = useState<{ [key: string]: number }>({});
   const [isLoadingStock, setIsLoadingStock] = useState(false);
+  const [isLoadingSelectedVariationStock, setIsLoadingSelectedVariationStock] = useState(false);
   const [stock, setStock] = useState<number | null>(null);
   
   // Debug: rastrear cuándo se establece el stock
@@ -100,6 +101,8 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [startX, setStartX] = useState(0);
   const [isTouching, setIsTouching] = useState(false);
+  const [infoBoxesConfig, setInfoBoxesConfig] = useState<any>(null);
+  const [freeShippingAmount, setFreeShippingAmount] = useState<string | null>(null);
   // Función para productos simples
   const fetchStockForSimpleProduct = useCallback(
     async (productId: string, skuId: string) => {
@@ -158,6 +161,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   // Función para establecer stock global cuando se selecciona una variación
   const setStockForSelectedVariation = useCallback(
     async (productId: string, skuId: string) => {
+      setIsLoadingSelectedVariationStock(true);
       try {
         const data = await fetchStockData(productId, skuId);
         if (data.code === 0 && data.skuInventories.length > 0) {
@@ -165,13 +169,15 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
             (acc: number, inventory: any) => acc + inventory.quantity,
             0
           );
-                          setStockWithDebug(totalStock);
-      } else {
+          setStockWithDebug(totalStock);
+        } else {
+          setStockWithDebug(0);
+        }
+      } catch (error) {
+        console.error("Error fetching stock for selected variation:", error);
         setStockWithDebug(0);
-      }
-    } catch (error) {
-      console.error("Error fetching stock for selected variation:", error);
-      setStockWithDebug(0);
+      } finally {
+        setIsLoadingSelectedVariationStock(false);
       }
     },
     []
@@ -236,8 +242,38 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
       }
     };
 
+    const fetchInfoBoxesConfig = async () => {
+      try {
+        // Obtener configuración de cajas informativas del producto
+        if (initialProduct?.skus?.[0]?.product?.additionalData2) {
+          const config = JSON.parse(initialProduct.skus[0].product.additionalData2);
+          setInfoBoxesConfig(config);
+        }
+
+        // Obtener monto de envío gratis desde content block
+        try {
+          const contentBlockId = process.env.NEXT_PUBLIC_MONTOENVIOGRATIS_CONTENTBLOCK;
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+          );
+          const value = response.data.contentBlock.contentText;
+          if (value && value.trim() !== "" && value !== "DISABLED") {
+            setFreeShippingAmount(value);
+          } else {
+            setFreeShippingAmount(null);
+          }
+        } catch (error) {
+          console.error("Error fetching free shipping content block:", error);
+          setFreeShippingAmount(null);
+        }
+      } catch (error) {
+        console.error("Error al obtener configuración de cajas informativas:", error);
+      }
+    };
+
     fetchCuotasConfig();
-  }, []);
+    fetchInfoBoxesConfig();
+  }, [initialProduct]);
 
   useEffect(() => {
     const fetchStockData = async () => {
@@ -1210,7 +1246,14 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   };
 
   const getOverallStockStatus = () => {
-    
+    // Si se está cargando el stock de una variación seleccionada, no mostrar estado
+    if (isLoadingSelectedVariationStock) {
+      const result = {
+        hasStock: null, // null indica que no se debe mostrar estado de stock
+        stock: null
+      };
+      return result;
+    }
     
     // Si hay una variación seleccionada (que no sea solo el base SKU), usar su stock
     if (selectedVariation && !selectedVariation.isBaseSku) {
@@ -1290,6 +1333,70 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
   if (!initialProduct) {
     return <div>Cargando...</div>;
   }
+
+  const renderInfoBoxes = () => {
+    if (!infoBoxesConfig || !infoBoxesConfig.showInfoBoxes) {
+      return null;
+    }
+
+    const activeBoxes = [];
+    const { boxesConfig, warrantyText, returnsText } = infoBoxesConfig;
+
+    // Envío Gratis
+    if (boxesConfig.freeShipping && freeShippingAmount && freeShippingAmount !== "DISABLED") {
+      activeBoxes.push(
+        <div key="freeShipping" className="flex items-center gap-3 p-4 bg-white rounded-lg border">
+          <Truck className="w-6 h-6 text-primary" />
+          <div>
+            <p className="font-medium text-sm">Envío Gratis</p>
+            <p className="text-xs text-gray-500">
+              {freeShippingAmount ? `En pedidos sobre $${freeShippingAmount}` : "En pedidos sobre monto mínimo"}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Garantía
+    if (boxesConfig.warranty) {
+      activeBoxes.push(
+        <div key="warranty" className="flex items-center gap-3 p-4 bg-white rounded-lg border">
+          <Shield className="w-6 h-6 text-green-500" />
+          <div>
+            <p className="font-medium text-sm">Garantía</p>
+            <p className="text-xs text-gray-500">{warrantyText}</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Devoluciones
+    if (boxesConfig.returns) {
+      activeBoxes.push(
+        <div key="returns" className="flex items-center gap-3 p-4 bg-white rounded-lg border">
+          <RotateCcw className="w-6 h-6 text-orange-500" />
+          <div>
+            <p className="font-medium text-sm">Devoluciones</p>
+            <p className="text-xs text-gray-500">{returnsText}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeBoxes.length === 0) {
+      return null;
+    }
+
+    // Distribuir las cajas en una grilla
+    const gridCols = activeBoxes.length === 1 ? "grid-cols-1" : 
+                    activeBoxes.length === 2 ? "grid-cols-1 sm:grid-cols-2" : 
+                    "grid-cols-1 sm:grid-cols-3";
+    return (
+      <div className={`grid ${gridCols} gap-4`}>
+        {activeBoxes}
+      </div>
+    );
+  };
 
   const renderPrice = () => {
     // Para variación seleccionada con oferta
@@ -1480,13 +1587,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                   </span>
                 )}
                 {(() => {
-                  console.log("🔍 DEBUG - Image Stock Indicator Check:");
-                  console.log("🔍 DEBUG - hasVariations:", hasVariations);
-                  console.log("🔍 DEBUG - variations.length:", variations.length);
-                  console.log("🔍 DEBUG - selectedVariation:", selectedVariation);
-                  
                   const stockStatus = getOverallStockStatus();
-                  console.log("🔍 DEBUG - Image stockStatus:", stockStatus);
                   
                   // Para productos variables sin variación seleccionada, verificar si todas las variaciones están agotadas
                   if (stockStatus.hasStock === null && variations.length > 1) {
@@ -1501,8 +1602,8 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
                     return null;
                   }
                   
-                  // Solo mostrar "Agotado" si realmente no hay stock
-                  return stockStatus.hasStock === false && (
+                  // Solo mostrar "Agotado" si realmente no hay stock (no durante la carga)
+                  return stockStatus.hasStock === false && !isLoadingSelectedVariationStock && (
                     <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-sm font-semibold">
                       Agotado
                     </span>
@@ -1569,13 +1670,17 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
 
             {/* Stock Status */}
             {(() => {
-              console.log("🔍 DEBUG - Stock Status Check:");
-              console.log("🔍 DEBUG - hasVariations:", hasVariations);
-              console.log("🔍 DEBUG - variations.length:", variations.length);
-              console.log("🔍 DEBUG - selectedVariation:", selectedVariation);
-              
               const stockStatus = getOverallStockStatus();
-              console.log("🔍 DEBUG - stockStatus:", stockStatus);
+              
+              // Mostrar skeleton cuando se está cargando el stock de una variación seleccionada
+              if (isLoadingSelectedVariationStock) {
+                return (
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-300 animate-pulse" />
+                    <div className="w-16 h-4 bg-gray-300 rounded animate-pulse" />
+                  </div>
+                );
+              }
               
               // No mostrar estado de stock si hasStock es null (productos variables sin variación seleccionada)
               if (stockStatus.hasStock === null) {
@@ -1774,29 +1879,7 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
          
 
             {/* Shipping & Returns */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-white rounded-lg border">
-                <Truck className="w-6 h-6 text-primary" />
-                <div>
-                  <p className="font-medium text-sm">Envío Gratis</p>
-                  <p className="text-xs text-gray-500">En pedidos sobre $50</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-white rounded-lg border">
-                <Shield className="w-6 h-6 text-green-500" />
-                <div>
-                  <p className="font-medium text-sm">Garantía</p>
-                  <p className="text-xs text-gray-500">Cobertura completa</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-white rounded-lg border">
-                <RotateCcw className="w-6 h-6 text-orange-500" />
-                <div>
-                  <p className="font-medium text-sm">Devoluciones</p>
-                  <p className="text-xs text-gray-500">30 días sin preguntas</p>
-                </div>
-              </div>
-            </div>
+            {renderInfoBoxes()}
 
             {/* Delivery Information */}
             <div className="bg-white rounded-lg border p-6">

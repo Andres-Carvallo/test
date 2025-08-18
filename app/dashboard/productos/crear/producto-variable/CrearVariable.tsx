@@ -27,6 +27,7 @@ import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css"; // Import styles
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
+import ProductInfoBoxesConfig from "@/app/dashboard/zona-repartos/ProductInfoBoxesConfig";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -190,6 +191,16 @@ const CrearVariable: React.FC = () => {
     name: "",
     description: "",
     additionalData1: "",
+    additionalData2: JSON.stringify({
+      showInfoBoxes: true,
+      boxesConfig: {
+        freeShipping: true,
+        warranty: true,
+        returns: true
+      },
+      warrantyText: "Cobertura completa",
+      returnsText: "30 días sin preguntas"
+    }),
     statusCode: "ACTIVE",
     enabledForDelivery: false,
     enabledForWithdrawal: false,
@@ -250,6 +261,8 @@ const CrearVariable: React.FC = () => {
   const [showShortDescription, setShowShortDescription] = useState(true);
   const [showLongDescription, setShowLongDescription] = useState(true);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [freeShippingAmount, setFreeShippingAmount] = useState<string | null>(null);
+  const [isFreeShippingEnabled, setIsFreeShippingEnabled] = useState(true);
   
   // Función helper para verificar si el contenido HTML está realmente vacío
   const isHtmlContentEmpty = (htmlContent: string): boolean => {
@@ -363,6 +376,16 @@ const CrearVariable: React.FC = () => {
           name: productData.name,
           description: productData.description,
           additionalData1: productData.additionalData1 || "",
+          additionalData2: productData.additionalData2 || JSON.stringify({
+            showInfoBoxes: true,
+            boxesConfig: {
+              freeShipping: true,
+              warranty: true,
+              returns: true
+            },
+            warrantyText: "Cobertura completa",
+            returnsText: "30 días sin preguntas"
+          }),
           enabledForDelivery: productData.enabledForDelivery,
           enabledForWithdrawal: productData.enabledForWithdrawal,
           hasVariations: true,
@@ -560,6 +583,16 @@ const CrearVariable: React.FC = () => {
       name: "",
       description: "",
       additionalData1: "",
+      additionalData2: JSON.stringify({
+        showInfoBoxes: true,
+        boxesConfig: {
+          freeShipping: true,
+          warranty: true,
+          returns: true
+        },
+        warrantyText: "Cobertura completa",
+        returnsText: "30 días sin preguntas"
+      }),
       statusCode: "ACTIVE",
       enabledForDelivery: false,
       enabledForWithdrawal: false,
@@ -590,6 +623,16 @@ const CrearVariable: React.FC = () => {
       name: "",
       description: "",
       additionalData1: "",
+      additionalData2: JSON.stringify({
+        showInfoBoxes: true,
+        boxesConfig: {
+          freeShipping: true,
+          warranty: true,
+          returns: true
+        },
+        warrantyText: "Cobertura completa",
+        returnsText: "30 días sin preguntas"
+      }),
       statusCode: "ACTIVE",
       enabledForDelivery: false,
       enabledForWithdrawal: false,
@@ -852,7 +895,53 @@ const CrearVariable: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    fetchFreeShippingAmount();
   }, []);
+
+  const fetchFreeShippingAmount = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      
+      // Obtener el estado global del envío gratis desde la API de opciones
+      const optionsResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/options?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const option = optionsResponse.data.options.find(
+        (opt: any) => opt.code === "FREE_SHIPPING_MINIMUM_AMOUNT"
+      );
+
+      if (option) {
+        const isEnabled = option.value !== null;
+        setIsFreeShippingEnabled(isEnabled);
+        
+        // Si está habilitado, obtener el monto desde el content block
+        if (isEnabled) {
+          const contentBlockId = process.env.NEXT_PUBLIC_MONTOENVIOGRATIS_CONTENTBLOCK;
+          const contentBlockResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          
+          const contentText = contentBlockResponse.data.contentBlock.contentText;
+          if (contentText && contentText.trim() !== "" && contentText !== "DISABLED") {
+            setFreeShippingAmount(contentText);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching free shipping amount:", error);
+    }
+  };
 
   // Limpiar errores de validación cuando cambien los estados de las descripciones
   useEffect(() => {
@@ -1614,6 +1703,17 @@ const CrearVariable: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                
+                {/* Configuración de Cajas Informativas */}
+                <div className="mt-8">
+                  <ProductInfoBoxesConfig
+                    value={formData.additionalData2}
+                    onChange={(value) => setFormData({ ...formData, additionalData2: value })}
+                    freeShippingAmount={freeShippingAmount}
+                    isFreeShippingEnabled={isFreeShippingEnabled}
+                  />
+                </div>
+                
                 <button
                   className={`shadow px-4 py-2 mt-4 transition-colors ${
                     isFormValid() 

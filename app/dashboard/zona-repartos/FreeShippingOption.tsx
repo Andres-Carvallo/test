@@ -109,11 +109,14 @@ const FreeShippingOption: React.FC<any> = ({}) => {
   const updateContentBlock = async (value: string | null) => {
     try {
       const contentBlockId = process.env.NEXT_PUBLIC_MONTOENVIOGRATIS_CONTENTBLOCK;
+      // Si value es null (envío gratis desactivado), usar "DISABLED" como identificador
+      const contentText = value === null ? "DISABLED" : (value || "");
+      
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: "Monto Envío Gratis",
-          contentText: value || "",
+          contentText: contentText,
         },
         {
           headers: {
