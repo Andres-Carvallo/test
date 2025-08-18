@@ -256,9 +256,9 @@ const ProductCard02: React.FC<ProductCardProps> = ({
               ))}
 
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
-            <p className="text-[18px] font-bold text-black truncate block capitalize">
-              {product.name}
-            </p>
+                    <p className="text-[18px] font-bold text-black truncate block capitalize">
+          {product.name}
+        </p>
           </Link>
           <div className="flex items-center text-black min-h-[70px]">
             <span className="text-gray-600 text-[20px]">{renderPrice()}</span>

@@ -12,6 +12,7 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import Destacados01 from "../../Destacados/Destacado01";
 import { useReviewSettings } from "@/hooks/useReviewSettings";
+import Breadcrumbs from "@/components/Core/Navigation/Breadcrumbs";
 import {
   fetchProductData,
   fetchStockData,
@@ -24,6 +25,7 @@ interface Variation {
   product: {
     id: string;
     description: any;
+    additionalData1?: string;
   };
   isBaseSku: boolean;
   mainImageUrl: string;
@@ -68,6 +70,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
   }>({});
   const [mainImageUrl, setMainImageUrl] = useState("");
   const [description, setDescription] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
   const [productName, setProductName] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -369,6 +372,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
           setEnabledForDelivery(baseSku.product.enabledForDelivery);
           setEnabledForWithdrawal(baseSku.product.enabledForWithdrawal);
           setDescription(baseSku.product.description);
+          setShortDescription(baseSku.product.additionalData1 || "");
           setReviewAverageScore(baseSku.product.reviewAverageScore);
           setTotalReviews(baseSku.product.totalReviews);
 
@@ -573,10 +577,12 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
 
       if (matchingVariation.isBaseSku) {
         setDescription(matchingVariation.product.description);
+        setShortDescription(matchingVariation.product.additionalData1 || "");
       } else {
         setDescription(
           matchingVariation.description || matchingVariation.product.description
         );
+        setShortDescription(matchingVariation.product.additionalData1 || "");
       }
 
       fetchThumbnails(matchingVariation.product.id, matchingVariation.id);
@@ -592,6 +598,7 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
         }
         setMainImageUrl(baseSku.mainImageUrl);
         setDescription(baseSku.product.description);
+        setShortDescription(baseSku.product.additionalData1 || "");
         setSelectedThumbnail(baseSku.mainImageUrl);
         fetchThumbnails(baseSku.product.id, baseSku.id);
       }
@@ -974,6 +981,9 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
   return (
     <>
       <div className="max-w-7xl mx-auto  sm:px-2 lg:px-8 mt-6 md:mt-16">
+        {/* Breadcrumb */}
+        <Breadcrumbs category={categories[0]} />
+        
         {isLoading ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 animate-pulse pb-32">
             <div className="flex flex-col md:flex-row -mx-4">
@@ -1127,12 +1137,20 @@ const ProductDetail01: React.FC<ProductDetail02Props> = ({
                 </div>
               </div>
 
-              <div className="mt-4">
-                <h3 className="text-lg font-bold text-foreground mb-4">
-                  Acerca del producto
-                </h3>
-                <div className="ql-editor" dangerouslySetInnerHTML={{ __html: description }} />
-              </div>
+              {shortDescription && shortDescription.trim() !== "" && (
+                <div className="mb-4">
+                  <div className="text-gray-600 text-sm leading-relaxed ql-editor" dangerouslySetInnerHTML={{ __html: shortDescription }} />
+                </div>
+              )}
+
+              {description && description.trim() !== "" && (
+                <div className="mt-4">
+                  <h3 className="text-lg font-bold text-foreground mb-4">
+                    Acerca del producto
+                  </h3>
+                  <div className="ql-editor" dangerouslySetInnerHTML={{ __html: description }} />
+                </div>
+              )}
 
               {/* Sección de variaciones */}
               {hasAttributes() && (

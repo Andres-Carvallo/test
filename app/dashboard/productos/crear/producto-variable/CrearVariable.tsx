@@ -189,6 +189,7 @@ const CrearVariable: React.FC = () => {
     productTypes: [],
     name: "",
     description: "",
+    additionalData1: "",
     statusCode: "ACTIVE",
     enabledForDelivery: false,
     enabledForWithdrawal: false,
@@ -242,6 +243,8 @@ const CrearVariable: React.FC = () => {
   const [openModalId, setOpenModalId] = useState(null);
   const [descriptionLength, setDescriptionLength] = useState(0);
   const maxDescriptionLength = 1000;
+  const maxShortDescriptionLength = 200; // Límite de caracteres para descripción corta
+  const [shortDescriptionCharCount, setShortDescriptionCharCount] = useState(0); // Contador de caracteres para descripción corta
   const validateForm = () => {
     let valid = true;
 
@@ -251,6 +254,10 @@ const CrearVariable: React.FC = () => {
     }
     if (nameError) {
       toast.error("No se puede publicar el producto con un nombre que ya existe");
+      valid = false;
+    }
+    if (!formData.additionalData1) {
+      toast.error("La descripción corta del producto es requerida");
       valid = false;
     }
     if (!formData.description) {
@@ -302,6 +309,7 @@ const CrearVariable: React.FC = () => {
           ...formData,
           name: productData.name,
           description: productData.description,
+          additionalData1: productData.additionalData1 || "",
           enabledForDelivery: productData.enabledForDelivery,
           enabledForWithdrawal: productData.enabledForWithdrawal,
           hasVariations: true,
@@ -322,6 +330,12 @@ const CrearVariable: React.FC = () => {
             weight: null,
           },
         });
+        
+        // Inicializar contador de caracteres para descripción corta
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = productData.additionalData1 || "";
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        setShortDescriptionCharCount(textContent.length);
         setMeasures({
           length: productData.measures ? productData.measures.length : null,
           width: productData.measures ? productData.measures.width : null,
@@ -455,6 +469,21 @@ const CrearVariable: React.FC = () => {
     setDescriptionLength(value.length);
   };
 
+  const handleShortDescriptionChange = (value: string) => {
+    // Limitar la longitud del contenido HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = value;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    if (textContent.length <= maxShortDescriptionLength) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        additionalData1: value,
+      }));
+      setShortDescriptionCharCount(textContent.length);
+    }
+  };
+
   const handleCancel = () => {
     handleClearImage(setMainImage);
     setVariations([]);
@@ -469,6 +498,7 @@ const CrearVariable: React.FC = () => {
       productTypes: [],
       name: "",
       description: "",
+      additionalData1: "",
       statusCode: "ACTIVE",
       enabledForDelivery: false,
       enabledForWithdrawal: false,
@@ -498,6 +528,7 @@ const CrearVariable: React.FC = () => {
       productTypes: [],
       name: "",
       description: "",
+      additionalData1: "",
       statusCode: "ACTIVE",
       enabledForDelivery: false,
       enabledForWithdrawal: false,
@@ -1170,6 +1201,37 @@ const CrearVariable: React.FC = () => {
                         {nameError}
                       </div>
                     )}
+                  </div>
+                </div>
+                <div className="mt-8">
+                  <label
+                    htmlFor="descripcionCorta"
+                    className="font-normal text-primary"
+                  >
+                    Descripción Corta
+                  </label>
+                  <ReactQuill
+                    value={formData.additionalData1 || ""}
+                    onChange={handleShortDescriptionChange}
+                    modules={{
+                      toolbar: [
+                        ["bold", "italic", "underline"],
+                        [{ list: "ordered" }, { list: "bullet" }],
+                      ],
+                    }}
+                    formats={[
+                      "bold",
+                      "italic",
+                      "underline",
+                      "list",
+                      "bullet",
+                    ]}
+                    placeholder="Ingresa una descripción corta del producto (máximo 200 caracteres)"
+                  />
+                  <div className="flex justify-end items-center mt-2">
+                    <div className="text-left text-sm text-gray-500">
+                      {shortDescriptionCharCount}/{maxShortDescriptionLength} caracteres
+                    </div>
                   </div>
                 </div>
                 <div className="mt-8">

@@ -168,9 +168,12 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
 
     return (
       <>
-        <div>
-          <BannerTienda01 />
-        </div>
+        {/* 
+          <div>
+            <BannerTienda01 />
+          </div>
+         
+        */}
 
         <div className="mx-auto">
           <ProductDetailClient productData={productData} />

@@ -191,9 +191,9 @@ const ProductCard04: React.FC<ProductCardProps> = ({
         </div>
         <div className="p-4 min-h-[170px] md:min-h-[138px]">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
-            <h3 className="text-primary font-medium mb-2 max-w-[8ch]  md:max-w-[15ch]  truncate">
-              {product.name}
-            </h3>
+                    <h3 className="text-primary font-medium mb-2 max-w-[8ch]  md:max-w-[15ch]  truncate">
+          {product.name}
+        </h3>
           </Link>
           <div className="flex items-center justify-between">
             <p className="text-primary font-medium">{renderPrice()}</p>

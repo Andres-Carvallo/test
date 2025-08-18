@@ -64,6 +64,8 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [originalFileName, setOriginalFileName] = useState<string>("");
   const maxLength = 1000; // Límite de caracteres
   const [charCount, setCharCount] = useState(0); // Contador de caracteres
+  const maxShortDescriptionLength = 350; // Límite de caracteres para descripción corta
+  const [shortDescriptionCharCount, setShortDescriptionCharCount] = useState(0); // Contador de caracteres para descripción corta
   const [skuData, setSkuData] = useState({
     description: "",
     hasUnlimitedStock: false,
@@ -71,17 +73,100 @@ const CrearProductoSimple: React.FC = ({}) => {
     isFeatured: false,
   });
   const [description, setDescription] = useState<string>("");
+  const [shortDescription, setShortDescription] = useState<string>("");
   const [checkOfferChecked, setCheckOfferChecked] = useState(
     skuData.hasStockNotifications || false
   );
+  const [showShortDescription, setShowShortDescription] = useState(true);
+  const [showLongDescription, setShowLongDescription] = useState(true);
+  const [isShortDescriptionAtLimit, setIsShortDescriptionAtLimit] = useState(false);
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
     setCharCount(value.length);
+  };
+
+  const handleShortDescriptionChange = (value: string) => {
+    // Limitar la longitud del contenido HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = value;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    console.log('handleShortDescriptionChange llamado con:', value);
+    console.log('Longitud del texto:', textContent.length);
+    console.log('Límite máximo:', maxShortDescriptionLength);
+    
+    if (textContent.length <= maxShortDescriptionLength) {
+      setShortDescription(value);
+      setShortDescriptionCharCount(textContent.length);
+      setIsShortDescriptionAtLimit(textContent.length === maxShortDescriptionLength);
+      console.log('Descripción corta actualizada:', value);
+    } else {
+      // Si excede el límite, mantener el valor anterior y mostrar error
+      console.log('Texto excede límite, manteniendo valor anterior');
+      toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres`);
+      setIsShortDescriptionAtLimit(true);
+      
+      // No actualizar el estado, mantener el valor anterior
+      return;
+    }
+  };
+
+
+
+  const handleShortDescriptionToggle = (enabled: boolean) => {
+    setShowShortDescription(enabled);
+  };
+
+  const handleLongDescriptionToggle = (enabled: boolean) => {
+    setShowLongDescription(enabled);
+  };
+
+  // Sincronizar estados locales con formData
+  useEffect(() => {
+    const longDescriptionData = {
+      content: description,
+      enabled: showLongDescription
+    };
+    
     setFormData((prevFormData: any) => ({
       ...prevFormData,
-      description: value,
+      description: JSON.stringify(longDescriptionData),
     }));
-  };
+  }, [description, showLongDescription]);
+
+  useEffect(() => {
+    const shortDescriptionData = {
+      content: shortDescription,
+      enabled: showShortDescription
+    };
+    
+    setFormData((prevFormData: any) => ({
+      ...prevFormData,
+      additionalData1: JSON.stringify(shortDescriptionData),
+    }));
+    
+    // Debug: mostrar el contenido que se está guardando
+    console.log('Guardando descripción corta:', shortDescriptionData);
+  }, [shortDescription, showShortDescription]);
+
+  // Efecto adicional para manejar el pegado de texto
+  useEffect(() => {
+    if (shortDescription) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = shortDescription;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Si el texto excede el límite, revertir al valor anterior
+      if (textContent.length > maxShortDescriptionLength) {
+        console.log('Texto excede límite, revirtiendo...');
+        
+        // Revertir al valor anterior (esto se maneja en handleShortDescriptionChange)
+        toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres`);
+      }
+    }
+  }, [shortDescription]);
+
+
 
   const validateForm = () => {
     let valid = true;
@@ -95,10 +180,61 @@ const CrearProductoSimple: React.FC = ({}) => {
       );
       valid = false;
     }
-    if (!formData.description) {
-      toast.error("La descripción del producto es requerida");
-      valid = false;
+    
+    // Validar descripción corta
+    let shortDescriptionContent = "";
+    try {
+      if (formData.additionalData1) {
+        const shortDescData = JSON.parse(formData.additionalData1);
+        shortDescriptionContent = shortDescData.content || "";
+      }
+    } catch (error) {
+      // Si no es JSON válido, usar como texto plano
+      shortDescriptionContent = formData.additionalData1 || "";
     }
+    
+    if (!shortDescriptionContent.trim()) {
+      toast.error("La descripción corta del producto es requerida");
+      valid = false;
+    } else {
+      // Verificar longitud de la descripción corta
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = shortDescriptionContent;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      if (textContent.length > maxShortDescriptionLength) {
+        toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres. Actualmente tiene ${textContent.length} caracteres.`);
+        valid = false;
+      }
+    }
+    
+    // Validar descripción larga
+    let longDescriptionContent = "";
+    try {
+      if (formData.description) {
+        const longDescData = JSON.parse(formData.description);
+        longDescriptionContent = longDescData.content || "";
+      }
+    } catch (error) {
+      // Si no es JSON válido, usar como texto plano
+      longDescriptionContent = formData.description || "";
+    }
+    
+    if (!longDescriptionContent.trim()) {
+      toast.error("La descripción larga del producto es requerida");
+      valid = false;
+    } else {
+      // Verificar longitud de la descripción larga
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = longDescriptionContent;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      if (textContent.length > maxLength) {
+        toast.error(`La descripción larga no puede exceder ${maxLength} caracteres. Actualmente tiene ${textContent.length} caracteres.`);
+        valid = false;
+    }
+    }
+    
     if (precioNormal === null || precioNormal <= 1) {
       toast.error("El precio es requerido");
       valid = false;
@@ -112,6 +248,74 @@ const CrearProductoSimple: React.FC = ({}) => {
       valid = false;
     }
     return valid;
+  };
+
+  const isFormValid = () => {
+    // Verificar nombre
+    if (!formData.name || nameError) {
+      return false;
+    }
+    
+    // Verificar descripción corta
+    let shortDescriptionContent = "";
+    try {
+      if (formData.additionalData1) {
+        const shortDescData = JSON.parse(formData.additionalData1);
+        shortDescriptionContent = shortDescData.content || "";
+      }
+    } catch (error) {
+      shortDescriptionContent = formData.additionalData1 || "";
+    }
+    
+    if (!shortDescriptionContent.trim()) {
+      return false;
+    }
+    
+    const tempDivShort = document.createElement('div');
+    tempDivShort.innerHTML = shortDescriptionContent;
+    const textContentShort = tempDivShort.textContent || tempDivShort.innerText || '';
+    
+    if (textContentShort.length > maxShortDescriptionLength) {
+      return false;
+    }
+    
+    // Verificar descripción larga
+    let longDescriptionContent = "";
+    try {
+      if (formData.description) {
+        const longDescData = JSON.parse(formData.description);
+        longDescriptionContent = longDescData.content || "";
+      }
+    } catch (error) {
+      longDescriptionContent = formData.description || "";
+    }
+    
+    if (!longDescriptionContent.trim()) {
+      return false;
+    }
+    
+    const tempDivLong = document.createElement('div');
+    tempDivLong.innerHTML = longDescriptionContent;
+    const textContentLong = tempDivLong.textContent || tempDivLong.innerText || '';
+    
+    if (textContentLong.length > maxLength) {
+      return false;
+    }
+    
+    // Verificar otros campos
+    if (precioNormal === null || precioNormal <= 1) {
+      return false;
+    }
+    
+    if (!formData.enabledForDelivery && !formData.enabledForWithdrawal) {
+      return false;
+    }
+    
+    if (!formData.mainImage.data) {
+      return false;
+    }
+    
+    return true;
   };
 
   const handleCheckboxChange = () => {
@@ -156,7 +360,8 @@ const CrearProductoSimple: React.FC = ({}) => {
     setFormData(() => ({
       productTypes: [],
       name: "",
-      description: "",
+      description: JSON.stringify({ content: "", enabled: true }),
+      additionalData1: JSON.stringify({ content: "", enabled: true }),
       statusCode: "ACTIVE",
       enabledForDelivery: false,
       enabledForWithdrawal: false,
@@ -385,7 +590,8 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [formData, setFormData]: any = useState({
     productTypes: [],
     name: "",
-    description: "",
+    description: JSON.stringify({ content: "", enabled: true }),
+    additionalData1: JSON.stringify({ content: "", enabled: true }),
     statusCode: "ACTIVE",
     enabledForDelivery: false,
     enabledForWithdrawal: false,
@@ -630,6 +836,11 @@ const CrearProductoSimple: React.FC = ({}) => {
     setIsLoading(true);
 
     const dataToSend: any = { ...formData };
+
+    // Debug: mostrar los datos que se van a enviar
+    console.log('Datos a enviar:', dataToSend);
+    console.log('Descripción corta en formData:', formData.additionalData1);
+    console.log('Descripción larga en formData:', formData.description);
 
     if (isEditMode && !isMainImageUploaded) {
       delete dataToSend.mainImage;
@@ -932,11 +1143,65 @@ const CrearProductoSimple: React.FC = ({}) => {
             name: productType.name,
           })
         );
-        setDescription(productData.description || "");
+        // Manejar descripción larga (description)
+        let longDescriptionContent = "";
+        let longDescriptionEnabled = true;
+        try {
+          if (productData.description) {
+            const longDescData = JSON.parse(productData.description);
+            longDescriptionContent = longDescData.content || "";
+            longDescriptionEnabled = longDescData.enabled !== undefined ? longDescData.enabled : true;
+          } else {
+            longDescriptionContent = productData.description || "";
+            longDescriptionEnabled = true;
+          }
+        } catch (error) {
+          // Si no es JSON válido, usar como texto plano
+          longDescriptionContent = productData.description || "";
+          longDescriptionEnabled = true;
+        }
+        
+        setDescription(longDescriptionContent);
+        setShowLongDescription(longDescriptionEnabled);
+        setCharCount(longDescriptionContent.length);
+
+        // Manejar descripción corta (additionalData1)
+        let shortDescriptionContent = "";
+        let shortDescriptionEnabled = true;
+        try {
+          if (productData.additionalData1) {
+            const shortDescData = JSON.parse(productData.additionalData1);
+            shortDescriptionContent = shortDescData.content || "";
+            shortDescriptionEnabled = shortDescData.enabled !== undefined ? shortDescData.enabled : true;
+          } else {
+            shortDescriptionContent = productData.additionalData1 || "";
+            shortDescriptionEnabled = true;
+          }
+        } catch (error) {
+          // Si no es JSON válido, usar como texto plano
+          shortDescriptionContent = productData.additionalData1 || "";
+          shortDescriptionEnabled = true;
+        }
+        
+        setShortDescription(shortDescriptionContent);
+        setShowShortDescription(shortDescriptionEnabled);
+        
+        // Inicializar contador de caracteres para descripción corta
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = shortDescriptionContent;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        setShortDescriptionCharCount(textContent.length);
         setFormData({
           ...formData,
           name: productData.name,
-          description: productData.description,
+          description: JSON.stringify({
+            content: longDescriptionContent,
+            enabled: longDescriptionEnabled
+          }),
+          additionalData1: JSON.stringify({
+            content: shortDescriptionContent,
+            enabled: shortDescriptionEnabled
+          }),
           enabledForDelivery: productData.enabledForDelivery,
           enabledForWithdrawal: productData.enabledForWithdrawal,
           hasVariations: productData.hasVariations,
@@ -1309,7 +1574,67 @@ const CrearProductoSimple: React.FC = ({}) => {
               )}
             </div>
             <div className="">
-              <label className="font-normal ">Descripción Producto</label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="font-normal ">Descripción Corta</label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={showShortDescription}
+                    onChange={(e) => handleShortDescriptionToggle(e.target.checked)}
+                  />
+                  <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    Mostrar en tienda
+                  </span>
+                </label>
+              </div>
+              <div className={`${isShortDescriptionAtLimit ? 'border-2 border-red-500 rounded' : ''}`}>
+                <ReactQuill
+                  value={shortDescription}
+                  onChange={handleShortDescriptionChange}
+                  modules={{
+                    toolbar: [
+                      ["bold", "italic", "underline"],
+                      [{ list: "ordered" }, { list: "bullet" }],
+                    ],
+                    clipboard: {
+                      matchVisual: false,
+                    },
+                  }}
+                  formats={[
+                    "bold",
+                    "italic",
+                    "underline",
+                    "list",
+                    "bullet",
+                  ]}
+                  placeholder="Ingresa una descripción corta del producto (máximo 350 caracteres)"
+                />
+              </div>
+              <div className="flex justify-end items-center mt-2">
+                <div className={`text-left text-sm ${isShortDescriptionAtLimit ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+                  {shortDescriptionCharCount}/{maxShortDescriptionLength} caracteres
+                  {isShortDescriptionAtLimit && ' - Límite alcanzado'}
+                </div>
+              </div>
+            </div>
+            <div className="">
+              <div className="flex justify-between items-center mb-2">
+                <label className="font-normal ">Descripción Larga</label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={showLongDescription}
+                    onChange={(e) => handleLongDescriptionToggle(e.target.checked)}
+                  />
+                  <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    Mostrar en tienda
+                  </span>
+                </label>
+              </div>
               <ReactQuill
                 value={description}
                 onChange={handleDescriptionChange}
@@ -1712,9 +2037,14 @@ const CrearProductoSimple: React.FC = ({}) => {
             } gap-4`}
           >
             <button
-              className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
+              className={`shadow px-4 py-2 mt-4 transition-colors ${
+                isFormValid() 
+                  ? "bg-primary text-secondary hover:bg-secondary hover:text-primary" 
+                  : "bg-gray-400 text-gray-600 cursor-not-allowed"
+              }`}
               style={{ borderRadius: "var(--radius)" }}
               onClick={handleSubmit}
+              disabled={!isFormValid()}
             >
               {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
             </button>

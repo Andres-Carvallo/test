@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import Destacados01 from "../../Destacados/Destacado01";
+import Breadcrumbs from "@/components/Core/Navigation/Breadcrumbs";
 import {
   fetchProductData,
   fetchStockData,
@@ -23,6 +24,7 @@ interface Variation {
   product: {
     id: string;
     description: any;
+    additionalData1?: string;
   };
   isBaseSku: boolean;
   mainImageUrl: string;
@@ -67,6 +69,7 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
   }>({});
   const [mainImageUrl, setMainImageUrl] = useState("");
   const [description, setDescription] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
   const [productName, setProductName] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -368,6 +371,7 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
           setEnabledForDelivery(baseSku.product.enabledForDelivery);
           setEnabledForWithdrawal(baseSku.product.enabledForWithdrawal);
           setDescription(baseSku.product.description);
+          setShortDescription(baseSku.product.additionalData1 || "");
           setReviewAverageScore(baseSku.product.reviewAverageScore);
           setTotalReviews(baseSku.product.totalReviews);
 
@@ -575,10 +579,12 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
 
       if (matchingVariation.isBaseSku) {
         setDescription(matchingVariation.product.description);
+        setShortDescription(matchingVariation.product.additionalData1 || "");
       } else {
         setDescription(
           matchingVariation.description || matchingVariation.product.description
         );
+        setShortDescription(matchingVariation.product.additionalData1 || "");
       }
 
       fetchThumbnails(matchingVariation.product.id, matchingVariation.id);
@@ -594,6 +600,7 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
         }
         setMainImageUrl(baseSku.mainImageUrl);
         setDescription(baseSku.product.description);
+        setShortDescription(baseSku.product.additionalData1 || "");
         setSelectedThumbnail(baseSku.mainImageUrl);
         fetchThumbnails(baseSku.product.id, baseSku.id);
       }
@@ -975,7 +982,10 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
 
   return (
     <>
-      <div className="max-w-7xl mx-auto  sm:px-2 lg:px-8 mt-6 md:mt-16">
+      <div className="max-w-7xl mx-auto  sm:px-2 lg:px-8 mt-6 ">
+        {/* Breadcrumb */}
+        <Breadcrumbs category={categories[0]} />
+        
         {isLoading ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 animate-pulse pb-32">
             <div className="flex flex-col md:flex-row -mx-4">
@@ -1088,7 +1098,7 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
               <div className="md:hidden mt-4">{renderMobileThumbnails()}</div>
             </div>
 
-            <div className="md:flex-1 px-4 ml-4 md:ml-24 lg:ml-4 mt-2 md:mt-8">
+            <div className="md:flex-1 px-4 ml-4 md:ml-24 lg:ml-4 mt-2 ">
               <div className="hidden md:block">
                 <h1 className="mb-2 leading-tight tracking-tight font-bold text-gray-800 text-2xl md:text-3xl">
                   {productName}
@@ -1121,13 +1131,20 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
                 </p>
               </div>
 
-              <div className="flex items-center space-x-4 my-4">
+              <div className="flex items-center space-x-4">
                 <div className="rounded-lg flex py-2 pr-3">
                   <div className="font-bold text-primary text-3xl">
                     {renderPrice()}
                   </div>
                 </div>
               </div>
+
+              {shortDescription && shortDescription.trim() !== "" && (
+                <div className="">
+                  <div className="text-gray-600 text-sm leading-relaxed ql-editor" dangerouslySetInnerHTML={{ __html: shortDescription }} />
+                </div>
+              )}
+
                             {/* Sección de variaciones */}
                             {hasAttributes() && (
                 <div className="mt-4 border-t border-gray-100">
@@ -1173,48 +1190,43 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
                 </div>
               )}
    {/* Boton pago y cantidad */}
-   <div className="flex flex-wrap gap-2 py-4 items-center mt-4">
+   <div className="flex flex-wrap gap-2 py-4 items-center">
                 {variationsQuantity <= 1 && (stock === 0 || stock === null) ? (
                   <span className="text-red-600 font-bold">
                     No hay existencias
                   </span>
                 ) : (
                   <div className="w-full flex items-center gap-2">
-                    <div className="flex flex-col">
-                      <div className="text-[0.5rem] uppercase text-gray-400 tracking-wide font-semibold">
-                        Cantidad
-                      </div>
-                      <div className="relative w-[80px]">
-                        <select
-                          onChange={(e) =>
-                            setQuantity(parseInt(e.target.value))
-                          }
-                          className="cursor-pointer w-full appearance-none rounded-xl border border-gray-200 h-8 flex items-center justify-center text-center text-base"
-                        >
-                          {Array.from({ length: 10 }, (_, i) => (
-                            <option
-                              className="text-center"
-                              key={i}
-                            >
-                              {i + 1}
-                            </option>
-                          ))}
-                        </select>
-                        <svg
-                          className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-                          />
-                        </svg>
-                      </div>
+                    <div className="relative w-[80px] h-14">
+                      <select
+                        onChange={(e) =>
+                          setQuantity(parseInt(e.target.value))
+                        }
+                        className="cursor-pointer w-full h-full appearance-none rounded-xl border border-gray-200 flex items-center justify-center text-center text-base"
+                      >
+                        {Array.from({ length: 10 }, (_, i) => (
+                          <option
+                            className="text-center"
+                            key={i}
+                          >
+                            {i + 1}
+                          </option>
+                        ))}
+                      </select>
+                      <svg
+                        className="w-5 h-5 text-gray-400 absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+                        />
+                      </svg>
                     </div>
                     <button
                       onClick={handleAddToCart}
@@ -1241,17 +1253,18 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
               {/* Sección de delivery y retiro */}
               <div className="mt-10 flex flex-col md:flex-row md:items-start">
                 <div className="flex flex-col w-full">
-                  <p>
-                    {enabledForDelivery ? (
-                      <div className="flex mb-2">
-                        <span>
+                                    <div className="flex items-center gap-4 mb-2">
+                    {/* Delivery Status */}
+                    <div className="relative group">
+                      <div className="flex items-center cursor-pointer">
+                        {enabledForDelivery ? (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="size-6"
+                            className="size-6 text-green-600"
                           >
                             <path
                               strokeLinecap="round"
@@ -1259,21 +1272,14 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
                               d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
                             />
                           </svg>
-                        </span>
-                        <small className="px-2 text-primary self-center">
-                          Disponible para Delivery
-                        </small>
-                      </div>
-                    ) : (
-                      <div className="flex">
-                        <span>
+                        ) : (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="size-6"
+                            className="size-6 text-red-600"
                           >
                             <path
                               strokeLinecap="round"
@@ -1281,24 +1287,26 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
                               d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
                             />
                           </svg>
-                        </span>
-                        <small className="px-2 text-red-800 self-center">
-                          Delivery No Disponible
-                        </small>
+                        )}
                       </div>
-                    )}
-                  </p>
-                  <p>
-                    {enabledForWithdrawal ? (
-                      <div className="flex mb-2">
-                        <span>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        {enabledForDelivery ? "Disponible para Delivery" : "Delivery No Disponible"}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+
+                    {/* Withdrawal Status */}
+                    <div className="relative group">
+                      <div className="flex items-center cursor-pointer">
+                        {enabledForWithdrawal ? (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="size-6"
+                            className="size-6 text-green-600"
                           >
                             <path
                               strokeLinecap="round"
@@ -1306,21 +1314,14 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
                               d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"
                             />
                           </svg>
-                        </span>
-                        <small className="px-2 text-primary self-center">
-                          Disponible para Retiro
-                        </small>
-                      </div>
-                    ) : (
-                      <div className="flex">
-                        <span>
+                        ) : (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="size-6"
+                            className="size-6 text-red-600"
                           >
                             <path
                               strokeLinecap="round"
@@ -1328,13 +1329,15 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
                               d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z"
                             />
                           </svg>
-                        </span>
-                        <small className="px-2 text-red-800 self-center">
-                          Retiro No Disponible
-                        </small>
+                        )}
                       </div>
-                    )}
-                  </p>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        {enabledForWithdrawal ? "Disponible para Retiro" : "Retiro No Disponible"}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="mt-4 md:mt-0 w-full flex justify-start">
                   <img
@@ -1348,28 +1351,30 @@ const ProductDetail04: React.FC<ProductDetail04Props> = ({
             
           </div>
         )}
-              <div className="mt-12 border-b border-gray-100 mx-6 md:max-w-5xl md:mx-auto">
-                <div
-                  className="border-b border-gray-400 flex items-center justify-between cursor-pointer select-none px-1 pb-2"
-                  onClick={() => setOpenDetails((prev) => !prev)}
-                >
-                  <span className="text-gray-900 text-xl md:text-2xl font-bold">Detalles del producto</span>
-                  <svg
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${openDetails ? 'rotate-0' : '-rotate-90'}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {description && description.trim() !== "" && (
+                <div className="mt-12 border-b border-gray-100 mx-6 md:max-w-5xl md:mx-auto">
+                  <div
+                    className="border-b border-gray-400 flex items-center justify-between cursor-pointer select-none px-1 pb-2"
+                    onClick={() => setOpenDetails((prev) => !prev)}
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                    <span className="text-gray-900 text-xl md:text-2xl font-bold">Detalles del producto</span>
+                    <svg
+                      className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${openDetails ? 'rotate-0' : '-rotate-90'}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  {openDetails && (
+                    <>
+                      <div className="ql-editor px-1 pt-2 pb-4" dangerouslySetInnerHTML={{ __html: description }} />
+                      <div className="border-b border-gray-400 w-full"></div>
+                    </>
+                  )}
                 </div>
-                {openDetails && (
-                  <>
-                    <div className="ql-editor px-1 pt-2 pb-4" dangerouslySetInnerHTML={{ __html: description }} />
-                    <div className="border-b border-gray-400 w-full"></div>
-                  </>
-                )}
-              </div>
+              )}
 
 
         <Destacados01 text="TE PUEDE GUSTAR" />
