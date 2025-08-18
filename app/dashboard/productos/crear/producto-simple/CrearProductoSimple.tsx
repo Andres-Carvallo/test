@@ -80,6 +80,21 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [showShortDescription, setShowShortDescription] = useState(true);
   const [showLongDescription, setShowLongDescription] = useState(true);
   const [isShortDescriptionAtLimit, setIsShortDescriptionAtLimit] = useState(false);
+  
+  // Función helper para verificar si el contenido HTML está realmente vacío
+  const isHtmlContentEmpty = (htmlContent: string): boolean => {
+    if (!htmlContent || htmlContent.trim() === '') {
+      return true;
+    }
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Verificar si el texto está vacío o solo contiene espacios/lineas en blanco
+    return textContent.trim() === '';
+  };
+  
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
     setCharCount(value.length);
@@ -166,6 +181,22 @@ const CrearProductoSimple: React.FC = ({}) => {
     }
   }, [shortDescription]);
 
+  // Limpiar errores de validación cuando cambien los estados de las descripciones
+  useEffect(() => {
+    setValidationErrors([]);
+  }, [showShortDescription, showLongDescription]);
+
+  // Limpiar errores de validación cuando se agregue contenido a las descripciones
+  useEffect(() => {
+    // Solo limpiar errores si las descripciones están habilitadas y tienen contenido
+    if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción corta')));
+    }
+    if (showLongDescription && !isHtmlContentEmpty(description)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción larga')));
+    }
+  }, [shortDescription, description, showShortDescription, showLongDescription]);
+
 
 
   const validateForm = () => {
@@ -181,25 +212,14 @@ const CrearProductoSimple: React.FC = ({}) => {
       valid = false;
     }
     
-    // Validar descripción corta
-    let shortDescriptionContent = "";
-    try {
-      if (formData.additionalData1) {
-        const shortDescData = JSON.parse(formData.additionalData1);
-        shortDescriptionContent = shortDescData.content || "";
-      }
-    } catch (error) {
-      // Si no es JSON válido, usar como texto plano
-      shortDescriptionContent = formData.additionalData1 || "";
-    }
-    
-    if (!shortDescriptionContent.trim()) {
+    // Validar descripción corta (solo si está habilitada) - USANDO ESTADOS LOCALES
+    if (showShortDescription && isHtmlContentEmpty(shortDescription)) {
       toast.error("La descripción corta del producto es requerida");
       valid = false;
-    } else {
+    } else if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
       // Verificar longitud de la descripción corta
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = shortDescriptionContent;
+      tempDiv.innerHTML = shortDescription;
       const textContent = tempDiv.textContent || tempDiv.innerText || '';
       
       if (textContent.length > maxShortDescriptionLength) {
@@ -208,31 +228,20 @@ const CrearProductoSimple: React.FC = ({}) => {
       }
     }
     
-    // Validar descripción larga
-    let longDescriptionContent = "";
-    try {
-      if (formData.description) {
-        const longDescData = JSON.parse(formData.description);
-        longDescriptionContent = longDescData.content || "";
-      }
-    } catch (error) {
-      // Si no es JSON válido, usar como texto plano
-      longDescriptionContent = formData.description || "";
-    }
-    
-    if (!longDescriptionContent.trim()) {
+    // Validar descripción larga (solo si está habilitada) - USANDO ESTADOS LOCALES
+    if (showLongDescription && isHtmlContentEmpty(description)) {
       toast.error("La descripción larga del producto es requerida");
       valid = false;
-    } else {
+    } else if (showLongDescription && !isHtmlContentEmpty(description)) {
       // Verificar longitud de la descripción larga
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = longDescriptionContent;
+      tempDiv.innerHTML = description;
       const textContent = tempDiv.textContent || tempDiv.innerText || '';
       
       if (textContent.length > maxLength) {
         toast.error(`La descripción larga no puede exceder ${maxLength} caracteres. Actualmente tiene ${textContent.length} caracteres.`);
         valid = false;
-    }
+      }
     }
     
     if (precioNormal === null || precioNormal <= 1) {
@@ -250,72 +259,88 @@ const CrearProductoSimple: React.FC = ({}) => {
     return valid;
   };
 
-  const isFormValid = () => {
+  const getValidationErrors = () => {
+    const errors: string[] = [];
+    
+    // Debug logs
+    console.log('=== VALIDACIÓN DEBUG ===');
+    console.log('formData.additionalData1:', formData.additionalData1);
+    console.log('formData.description:', formData.description);
+    console.log('showShortDescription:', showShortDescription);
+    console.log('showLongDescription:', showLongDescription);
+    console.log('shortDescription:', shortDescription);
+    console.log('description:', description);
+    
     // Verificar nombre
-    if (!formData.name || nameError) {
-      return false;
+    if (!formData.name) {
+      errors.push("El nombre del producto es requerido");
+    }
+    if (nameError) {
+      errors.push("No se puede publicar el producto con un nombre que ya existe");
     }
     
-    // Verificar descripción corta
-    let shortDescriptionContent = "";
-    try {
-      if (formData.additionalData1) {
-        const shortDescData = JSON.parse(formData.additionalData1);
-        shortDescriptionContent = shortDescData.content || "";
+    // Verificar descripción corta (solo si está habilitada) - USANDO ESTADOS LOCALES
+    console.log('Validating short description - showShortDescription:', showShortDescription, 'shortDescription:', shortDescription);
+    console.log('Short description HTML content:', shortDescription);
+    console.log('Is short description empty?', isHtmlContentEmpty(shortDescription));
+    
+    if (showShortDescription && isHtmlContentEmpty(shortDescription)) {
+      console.log('ERROR: Short description is enabled but empty');
+      errors.push("La descripción corta del producto es requerida");
+    } else if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
+      const tempDivShort = document.createElement('div');
+      tempDivShort.innerHTML = shortDescription;
+      const textContentShort = tempDivShort.textContent || tempDivShort.innerText || '';
+      
+      if (textContentShort.length > maxShortDescriptionLength) {
+        errors.push(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres. Actualmente tiene ${textContentShort.length} caracteres.`);
       }
-    } catch (error) {
-      shortDescriptionContent = formData.additionalData1 || "";
     }
     
-    if (!shortDescriptionContent.trim()) {
-      return false;
-    }
+    // Verificar descripción larga (solo si está habilitada) - USANDO ESTADOS LOCALES
+    console.log('Validating long description - showLongDescription:', showLongDescription, 'description:', description);
+    console.log('Long description HTML content:', description);
+    console.log('Is long description empty?', isHtmlContentEmpty(description));
     
-    const tempDivShort = document.createElement('div');
-    tempDivShort.innerHTML = shortDescriptionContent;
-    const textContentShort = tempDivShort.textContent || tempDivShort.innerText || '';
-    
-    if (textContentShort.length > maxShortDescriptionLength) {
-      return false;
-    }
-    
-    // Verificar descripción larga
-    let longDescriptionContent = "";
-    try {
-      if (formData.description) {
-        const longDescData = JSON.parse(formData.description);
-        longDescriptionContent = longDescData.content || "";
+    if (showLongDescription && isHtmlContentEmpty(description)) {
+      console.log('ERROR: Long description is enabled but empty');
+      errors.push("La descripción larga del producto es requerida");
+    } else if (showLongDescription && !isHtmlContentEmpty(description)) {
+      const tempDivLong = document.createElement('div');
+      tempDivLong.innerHTML = description;
+      const textContentLong = tempDivLong.textContent || tempDivLong.innerText || '';
+      
+      if (textContentLong.length > maxLength) {
+        errors.push(`La descripción larga no puede exceder ${maxLength} caracteres. Actualmente tiene ${textContentLong.length} caracteres.`);
       }
-    } catch (error) {
-      longDescriptionContent = formData.description || "";
     }
     
-    if (!longDescriptionContent.trim()) {
-      return false;
-    }
-    
-    const tempDivLong = document.createElement('div');
-    tempDivLong.innerHTML = longDescriptionContent;
-    const textContentLong = tempDivLong.textContent || tempDivLong.innerText || '';
-    
-    if (textContentLong.length > maxLength) {
-      return false;
-    }
-    
-    // Verificar otros campos
+    // Verificar precio
     if (precioNormal === null || precioNormal <= 1) {
-      return false;
+      errors.push("El precio es requerido y debe ser mayor a 1");
     }
     
+    // Verificar opciones de entrega
     if (!formData.enabledForDelivery && !formData.enabledForWithdrawal) {
-      return false;
+      errors.push("Debe seleccionar al menos una opción: Delivery o Retiro");
     }
     
+    // Verificar imagen principal
     if (!formData.mainImage.data) {
-      return false;
+      errors.push("La imagen principal es requerida");
     }
     
-    return true;
+    console.log('Validation errors found:', errors);
+    console.log('=== FIN VALIDACIÓN DEBUG ===');
+    
+    return errors;
+  };
+
+  const isFormValid = () => {
+    const errors = getValidationErrors();
+    const isValid = errors.length === 0;
+    console.log('isFormValid result:', isValid, 'errors count:', errors.length);
+    return isValid;
   };
 
   const handleCheckboxChange = () => {
@@ -824,6 +849,7 @@ const CrearProductoSimple: React.FC = ({}) => {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleSubmit = async (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -832,6 +858,20 @@ const CrearProductoSimple: React.FC = ({}) => {
 
     // Prevenir múltiples envíos
     if (isSubmitting) return;
+    
+    // Si el formulario no es válido, mostrar errores y no continuar
+    if (!isFormValid()) {
+      const errors = getValidationErrors();
+      setValidationErrors(errors);
+      
+      // Mostrar el primer error como toast
+      if (errors.length > 0) {
+        toast.error(errors[0]);
+      }
+      
+      return;
+    }
+    
     setIsSubmitting(true);
     setIsLoading(true);
 
@@ -2040,11 +2080,12 @@ const CrearProductoSimple: React.FC = ({}) => {
               className={`shadow px-4 py-2 mt-4 transition-colors ${
                 isFormValid() 
                   ? "bg-primary text-secondary hover:bg-secondary hover:text-primary" 
-                  : "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  : "bg-gray-400 text-gray-600 hover:bg-gray-500"
               }`}
               style={{ borderRadius: "var(--radius)" }}
               onClick={handleSubmit}
-              disabled={!isFormValid()}
+              disabled={isSubmitting}
+              title={!isFormValid() ? "Haz clic para ver los errores de validación" : ""}
             >
               {isEditMode ? "Actualizar Producto" : "Publicar Producto"}
             </button>
@@ -2058,6 +2099,33 @@ const CrearProductoSimple: React.FC = ({}) => {
               >
                 Ver Producto
               </Link>
+            )}
+            
+            {/* Mostrar errores de validación */}
+            {validationErrors.length > 0 && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <h3 className="text-sm font-medium text-red-800">
+                    Errores de validación ({validationErrors.length})
+                  </h3>
+                </div>
+                <ul className="list-disc list-inside space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="text-sm text-red-700">
+                      {error}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => setValidationErrors([])}
+                  className="mt-3 text-sm text-red-600 hover:text-red-800 underline"
+                >
+                  Ocultar errores
+                </button>
+              </div>
             )}
           </div>
         </div>
