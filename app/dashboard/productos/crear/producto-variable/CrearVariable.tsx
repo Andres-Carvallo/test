@@ -264,6 +264,11 @@ const CrearVariable: React.FC = () => {
   const [freeShippingAmount, setFreeShippingAmount] = useState<string | null>(null);
   const [isFreeShippingEnabled, setIsFreeShippingEnabled] = useState(true);
   
+  // Estados locales para las descripciones
+  const [description, setDescription] = useState<string>("");
+  const [shortDescription, setShortDescription] = useState<string>("");
+  const [isShortDescriptionAtLimit, setIsShortDescriptionAtLimit] = useState(false);
+  
   // Función helper para verificar si el contenido HTML está realmente vacío
   const isHtmlContentEmpty = (htmlContent: string): boolean => {
     if (!htmlContent || htmlContent.trim() === '') {
@@ -277,6 +282,94 @@ const CrearVariable: React.FC = () => {
     // Verificar si el texto está vacío o solo contiene espacios/lineas en blanco
     return textContent.trim() === '';
   };
+  
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    setDescriptionLength(value.length);
+  };
+
+  const handleShortDescriptionChange = (value: string) => {
+    // Limitar la longitud del contenido HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = value;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    if (textContent.length <= maxShortDescriptionLength) {
+      setShortDescription(value);
+      setShortDescriptionCharCount(textContent.length);
+      setIsShortDescriptionAtLimit(textContent.length === maxShortDescriptionLength);
+    } else {
+      // Si excede el límite, mantener el valor anterior y mostrar error
+      toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres`);
+      setIsShortDescriptionAtLimit(true);
+      
+      // No actualizar el estado, mantener el valor anterior
+      return;
+    }
+  };
+
+  const handleShortDescriptionToggle = (enabled: boolean) => {
+    setShowShortDescription(enabled);
+  };
+
+  const handleLongDescriptionToggle = (enabled: boolean) => {
+    setShowLongDescription(enabled);
+  };
+
+  // Sincronizar estados locales con formData
+  useEffect(() => {
+    const longDescriptionData = {
+      content: description,
+      enabled: showLongDescription
+    };
+    
+    setFormData((prevFormData: any) => ({
+      ...prevFormData,
+      description: JSON.stringify(longDescriptionData),
+    }));
+  }, [description, showLongDescription]);
+
+  useEffect(() => {
+    const shortDescriptionData = {
+      content: shortDescription,
+      enabled: showShortDescription
+    };
+    
+    setFormData((prevFormData: any) => ({
+      ...prevFormData,
+      additionalData1: JSON.stringify(shortDescriptionData),
+    }));
+  }, [shortDescription, showShortDescription]);
+
+  // Efecto adicional para manejar el pegado de texto
+  useEffect(() => {
+    if (shortDescription) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = shortDescription;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Si el texto excede el límite, revertir al valor anterior
+      if (textContent.length > maxShortDescriptionLength) {
+        toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres`);
+      }
+    }
+  }, [shortDescription]);
+
+  // Limpiar errores de validación cuando cambien los estados de las descripciones
+  useEffect(() => {
+    setValidationErrors([]);
+  }, [showShortDescription, showLongDescription]);
+
+  // Limpiar errores de validación cuando se agregue contenido a las descripciones
+  useEffect(() => {
+    // Solo limpiar errores si las descripciones están habilitadas y tienen contenido
+    if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción corta')));
+    }
+    if (showLongDescription && !isHtmlContentEmpty(description)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción larga')));
+    }
+  }, [shortDescription, description, showShortDescription, showLongDescription]);
   const getValidationErrors = () => {
     const errors: string[] = [];
     
@@ -288,12 +381,12 @@ const CrearVariable: React.FC = () => {
       errors.push("No se puede publicar el producto con un nombre que ya existe");
     }
     
-    // Verificar descripción corta (solo si está habilitada)
-    if (showShortDescription && isHtmlContentEmpty(formData.additionalData1)) {
+    // Verificar descripción corta (solo si está habilitada) - USANDO ESTADOS LOCALES
+    if (showShortDescription && isHtmlContentEmpty(shortDescription)) {
       errors.push("La descripción corta del producto es requerida");
-    } else if (showShortDescription && !isHtmlContentEmpty(formData.additionalData1)) {
+    } else if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = formData.additionalData1;
+      tempDiv.innerHTML = shortDescription;
       const textContent = tempDiv.textContent || tempDiv.innerText || '';
       
       if (textContent.length > maxShortDescriptionLength) {
@@ -301,12 +394,12 @@ const CrearVariable: React.FC = () => {
       }
     }
     
-    // Verificar descripción larga (solo si está habilitada)
-    if (showLongDescription && isHtmlContentEmpty(formData.description)) {
+    // Verificar descripción larga (solo si está habilitada) - USANDO ESTADOS LOCALES
+    if (showLongDescription && isHtmlContentEmpty(description)) {
       errors.push("La descripción larga del producto es requerida");
-    } else if (showLongDescription && !isHtmlContentEmpty(formData.description)) {
+    } else if (showLongDescription && !isHtmlContentEmpty(description)) {
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = formData.description;
+      tempDiv.innerHTML = description;
       const textContent = tempDiv.textContent || tempDiv.innerText || '';
       
       if (textContent.length > maxDescriptionLength) {
@@ -371,11 +464,66 @@ const CrearVariable: React.FC = () => {
 
         setSelectedProductTypes(selectedProductTypes);
 
+        // Manejar descripción larga (description)
+        let longDescriptionContent = "";
+        let longDescriptionEnabled = true;
+        try {
+          if (productData.description) {
+            const longDescData = JSON.parse(productData.description);
+            longDescriptionContent = longDescData.content || "";
+            longDescriptionEnabled = longDescData.enabled !== undefined ? longDescData.enabled : true;
+          } else {
+            longDescriptionContent = productData.description || "";
+            longDescriptionEnabled = true;
+          }
+        } catch (error) {
+          // Si no es JSON válido, usar como texto plano
+          longDescriptionContent = productData.description || "";
+          longDescriptionEnabled = true;
+        }
+        
+        setDescription(longDescriptionContent);
+        setShowLongDescription(longDescriptionEnabled);
+        setDescriptionLength(longDescriptionContent.length);
+
+        // Manejar descripción corta (additionalData1)
+        let shortDescriptionContent = "";
+        let shortDescriptionEnabled = true;
+        try {
+          if (productData.additionalData1) {
+            const shortDescData = JSON.parse(productData.additionalData1);
+            shortDescriptionContent = shortDescData.content || "";
+            shortDescriptionEnabled = shortDescData.enabled !== undefined ? shortDescData.enabled : true;
+          } else {
+            shortDescriptionContent = productData.additionalData1 || "";
+            shortDescriptionEnabled = true;
+          }
+        } catch (error) {
+          // Si no es JSON válido, usar como texto plano
+          shortDescriptionContent = productData.additionalData1 || "";
+          shortDescriptionEnabled = true;
+        }
+        
+        setShortDescription(shortDescriptionContent);
+        setShowShortDescription(shortDescriptionEnabled);
+        
+        // Inicializar contador de caracteres para descripción corta
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = shortDescriptionContent;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        setShortDescriptionCharCount(textContent.length);
+        
         setFormData({
           ...formData,
           name: productData.name,
-          description: productData.description,
-          additionalData1: productData.additionalData1 || "",
+          description: JSON.stringify({
+            content: longDescriptionContent,
+            enabled: longDescriptionEnabled
+          }),
+          additionalData1: JSON.stringify({
+            content: shortDescriptionContent,
+            enabled: shortDescriptionEnabled
+          }),
           additionalData2: productData.additionalData2 || JSON.stringify({
             showInfoBoxes: true,
             boxesConfig: {
@@ -406,12 +554,6 @@ const CrearVariable: React.FC = () => {
             weight: null,
           },
         });
-        
-        // Inicializar contador de caracteres para descripción corta
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = productData.additionalData1 || "";
-        const textContent = tempDiv.textContent || tempDiv.innerText || '';
-        setShortDescriptionCharCount(textContent.length);
         setMeasures({
           length: productData.measures ? productData.measures.length : null,
           width: productData.measures ? productData.measures.width : null,
@@ -537,36 +679,7 @@ const CrearVariable: React.FC = () => {
       [name]: parseFloat(value) || null,
     }));
   };
-  const handleDescriptionChange = (value: string) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      description: value,
-    }));
-    setDescriptionLength(value.length);
-  };
-
-  const handleShortDescriptionChange = (value: string) => {
-    // Limitar la longitud del contenido HTML
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = value;
-    const textContent = tempDiv.textContent || tempDiv.innerText || '';
-    
-    if (textContent.length <= maxShortDescriptionLength) {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        additionalData1: value,
-      }));
-      setShortDescriptionCharCount(textContent.length);
-    }
-  };
-
-  const handleShortDescriptionToggle = (enabled: boolean) => {
-    setShowShortDescription(enabled);
-  };
-
-  const handleLongDescriptionToggle = (enabled: boolean) => {
-    setShowLongDescription(enabled);
-  };
+  // Estas funciones ya están definidas arriba con los nuevos estados locales
 
   const handleCancel = () => {
     handleClearImage(setMainImage);
@@ -578,11 +691,21 @@ const CrearVariable: React.FC = () => {
     setSelectedImages([]);
     setIsFeatured(false);
     setIsEditMode(false);
+    
+    // Limpiar estados locales de descripciones
+    setDescription("");
+    setShortDescription("");
+    setShowShortDescription(true);
+    setShowLongDescription(true);
+    setShortDescriptionCharCount(0);
+    setDescriptionLength(0);
+    setIsShortDescriptionAtLimit(false);
+    
     setFormData({
       productTypes: [],
       name: "",
-      description: "",
-      additionalData1: "",
+      description: JSON.stringify({ content: "", enabled: true }),
+      additionalData1: JSON.stringify({ content: "", enabled: true }),
       additionalData2: JSON.stringify({
         showInfoBoxes: true,
         boxesConfig: {
@@ -618,11 +741,21 @@ const CrearVariable: React.FC = () => {
   const handleExitEditMode = () => {
     // Limpieza de todos los estados relacionados con la edición
     setIsEditMode(false);
+    
+    // Limpiar estados locales de descripciones
+    setDescription("");
+    setShortDescription("");
+    setShowShortDescription(true);
+    setShowLongDescription(true);
+    setShortDescriptionCharCount(0);
+    setDescriptionLength(0);
+    setIsShortDescriptionAtLimit(false);
+    
     setFormData({
       productTypes: [],
       name: "",
-      description: "",
-      additionalData1: "",
+      description: JSON.stringify({ content: "", enabled: true }),
+      additionalData1: JSON.stringify({ content: "", enabled: true }),
       additionalData2: JSON.stringify({
         showInfoBoxes: true,
         boxesConfig: {
@@ -1393,27 +1526,30 @@ const CrearVariable: React.FC = () => {
                       </span>
                     </label>
                   </div>
-                  <ReactQuill
-                    value={formData.additionalData1 || ""}
-                    onChange={handleShortDescriptionChange}
-                    modules={{
-                      toolbar: [
-                        ["bold", "italic", "underline"],
-                        [{ list: "ordered" }, { list: "bullet" }],
-                      ],
-                    }}
-                    formats={[
-                      "bold",
-                      "italic",
-                      "underline",
-                      "list",
-                      "bullet",
-                    ]}
-                    placeholder="Ingresa una descripción corta del producto (máximo 200 caracteres)"
-                  />
+                  <div className={`${isShortDescriptionAtLimit ? 'border-2 border-red-500 rounded' : ''}`}>
+                    <ReactQuill
+                      value={shortDescription}
+                      onChange={handleShortDescriptionChange}
+                      modules={{
+                        toolbar: [
+                          ["bold", "italic", "underline"],
+                          [{ list: "ordered" }, { list: "bullet" }],
+                        ],
+                      }}
+                      formats={[
+                        "bold",
+                        "italic",
+                        "underline",
+                        "list",
+                        "bullet",
+                      ]}
+                      placeholder="Ingresa una descripción corta del producto (máximo 200 caracteres)"
+                    />
+                  </div>
                   <div className="flex justify-end items-center mt-2">
-                    <div className="text-left text-sm text-gray-500">
+                    <div className={`text-left text-sm ${isShortDescriptionAtLimit ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
                       {shortDescriptionCharCount}/{maxShortDescriptionLength} caracteres
+                      {isShortDescriptionAtLimit && ' - Límite alcanzado'}
                     </div>
                   </div>
                 </div>
@@ -1434,7 +1570,7 @@ const CrearVariable: React.FC = () => {
                     </label>
                   </div>
                   <ReactQuill
-                    value={formData.description}
+                    value={description}
                     onChange={handleDescriptionChange}
                     modules={{
                       toolbar: [
