@@ -7,6 +7,12 @@ import Cropper from "react-easy-crop";
 import imageCompression from "browser-image-compression";
 import Modal from "@/components/Core/Modals/ModalSeo";
 import { getCroppedImg } from "@/lib/cropImage";
+import { 
+  PIXELUPComponents, 
+  getPIXELUPComponentId, 
+  getPIXELUPComponentData 
+} from "@/config/componentEnums";
+import { useComponentId, useComponentImageId } from "@/hooks/useComponentId";
 
 const Hero: React.FC = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
@@ -41,14 +47,32 @@ const Hero: React.FC = () => {
   const MAX_CHARACTERS = 250;
   const ALERT_CHARACTERS = 154;
 
+  // Usar el hook para obtener los IDs de los componentes
+  const seoBannerId = useComponentId(PIXELUPComponents.SEO_BANNER, 'NEXT_PUBLIC_SEO_BANNER_ID');
+  // Usar el hook para obtener el ID de la imagen hija
+  const seoBannerImageId = useComponentId(PIXELUPComponents.SEO_BANNER_IMG, 'NEXT_PUBLIC_SEO_BANNER_IMGID');
+
+  // Log para verificar que los IDs se obtienen correctamente
+  console.log(`🔧 [SEO Component] IDs obtenidos: Banner=${seoBannerId}, Image=${seoBannerImageId}`);
+
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
       const token = getCookie("AdminTokenAuth");
-      const bannerId = `${process.env.NEXT_PUBLIC_SEO_BANNER_ID}`;
+      
+      // Verificar que ambos IDs estén disponibles
+      if (!seoBannerId) {
+        throw new Error('No se pudo obtener el ID del banner SEO');
+      }
+      
+      if (!seoBannerImageId) {
+        throw new Error('No se pudo obtener el ID de la imagen SEO');
+      }
+
+      console.log(`🔍 Obteniendo datos del banner SEO con IDs: Banner=${seoBannerId}, Image=${seoBannerImageId}`);
 
       const productTypeResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${seoBannerId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,9 +100,11 @@ const Hero: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchBannerHome();
+    if (seoBannerId && seoBannerImageId) {
+      fetchBannerHome();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Debería ejecutarse solo en el montaje inicial
+  }, [seoBannerId, seoBannerImageId]); // Se ejecuta cuando los IDs cambien
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -103,11 +129,15 @@ const Hero: React.FC = () => {
         delete updatedDataWithoutImage.mainImage;
       }
 
-      // Enviar los datos actualizados al servidor
-      const bannerId = `${process.env.NEXT_PUBLIC_SEO_BANNER_ID}`;
-      const bannerImageId = `${process.env.NEXT_PUBLIC_SEO_BANNER_IMGID}`;
+      // Usar los IDs obtenidos de los hooks
+      if (!seoBannerId || !seoBannerImageId) {
+        throw new Error('No se pudieron obtener los IDs necesarios para actualizar el banner SEO');
+      }
+
+      console.log(`🔄 Actualizando banner SEO con IDs: Banner=${seoBannerId}, Image=${seoBannerImageId}`);
+
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images/${bannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${seoBannerId}/images/${seoBannerImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         updatedDataWithoutImage,
         {
           headers: {
