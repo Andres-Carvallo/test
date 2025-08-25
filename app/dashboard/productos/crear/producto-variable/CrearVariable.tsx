@@ -1914,6 +1914,7 @@ const CrearVariable: React.FC = () => {
               variations={variations}
               setVariations={setVariations}
               baseProductDescription={formData.description}
+              baseProductInfo={formData}
             />
           </div>
           {/* FIN COL PRINCIPAL */}
@@ -2014,7 +2015,7 @@ const CrearVariable: React.FC = () => {
                     className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     Recortar y Subir
-                  </button>
+                  </button> 
                   <button
                     onClick={() => {
                       setMainImage(null);

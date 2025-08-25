@@ -50,6 +50,7 @@ const VariationForm: React.FC<any> = ({
   const editFormRef = useRef<HTMLDivElement>(null);
   const isEditMode = !!variation.id;
   const [useBaseDescription, setUseBaseDescription] = useState(false); //descripcion del producto base
+  const [useBaseShortDescription, setUseBaseShortDescription] = useState(false); //descripcion corta del producto base
   const currentVariationIndex = index;
   const [attributePairs, setAttributePairs] = useState([
     { id: "", value: "", isNew: true } as {
@@ -66,6 +67,80 @@ const VariationForm: React.FC<any> = ({
   const [stockQuantity, setStockQuantity] = useState<number | null>(
     currentStocks[variation.id] !== null ? currentStocks[variation.id] : null
   );
+
+  // Estados para las descripciones
+  const [description, setDescription] = useState<string>("");
+  const [shortDescription, setShortDescription] = useState<string>("");
+  const [showShortDescription, setShowShortDescription] = useState(true);
+  const [showLongDescription, setShowLongDescription] = useState(true);
+  const [descriptionLength, setDescriptionLength] = useState(0);
+  const [shortDescriptionCharCount, setShortDescriptionCharCount] = useState(0);
+  const maxDescriptionLength = 1000;
+  const maxShortDescriptionLength = 200;
+  const [isShortDescriptionAtLimit, setIsShortDescriptionAtLimit] = useState(false);
+
+  // Función helper para verificar si el contenido HTML está realmente vacío
+  const isHtmlContentEmpty = (htmlContent: string): boolean => {
+    if (!htmlContent || htmlContent.trim() === '') {
+      return true;
+    }
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    return textContent.trim() === '';
+  };
+
+  // Función para extraer el contenido de la descripción del producto base
+  const getBaseDescriptionContent = (baseDesc: string) => {
+    try {
+      const parsed = JSON.parse(baseDesc);
+      return parsed.content || "";
+    } catch (error) {
+      // Si no es JSON válido, usar como texto plano
+      return baseDesc || "";
+    }
+  };
+
+  // Función para verificar si la descripción del producto base está habilitada
+  const isBaseDescriptionEnabled = (baseDesc: string) => {
+    try {
+      const parsed = JSON.parse(baseDesc);
+      return parsed.enabled !== undefined ? parsed.enabled : true;
+    } catch (error) {
+      return true;
+    }
+  };
+
+  // Función para verificar si la descripción corta del producto base está disponible
+  const isBaseShortDescriptionAvailable = () => {
+    if (!baseProductInfo || !baseProductInfo.additionalData1) {
+      return false;
+    }
+    
+    try {
+      const shortDescData = JSON.parse(baseProductInfo.additionalData1);
+      const shortDescContent = shortDescData.content || "";
+      const shortDescEnabled = shortDescData.enabled !== undefined ? shortDescData.enabled : true;
+      
+      return shortDescEnabled && !isHtmlContentEmpty(shortDescContent);
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // Función para verificar si la descripción larga del producto base está disponible
+  const isBaseLongDescriptionAvailable = () => {
+    if (!baseProductDescription) {
+      return false;
+    }
+    
+    const baseDescContent = getBaseDescriptionContent(baseProductDescription);
+    const baseDescEnabled = isBaseDescriptionEnabled(baseProductDescription);
+    
+    return baseDescEnabled && !isHtmlContentEmpty(baseDescContent);
+  };
 
   // Agregar estado para las medidas
   const [measures, setMeasures] = useState({
@@ -106,8 +181,6 @@ const VariationForm: React.FC<any> = ({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [originalFileName, setOriginalFileName] = useState<string>("");
   const [image, setImage] = useState<any>(null);
-  const [descriptionLength, setDescriptionLength] = useState(0);
-  const maxDescriptionLength = 1000;
 
   const { triggerRevalidation } = useRevalidation();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
@@ -121,32 +194,118 @@ const VariationForm: React.FC<any> = ({
     Array<{ id: string }>
   >([]);
 
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-    index: number
-  ) => {
-    const value = e.target.value;
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    setDescriptionLength(value.length);
+  };
 
-    // Verifica si el texto excede el límite de caracteres
-    if (value.length <= maxDescriptionLength) {
-      setDescriptionLength(value.length); // Actualiza el contador de caracteres
-      onDescriptionChange(e, index); // Llama a la función existente para manejar el cambio
+  const handleShortDescriptionChange = (value: string) => {
+    // Limitar la longitud del contenido HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = value;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    if (textContent.length <= maxShortDescriptionLength) {
+      setShortDescription(value);
+      setShortDescriptionCharCount(textContent.length);
+      setIsShortDescriptionAtLimit(textContent.length === maxShortDescriptionLength);
+    } else {
+      // Si excede el límite, mantener el valor anterior y mostrar error
+      toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres`);
+      setIsShortDescriptionAtLimit(true);
+      
+      // No actualizar el estado, mantener el valor anterior
+      return;
     }
   };
 
+  const handleShortDescriptionToggle = (enabled: boolean) => {
+    setShowShortDescription(enabled);
+  };
+
+  const handleLongDescriptionToggle = (enabled: boolean) => {
+    setShowLongDescription(enabled);
+  };
+
+  const handleUseBaseShortDescriptionChange = (checked: boolean) => {
+    if (checked && !isBaseShortDescriptionAvailable()) {
+      toast.error("La descripción corta del producto base no está disponible");
+      return;
+    }
+    setUseBaseShortDescription(checked);
+  };
+
+  const handleUseBaseDescriptionChange = (checked: boolean) => {
+    if (checked && !isBaseLongDescriptionAvailable()) {
+      toast.error("La descripción larga del producto base no está disponible");
+      return;
+    }
+    setUseBaseDescription(checked);
+  };
+
+  // Efecto para manejar el copiado de descripciones del producto base
   useEffect(() => {
     if (useBaseDescription && baseProductDescription) {
-      onDescriptionChange(
-        {
-          target: {
-            value: baseProductDescription,
-          },
-        } as React.ChangeEvent<HTMLTextAreaElement>,
-        currentVariationIndex
-      );
+      const baseDescContent = getBaseDescriptionContent(baseProductDescription);
+      const baseDescEnabled = isBaseDescriptionEnabled(baseProductDescription);
+      
+      if (baseDescEnabled && !isHtmlContentEmpty(baseDescContent)) {
+        setDescription(baseDescContent);
+        setShowLongDescription(true);
+        setDescriptionLength(baseDescContent.length);
+        toast.success("Descripción larga copiada del producto base");
+      } else {
+        toast.error("La descripción larga del producto base no está habilitada o está vacía");
+        setUseBaseDescription(false);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useBaseDescription, baseProductDescription]);
+
+  // Efecto para manejar el copiado de descripción corta del producto base
+  useEffect(() => {
+    if (useBaseShortDescription && baseProductInfo && baseProductInfo.additionalData1) {
+      try {
+        const shortDescData = JSON.parse(baseProductInfo.additionalData1);
+        const shortDescContent = shortDescData.content || "";
+        const shortDescEnabled = shortDescData.enabled !== undefined ? shortDescData.enabled : true;
+        
+        if (shortDescEnabled && !isHtmlContentEmpty(shortDescContent)) {
+          setShortDescription(shortDescContent);
+          setShowShortDescription(true);
+          
+          // Inicializar contador de caracteres para descripción corta
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = shortDescContent;
+          const textContent = tempDiv.textContent || tempDiv.innerText || '';
+          setShortDescriptionCharCount(textContent.length);
+          toast.success("Descripción corta copiada del producto base");
+        } else {
+          toast.error("La descripción corta del producto base no está habilitada o está vacía");
+          setUseBaseShortDescription(false);
+        }
+      } catch (error) {
+        toast.error("Error al procesar la descripción corta del producto base");
+        setUseBaseShortDescription(false);
+      }
+    }
+  }, [useBaseShortDescription, baseProductInfo]);
+
+  // Efecto para limpiar estados cuando las descripciones del producto base no estén disponibles
+  useEffect(() => {
+    if (!isBaseShortDescriptionAvailable() && useBaseShortDescription) {
+      setUseBaseShortDescription(false);
+      setShortDescription("");
+      setShortDescriptionCharCount(0);
+    }
+  }, [baseProductInfo, useBaseShortDescription]);
+
+  useEffect(() => {
+    if (!isBaseLongDescriptionAvailable() && useBaseDescription) {
+      setUseBaseDescription(false);
+      setDescription("");
+      setDescriptionLength(0);
+    }
+  }, [baseProductDescription, useBaseDescription]);
 
   useEffect(() => {
     const loadAttributes = async () => {
@@ -462,9 +621,32 @@ const VariationForm: React.FC<any> = ({
     }
 
     if (!isEditMode) {
-      if (!currentVariation.description) {
-        errorMessages.push("Descripción es obligatoria.");
+      // Verificar descripción larga (solo si está habilitada)
+      if (showLongDescription && isHtmlContentEmpty(description)) {
+        errorMessages.push("La descripción larga del producto es requerida");
+      } else if (showLongDescription && !isHtmlContentEmpty(description)) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = description;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        
+        if (textContent.length > maxDescriptionLength) {
+          errorMessages.push(`La descripción larga no puede exceder ${maxDescriptionLength} caracteres. Actualmente tiene ${textContent.length} caracteres.`);
+        }
       }
+
+      // Verificar descripción corta (solo si está habilitada)
+      if (showShortDescription && isHtmlContentEmpty(shortDescription)) {
+        errorMessages.push("La descripción corta del producto es requerida");
+      } else if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = shortDescription;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        
+        if (textContent.length > maxShortDescriptionLength) {
+          errorMessages.push(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres. Actualmente tiene ${textContent.length} caracteres.`);
+        }
+      }
+
       if (!currentVariation.mainImage) {
         errorMessages.push("Imagen principal es obligatoria.");
       }
@@ -498,7 +680,14 @@ const VariationForm: React.FC<any> = ({
         currentVariation.previewImage || defaultPreviewImage;
 
       const variationData = {
-        description: currentVariation.description,
+        description: JSON.stringify({
+          content: description,
+          enabled: showLongDescription
+        }),
+        additionalData1: JSON.stringify({
+          content: shortDescription,
+          enabled: showShortDescription
+        }),
         hasUnlimitedStock: currentVariation.hasUnlimitedStock,
         hasStockNotifications: currentVariation.hasStockNotifications,
         previewImage: currentVariation.previewImage,
@@ -1066,6 +1255,45 @@ const VariationForm: React.FC<any> = ({
           if (response.data && response.data.sku) {
             const skuData = response.data.sku;
 
+            // Cargar descripción larga
+            if (skuData.description) {
+              try {
+                const longDescData = JSON.parse(skuData.description);
+                setDescription(longDescData.content || "");
+                setShowLongDescription(longDescData.enabled !== undefined ? longDescData.enabled : true);
+                setDescriptionLength((longDescData.content || "").length);
+              } catch (error) {
+                // Si no es JSON válido, usar como texto plano
+                setDescription(skuData.description || "");
+                setShowLongDescription(true);
+                setDescriptionLength((skuData.description || "").length);
+              }
+            }
+
+            // Cargar descripción corta
+            if (skuData.additionalData1) {
+              try {
+                const shortDescData = JSON.parse(skuData.additionalData1);
+                setShortDescription(shortDescData.content || "");
+                setShowShortDescription(shortDescData.enabled !== undefined ? shortDescData.enabled : true);
+                
+                // Inicializar contador de caracteres para descripción corta
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = shortDescData.content || "";
+                const textContent = tempDiv.textContent || tempDiv.innerText || '';
+                setShortDescriptionCharCount(textContent.length);
+              } catch (error) {
+                // Si no es JSON válido, usar como texto plano
+                setShortDescription(skuData.additionalData1 || "");
+                setShowShortDescription(true);
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = skuData.additionalData1 || "";
+                const textContent = tempDiv.textContent || tempDiv.innerText || '';
+                setShortDescriptionCharCount(textContent.length);
+              }
+            }
+
             // Cargar medidas si existen
             if (skuData.measures) {
               setMeasures({
@@ -1145,31 +1373,172 @@ const VariationForm: React.FC<any> = ({
         className="mt-4"
         ref={editFormRef}
       >
-        <div className="w-full">
-          <label htmlFor="description">Descripción</label>
-          <ReactQuill
-            className=" block p-2 mt-2 w-full text-sm text-dark bg-white rounded-md  "
-            theme="snow"
-            value={variation.description}
-            onChange={(content) =>
-              onDescriptionChange(
-                { target: { value: content } },
-                currentVariationIndex
-              )
-            }
-            readOnly={useBaseDescription} // Deshabilitar la edición si se usa la descripción base
-          />
-          <div className="mt-2 flex items-center">
-            <input
-              type="checkbox"
-              id="useBaseDescription"
-              checked={useBaseDescription}
-              onChange={(e) => setUseBaseDescription(e.target.checked)}
-              className="mr-2"
-            />
-            <label htmlFor="useBaseDescription">
-              Usar descripción del producto base
+        {/* Información sobre descripciones */}
+        
+        {/* Descripción Corta */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <label className="font-normal text-primary">Descripción Corta</label>
+              {!useBaseShortDescription && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Edita la descripción corta específica para esta variación
+                </div>
+              )}
+            </div>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={showShortDescription}
+                onChange={(e) => handleShortDescriptionToggle(e.target.checked)}
+              />
+              <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+              <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                Mostrar en tienda
+              </span>
             </label>
+          </div>
+          <div className={`${isShortDescriptionAtLimit ? 'border-2 border-red-500 rounded' : ''} ${useBaseShortDescription ? 'opacity-75' : ''}`}>
+            {useBaseShortDescription && (
+              <div className="bg-blue-50 border border-blue-200 rounded-t px-3 py-2 text-sm text-blue-700">
+                <svg className="inline w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Usando descripción del producto base (solo lectura)
+              </div>
+            )}
+            <ReactQuill
+              value={shortDescription}
+              onChange={handleShortDescriptionChange}
+              modules={{
+                toolbar: [
+                  ["bold", "italic", "underline"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                ],
+                clipboard: {
+                  matchVisual: false,
+                },
+              }}
+              formats={[
+                "bold",
+                "italic",
+                "underline",
+                "list",
+                "bullet",
+              ]}
+              placeholder={useBaseShortDescription ? "Descripción copiada del producto base" : "Ingresa una descripción corta del producto (máximo 200 caracteres)"}
+              readOnly={useBaseShortDescription}
+            />
+          </div>
+          <div className="flex justify-between items-center mt-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="useBaseShortDescription"
+                checked={useBaseShortDescription}
+                onChange={(e) => handleUseBaseShortDescriptionChange(e.target.checked)}
+                disabled={!isBaseShortDescriptionAvailable()}
+                className={`mr-2 ${!isBaseShortDescriptionAvailable() ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label 
+                htmlFor="useBaseShortDescription" 
+                className={`text-sm ${!isBaseShortDescriptionAvailable() ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600'}`}
+              >
+                Usar descripción corta del producto base
+                {!isBaseShortDescriptionAvailable() && ' (no disponible)'}
+              </label>
+            </div>
+            <div className={`text-left text-sm ${isShortDescriptionAtLimit ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+              {shortDescriptionCharCount}/{maxShortDescriptionLength} caracteres
+              {isShortDescriptionAtLimit && ' - Límite alcanzado'}
+            </div>
+          </div>
+        </div>
+
+        {/* Descripción Larga */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-2">
+            <div>
+              <label className="font-normal text-primary">Descripción Larga</label>
+              {!useBaseDescription && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Edita la descripción larga específica para esta variación
+                </div>
+              )}
+            </div>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={showLongDescription}
+                onChange={(e) => handleLongDescriptionToggle(e.target.checked)}
+              />
+              <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+              <span className="ms-3 text-sm font-medium text-gray-500 dark:text-gray-300">
+                Mostrar en tienda
+              </span>
+            </label>
+          </div>
+          <div className={useBaseDescription ? 'opacity-75' : ''}>
+            {useBaseDescription && (
+              <div className="bg-blue-50 border border-blue-200 rounded-t px-3 py-2 text-sm text-blue-700">
+                <svg className="inline w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Usando descripción del producto base (solo lectura)
+              </div>
+            )}
+            <ReactQuill
+              value={description}
+              onChange={handleDescriptionChange}
+              modules={{
+                toolbar: [
+                  [{ header: "1" }, { header: "2" }, { font: [] }],
+                  [{ size: [] }],
+                  ["bold", "italic", "underline", "strike", "blockquote"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["link"],
+                ],
+              }}
+              formats={[
+                "header",
+                "font",
+                "size",
+                "bold",
+                "italic",
+                "underline",
+                "strike",
+                "blockquote",
+                "list",
+                "bullet",
+                "link",
+              ]}
+              placeholder={useBaseDescription ? "Descripción copiada del producto base" : "Ingresa una descripción detallada del producto"}
+              readOnly={useBaseDescription}
+            />
+          </div>
+          <div className="flex justify-between items-center mt-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="useBaseDescription"
+                checked={useBaseDescription}
+                onChange={(e) => handleUseBaseDescriptionChange(e.target.checked)}
+                disabled={!isBaseLongDescriptionAvailable()}
+                className={`mr-2 ${!isBaseLongDescriptionAvailable() ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label 
+                htmlFor="useBaseDescription" 
+                className={`text-sm ${!isBaseLongDescriptionAvailable() ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600'}`}
+              >
+                Usar descripción larga del producto base
+                {!isBaseLongDescriptionAvailable() && ' (no disponible)'}
+              </label>
+            </div>
+            <div className="text-left text-sm text-gray-500">
+              {descriptionLength}/{maxDescriptionLength} caracteres
+            </div>
           </div>
         </div>
 
@@ -1449,7 +1818,7 @@ const VariationForm: React.FC<any> = ({
 
         {/* Sección de Medidas (solo si el producto base tiene delivery habilitado) */}
         {baseProductInfo.enabledForDelivery && (
-          <div className="mt-4 grid grid-cols-1 space-y-8">
+          <div className="mt-4 grid grid-cols-1 space-y-8 hidden">
             <div
               className="shadow border p-4"
               style={{ borderRadius: "var(--radius)" }}

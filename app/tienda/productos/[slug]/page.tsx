@@ -151,6 +151,8 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
 
           return {
             ...sku,
+            description: sku.description, // Asegurar que se incluya la descripción larga
+            additionalData1: sku.additionalData1, // Asegurar que se incluya la descripción corta
             attributes:
               attributesData.code === 0
                 ? attributesData.skuAttributes.map((attr: any) => ({

@@ -11,7 +11,7 @@ import type { ComponentType } from "react";
  * Configuración global por defecto de la aplicación
  */
 export const globalConfig: GlobalConfig = {
-  activeFooter: "Footer01",
+  activeFooter: "Footer05",
   activeNavbar: "Navbar01",
   activeProductCard: "ProductCard02",
   activeProductDetail: "ProductDetail03",
@@ -42,7 +42,7 @@ export const globalConfig: GlobalConfig = {
 // ************** Tipos de Componentes **************
 // **************************************************
 
-type FooterType = "Footer01" | "Footer02" | "Footer03";
+type FooterType = "Footer01" | "Footer02" | "Footer03" | "Footer05";
 type NavbarType = "Navbar01" | "Navbar02";
 type ProductCardType =
   | "ProductCard01"
@@ -85,6 +85,10 @@ const footerComponents = {
   ),
   Footer03: dynamic(
     () => import("@/components/PIXELUP/Footer/Footer03/Footer03"),
+    { loading: LoadingComponent, ssr: true }
+  ),
+  Footer05: dynamic(
+    () => import("@/components/PIXELUP/Footer/Footer05/Footer05"),
     { loading: LoadingComponent, ssr: true }
   ),
 } as const;

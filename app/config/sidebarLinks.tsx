@@ -186,27 +186,7 @@ export const sidebarLinks: SidebarLink[] = [
           </svg>
         ),
       },
-      {
-        title: "Ficha Producto",
-        path: "/dashboard/ficha-producto",
-        isVisible: true,
-        icon: (
-          <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke="currentColor"
-          className="size-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-          />
-        </svg>
-        ),
-      },
+     
       {
         title: "About",
         path: `/dashboard/about-us`,
@@ -229,7 +209,7 @@ export const sidebarLinks: SidebarLink[] = [
         ),
       },
      
-      {
+    /*  {
         title: "Footer",
         path: "/dashboard/footer",
         isVisible: true,
@@ -249,7 +229,28 @@ export const sidebarLinks: SidebarLink[] = [
             />
           </svg>
         ),
-      },
+      }, */
+
+      {
+        title: "Términos y Condiciones",
+        path: "/dashboard/terminos-y-condiciones",
+        isVisible: true,
+        icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          className="size-6"
+        >
+          <path
+            strokeLinecap="round"
+            stroke-linejoin="round"
+            d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.31m0-16.971a8.959 8.959 0 0 1 6 2.31m0 16.971a8.959 8.959 0 0 0 6-2.31m-6 2.31V6.042"
+          />
+        </svg>
+      )},
       {
         title: "Mailing",
         path: "/dashboard/mailing",
@@ -270,6 +271,9 @@ export const sidebarLinks: SidebarLink[] = [
             />
           </svg>
         ),
+     
+     
+     
       },
       {
         title: "SEO",
@@ -294,7 +298,7 @@ export const sidebarLinks: SidebarLink[] = [
       },
     ],
   },
-  
+ 
   {
     title: "Productos",
     path: "/dashboard/productos",

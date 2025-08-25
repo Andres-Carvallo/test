@@ -63,9 +63,9 @@ const CrearProductoSimple: React.FC = ({}) => {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [originalFileName, setOriginalFileName] = useState<string>("");
-  const maxLength = 1000; // Límite de caracteres
+  const maxLength = 2000; // Límite de caracteres
   const [charCount, setCharCount] = useState(0); // Contador de caracteres
-  const maxShortDescriptionLength = 350; // Límite de caracteres para descripción corta
+  const maxShortDescriptionLength = 500; // Límite de caracteres para descripción corta
   const [shortDescriptionCharCount, setShortDescriptionCharCount] = useState(0); // Contador de caracteres para descripción corta
   const [skuData, setSkuData] = useState({
     description: "",
@@ -1718,7 +1718,7 @@ const CrearProductoSimple: React.FC = ({}) => {
                     "list",
                     "bullet",
                   ]}
-                  placeholder="Ingresa una descripción corta del producto (máximo 350 caracteres)"
+                  placeholder="Ingresa una descripción corta del producto (máximo 500 caracteres)"
                 />
               </div>
               <div className="flex justify-end items-center mt-2">

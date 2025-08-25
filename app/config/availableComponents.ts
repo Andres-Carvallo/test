@@ -322,7 +322,7 @@ export const availableComponents: ComponentConfig[] = [
     backComponent: () => import('@/components/PIXELUP/SinFoto/SinFoto04/SinFoto04BO'),
     previewComponent: () => import('@/components/PIXELUP/SinFoto/SinFoto04/Preview'),
     showInHome: true,
-    showInAbout: false,
+    showInAbout: true,
   },
   {
     id: "sinFoto05",

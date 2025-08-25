@@ -30,6 +30,7 @@ interface Variation {
   isBaseSku: boolean;
   mainImageUrl: string;
   description: string;
+  additionalData1?: string;
   attributes: { label: string; value: string }[];
   pricings: Array<{ unitPrice: number }>;
   offers?: {
@@ -877,17 +878,25 @@ const ProductDetail03: React.FC<ProductDetail03Props> = ({
       // Manejar descripción corta para la variación
       let shortDescriptionContent = "";
       let shortDescriptionEnabled = true;
+      
       try {
-        if (matchingVariation.product.additionalData1) {
+        // Intentar acceder a additionalData1 directamente en la variación
+        if (matchingVariation.additionalData1) {
+          const shortDescData = JSON.parse(matchingVariation.additionalData1);
+          shortDescriptionContent = shortDescData.content || "";
+          shortDescriptionEnabled = shortDescData.enabled !== undefined ? shortDescData.enabled : true;
+        } else if (matchingVariation.product?.additionalData1) {
+          // Fallback: intentar acceder a través del objeto product
           const shortDescData = JSON.parse(matchingVariation.product.additionalData1);
           shortDescriptionContent = shortDescData.content || "";
           shortDescriptionEnabled = shortDescData.enabled !== undefined ? shortDescData.enabled : true;
         } else {
-          shortDescriptionContent = matchingVariation.product.additionalData1 || "";
+          shortDescriptionContent = "";
           shortDescriptionEnabled = true;
         }
       } catch (error) {
-        shortDescriptionContent = matchingVariation.product.additionalData1 || "";
+        console.log("🔍 DEBUG - Error parsing short description:", error);
+        shortDescriptionContent = "";
         shortDescriptionEnabled = true;
       }
       
