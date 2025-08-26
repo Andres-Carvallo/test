@@ -1612,8 +1612,26 @@ const BannerPrincipal01BO: React.FC = () => {
 
     } else {
 
-      // Inicializar con valores por defecto para el nuevo banner
+      // Calcular el siguiente orderNumber basado en los banners existentes
+      const nextOrderNumber = (() => {
+        if (bannerData.length === 0) return 1;
+        
+        // Obtener el orderNumber más alto del JSON de landingText
+        const maxOrderNumber = Math.max(
+          ...bannerData.map((banner) => {
+            try {
+              const config = parseDisplayConfig(banner.landingText);
+              return config.orderNumber || 0;
+            } catch {
+              return 0;
+            }
+          })
+        );
+        
+        return maxOrderNumber + 1;
+      })();
 
+      // Inicializar con valores por defecto para el nuevo banner
       const initialLandingText = JSON.stringify({
 
         text: "",
@@ -1641,6 +1659,8 @@ const BannerPrincipal01BO: React.FC = () => {
         fullBannerLink: false,
 
         fullBannerLinkUrl: "",
+
+        orderNumber: nextOrderNumber, // Incluir el orderNumber en el JSON
 
       });
 
@@ -1672,7 +1692,7 @@ const BannerPrincipal01BO: React.FC = () => {
 
         mainImageLink: "#",
 
-        orderNumber: 1,
+        orderNumber: nextOrderNumber, // Usar el orderNumber calculado
 
         mainImage: {
 
@@ -1741,6 +1761,8 @@ const BannerPrincipal01BO: React.FC = () => {
         baseTypography: "montserrat",
 
         titleTypography: "montserrat",
+
+        orderNumber: nextOrderNumber, // Incluir el orderNumber calculado
 
       });
 
@@ -3625,18 +3647,11 @@ const BannerPrincipal01BO: React.FC = () => {
                               }`}
                             >
                               <div className="flex items-center space-x-3 flex-1">
-                                <div
-                                  {...provided.dragHandleProps}
-                                  className="cursor-move text-gray-400 hover:text-gray-600"
-                                >
-                                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M7 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 2zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 14zm6-8a2 2 0 1 1-.001-4.001A2 2 0 0 1 13 6zm0 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 14z" />
-                                  </svg>
-                                </div>
+                                
                                 
                                 <div className="flex items-center space-x-3">
                                   <span className="text-sm font-medium text-gray-500 bg-gray-200 px-2 py-1 rounded">
-                                    {banner.orderNumber || index + 1}
+                                    {config.orderNumber || index + 1}
                                   </span>
                                   
                                   <div className="w-12 h-8 bg-gray-200 rounded overflow-hidden">
