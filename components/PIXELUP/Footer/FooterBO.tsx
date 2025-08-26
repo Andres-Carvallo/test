@@ -768,7 +768,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         reader.onloadend = async () => {
           const base64 = reader.result as string;
           setFooterLogoImage(base64);
-          toast.success('Logo procesado correctamente. Haz clic en "Guardar Configuración" para aplicarlo.');
+          toast.success('Logo procesado correctamente. Haz clic en &quot;Guardar Configuración&quot; para aplicarlo.');
         };
       } catch (error) {
         console.error('Error al procesar la imagen:', error);
@@ -1174,7 +1174,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
     initializeFooter();
     // Las redes sociales se cargan automáticamente desde el contexto
-  }, []);
+  }, [fetchFooterConfig, fetchFooterBanner, fetchFooterLogo]);
 
   // Sincronizar previewTemplate con la plantilla seleccionada
   useEffect(() => {
@@ -1530,7 +1530,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                          </div>
                          {footerLogoImage && (
                            <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
-                             💡 El logo está listo para guardar. Haz clic en "Guardar Configuración" al final de la página.
+                             💡 El logo está listo para guardar. Haz clic en &quot;Guardar Configuración&quot; al final de la página.
                            </div>
                          )}
                        </div>
@@ -1819,7 +1819,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                            </div>
                            {backgroundImage && (
                              <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
-                               💡 La imagen de fondo está lista para guardar. Haz clic en "Guardar Configuración" al final de la página.
+                               💡 La imagen de fondo está lista para guardar. Haz clic en &quot;Guardar Configuración&quot; al final de la página.
                              </div>
                            )}
                          </div>
