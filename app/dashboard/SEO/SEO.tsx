@@ -11,8 +11,8 @@ import {
   PIXELUPComponents, 
   getPIXELUPComponentId, 
   getPIXELUPComponentData 
-} from "@/config/componentEnums";
-import { useComponentId, useComponentImageId } from "@/hooks/useComponentId";
+} from "../../../config/componentEnums";
+import { useComponentId, useComponentImageId } from "../../../hooks/useComponentId";
 
 const Hero: React.FC = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);

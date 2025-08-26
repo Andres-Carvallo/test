@@ -6,7 +6,7 @@ import {
   getCoreComponentId,
   getPIXELUPComponentData,
   getCoreComponentData
-} from '@/config/componentEnums';
+} from '../config/componentEnums';
 
 /**
  * Hook personalizado para obtener el ID de un componente con fallback a variables de entorno

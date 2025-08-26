@@ -19,11 +19,8 @@ import {
   isContentBlockComponent,
   isMixedComponent,
   getComponentsByType,
-  envToEnum,
-  enumToEnv,
-  ENV_TO_ENUM_MAPPING,
   ComponentData
-} from '@/config/componentEnums';
+} from '../config/componentEnums';
 
 /**
  * Hook para obtener datos de un componente PIXELUP
@@ -84,19 +81,23 @@ export function useComponentsByType(type: 'banner' | 'contentBlock' | 'mixed') {
 
 /**
  * Hook para migrar variables de entorno a enums
+ * DEPRECATED: Sistema simplificado - usar useComponentId directamente
  */
 export function useEnvToEnum(envVariable: string) {
   return useMemo(() => {
-    return envToEnum(envVariable);
+    console.warn('useEnvToEnum está deprecado. Usar useComponentId directamente.');
+    return null;
   }, [envVariable]);
 }
 
 /**
  * Hook para convertir enums a variables de entorno
+ * DEPRECATED: Sistema simplificado - usar useComponentId directamente
  */
 export function useEnumToEnv(component: PIXELUPComponents | CoreComponents) {
   return useMemo(() => {
-    return enumToEnv(component);
+    console.warn('useEnumToEnv está deprecado. Usar useComponentId directamente.');
+    return null;
   }, [component]);
 }
 
@@ -120,10 +121,12 @@ export function useAllCoreComponents() {
 
 /**
  * Hook para obtener el mapeo completo de variables de entorno
+ * DEPRECATED: Sistema simplificado - usar COMPONENT_IDS directamente
  */
 export function useEnvMapping() {
   return useMemo(() => {
-    return ENV_TO_ENUM_MAPPING;
+    console.warn('useEnvMapping está deprecado. Usar COMPONENT_IDS directamente.');
+    return {};
   }, []);
 }
 
@@ -174,17 +177,17 @@ export function useComponentExists(component: string) {
 
 /**
  * Hook para obtener información de migración
+ * DEPRECATED: Sistema simplificado - migración completada
  */
 export function useMigrationInfo() {
   return useMemo(() => {
     const totalComponents = Object.keys(PIXELUP_COMPONENT_DATA).length + Object.keys(CORE_COMPONENT_DATA).length;
-    const totalEnvVariables = Object.keys(ENV_TO_ENUM_MAPPING).length;
     
     return {
       totalComponents,
-      totalEnvVariables,
-      migrationProgress: (totalEnvVariables / totalComponents) * 100,
-      unmappedComponents: totalComponents - totalEnvVariables
+      totalEnvVariables: 0,
+      migrationProgress: 100,
+      unmappedComponents: 0
     };
   }, []);
 }
@@ -208,15 +211,12 @@ export function useComponentWithMigration(component: PIXELUPComponents | CoreCom
 
 /**
  * Hook para obtener todos los componentes que necesitan migración
+ * DEPRECATED: Sistema simplificado - migración completada
  */
 export function useComponentsNeedingMigration() {
   return useMemo(() => {
-    const allComponents = [
-      ...Object.keys(PIXELUP_COMPONENT_DATA) as PIXELUPComponents[],
-      ...Object.keys(CORE_COMPONENT_DATA) as CoreComponents[]
-    ];
-    
-    return allComponents.filter(component => !enumToEnv(component));
+    console.warn('useComponentsNeedingMigration está deprecado. Migración completada.');
+    return [];
   }, []);
 }
 

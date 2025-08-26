@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getCookie } from 'cookies-next';
-import {
+import { 
   PIXELUPComponents, 
   CoreComponents, 
   PIXELUP_COMPONENT_DATA, 
@@ -15,8 +15,6 @@ import {
   isBannerComponent, 
   isContentBlockComponent, 
   isMixedComponent, 
-  ENV_TO_ENUM_MAPPING, 
-  envToEnum,
   getPendingComponents
 } from '@/config/componentEnums';
 import { ensureBannerHasImage } from '@/utils/imageUtils';
@@ -546,11 +544,8 @@ const ContentBlockForm: React.FC = () => {
   };
 
   const handleVariableInput = (variable: string) => {
-    const enumComponent = envToEnum(variable);
-    if (enumComponent) {
-      setSelectedComponent(enumComponent);
-      console.log(`Variable ${variable} mapeada a enum: ${enumComponent}`);
-    }
+    // Función eliminada - ya no se usa el mapeo de variables de entorno
+    console.log(`Variable ${variable} - mapeo eliminado del sistema`);
   };
 
   const copiarIdsParaEnums = () => {
@@ -714,40 +709,37 @@ const ContentBlockForm: React.FC = () => {
   };
 
   const copiarIdsParaReemplazoMasivo = () => {
-    // Formato específico para reemplazo masivo en el archivo de enums
+    // Formato específico para el mapeo centralizado
     let textToCopy = '// ========================================\n';
-    textToCopy += '// REEMPLAZO MASIVO EN config/componentEnums.ts\n';
+    textToCopy += '// ACTUALIZACIÓN DEL MAPEO CENTRALIZADO\n';
     textToCopy += '// ========================================\n\n';
     
     textToCopy += '// INSTRUCCIONES:\n';
     textToCopy += '// 1. Abrir config/componentEnums.ts\n';
-    textToCopy += '// 2. Usar Ctrl+H (Buscar y Reemplazar)\n';
-    textToCopy += '// 3. Copiar cada línea de abajo y pegar en "Buscar"\n';
-    textToCopy += '// 4. Copiar el ID correspondiente y pegar en "Reemplazar"\n';
-    textToCopy += '// 5. Hacer clic en "Reemplazar Todo"\n\n';
+    textToCopy += '// 2. Buscar la sección "COMPONENT_IDS"\n';
+    textToCopy += '// 3. Reemplazar los IDs correspondientes\n\n';
     
     textToCopy += '// ========================================\n';
-    textToCopy += '// REEMPLAZOS A REALIZAR:\n';
+    textToCopy += '// IDs GENERADOS PARA ACTUALIZAR:\n';
     textToCopy += '// ========================================\n\n';
     
     generatedIds.forEach(id => {
-      const enumType = id.component in PIXELUP_COMPONENT_DATA ? 'PIXELUPComponents' : 'CoreComponents';
-      textToCopy += `Buscar: id: ${enumType}.${id.component},\n`;
-      textToCopy += `Reemplazar: id: '${id.id}',\n`;
-      textToCopy += `// Componente: ${id.component}\n\n`;
+      textToCopy += `  '${id.component}': '${id.id}',\n`;
     });
     
-    textToCopy += '// ========================================\n';
-    textToCopy += '// FORMATO COMPACTO PARA COPIAR:\n';
+    textToCopy += '\n// ========================================\n';
+    textToCopy += '// FUNCIÓN PARA ACTUALIZAR TODO DE UNA VEZ:\n';
     textToCopy += '// ========================================\n\n';
     
+    textToCopy += '// Copiar y pegar esto en la consola del navegador:\n';
+    textToCopy += 'updateComponentIds({\n';
     generatedIds.forEach(id => {
-      const enumType = id.component in PIXELUP_COMPONENT_DATA ? 'PIXELUPComponents' : 'CoreComponents';
-      textToCopy += `id: ${enumType}.${id.component}, → id: '${id.id}',\n`;
+      textToCopy += `  '${id.component}': '${id.id}',\n`;
     });
+    textToCopy += '});\n';
     
     navigator.clipboard.writeText(textToCopy).then(() => {
-      alert('Formato de reemplazo masivo copiado al portapapeles');
+      alert('Formato para mapeo centralizado copiado al portapapeles');
     }).catch(() => {
       const textArea = document.createElement('textarea');
       textArea.value = textToCopy;
@@ -755,7 +747,7 @@ const ContentBlockForm: React.FC = () => {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('Formato de reemplazo masivo copiado al portapapeles');
+      alert('Formato para mapeo centralizado copiado al portapapeles');
       });
   };
 
@@ -1275,7 +1267,7 @@ const ContentBlockForm: React.FC = () => {
                   onClick={copiarIdsParaReemplazoMasivo}
                   className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
                 >
-                  🔄 Reemplazo Masivo
+                  🔄 Mapeo Centralizado
                 </button>
                 <button
                   onClick={limpiarIdsGenerados}
@@ -1439,7 +1431,7 @@ const ContentBlockForm: React.FC = () => {
         <div className="text-sm space-y-1">
           <p><strong>Componentes PIXELUP:</strong> {Object.keys(PIXELUP_COMPONENT_DATA).length}</p>
           <p><strong>Componentes Core:</strong> {Object.keys(CORE_COMPONENT_DATA).length}</p>
-          <p><strong>Variables mapeadas:</strong> {Object.keys(ENV_TO_ENUM_MAPPING).length}</p>
+          <p><strong>Variables mapeadas:</strong> 0 (sistema simplificado)</p>
           <p><strong>Componentes pendientes:</strong> {pendingComponents.length}</p>
           <p><strong>IDs generados en sesión:</strong> {generatedIds.length}</p>
         </div>
