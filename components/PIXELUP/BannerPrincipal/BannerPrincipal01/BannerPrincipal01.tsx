@@ -38,6 +38,7 @@ interface DisplayConfig {
   fullBannerLinkUrl: string;
   baseTypography: string;
   titleTypography: string;
+  orderNumber?: number; // Propiedad para manejar el orden en el JSON
 }
 
 interface BannerData {
@@ -116,7 +117,35 @@ const BannerPrincipal01: React.FC = () => {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
       );
-      setBannerData(response.data.banner);
+      
+      // Ordenar las imágenes por orderNumber del JSON de landingText (siempre usar el JSON, nunca el orderNumber del backend)
+      const sortedImages = response.data.banner.images.sort((a: BannerImage, b: BannerImage) => {
+        // Siempre usar el orderNumber del JSON de landingText para validar el orden
+        const orderA = (() => {
+          try {
+            const config = parseDisplayConfig(a.landingText);
+            return config.orderNumber || 0;
+          } catch {
+            return 0;
+          }
+        })();
+        
+        const orderB = (() => {
+          try {
+            const config = parseDisplayConfig(b.landingText);
+            return config.orderNumber || 0;
+          } catch {
+            return 0;
+          }
+        })();
+        
+        return orderA - orderB;
+      });
+
+      setBannerData({
+        ...response.data.banner,
+        images: sortedImages
+      });
     } catch (error) {
       console.error("Error al obtener los datos del banner:", error);
     } finally {
@@ -199,6 +228,7 @@ const BannerPrincipal01: React.FC = () => {
           fullBannerLinkUrl: parsed.fullBannerLinkUrl || "#",
           baseTypography: parsed.baseTypography || "montserrat",
           titleTypography: parsed.titleTypography || "montserrat",
+          orderNumber: parsed.orderNumber || 0, // Agregar orderNumber al JSON
         };
       }
       return {
@@ -217,6 +247,7 @@ const BannerPrincipal01: React.FC = () => {
         fullBannerLinkUrl: "#",
         baseTypography: "montserrat",
         titleTypography: "montserrat",
+        orderNumber: 0, // Valor por defecto para orderNumber
       };
     } catch {
       return {
@@ -235,6 +266,7 @@ const BannerPrincipal01: React.FC = () => {
         fullBannerLinkUrl: "#",
         baseTypography: "montserrat",
         titleTypography: "montserrat",
+        orderNumber: 0, // Valor por defecto para orderNumber
       };
     }
   };
