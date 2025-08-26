@@ -211,8 +211,38 @@ const BannerPrincipal01BO: React.FC = () => {
   });
 
   // Obtener los aspectos de las imágenes desde la configuración global
-  const desktopAspect = globalConfig.bannerAspects.desktop;
-  const mobileAspect = globalConfig.bannerAspects.mobile;
+  const desktopAspect = globalConfig.bannerPrincipalAspects.desktop;
+  const mobileAspect = globalConfig.bannerPrincipalAspects.mobile;
+
+  // Función para calcular dimensiones recomendadas basadas en el aspecto
+  const calculateRecommendedDimensions = (aspectRatio: string, baseWidth: number = 1920) => {
+    const [width, height] = aspectRatio.split('/').map(Number);
+    const aspect = width / height;
+    const recommendedHeight = Math.round(baseWidth / aspect);
+    return { width: baseWidth, height: recommendedHeight };
+  };
+
+  // Función para obtener múltiples tamaños recomendados
+  const getRecommendedSizes = (aspectRatio: string) => {
+    const sizes = [
+      { name: "HD", width: 1920 },
+      { name: "Full HD", width: 2560 },
+      { name: "4K", width: 3840 }
+    ];
+    
+    return sizes.map(size => ({
+      name: size.name,
+      ...calculateRecommendedDimensions(aspectRatio, size.width)
+    }));
+  };
+
+  // Calcular dimensiones recomendadas
+  const desktopDimensions = calculateRecommendedDimensions(desktopAspect);
+  const mobileDimensions = calculateRecommendedDimensions(mobileAspect, 768); // Base más pequeña para mobile
+  
+  // Obtener múltiples tamaños para mostrar en el tooltip
+  const desktopSizes = getRecommendedSizes(desktopAspect);
+  const mobileSizes = getRecommendedSizes(mobileAspect);
 
   const parseButtonTextData = (buttonText: string): ButtonTextData => {
     try {
@@ -2058,7 +2088,19 @@ const BannerPrincipal01BO: React.FC = () => {
                     <div className="group relative">
                       <FaQuestionCircle className="text-rosa cursor-help" />
                       <div className="absolute left-0 top-6 z-10 w-96 rounded-md bg-white p-2 text-base text-gray-600 shadow-lg opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none">
-                        Peso máximo de la imagen 5MB
+                        <div className="space-y-2">
+                          <p><strong>Peso máximo:</strong> 5MB</p>
+                          <p><strong>Proporción:</strong> {desktopAspect}</p>
+                          <p><strong>Dimensiones recomendadas:</strong></p>
+                          {desktopSizes.map((size, index) => (
+                            <p key={index} className="text-sm text-gray-500">
+                              {size.name}: {size.width} × {size.height} píxeles
+                            </p>
+                          ))}
+                          <p className="text-xs text-gray-400 mt-2">
+                            💡 Usa el tamaño que mejor se adapte a tu imagen
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </h3>
@@ -2132,6 +2174,11 @@ const BannerPrincipal01BO: React.FC = () => {
                             ? "Error: Imagen no válida o muy pesada"
                             : "Subir imagen Desktop (PNG, JPG, GIF)"}
                         </p>
+                        {!imageValidationError.desktop && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Recomendado: {desktopDimensions.width}×{desktopDimensions.height}px
+                          </p>
+                        )}
                         {imageValidationError.desktop && (
                           <p className="text-xs text-red-500 mt-1">
                             Máximo 5MB, formatos: PNG, JPG, WebP
@@ -2193,7 +2240,19 @@ const BannerPrincipal01BO: React.FC = () => {
                     <div className="group relative">
                       <FaQuestionCircle className="text-rosa cursor-help" />
                       <div className="absolute left-0 top-6 z-10 w-96 rounded-md bg-white p-2 text-base text-gray-600 shadow-lg opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none">
-                        Peso máximo de la imagen 5MB
+                        <div className="space-y-2">
+                          <p><strong>Peso máximo:</strong> 5MB</p>
+                          <p><strong>Proporción:</strong> {mobileAspect}</p>
+                          <p><strong>Dimensiones recomendadas:</strong></p>
+                          {mobileSizes.map((size, index) => (
+                            <p key={index} className="text-sm text-gray-500">
+                              {size.name}: {size.width} × {size.height} píxeles
+                            </p>
+                          ))}
+                          <p className="text-xs text-gray-400 mt-2">
+                            💡 Usa el tamaño que mejor se adapte a tu imagen
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </h3>
@@ -2267,6 +2326,11 @@ const BannerPrincipal01BO: React.FC = () => {
                             ? "Error: Imagen no válida o muy pesada"
                             : "Subir imagen Mobile (PNG, JPG, GIF)"}
                         </p>
+                        {!imageValidationError.mobile && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            Recomendado: {mobileDimensions.width}×{mobileDimensions.height}px
+                          </p>
+                        )}
                         {imageValidationError.mobile && (
                           <p className="text-xs text-red-500 mt-1">
                             Máximo 5MB, formatos: PNG, JPG, WebP

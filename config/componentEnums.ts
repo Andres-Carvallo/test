@@ -1277,7 +1277,7 @@ export function updateComponentId(
   component: PIXELUPComponents | CoreComponents, 
   newId: string
 ): void {
-  COMPONENT_IDS[component] = newId;
+  updateEnvironmentIds({ [component]: newId });
 }
 
 /**
@@ -1330,14 +1330,14 @@ export function getCoreComponentData(component: CoreComponents): ComponentData {
  * Obtiene el ID de un componente PIXELUP
  */
 export function getPIXELUPComponentId(component: PIXELUPComponents): string {
-  return COMPONENT_IDS[component] || 'PENDING_ID';
+  return getComponentIdByEnvironment(component);
 }
 
 /**
  * Obtiene el ID de un componente Core
  */
 export function getCoreComponentId(component: CoreComponents): string {
-  return COMPONENT_IDS[component] || 'PENDING_ID';
+  return getComponentIdByEnvironment(component);
 }
 
 /**
@@ -1425,6 +1425,242 @@ export function getComponentsByJsonStructure(structure: string): Array<PIXELUPCo
   });
   
   return components;
+}
+
+// ========================================
+// MAPEO DE IDs POR ENTORNO
+// ========================================
+
+/**
+ * Detecta el entorno actual
+ */
+const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+/**
+ * Mapeo de IDs para desarrollo
+ */
+export const DEVELOPMENT_IDS: Record<string, string> = {
+  // SEO
+  'SEO_BANNER': '478eee34-12fb-4128-9e32-f84f64ad2d21',
+  'SEO_BANNER_IMG': 'd13cc7be-c34c-487b-bf93-a990c1d476f2',
+  
+  // Banner Principal
+  'BANNER_PRINCIPAL_01': 'PENDING_ID',
+  'BANNER_PRINCIPAL_02': 'PENDING_ID',
+  'BANNER_PRINCIPAL_03': 'PENDING_ID',
+  
+  // Banner About
+  'BANNER_ABOUT': 'PENDING_ID',
+  
+  // Banner Tienda
+  'BANNER_TIENDA': 'PENDING_ID',
+  
+  // Banner Colección
+  'BANNER_COLECCION': 'PENDING_ID',
+  
+  // Categorías
+  'CATEGORIA_01': 'PENDING_ID',
+  'CATEGORIA_02': 'PENDING_ID',
+  'CATEGORIA_03': 'PENDING_ID',
+  'CATEGORIA_04': 'PENDING_ID',
+  'CATEGORIA_05': 'PENDING_ID',
+  'CATEGORIA_06': 'PENDING_ID',
+  'CATEGORIA_07': 'PENDING_ID',
+  'CATEGORIA_08': 'PENDING_ID',
+  'CATEGORIA_09': 'PENDING_ID',
+  'CATEGORIA_10': 'PENDING_ID',
+  
+  // Galerías
+  'GALERIA_01': 'PENDING_ID',
+  'GALERIA_02': 'PENDING_ID',
+  
+  // Ubicación
+  'UBICACION': 'PENDING_ID',
+  'UBICACION_02': 'PENDING_ID',
+  'UBICACION_03': 'PENDING_ID',
+  'UBICACION_04': 'PENDING_ID',
+  'UBICACION_05': 'PENDING_ID',
+  
+  // Modal Ubicación
+  'MODAL_UBICACION_04': 'PENDING_ID',
+  
+  // Blog
+  'BLOG_HOME': 'PENDING_ID',
+  'BANNER_BLOG': 'PENDING_ID',
+  
+  // Parallax
+  'PARALLAX': 'PENDING_ID',
+  
+  // Navbar
+  'NAVBAR_BANNER': 'PENDING_ID',
+  
+  // Sin Foto
+  'SINFOTO_01': 'PENDING_ID',
+  'SINFOTO_02': 'PENDING_ID',
+  'SINFOTO_04': 'PENDING_ID',
+  'SINFOTO_05': 'PENDING_ID',
+  
+  // Cards
+  'CARD_01': 'PENDING_ID',
+  'CARD_02': 'PENDING_ID',
+  'CARD_03': 'PENDING_ID',
+  'CARD_04': 'PENDING_ID',
+  
+  // Footer
+  'FOOTER_BANNER': 'PENDING_ID',
+  
+  // Logo
+  'LOGO_EDIT': 'PENDING_ID',
+  
+  // Servicios
+  'LISTA_SERVICIOS_01': 'PENDING_ID',
+  'LISTA_SERVICIOS_02': 'PENDING_ID',
+  'LISTA_SERVICIOS_03': 'PENDING_ID',
+  'LISTA_SERVICIOS_04': 'PENDING_ID',
+  
+  // Nosotros
+  'NOSOTROS_01': 'PENDING_ID',
+  
+  // Frases
+  'FRASE_01': 'PENDING_ID',
+  
+  // About Me
+  'ABOUT_ME_CONTENT': 'PENDING_ID',
+  
+  // Core Components
+  'POPUP_BANNER': 'PENDING_ID',
+  'POPUP_CONTENTBLOCK': 'PENDING_ID'
+};
+
+/**
+ * Mapeo de IDs para producción
+ * Aquí puedes copiar y pegar los IDs de producción
+ */
+export const PRODUCTION_IDS: Record<string, string> = {
+  // SEO
+  'SEO_BANNER': 'PROD_SEO_BANNER_ID',
+  'SEO_BANNER_IMG': 'PROD_SEO_BANNER_IMG_ID',
+  
+  // Banner Principal
+  'BANNER_PRINCIPAL_01': 'PROD_BANNER_PRINCIPAL_01_ID',
+  'BANNER_PRINCIPAL_02': 'PROD_BANNER_PRINCIPAL_02_ID',
+  'BANNER_PRINCIPAL_03': 'PROD_BANNER_PRINCIPAL_03_ID',
+  
+  // Banner About
+  'BANNER_ABOUT': 'PROD_BANNER_ABOUT_ID',
+  
+  // Banner Tienda
+  'BANNER_TIENDA': 'PROD_BANNER_TIENDA_ID',
+  
+  // Banner Colección
+  'BANNER_COLECCION': 'PROD_BANNER_COLECCION_ID',
+  
+  // Categorías
+  'CATEGORIA_01': 'PROD_CATEGORIA_01_ID',
+  'CATEGORIA_02': 'PROD_CATEGORIA_02_ID',
+  'CATEGORIA_03': 'PROD_CATEGORIA_03_ID',
+  'CATEGORIA_04': 'PROD_CATEGORIA_04_ID',
+  'CATEGORIA_05': 'PROD_CATEGORIA_05_ID',
+  'CATEGORIA_06': 'PROD_CATEGORIA_06_ID',
+  'CATEGORIA_07': 'PROD_CATEGORIA_07_ID',
+  'CATEGORIA_08': 'PROD_CATEGORIA_08_ID',
+  'CATEGORIA_09': 'PROD_CATEGORIA_09_ID',
+  'CATEGORIA_10': 'PROD_CATEGORIA_10_ID',
+  
+  // Galerías
+  'GALERIA_01': 'PROD_GALERIA_01_ID',
+  'GALERIA_02': 'PROD_GALERIA_02_ID',
+  
+  // Ubicación
+  'UBICACION': 'PROD_UBICACION_ID',
+  'UBICACION_02': 'PROD_UBICACION_02_ID',
+  'UBICACION_03': 'PROD_UBICACION_03_ID',
+  'UBICACION_04': 'PROD_UBICACION_04_ID',
+  'UBICACION_05': 'PROD_UBICACION_05_ID',
+  
+  // Modal Ubicación
+  'MODAL_UBICACION_04': 'PROD_MODAL_UBICACION_04_ID',
+  
+  // Blog
+  'BLOG_HOME': 'PROD_BLOG_HOME_ID',
+  'BANNER_BLOG': 'PROD_BANNER_BLOG_ID',
+  
+  // Parallax
+  'PARALLAX': 'PROD_PARALLAX_ID',
+  
+  // Navbar
+  'NAVBAR_BANNER': 'PROD_NAVBAR_BANNER_ID',
+  
+  // Sin Foto
+  'SINFOTO_01': 'PROD_SINFOTO_01_ID',
+  'SINFOTO_02': 'PROD_SINFOTO_02_ID',
+  'SINFOTO_04': 'PROD_SINFOTO_04_ID',
+  'SINFOTO_05': 'PROD_SINFOTO_05_ID',
+  
+  // Cards
+  'CARD_01': 'PROD_CARD_01_ID',
+  'CARD_02': 'PROD_CARD_02_ID',
+  'CARD_03': 'PROD_CARD_03_ID',
+  'CARD_04': 'PROD_CARD_04_ID',
+  
+  // Footer
+  'FOOTER_BANNER': 'PROD_FOOTER_BANNER_ID',
+  
+  // Logo
+  'LOGO_EDIT': 'PROD_LOGO_EDIT_ID',
+  
+  // Servicios
+  'LISTA_SERVICIOS_01': 'PROD_LISTA_SERVICIOS_01_ID',
+  'LISTA_SERVICIOS_02': 'PROD_LISTA_SERVICIOS_02_ID',
+  'LISTA_SERVICIOS_03': 'PROD_LISTA_SERVICIOS_03_ID',
+  'LISTA_SERVICIOS_04': 'PROD_LISTA_SERVICIOS_04_ID',
+  
+  // Nosotros
+  'NOSOTROS_01': 'PROD_NOSOTROS_01_ID',
+  
+  // Frases
+  'FRASE_01': 'PROD_FRASE_01_ID',
+  
+  // About Me
+  'ABOUT_ME_CONTENT': 'PROD_ABOUT_ME_CONTENT_ID',
+  
+  // Core Components
+  'POPUP_BANNER': 'PROD_POPUP_BANNER_ID',
+  'POPUP_CONTENTBLOCK': 'PROD_POPUP_CONTENTBLOCK_ID'
+};
+
+/**
+ * Función para obtener el ID correcto según el entorno
+ */
+export function getComponentIdByEnvironment(component: string): string {
+  if (isProduction) {
+    return PRODUCTION_IDS[component] || 'PENDING_ID';
+  } else {
+    return DEVELOPMENT_IDS[component] || 'PENDING_ID';
+  }
+}
+
+/**
+ * Función para obtener todos los IDs del entorno actual
+ */
+export function getCurrentEnvironmentIds(): Record<string, string> {
+  if (isProduction) {
+    return PRODUCTION_IDS;
+  } else {
+    return DEVELOPMENT_IDS;
+  }
+}
+
+/**
+ * Función para actualizar IDs del entorno actual
+ */
+export function updateEnvironmentIds(newIds: Record<string, string>): void {
+  if (isProduction) {
+    Object.assign(PRODUCTION_IDS, newIds);
+  } else {
+    Object.assign(DEVELOPMENT_IDS, newIds);
+  }
 }
 
 

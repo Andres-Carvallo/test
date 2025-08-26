@@ -40,9 +40,20 @@ export const getCroppedImg = async (
     crop.height
   );
 
+  // Determinar el formato de salida basado en la extensión de la imagen original
+  const getImageFormat = (src: string): string => {
+    if (src.includes("data:image/png")) return "image/png";
+    if (src.includes("data:image/jpeg") || src.includes("data:image/jpg")) return "image/jpeg";
+    if (src.includes("data:image/webp")) return "image/webp";
+    // Por defecto, usar PNG para preservar transparencia
+    return "image/png";
+  };
+
+  const format = getImageFormat(imageSrc);
+
   return new Promise((resolve) => {
     canvas.toBlob((blob) => {
       resolve(blob);
-    }, "image/jpeg");
+    }, format);
   });
 };

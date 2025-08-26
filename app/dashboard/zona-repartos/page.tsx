@@ -771,13 +771,44 @@ function ZonasRepartos() {
     <>
       <title>Zonas de Repartos</title>
       <section className="p-10">
+        {/* Explicación del sistema de zonas de reparto */}
+        <div className="shadow-md rounded-lg p-6 bg-gray-50 border border-gray-200 my-6">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-primary mb-2">
+                ¿Cómo funciona el sistema de zonas de reparto?
+              </h3>
+              <div className="text-gray-700 space-y-2">
+                <p>
+                  <strong>Propósito:</strong> Esta sección te permite configurar los precios de envío por zona geográfica para tu tienda online.
+                </p>
+                <p>
+                  <strong>Funcionamiento:</strong> Cuando un cliente realiza una compra, el sistema automáticamente calcula el costo de envío basándose en la comuna donde vive. Este monto se cobra al cliente durante el proceso de pago.
+                </p>
+                <p>
+                  <strong>Beneficio:</strong> Con el dinero recaudado por los envíos, podrás contratar el servicio de delivery o proveedor de transporte que prefieras (Starken, Chilexpress, etc.) para realizar las entregas a tus clientes.
+                </p>
+                <p className="text-sm text-gray-600">
+                  💡 <strong>Consejo:</strong> Configura precios que cubran el costo real del envío más un margen razonable para cubrir gastos operativos.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <FreeShippingOption />
+
         <div className="shadow-md  rounded-lg p-4 bg-white my-6 overflow-x-auto">
           <div
             ref={ZonasRef}
-            className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 "
+            className="text-sm flex gap-2 font-medium border-b border-primary pb-2 mb-6 "
           >
-            <div>Zonas Activas</div>
+            <div className="text-primary">Zonas Activas</div>
           </div>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-100">
@@ -893,8 +924,8 @@ function ZonasRepartos() {
           ref={productsRef}
           className="shadow-md  rounded-lg p-4 bg-white my-6"
         >
-          <div className="text-sm flex gap-2 font-medium border-b pb-2 mb-6 ">
-            <div>
+          <div className="text-sm flex gap-2 font-medium border-b border-primary pb-2 mb-6 ">
+            <div className="text-primary">
               {isEditing ? "Editar Zona de Reparto" : "Crear Zona de Reparto"}
             </div>
           </div>
@@ -1095,7 +1126,7 @@ function ZonasRepartos() {
           </div>
 
           <div className="mt-4">
-            <div className="text-sm flex gap-2 font-medium border-b py-2 mb-6 ">
+            <div className="text-sm flex gap-2 font-medium border-b border-primary py-2 mb-6 ">
               <h3 className="font-normal text-primary">
                 Comunas Seleccionadas: {selectedCommunes.length}/200
               </h3>

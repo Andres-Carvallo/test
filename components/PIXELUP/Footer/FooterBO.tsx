@@ -44,6 +44,9 @@ interface FooterConfig {
     url: string;
     enabled: boolean;
   }[];
+
+  // Configuración de logo personalizado
+  useCustomLogo: boolean;
 }
 
 // Nueva interfaz para las configuraciones del landingText
@@ -105,6 +108,8 @@ const defaultConfig: FooterConfig = {
     },
     { title: "Política de Devoluciones", url: "/devoluciones", enabled: true },
   ],
+
+  useCustomLogo: false,
 };
 
 interface Footer01BOProps {
@@ -194,6 +199,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     config.selectedTemplate
   );
   const [showStyleSection, setShowStyleSection] = useState(false);
+  const [showLogoSection, setShowLogoSection] = useState(false);
   const [showSocialSection, setShowSocialSection] = useState(false);
   const [showCustomLinksSection, setShowCustomLinksSection] = useState(false);
   const [showGeneralSection, setShowGeneralSection] = useState(false);
@@ -210,6 +216,12 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  // Estados para logo personalizado del footer
+  const [footerLogoData, setFooterLogoData] = useState<any | null>(null);
+  const [footerLogoImage, setFooterLogoImage] = useState<string | null>(null);
+  const [footerLogoLoading, setFooterLogoLoading] = useState(false);
+  const [footerLogoFileName, setFooterLogoFileName] = useState<string | null>(null);
 
   const isBasicPlan = planType === "basic";
 
@@ -484,6 +496,124 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     }
   };
 
+  // Cargar logo personalizado del footer desde banner
+  const fetchFooterLogo = async (silent = false) => {
+    console.log("🚀 Iniciando fetchFooterLogo...");
+    try {
+      setFooterLogoLoading(true);
+      const token = getCookie("AdminTokenAuth");
+      const logoId = process.env.NEXT_PUBLIC_LOGO_FOOTER_ID;
+
+      console.log("🔍 Footer Logo Debug:", {
+        logoId,
+        token: token ? "Token presente" : "Token faltante",
+        apiUrl: process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE,
+        siteId: process.env.NEXT_PUBLIC_API_URL_SITEID,
+      });
+
+      if (!logoId || logoId === "PENDIENTE_CONFIGURAR") {
+        console.warn(
+          "⚠️ No se ha configurado NEXT_PUBLIC_LOGO_FOOTER_ID en las variables de entorno"
+        );
+        if (!silent) {
+          toast.error(
+            "Para usar logo personalizado, primero debes configurar NEXT_PUBLIC_LOGO_FOOTER_ID en el archivo .env.local"
+          );
+        }
+        return;
+      }
+
+      if (!token) {
+        console.warn("⚠️ Token de autenticación no encontrado");
+        if (!silent) {
+          toast.error("No se encontró token de autenticación");
+        }
+        return;
+      }
+
+      const url = `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${logoId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`;
+      console.log("📡 Realizando petición a:", url);
+
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("📥 Respuesta de logo:", {
+        status: response.status,
+        code: response.data.code,
+        bannerImages: response.data.bannerImages,
+        totalImages: response.data.bannerImages?.length || 0,
+      });
+
+      const bannerImages = response.data.bannerImages;
+      if (bannerImages && bannerImages.length > 0) {
+        console.log("✅ Logo images encontradas:", {
+          totalImages: bannerImages.length,
+          firstImageUrl: bannerImages[0].mainImage?.url,
+          firstImageData: bannerImages[0].mainImage
+            ? "Imagen presente"
+            : "Sin imagen",
+        });
+
+        setFooterLogoData(bannerImages);
+
+        if (bannerImages[0].mainImage?.url) {
+          console.log("🖼️ Logo del footer cargado:", bannerImages[0].mainImage.url);
+          if (!silent) {
+            toast.success("Logo del footer cargado exitosamente");
+          }
+        } else {
+          console.warn("⚠️ Banner encontrado pero sin imagen URL");
+          if (!silent) {
+            toast("Banner encontrado pero sin imagen configurada");
+          }
+        }
+      } else {
+        console.warn("⚠️ No se encontraron imágenes en el banner del logo");
+        if (!silent) {
+          toast("No se encontraron imágenes en el banner del logo del footer");
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error al cargar logo del footer:", error);
+
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        const message = error.response?.data?.message || error.message;
+
+        if (status === 401) {
+          if (!silent) {
+            toast.error("Error de autenticación. Verifica tu sesión.");
+          }
+        } else if (status === 404) {
+          if (!silent) {
+            toast.error("Banner del logo no encontrado. Verifica el ID configurado.");
+          }
+        } else {
+          if (!silent) {
+            toast.error(`Error al cargar logo: ${message}`);
+          }
+        }
+
+        console.error("Detalles del error:", {
+          status,
+          message,
+          config: error.config?.url,
+        });
+      } else {
+        if (!silent) {
+          toast.error("Error de red al cargar el logo");
+        }
+      }
+    } finally {
+      setFooterLogoLoading(false);
+      console.log("✅ fetchFooterLogo terminado");
+    }
+  };
+
   // Cargar imagen de fondo del footer desde banner
   const fetchFooterBanner = async (silent = false) => {
     console.log("🚀 Iniciando fetchFooterBanner...");
@@ -563,17 +693,14 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         if (imageUrl) {
           console.log("🖼️ Imagen de fondo del footer cargada:", imageUrl);
           if (!silent) {
-            toast.success("Imagen de fondo del footer cargada exitosamente");
           }
         } else {
           console.warn("⚠️ Banner encontrado pero sin imagen URL");
           if (!silent) {
-            toast("Banner encontrado pero sin imagen configurada");
           }
         }
       } else {
         console.warn("⚠️ No se encontraron imágenes en el banner");
-        toast("No se encontraron imágenes en el banner del footer");
       }
     } catch (error) {
       console.error("❌ Error al cargar banner del footer:", error);
@@ -604,7 +731,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     }
   };
 
-  // Manejar cambio de imagen
+  // Manejar cambio de imagen de fondo
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -618,7 +745,41 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     }
   };
 
-  // Completar crop
+  // Manejar cambio de logo del footer
+  const handleFooterLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        setFooterLogoLoading(true);
+        setFooterLogoFileName(file.name);
+        
+        // Comprimir la imagen directamente (como en LogoEdit.tsx)
+        const compressedFile = await imageCompression(file, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+          initialQuality: 0.95,
+          fileType: 'image/png' // Forzar PNG para preservar transparencia
+        });
+
+        // Convertir el archivo comprimido a base64
+        const reader = new FileReader();
+        reader.readAsDataURL(compressedFile);
+        reader.onloadend = async () => {
+          const base64 = reader.result as string;
+          setFooterLogoImage(base64);
+          toast.success('Logo procesado correctamente. Haz clic en "Guardar Configuración" para aplicarlo.');
+        };
+      } catch (error) {
+        console.error('Error al procesar la imagen:', error);
+        toast.error('Error al procesar la imagen');
+      } finally {
+        setFooterLogoLoading(false);
+      }
+    }
+  };
+
+  // Completar crop de imagen de fondo
   const handleCropComplete = useCallback(
     (croppedArea: any, croppedAreaPixels: any) => {
       setCroppedAreaPixels(croppedAreaPixels);
@@ -626,7 +787,7 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     []
   );
 
-  // Aplicar crop y comprimir imagen
+  // Aplicar crop y comprimir imagen de fondo
   const handleCrop = async () => {
     if (!backgroundImage) return;
 
@@ -640,11 +801,16 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         return;
       }
 
+      // Detectar si la imagen original es PNG para preservar transparencia
+      const isPNG = backgroundImage.includes("data:image/png");
+      
       const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 1900,
         useWebWorker: true,
         initialQuality: 0.9,
+        // Preservar formato PNG para mantener transparencia
+        fileType: isPNG ? "image/png" : "image/jpeg",
       };
 
       const compressedFile = await imageCompression(
@@ -655,12 +821,14 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
       setBackgroundImage(base64);
       setIsImageModalOpen(false);
-      toast.success("Imagen procesada correctamente");
+      toast.success("Imagen de fondo procesada correctamente. Haz clic en 'Guardar Configuración' para aplicarla.");
     } catch (error) {
       console.error("Error al procesar la imagen:", error);
       toast.error("Error al procesar la imagen");
     }
   };
+
+
 
   // Convertir a base64
   const convertToBase64 = (file: Blob) => {
@@ -681,6 +849,102 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         url: "",
       },
     });
+  };
+
+  // Guardar logo del footer en el banner
+  const saveFooterLogoImage = async (silent = false) => {
+    if (!footerLogoImage) return;
+
+    try {
+      const token = getCookie("AdminTokenAuth");
+      const logoId = process.env.NEXT_PUBLIC_LOGO_FOOTER_ID;
+
+      if (!logoId) {
+        toast.error("NEXT_PUBLIC_LOGO_FOOTER_ID no configurado");
+        return;
+      }
+
+      // Convertir base64 a blob para obtener el tamaño real
+      const response = await fetch(footerLogoImage);
+      const blob = await response.blob();
+
+      // Detectar el tipo de imagen basado en el base64
+      const getImageType = (base64: string): string => {
+        if (base64.includes("data:image/png")) return "image/png";
+        if (base64.includes("data:image/jpeg") || base64.includes("data:image/jpg")) return "image/jpeg";
+        if (base64.includes("data:image/webp")) return "image/webp";
+        // Por defecto, usar PNG para preservar transparencia
+        return "image/png";
+      };
+
+      const imageInfo = {
+        name: footerLogoFileName || "footerLogo",
+        type: getImageType(footerLogoImage),
+        size: blob.size, // Tamaño real del archivo
+        data: footerLogoImage,
+      };
+
+      const imageData = {
+        title: "Footer Logo",
+        landingText: "Footer Logo Image",
+        buttonLink: "#", // Valor por defecto consistente
+        buttonText: "Footer Logo", // Valor por defecto consistente
+        mainImageLink: "#", // Valor por defecto consistente
+        orderNumber: 1,
+        mainImage: imageInfo,
+      };
+
+      // Primero obtener el banner para ver si ya tiene imágenes
+      const logoResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${logoId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const existingImages = logoResponse.data?.bannerImages || [];
+
+      if (existingImages.length > 0) {
+        // Actualizar la primera imagen existente
+        const firstImageId = existingImages[0].id;
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${logoId}/images/${firstImageId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          imageData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else {
+        // Crear nueva imagen si no existe ninguna
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${logoId}/images?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+          imageData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      // Recargar logo para obtener la URL actualizada
+      await fetchFooterLogo(true); // silent = true
+      if (!silent) {
+        toast.success("Logo del footer guardado correctamente");
+      }
+    } catch (error) {
+      console.error("Error al guardar logo del footer:", error);
+      if (!silent) {
+        toast.error("Error al guardar el logo del footer");
+      }
+    }
   };
 
   // Guardar imagen en el banner
@@ -776,19 +1040,31 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       setSaving(true);
       const token = getCookie("AdminTokenAuth");
 
-      // 1. Primero guardar la imagen si hay una pendiente
+      // 1. Primero guardar la imagen de fondo si hay una pendiente
       if (backgroundImage) {
         try {
           console.log("💾 Guardando imagen de fondo...");
           await saveFooterBannerImage(true); // silent = true
         } catch (error) {
-          console.error("Error al guardar imagen:", error);
+          console.error("Error al guardar imagen de fondo:", error);
           toast.error("Error al guardar la imagen de fondo");
           return; // No continuar si falla la imagen
         }
       }
 
-      // 2. Luego guardar la configuración del content block
+      // 2. Guardar el logo del footer si hay uno pendiente
+      if (footerLogoImage) {
+        try {
+          console.log("💾 Guardando logo del footer...");
+          await saveFooterLogoImage(true); // silent = true
+        } catch (error) {
+          console.error("Error al guardar logo del footer:", error);
+          toast.error("Error al guardar el logo del footer");
+          return; // No continuar si falla el logo
+        }
+      }
+
+      // 3. Luego guardar la configuración del content block
       const contentBlockId =
         process.env.NEXT_PUBLIC_FOOTER_CONFIG_CONTENTBLOCK ||
         "footer-config-default";
@@ -818,8 +1094,9 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
 
       if (response.data.code === 0) {
         toast.success("Footer guardado exitosamente");
-        // Limpiar imagen temporal después de guardar
+        // Limpiar imágenes temporales después de guardar
         setBackgroundImage(null);
+        setFooterLogoImage(null);
         // Revalidar cache
         await fetch("/api/revalidate", {
           method: "POST",
@@ -887,10 +1164,11 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
     const initializeFooter = async () => {
       // Cargar configuración primero
       await fetchFooterConfig();
-      // Luego cargar colecciones e imagen en paralelo
+      // Luego cargar colecciones, imagen de fondo y logo en paralelo
       await Promise.all([
         fetchCollections(),
         fetchFooterBanner(false), // mostrar toast normalmente en carga inicial
+        fetchFooterLogo(false), // mostrar toast normalmente en carga inicial
       ]);
     };
 
@@ -931,6 +1209,8 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
       ...displayConfig.backgroundImage,
       url: bannerData?.[0]?.mainImage?.url || displayConfig.backgroundImage.url,
     },
+    // Incluir logo personalizado del footer si está activo
+    footerLogoData: config.useCustomLogo ? footerLogoData : null,
   };
 
   if (loading || collectionsLoading || bannerLoading) {
@@ -1146,6 +1426,184 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         )}
       </div>
 
+              {/* Configuración de Logo Personalizado */}
+        {config.showLogo && (
+          <div className="border rounded-lg p-4">
+            <CollapsibleSectionHeader
+              title="Logo del Footer"
+              isOpen={showLogoSection}
+              onToggle={() => setShowLogoSection(!showLogoSection)}
+            />
+
+            {showLogoSection && (
+            <div className="space-y-4">
+              {/* Toggle para usar logo personalizado */}
+              <div className="border rounded-lg p-3 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">
+                        Usar Logo Personalizado
+                      </span>
+                      <p className="text-xs text-gray-500">
+                        {config.useCustomLogo 
+                          ? "Usando logo personalizado del footer" 
+                          : "Usando logo global de la tienda"
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <SectionSwitch
+                    checked={config.useCustomLogo}
+                    onChange={(checked) => handleConfigChange("useCustomLogo", checked)}
+                  />
+                </div>
+              </div>
+
+              {/* Configuración de logo personalizado */}
+              {config.useCustomLogo && (
+                <div className="border rounded-lg p-3 bg-gray-50">
+                  <div className="space-y-3">
+                    {/* Advertencia compacta */}
+                    {(!process.env.NEXT_PUBLIC_LOGO_FOOTER_ID ||
+                      process.env.NEXT_PUBLIC_LOGO_FOOTER_ID ===
+                        "PENDIENTE_CONFIGURAR") && (
+                      <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+                        ⚠️ Configura NEXT_PUBLIC_LOGO_FOOTER_ID en .env.local
+                      </div>
+                    )}
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="footerLogoImage"
+                      className="hidden"
+                      onChange={handleFooterLogoChange}
+                    />
+
+                                         {/* Upload/Preview */}
+                     {footerLogoData?.[0]?.mainImage?.url || footerLogoImage ? (
+                       <div className="space-y-2">
+                         <div className="relative w-full h-24 rounded overflow-hidden border bg-white">
+                           <img
+                             src={
+                               footerLogoImage || footerLogoData[0]?.mainImage?.url
+                             }
+                             alt="Footer Logo"
+                             className="w-full h-full object-contain p-2"
+                           />
+                           {/* Indicador de estado */}
+                           <div className="absolute top-1 right-1">
+                             {footerLogoImage ? (
+                               <div className="px-2 py-1 rounded text-white text-xs bg-orange-500">
+                                 Pendiente
+                               </div>
+                             ) : (
+                               <div className="px-2 py-1 rounded text-white text-xs bg-green-500">
+                                 Guardado
+                               </div>
+                             )}
+                           </div>
+                         </div>
+                         <div className="flex gap-1">
+                           <label
+                             htmlFor="footerLogoImage"
+                             className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 cursor-pointer"
+                           >
+                             Cambiar
+                           </label>
+                         </div>
+                         {footerLogoImage && (
+                           <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                             💡 El logo está listo para guardar. Haz clic en "Guardar Configuración" al final de la página.
+                           </div>
+                         )}
+                       </div>
+                     ) : (
+                      <label
+                        htmlFor="footerLogoImage"
+                        className="border-dashed border-2 border-gray-300 rounded p-4 text-center cursor-pointer hover:border-gray-400 transition-colors block"
+                      >
+                        <div className="flex flex-col items-center">
+                          <svg
+                            className="w-6 h-6 text-gray-400 mb-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                            />
+                          </svg>
+                          <p className="text-gray-600 text-xs font-medium">
+                            Subir Logo
+                          </p>
+                          <p className="text-xs text-gray-400">PNG, JPG - Máx 5MB</p>
+                        </div>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tamaño del Logo - Solo visible si showLogo está activo */}
+              <div className="border rounded-lg p-3 bg-gray-50">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Tamaño del Logo
+                </label>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500">Pequeño</span>
+                    <span className="text-xs font-medium text-gray-700">
+                      {config.logoSize}px
+                    </span>
+                    <span className="text-xs text-gray-500">Grande</span>
+                  </div>
+                                     <input
+                     type="range"
+                     min="24"
+                     max="200"
+                     step="4"
+                     value={config.logoSize}
+                     onChange={(e) =>
+                       handleConfigChange("logoSize", parseInt(e.target.value))
+                     }
+                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                   />
+                   <div className="flex justify-between text-xs text-gray-400">
+                     <span>24px</span>
+                     <span>64px</span>
+                     <span>120px</span>
+                     <span>200px</span>
+                   </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Ajusta el tamaño del logo en píxeles (altura)
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Configuración de Colores y Plantilla */}
       <div className="border rounded-lg p-4">
         <CollapsibleSectionHeader
@@ -1204,43 +1662,6 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                   )}
                 </div>
               </div>
-              {/* Tamaño del Logo - Solo visible si showLogo está activo */}
-              {config.showLogo && (
-                <div className="border rounded-lg p-3 bg-gray-50">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Tamaño del Logo
-                  </label>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">Pequeño</span>
-                      <span className="text-xs font-medium text-gray-700">
-                        {config.logoSize}px
-                      </span>
-                      <span className="text-xs text-gray-500">Grande</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="32"
-                      max="120"
-                      step="4"
-                      value={config.logoSize}
-                      onChange={(e) =>
-                        handleConfigChange("logoSize", parseInt(e.target.value))
-                      }
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-gray-400">
-                      <span>32px</span>
-                      <span>64px</span>
-                      <span>96px</span>
-                      <span>120px</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Ajusta el tamaño del logo en píxeles (altura)
-                  </p>
-                </div>
-              )}
               {/* Colores */}
               <div className="border rounded-lg p-3 bg-gray-50">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -1352,55 +1773,57 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
                         onChange={handleImageChange}
                       />
 
-                      {/* Upload/Preview */}
-                      {bannerData?.[0]?.mainImage?.url || backgroundImage ? (
-                        <div className="space-y-2">
-                          <div className="relative w-full h-24 rounded overflow-hidden border">
-                            <img
-                              src={
-                                backgroundImage || bannerData[0]?.mainImage?.url
-                              }
-                              alt="Footer Background"
-                              className="w-full h-full object-cover"
-                            />
-                            {/* Overlay preview con color y opacidad reales */}
-                            {displayConfig.backgroundImage.overlay.enabled && (
-                              <div
-                                className="absolute inset-0"
-                                style={{
-                                  backgroundColor: config.backgroundColor,
-                                  opacity:
-                                    displayConfig.backgroundImage.overlay
-                                      .opacity,
-                                }}
-                              />
-                            )}
-                            {/* Indicador de vista previa */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className=" px-2 py-1 rounded text-white text-xs">
-                                Vista previa
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <label
-                              htmlFor="footerBackgroundImage"
-                              className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 cursor-pointer"
-                            >
-                              Cambiar
-                            </label>
-
-                            {backgroundImage && (
-                              <button
-                                onClick={() => saveFooterBannerImage(false)}
-                                className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
-                              >
-                                Guardar
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
+                                             {/* Upload/Preview */}
+                       {bannerData?.[0]?.mainImage?.url || backgroundImage ? (
+                         <div className="space-y-2">
+                           <div className="relative w-full h-24 rounded overflow-hidden border">
+                             <img
+                               src={
+                                 backgroundImage || bannerData[0]?.mainImage?.url
+                               }
+                               alt="Footer Background"
+                               className="w-full h-full object-cover"
+                             />
+                             {/* Overlay preview con color y opacidad reales */}
+                             {displayConfig.backgroundImage.overlay.enabled && (
+                               <div
+                                 className="absolute inset-0"
+                                 style={{
+                                   backgroundColor: config.backgroundColor,
+                                   opacity:
+                                     displayConfig.backgroundImage.overlay
+                                       .opacity,
+                                 }}
+                               />
+                             )}
+                             {/* Indicador de estado */}
+                             <div className="absolute top-1 right-1">
+                               {backgroundImage ? (
+                                 <div className="px-2 py-1 rounded text-white text-xs bg-orange-500">
+                                   Pendiente
+                                 </div>
+                               ) : (
+                                 <div className="px-2 py-1 rounded text-white text-xs bg-green-500">
+                                   Guardado
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                           <div className="flex gap-1">
+                             <label
+                               htmlFor="footerBackgroundImage"
+                               className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 cursor-pointer"
+                             >
+                               Cambiar
+                             </label>
+                           </div>
+                           {backgroundImage && (
+                             <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                               💡 La imagen de fondo está lista para guardar. Haz clic en "Guardar Configuración" al final de la página.
+                             </div>
+                           )}
+                         </div>
+                       ) : (
                         <label
                           htmlFor="footerBackgroundImage"
                           className="border-dashed border-2 border-gray-300 rounded p-4 text-center cursor-pointer hover:border-gray-400 transition-colors block"
@@ -1933,22 +2356,62 @@ export default function Footer01BO({ planType = "advanced" }: Footer01BOProps) {
         </div>
       )}
 
-      {/* Botones de Acción */}
-      <div className="flex justify-between items-center pt-4">
-        <button
-          onClick={resetConfig}
-          className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-        >
-          Restaurar por Defecto
-        </button>
-        <button
-          onClick={saveFooterConfig}
-          disabled={saving}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
-        >
-          {saving ? "Guardando..." : "Guardar Configuración"}
-        </button>
-      </div>
+
+
+             {/* Indicador de cambios pendientes */}
+       {(footerLogoImage || backgroundImage) && (
+         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+           <div className="flex items-center space-x-2">
+             <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+             </svg>
+             <span className="text-sm font-medium text-orange-800">
+               Cambios pendientes de guardar
+             </span>
+           </div>
+           <div className="mt-2 text-sm text-orange-700">
+             {footerLogoImage && <div>• Nuevo logo del footer</div>}
+             {backgroundImage && <div>• Nueva imagen de fondo</div>}
+           </div>
+         </div>
+       )}
+
+       {/* Botones de Acción */}
+       <div className="flex justify-between items-center pt-4">
+         <button
+           onClick={resetConfig}
+           className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+         >
+           Restaurar por Defecto
+         </button>
+         <div className="flex items-center space-x-3">
+           {saving && (
+             <div className="flex items-center space-x-2 text-sm text-gray-600">
+               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+               <span>Guardando configuración...</span>
+             </div>
+           )}
+           <button
+             onClick={saveFooterConfig}
+             disabled={saving}
+             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center space-x-2"
+           >
+             {saving ? (
+               <>
+                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                 <span>Guardando...</span>
+               </>
+             ) : (
+               <>
+                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                 </svg>
+                 <span>Guardar Configuración</span>
+               </>
+             )}
+           </button>
+         </div>
+       </div>
     </div>
   );
 }

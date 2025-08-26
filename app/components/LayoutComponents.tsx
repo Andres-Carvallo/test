@@ -1,7 +1,7 @@
 "use client";
 
 import { getActiveComponents } from "@/app/config/GlobalConfig";
-import Footer from "@/components/PIXELUP/Footer/Footer05/Footer05";
+import Footer from "@/components/PIXELUP/Footer/Footer";
 
 export function DynamicNavbar() {
   const { Navbar } = getActiveComponents();

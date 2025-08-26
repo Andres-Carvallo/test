@@ -709,18 +709,22 @@ const ContentBlockForm: React.FC = () => {
   };
 
   const copiarIdsParaReemplazoMasivo = () => {
-    // Formato específico para el mapeo centralizado
+    // Formato específico para el entorno actual
+    const isProduction = process.env.NODE_ENV === 'production';
+    const environmentName = isProduction ? 'PRODUCCIÓN' : 'DESARROLLO';
+    const idsObjectName = isProduction ? 'PRODUCTION_IDS' : 'DEVELOPMENT_IDS';
+    
     let textToCopy = '// ========================================\n';
-    textToCopy += '// ACTUALIZACIÓN DEL MAPEO CENTRALIZADO\n';
+    textToCopy += `// ACTUALIZACIÓN DE IDs PARA ${environmentName}\n`;
     textToCopy += '// ========================================\n\n';
     
     textToCopy += '// INSTRUCCIONES:\n';
     textToCopy += '// 1. Abrir config/componentEnums.ts\n';
-    textToCopy += '// 2. Buscar la sección "COMPONENT_IDS"\n';
+    textToCopy += `// 2. Buscar la sección "${idsObjectName}"\n`;
     textToCopy += '// 3. Reemplazar los IDs correspondientes\n\n';
     
     textToCopy += '// ========================================\n';
-    textToCopy += '// IDs GENERADOS PARA ACTUALIZAR:\n';
+    textToCopy += `// IDs GENERADOS PARA ${environmentName}:\n`;
     textToCopy += '// ========================================\n\n';
     
     generatedIds.forEach(id => {
@@ -732,14 +736,14 @@ const ContentBlockForm: React.FC = () => {
     textToCopy += '// ========================================\n\n';
     
     textToCopy += '// Copiar y pegar esto en la consola del navegador:\n';
-    textToCopy += 'updateComponentIds({\n';
+    textToCopy += `updateEnvironmentIds({\n`;
     generatedIds.forEach(id => {
       textToCopy += `  '${id.component}': '${id.id}',\n`;
     });
     textToCopy += '});\n';
     
     navigator.clipboard.writeText(textToCopy).then(() => {
-      alert('Formato para mapeo centralizado copiado al portapapeles');
+      alert(`Formato para ${environmentName} copiado al portapapeles`);
     }).catch(() => {
       const textArea = document.createElement('textarea');
       textArea.value = textToCopy;
@@ -747,7 +751,7 @@ const ContentBlockForm: React.FC = () => {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('Formato para mapeo centralizado copiado al portapapeles');
+      alert(`Formato para ${environmentName} copiado al portapapeles`);
       });
   };
 
@@ -1267,7 +1271,7 @@ const ContentBlockForm: React.FC = () => {
                   onClick={copiarIdsParaReemplazoMasivo}
                   className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700"
                 >
-                  🔄 Mapeo Centralizado
+                  🔄 IDs por Entorno
                 </button>
                 <button
                   onClick={limpiarIdsGenerados}

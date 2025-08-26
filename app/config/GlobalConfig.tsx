@@ -20,7 +20,7 @@ export const globalConfig: GlobalConfig = {
     link: process.env.NEXT_PUBLIC_WHATSAPP_LINK || "",
   },
   bannerPrincipalAspects: {
-    desktop: "16/5",
+    desktop: "16/7",
     tablet: "16/6",
     mobile: "3/2",
   },
