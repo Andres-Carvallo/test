@@ -15,7 +15,7 @@ import {
 /**
  * Detecta el entorno actual
  */
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NEXT_PUBLIC_ENVIRONMENT === 'production';
 
 /**
  * Mapeo centralizado de todos los IDs de componentes
