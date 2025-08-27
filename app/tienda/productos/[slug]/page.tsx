@@ -9,6 +9,16 @@ import { getBaseUrl, getBaseUrlWithLogs, getCanonicalUrl, getRobustBaseUrl } fro
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
 
+  // Obtener la URL actual del request
+  const headersList = await import('next/headers').then(m => m.headers());
+  const host = headersList.get('host') || 'dev-ecommerce.pixelup.cl';
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
+  
+  console.log('🔧 [product-metadata] Host detectado:', host);
+  console.log('🔧 [product-metadata] Protocolo:', protocol);
+  console.log('🔧 [product-metadata] Base URL generada:', baseUrl);
+
   try {
     // Obtener todos los productos
     const productsRes = await fetch(
@@ -35,7 +45,6 @@ export async function generateMetadata({ params }: any) {
     }
 
     // Generar URL canónica de manera más explícita
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-ecommerce.pixelup.cl';
     const productPath = `/tienda/productos/${params.slug}`;
     const canonicalUrl = `${baseUrl}${productPath}`;
     

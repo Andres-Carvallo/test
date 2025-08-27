@@ -77,6 +77,16 @@ async function getSeoDescription() {
 }
 
 export const metadata = async () => {
+  // Obtener la URL actual del request
+  const headersList = await import('next/headers').then(m => m.headers());
+  const host = headersList.get('host') || 'dev-ecommerce.pixelup.cl';
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
+  
+  console.log('🔧 [metadata] Host detectado:', host);
+  console.log('🔧 [metadata] Protocolo:', protocol);
+  console.log('🔧 [metadata] Base URL generada:', baseUrl);
+  
   const defaultSeoData = {
     title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
     description: "Una nueva plataforma para emprendedores y Pymes!",
@@ -101,8 +111,7 @@ export const metadata = async () => {
       seoDescription = `${title} - ${text}`.substring(0, 160);
     }
     
-             const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-ecommerce.pixelup.cl';
-     console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
+             console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
      console.log(`🔧 [metadata] Base URL usada:`, baseUrl);
     
           const seoMetadata = {
@@ -151,7 +160,11 @@ export const metadata = async () => {
      return seoMetadata;
    } catch (error) {
     console.error("Error fetching banner data:", error);
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-ecommerce.pixelup.cl';
+    // Obtener la URL actual del request para el fallback
+    const headersList = await import('next/headers').then(m => m.headers());
+    const host = headersList.get('host') || 'dev-ecommerce.pixelup.cl';
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
     return {
       title: defaultSeoData.title,
       description: defaultSeoData.description,
