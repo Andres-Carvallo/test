@@ -34,6 +34,7 @@ import {
   HomeConfig,
 } from "@/app/utils/homeConfig";
 import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
+import { getComponentIdWithFallback } from "@/app/config/componentEnums";
 const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -42,7 +43,7 @@ export const revalidate = 60; // Revalida cada 60 segundos
 export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
 
 async function fetchBannerData() {
-  const bannerId = process.env.NEXT_PUBLIC_SEO_BANNER_ID;
+  const bannerId = getComponentIdWithFallback('SEO_BANNER');
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
   );
