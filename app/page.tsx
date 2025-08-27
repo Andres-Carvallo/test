@@ -35,8 +35,10 @@ import {
 } from "@/app/utils/homeConfig";
 import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
 import { getComponentIdWithFallback } from "@/app/config/componentEnums";
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
-const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
+import { getBaseUrl } from "@/app/utils/urlUtils";
+
+const siteUrl = getBaseUrl();
+const canonicalUrl = getBaseUrl();
 
 export const revalidate = 60; // Revalida cada 60 segundos
 
@@ -100,30 +102,30 @@ export const metadata = async () => {
           'max-snippet': -1,
         },
       },
-      openGraph: {
-        title: bannerImage.images[0].title || defaultSeoData.title,
-        description: seoDescription,
-        type: 'website',
-        url: process.env.NEXT_PUBLIC_BASE_URL,
-        siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
-        images: [
-          {
-            url: bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage,
-            width: 1200,
-            height: 630,
-            alt: bannerImage.images[0].title || defaultSeoData.title,
-          },
-        ],
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: bannerImage.images[0].title || defaultSeoData.title,
-        description: seoDescription,
-        images: [bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage],
-      },
-      alternates: {
-        canonical: process.env.NEXT_PUBLIC_BASE_URL,
-      },
+             openGraph: {
+         title: bannerImage.images[0].title || defaultSeoData.title,
+         description: seoDescription,
+         type: 'website',
+         url: getBaseUrl(),
+         siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
+         images: [
+           {
+             url: bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage,
+             width: 1200,
+             height: 630,
+             alt: bannerImage.images[0].title || defaultSeoData.title,
+           },
+         ],
+       },
+       twitter: {
+         card: 'summary_large_image',
+         title: bannerImage.images[0].title || defaultSeoData.title,
+         description: seoDescription,
+         images: [bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage],
+       },
+       alternates: {
+         canonical: getBaseUrl(),
+       },
     };
   } catch (error) {
     console.error("Error fetching banner data:", error);
@@ -142,30 +144,30 @@ export const metadata = async () => {
           'max-snippet': -1,
         },
       },
-      openGraph: {
-        title: defaultSeoData.title,
-        description: defaultSeoData.description,
-        type: 'website',
-        url: process.env.NEXT_PUBLIC_BASE_URL,
-        siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
-        images: [
-          {
-            url: defaultSeoData.ogImage,
-            width: 1200,
-            height: 630,
-            alt: defaultSeoData.title,
-          },
-        ],
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: defaultSeoData.title,
-        description: defaultSeoData.description,
-        images: [defaultSeoData.ogImage],
-      },
-      alternates: {
-        canonical: process.env.NEXT_PUBLIC_BASE_URL,
-      },
+             openGraph: {
+         title: defaultSeoData.title,
+         description: defaultSeoData.description,
+         type: 'website',
+         url: getBaseUrl(),
+         siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
+         images: [
+           {
+             url: defaultSeoData.ogImage,
+             width: 1200,
+             height: 630,
+             alt: defaultSeoData.title,
+           },
+         ],
+       },
+       twitter: {
+         card: 'summary_large_image',
+         title: defaultSeoData.title,
+         description: defaultSeoData.description,
+         images: [defaultSeoData.ogImage],
+       },
+       alternates: {
+         canonical: getBaseUrl(),
+       },
     };
   }
 };

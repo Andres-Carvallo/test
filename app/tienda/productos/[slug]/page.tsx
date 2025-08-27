@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
 import ProductDetailClient from "./ProductDetailClient";
-
+import { getBaseUrl, getCanonicalUrl } from "@/app/utils/urlUtils";
 
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: any) {
       };
     }
 
-    const canonicalUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/productos/${params.slug}`;
+    const canonicalUrl = getCanonicalUrl(`/tienda/productos/${params.slug}`);
     
     // Crear una descripción más atractiva y específica para el producto
     let seoDescription = "Descubre este increíble producto en nuestra tienda.";
