@@ -215,6 +215,11 @@ export enum PIXELUPComponents {
 
   // WhatsApp Config
   WHATSAPP_CONFIG = 'WHATSAPP_CONFIG',
+  
+  // Contact Form Config
+  CONTACT_FORM_BANNER = 'CONTACT_FORM_BANNER',
+  CONTACT_FORM_BANNER_IMG = 'CONTACT_FORM_BANNER_IMG',
+
 }
 
 // ========================================
@@ -244,6 +249,71 @@ export const PIXELUP_COMPONENT_DATA: Record<PIXELUPComponents, ComponentData> = 
         phoneNumber: "",
         message: "Hola, necesito información sobre sus productos"
       }, null, 2)
+    }
+  },
+
+  // Contact Form Banner - Configuración del formulario de contacto
+  [PIXELUPComponents.CONTACT_FORM_BANNER]: {
+    type: 'banner',
+    jsonStructure: 'simple',
+    envVariable: 'NEXT_PUBLIC_CONTACT_FORM_BANNER_ID',
+    needsImage: true,
+    imageEnvVariable: 'NEXT_PUBLIC_CONTACT_FORM_BANNER_IMGID',
+    defaultData: {
+      title: 'Configuración del Formulario de Contacto',
+      landingText: JSON.stringify({
+        formTitle: "Envíanos un mensaje",
+        submitButtonText: "Enviar mensaje",
+        showContactInfo: true,
+        contactInfoTitle: "Información de contacto",
+        email: "contacto@casarenteria.cl",
+        phone: "+56 9 7533 0640",
+        emailLabelInfo: "Email",
+        phoneLabelInfo: "Teléfono"
+      }, null, 2),
+      buttonText: "Enviar mensaje",
+      buttonLink: "/contacto",
+      mainImageLink: "https://pixelup.cl/default-contact.jpg",
+      mainImage: {
+        name: "pixelup-contact-form.png",
+        type: "image/png",
+        size: 95,
+        data: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      }
+    },
+    imageData: {
+      title: 'Imagen Formulario de Contacto',
+      landingText: 'Imagen del formulario de contacto',
+      buttonText: 'Enviar mensaje',
+      buttonLink: '/contacto',
+      mainImageLink: 'https://pixelup.cl/default-contact.jpg',
+      orderNumber: 1,
+      mainImage: {
+        name: "pixelup-contact-form-image.png",
+        type: "image/png",
+        size: 95,
+        data: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      }
+    }
+  },
+
+  // Contact Form Banner Image - Imagen del formulario de contacto
+  [PIXELUPComponents.CONTACT_FORM_BANNER_IMG]: {
+    type: 'banner',
+    jsonStructure: 'simple',
+    envVariable: 'NEXT_PUBLIC_CONTACT_FORM_BANNER_IMGID',
+    defaultData: {
+      title: 'Imagen Formulario de Contacto',
+      landingText: 'Imagen del formulario de contacto',
+      buttonText: 'Enviar mensaje',
+      buttonLink: '/contacto',
+      mainImageLink: 'https://pixelup.cl/default-contact.jpg',
+      mainImage: {
+        name: "pixelup-contact-form-image.png",
+        type: "image/png",
+        size: 95,
+        data: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      }
     }
   },
 
@@ -1180,6 +1250,10 @@ export const COMPONENT_IDS: Record<string, string> = {
   // WhatsApp Config
   'WHATSAPP_CONFIG': 'PENDING_ID',
   
+  // Contact Form Config
+  'CONTACT_FORM_BANNER': 'PENDING_ID',
+  'CONTACT_FORM_BANNER_IMG': 'PENDING_ID',
+  
   // SEO
   'SEO_BANNER': 'a8cbd4df-4438-4053-bf0e-d86fe0358776',
   'SEO_BANNER_IMG': 'cb1568c0-df15-40a8-b009-99656d33077f',
@@ -1468,6 +1542,10 @@ export const DEVELOPMENT_IDS: Record<string, string> = {
   // WhatsApp Config
   'WHATSAPP_CONFIG': '123ebaa3-b59c-439b-82d5-2eb34c32d3e6',
   
+  // Contact Form Config
+  'CONTACT_FORM_BANNER': '2dbe222e-1ad0-4b0f-a7c5-64582f9ca81c',
+  'CONTACT_FORM_BANNER_IMG': 'c627ff65-40cd-4134-bc16-adf1e1b4248b',
+  
   // SEO
   'SEO_BANNER': '478eee34-12fb-4128-9e32-f84f64ad2d21',
   'SEO_BANNER_IMG': 'd13cc7be-c34c-487b-bf93-a990c1d476f2',
@@ -1569,6 +1647,10 @@ export const DEVELOPMENT_IDS: Record<string, string> = {
 export const PRODUCTION_IDS: Record<string, string> = {
   // WhatsApp Config
   'WHATSAPP_CONFIG': 'PROD_WHATSAPP_CONFIG_ID',
+  
+  // Contact Form Config
+  'CONTACT_FORM_BANNER': 'PROD_CONTACT_FORM_BANNER_ID',
+  'CONTACT_FORM_BANNER_IMG': 'PROD_CONTACT_FORM_BANNER_IMG_ID',
   
   // SEO
   'SEO_BANNER': 'PROD_SEO_BANNER_ID',

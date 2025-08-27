@@ -885,6 +885,17 @@ export const availableComponents: ComponentConfig[] = [
     showInHome: false,
     showInAbout: true,
   },
+  {
+    id: "contactForm01",
+    title: "Formulario de Contacto 01",
+    description: "Formulario de contacto con banner e información de contacto",
+    category: "Formularios",
+    frontComponent: () => import('@/components/PIXELUP/ContactForm/ContactForm01'),
+    backComponent: () => import('@/components/PIXELUP/ContactForm/ContactForm01BO'),
+    previewComponent: () => import('@/components/PIXELUP/ContactForm/Preview'),
+    showInHome: true,
+    showInAbout: true,
+  },
 ];
 
 // Funciones de utilidad para filtrar componentes

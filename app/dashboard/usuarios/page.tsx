@@ -9,6 +9,7 @@ import Color from "@/components/Core/Color/Color";
 import ReviewSettings from "@/components/Core/ReviewSettings/ReviewSettings";
 import RedesSociales from "@/components/Core/RedesSociales/RedesSociales";
 import WhatsAppConfig from "@/components/Core/WhatsAppConfig/WhatsAppConfig";
+import ContactForm01BO from "@/components/PIXELUP/ContactForm/ContactForm01BO";
 
 export const metadata: Metadata = {
   title: "CRUD de Usuarios | PixelUP",
@@ -22,11 +23,11 @@ const UsuariosPage = () => {
       <Breadcrumb pageName="Usuarios" />
 
       <div className="flex flex-col gap-4 md:gap-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10">
-        <WhatsAppConfig />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10">
+          <WhatsAppConfig />
+        
           <MenuOpcion/>
           <Mantenimiento/>
-          
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
         <Tipografia/>
