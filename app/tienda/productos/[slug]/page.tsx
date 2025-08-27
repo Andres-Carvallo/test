@@ -35,33 +35,60 @@ export async function generateMetadata({ params }: any) {
     }
 
     const canonicalUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/productos/${params.slug}`;
-    const description = product.description
-      ? product.description.replace(/(<([^>]+)>)/gi, "")
-      : "";
-    const keywords = description
-      ? description.split(/\s+/).slice(0, 10).join(", ")
+    
+    // Crear una descripción más atractiva y específica para el producto
+    let seoDescription = "Descubre este increíble producto en nuestra tienda.";
+    
+    if (product.description) {
+      const cleanDescription = product.description.replace(/(<([^>]+)>)/gi, "").trim();
+      
+      // Crear una descripción que incluya el nombre del producto y la descripción
+      const productName = product.name || '';
+      const description = cleanDescription.length > 120 ? cleanDescription.substring(0, 120) + '...' : cleanDescription;
+      
+      seoDescription = `${productName} - ${description}`.substring(0, 160);
+    }
+    
+    console.log(`🔧 [product-metadata] Meta description para ${product.name}:`, seoDescription);
+    
+    const keywords = seoDescription
+      ? seoDescription.split(/\s+/).slice(0, 10).join(", ")
       : "";
 
     return {
       title: product.name,
-      description: description,
+      description: seoDescription,
       keywords: keywords,
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
       openGraph: {
         title: product.name,
-        description: description,
+        description: seoDescription,
+        type: 'product',
+        url: canonicalUrl,
+        siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
         images: [
           {
             url: product.mainImageUrl,
-            width: 800,
-            height: 600,
+            width: 1200,
+            height: 630,
             alt: product.name,
           },
         ],
-        url: canonicalUrl,
       },
       twitter: {
+        card: 'summary_large_image',
         title: product.name,
-        description: description,
+        description: seoDescription,
         images: [product.mainImageUrl],
       },
       alternates: {
@@ -170,6 +197,11 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
 
     return (
       <>
+        {/* Párrafo SEO visible para Google - debe coincidir con la meta description */}
+        <div className="sr-only">
+          <p>{`${product.name} - ${product.description ? product.description.replace(/(<([^>]+)>)/gi, "").trim() : "Descubre este increíble producto en nuestra tienda."}`}</p>
+        </div>
+
         {/* 
           <div>
             <BannerTienda01 />
