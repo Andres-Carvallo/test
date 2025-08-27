@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
 import ProductDetailClient from "./ProductDetailClient";
-import { getBaseUrl, getBaseUrlWithLogs, getCanonicalUrl } from "@/app/utils/urlUtils";
+import { getBaseUrl, getBaseUrlWithLogs, getCanonicalUrl, getRobustBaseUrl } from "@/app/utils/urlUtils";
 
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: any) {
     }
 
     // Generar URL canónica de manera más explícita
-    const baseUrl = getBaseUrlWithLogs();
+    const baseUrl = getRobustBaseUrl();
     const productPath = `/tienda/productos/${params.slug}`;
     const canonicalUrl = `${baseUrl}${productPath}`;
     

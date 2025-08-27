@@ -35,7 +35,7 @@ import {
 } from "@/app/utils/homeConfig";
 import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
 import { getComponentIdWithFallback } from "@/app/config/componentEnums";
-import { getBaseUrl, getBaseUrlWithLogs } from "@/app/utils/urlUtils";
+import { getBaseUrl, getBaseUrlWithLogs, getRobustBaseUrl } from "@/app/utils/urlUtils";
 
 export const revalidate = 60; // Revalida cada 60 segundos
 
@@ -101,7 +101,7 @@ export const metadata = async () => {
       seoDescription = `${title} - ${text}`.substring(0, 160);
     }
     
-        const baseUrl = getBaseUrlWithLogs();
+        const baseUrl = getRobustBaseUrl();
     console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
     console.log(`🔧 [metadata] Base URL usada:`, baseUrl);
     
@@ -151,7 +151,7 @@ export const metadata = async () => {
      return seoMetadata;
    } catch (error) {
     console.error("Error fetching banner data:", error);
-    const baseUrl = getBaseUrlWithLogs();
+    const baseUrl = getRobustBaseUrl();
     return {
       title: defaultSeoData.title,
       description: defaultSeoData.description,
