@@ -35,10 +35,10 @@ import {
 } from "@/app/utils/homeConfig";
 import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
 import { getComponentIdWithFallback } from "@/app/config/componentEnums";
-import { getBaseUrl } from "@/app/utils/urlUtils";
+import { getBaseUrl, getBaseUrlWithLogs } from "@/app/utils/urlUtils";
 
-const siteUrl = getBaseUrl();
-const canonicalUrl = getBaseUrl();
+const siteUrl = getBaseUrlWithLogs();
+const canonicalUrl = getBaseUrlWithLogs();
 
 export const revalidate = 60; // Revalida cada 60 segundos
 
@@ -57,6 +57,25 @@ async function fetchBannerData() {
   } catch (error) {
     console.error(`❌ [fetchBannerData] Error al obtener banner:`, error);
     throw error;
+  }
+}
+
+async function getSeoDescription() {
+  const defaultDescription = "Una nueva plataforma para emprendedores y Pymes!";
+  
+  try {
+    const bannerImage = await fetchBannerData();
+    
+    if (bannerImage.images[0].landingText) {
+      const cleanText = bannerImage.images[0].landingText.replace(/<[^>]*>/g, '').trim();
+      const title = bannerImage.images[0].title || '';
+      const text = cleanText.length > 100 ? cleanText.substring(0, 100) + '...' : cleanText;
+      return `${title} - ${text}`.substring(0, 160);
+    }
+    
+    return defaultDescription;
+  } catch (error) {
+    return defaultDescription;
   }
 }
 
@@ -86,11 +105,12 @@ export const metadata = async () => {
     }
     
     console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
+    console.log(`🔧 [metadata] Base URL usada:`, getBaseUrlWithLogs());
     
-    return {
-      title: bannerImage.images[0].title || defaultSeoData.title,
-      description: seoDescription,
-      keywords: bannerImage.images[0].buttonText || defaultSeoData.keywords,
+         const seoMetadata = {
+       title: bannerImage.images[0].title || defaultSeoData.title,
+       description: seoDescription,
+       keywords: bannerImage.images[0].buttonText || defaultSeoData.keywords,
       robots: {
         index: true,
         follow: true,
@@ -102,12 +122,12 @@ export const metadata = async () => {
           'max-snippet': -1,
         },
       },
-             openGraph: {
-         title: bannerImage.images[0].title || defaultSeoData.title,
-         description: seoDescription,
-         type: 'website',
-         url: getBaseUrl(),
-         siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
+                      openGraph: {
+           title: bannerImage.images[0].title || defaultSeoData.title,
+           description: seoDescription,
+           type: 'website',
+           url: getBaseUrlWithLogs(),
+           siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
          images: [
            {
              url: bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage,
@@ -123,11 +143,15 @@ export const metadata = async () => {
          description: seoDescription,
          images: [bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage],
        },
-       alternates: {
-         canonical: getBaseUrl(),
-       },
-    };
-  } catch (error) {
+               alternates: {
+          canonical: getBaseUrlWithLogs(),
+        },
+     };
+     
+     console.log('🔧 [metadata] Metadata completo:', JSON.stringify(seoMetadata, null, 2));
+     
+     return seoMetadata;
+   } catch (error) {
     console.error("Error fetching banner data:", error);
     return {
       title: defaultSeoData.title,
@@ -148,7 +172,7 @@ export const metadata = async () => {
          title: defaultSeoData.title,
          description: defaultSeoData.description,
          type: 'website',
-         url: getBaseUrl(),
+         url: getBaseUrlWithLogs(),
          siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
          images: [
            {
@@ -166,15 +190,19 @@ export const metadata = async () => {
          images: [defaultSeoData.ogImage],
        },
        alternates: {
-         canonical: getBaseUrl(),
+         canonical: getBaseUrlWithLogs(),
        },
     };
+    
+    console.log('🔧 [metadata] Metadata fallback:', JSON.stringify(metadata, null, 2));
+    
+    return metadata;
   }
 };
 
 export default async function Page() {
   try {
-    const seoData = await metadata();
+    const seoDescription = await getSeoDescription();
 
     // Cargar configuración del home
     let homeConfig = await fetchHomeConfig();
@@ -186,7 +214,7 @@ export default async function Page() {
       <>
         {/* Párrafo SEO visible para Google - debe coincidir con la meta description */}
         <div className="sr-only">
-          <p>{seoData.description}</p>
+          <p>{seoDescription}</p>
         </div>
         
         <DynamicNavbar />

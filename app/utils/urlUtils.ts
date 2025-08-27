@@ -3,7 +3,7 @@
  * Funciona para todos los clientes sin hardcodear dominios específicos
  */
 export function getBaseUrl(): string {
-  // Si NEXT_PUBLIC_BASE_URL está definido, usarlo
+  // Si NEXT_PUBLIC_BASE_URL está definido, usarlo (prioridad máxima)
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL;
   }
@@ -23,10 +23,39 @@ export function getBaseUrl(): string {
 }
 
 /**
+ * Función para obtener la URL base de manera más robusta
+ * Incluye logs para debugging en Vercel
+ */
+export function getBaseUrlWithLogs(): string {
+  console.log('🔧 [getBaseUrl] NODE_ENV:', process.env.NODE_ENV);
+  console.log('🔧 [getBaseUrl] NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL);
+  console.log('🔧 [getBaseUrl] VERCEL_URL:', process.env.VERCEL_URL);
+  
+  const baseUrl = getBaseUrl();
+  console.log('🔧 [getBaseUrl] Resultado final:', baseUrl);
+  
+  // Verificar que la URL sea absoluta
+  if (!baseUrl.startsWith('http')) {
+    console.error('❌ [getBaseUrl] ERROR: La URL no es absoluta:', baseUrl);
+  } else {
+    console.log('✅ [getBaseUrl] URL es absoluta:', baseUrl);
+  }
+  
+  return baseUrl;
+}
+
+/**
  * Función para construir URLs canónicas
  */
 export function getCanonicalUrl(path: string = ''): string {
   const baseUrl = getBaseUrl();
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${baseUrl}${cleanPath}`;
+  const canonicalUrl = `${baseUrl}${cleanPath}`;
+  
+  console.log('🔧 [getCanonicalUrl] Base URL:', baseUrl);
+  console.log('🔧 [getCanonicalUrl] Path:', path);
+  console.log('🔧 [getCanonicalUrl] Clean path:', cleanPath);
+  console.log('🔧 [getCanonicalUrl] URL canónica final:', canonicalUrl);
+  
+  return canonicalUrl;
 }

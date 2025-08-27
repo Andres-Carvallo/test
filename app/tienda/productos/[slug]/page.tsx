@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
 import ProductDetailClient from "./ProductDetailClient";
-import { getBaseUrl, getCanonicalUrl } from "@/app/utils/urlUtils";
+import { getBaseUrl, getBaseUrlWithLogs, getCanonicalUrl } from "@/app/utils/urlUtils";
 
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
@@ -34,7 +34,15 @@ export async function generateMetadata({ params }: any) {
       };
     }
 
-    const canonicalUrl = getCanonicalUrl(`/tienda/productos/${params.slug}`);
+    // Generar URL canónica de manera más explícita
+    const baseUrl = getBaseUrlWithLogs();
+    const productPath = `/tienda/productos/${params.slug}`;
+    const canonicalUrl = `${baseUrl}${productPath}`;
+    
+    console.log('🔧 [product-metadata] Base URL:', baseUrl);
+    console.log('🔧 [product-metadata] Product path:', productPath);
+    console.log('🔧 [product-metadata] URL canónica generada:', canonicalUrl);
+    console.log('🔧 [product-metadata] ¿Es URL absoluta?', canonicalUrl.startsWith('http'));
     
     // Crear una descripción más atractiva y específica para el producto
     let seoDescription = "Descubre este increíble producto en nuestra tienda.";
@@ -69,7 +77,7 @@ export async function generateMetadata({ params }: any) {
       ? seoDescription.split(/\s+/).slice(0, 10).join(", ")
       : "";
 
-    return {
+    const metadata = {
       title: product.name,
       description: seoDescription,
       keywords: keywords,
@@ -109,6 +117,10 @@ export async function generateMetadata({ params }: any) {
         canonical: canonicalUrl,
       },
     };
+    
+    console.log('🔧 [product-metadata] Metadata completo:', JSON.stringify(metadata, null, 2));
+    
+    return metadata;
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
