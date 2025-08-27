@@ -101,9 +101,9 @@ export const metadata = async () => {
       seoDescription = `${title} - ${text}`.substring(0, 160);
     }
     
-        const baseUrl = getRobustBaseUrl();
-    console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
-    console.log(`🔧 [metadata] Base URL usada:`, baseUrl);
+             const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-ecommerce.pixelup.cl';
+     console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
+     console.log(`🔧 [metadata] Base URL usada:`, baseUrl);
     
           const seoMetadata = {
         title: bannerImage.images[0].title || defaultSeoData.title,
@@ -151,7 +151,7 @@ export const metadata = async () => {
      return seoMetadata;
    } catch (error) {
     console.error("Error fetching banner data:", error);
-    const baseUrl = getRobustBaseUrl();
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-ecommerce.pixelup.cl';
     return {
       title: defaultSeoData.title,
       description: defaultSeoData.description,

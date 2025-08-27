@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: any) {
     }
 
     // Generar URL canónica de manera más explícita
-    const baseUrl = getRobustBaseUrl();
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dev-ecommerce.pixelup.cl';
     const productPath = `/tienda/productos/${params.slug}`;
     const canonicalUrl = `${baseUrl}${productPath}`;
     
