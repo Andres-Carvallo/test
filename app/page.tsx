@@ -34,7 +34,7 @@ import {
   HomeConfig,
 } from "@/app/utils/homeConfig";
 import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
-import { getComponentIdWithFallback } from "@/app/config/componentEnums";
+import { COMPONENT_IDS } from "@/app/config/componentEnums";
 import { getBaseUrl, getBaseUrlWithLogs, getRobustBaseUrl } from "@/app/utils/urlUtils";
 
 export const revalidate = 60; // Revalida cada 60 segundos
@@ -42,14 +42,12 @@ export const revalidate = 60; // Revalida cada 60 segundos
 export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
 
 async function fetchBannerData() {
-  const bannerId = getComponentIdWithFallback('SEO_BANNER');
-  console.log(`🔧 [fetchBannerData] Usando ID del SEO: ${bannerId}`);
+  const bannerId = COMPONENT_IDS.SEO_BANNER();
   
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
     );
-    console.log(`🔧 [fetchBannerData] Datos del banner:`, response.data.banner);
     return response.data.banner;
   } catch (error) {
     console.error(`❌ [fetchBannerData] Error al obtener banner:`, error);
@@ -83,9 +81,7 @@ export const metadata = async () => {
   const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
   
-  console.log('🔧 [metadata] Host detectado:', host);
-  console.log('🔧 [metadata] Protocolo:', protocol);
-  console.log('🔧 [metadata] Base URL generada:', baseUrl);
+
   
   const defaultSeoData = {
     title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
@@ -111,8 +107,7 @@ export const metadata = async () => {
       seoDescription = `${title} - ${text}`.substring(0, 160);
     }
     
-             console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
-     console.log(`🔧 [metadata] Base URL usada:`, baseUrl);
+    
     
           const seoMetadata = {
         title: bannerImage.images[0].title || defaultSeoData.title,
@@ -155,7 +150,6 @@ export const metadata = async () => {
          },
      };
      
-     console.log('🔧 [metadata] Metadata completo:', JSON.stringify(seoMetadata, null, 2));
      
      return seoMetadata;
    } catch (error) {
