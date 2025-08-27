@@ -212,6 +212,9 @@ export enum PIXELUPComponents {
   
   // Logo Edit
   LOGO_EDIT = 'LOGO_EDIT',
+
+  // WhatsApp Config
+  WHATSAPP_CONFIG = 'WHATSAPP_CONFIG',
 }
 
 // ========================================
@@ -229,6 +232,21 @@ export enum CoreComponents {
 // ========================================
 
 export const PIXELUP_COMPONENT_DATA: Record<PIXELUPComponents, ComponentData> = {
+  // WhatsApp Config - Configuración de WhatsApp
+  [PIXELUPComponents.WHATSAPP_CONFIG]: {
+    type: 'contentBlock',
+    jsonStructure: 'simple',
+    envVariable: 'NEXT_PUBLIC_WHATSAPP_CONFIG_CONTENTBLOCK',
+    defaultData: {
+      title: 'Configuración de WhatsApp',
+      contentText: JSON.stringify({
+        isActive: false,
+        phoneNumber: "",
+        message: "Hola, necesito información sobre sus productos"
+      }, null, 2)
+    }
+  },
+
   // SEO - Componente principal con imagen hija
   [PIXELUPComponents.SEO_BANNER]: {
     type: 'banner',
@@ -1159,6 +1177,9 @@ export const CORE_COMPONENT_DATA: Record<CoreComponents, ComponentData> = {
  * Aquí se pueden copiar y pegar todos los IDs generados por el script
  */
 export const COMPONENT_IDS: Record<string, string> = {
+  // WhatsApp Config
+  'WHATSAPP_CONFIG': 'PENDING_ID',
+  
   // SEO
   'SEO_BANNER': 'a8cbd4df-4438-4053-bf0e-d86fe0358776',
   'SEO_BANNER_IMG': 'cb1568c0-df15-40a8-b009-99656d33077f',
@@ -1444,6 +1465,9 @@ const isDevelopment = process.env.NODE_ENV === 'development';
  * Mapeo de IDs para desarrollo
  */
 export const DEVELOPMENT_IDS: Record<string, string> = {
+  // WhatsApp Config
+  'WHATSAPP_CONFIG': '123ebaa3-b59c-439b-82d5-2eb34c32d3e6',
+  
   // SEO
   'SEO_BANNER': '478eee34-12fb-4128-9e32-f84f64ad2d21',
   'SEO_BANNER_IMG': 'd13cc7be-c34c-487b-bf93-a990c1d476f2',
@@ -1543,6 +1567,9 @@ export const DEVELOPMENT_IDS: Record<string, string> = {
  * Aquí puedes copiar y pegar los IDs de producción
  */
 export const PRODUCTION_IDS: Record<string, string> = {
+  // WhatsApp Config
+  'WHATSAPP_CONFIG': 'PROD_WHATSAPP_CONFIG_ID',
+  
   // SEO
   'SEO_BANNER': 'PROD_SEO_BANNER_ID',
   'SEO_BANNER_IMG': 'PROD_SEO_BANNER_IMG_ID',
