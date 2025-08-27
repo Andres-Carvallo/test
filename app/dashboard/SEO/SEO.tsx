@@ -10,8 +10,9 @@ import { getCroppedImg } from "@/lib/cropImage";
 import { 
   PIXELUPComponents, 
   getPIXELUPComponentId, 
-  getPIXELUPComponentData 
-} from "../../../config/componentEnums";
+  getPIXELUPComponentData,
+  getComponentIdWithFallback
+} from "../../config/componentEnums";
 import { useComponentId, useComponentImageId } from "../../../hooks/useComponentId";
 
 const Hero: React.FC = () => {
@@ -47,10 +48,10 @@ const Hero: React.FC = () => {
   const MAX_CHARACTERS = 250;
   const ALERT_CHARACTERS = 154;
 
-  // Usar el hook para obtener los IDs de los componentes
-  const seoBannerId = useComponentId(PIXELUPComponents.SEO_BANNER, 'NEXT_PUBLIC_SEO_BANNER_ID');
-  // Usar el hook para obtener el ID de la imagen hija
-  const seoBannerImageId = useComponentId(PIXELUPComponents.SEO_BANNER_IMG, 'NEXT_PUBLIC_SEO_BANNER_IMGID');
+  // Usar el hook para obtener los IDs de los componentes con fallback
+  const seoBannerId = getComponentIdWithFallback('SEO_BANNER');
+  // Usar el hook para obtener el ID de la imagen hija con fallback
+  const seoBannerImageId = getComponentIdWithFallback('SEO_BANNER_IMG');
 
   // Log para verificar que los IDs se obtienen correctamente
   console.log(`🔧 [SEO Component] IDs obtenidos: Banner=${seoBannerId}, Image=${seoBannerImageId}`);

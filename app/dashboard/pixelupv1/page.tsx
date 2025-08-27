@@ -16,7 +16,7 @@ import {
   isContentBlockComponent, 
   isMixedComponent, 
   getPendingComponents
-} from '@/config/componentEnums';
+} from '@/app/config/componentEnums';
 import { ensureBannerHasImage } from '@/utils/imageUtils';
 
 interface GeneratedId {

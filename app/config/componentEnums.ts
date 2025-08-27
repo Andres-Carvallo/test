@@ -4,7 +4,7 @@
  */
 
 // Importar utilidades de imagen
-import { DEFAULT_BASE64_IMAGE } from '../utils/imageUtils';
+import { DEFAULT_BASE64_IMAGE } from '../../utils/imageUtils';
 
 // ========================================
 // TIPOS ESPECÍFICOS PARA CADA COMPONENTE
@@ -107,7 +107,7 @@ export interface SeoConfig {
 // ========================================
 
 // Re-exportar la interfaz para compatibilidad
-export type { Base64Image } from '../utils/imageUtils';
+export type { Base64Image } from '../../utils/imageUtils';
 
 export interface ComponentData {
   defaultData: any;
@@ -1433,6 +1433,9 @@ export function getComponentsByJsonStructure(structure: string): Array<PIXELUPCo
 
 /**
  * Detecta el entorno actual
+ * - Local: development (usa DEVELOPMENT_IDS)
+ * - Vercel Preview: development (usa DEVELOPMENT_IDS) 
+ * - Vercel Production: production (usa PRODUCTION_IDS)
  */
 const isProduction = process.env.NODE_ENV === 'production';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -1532,6 +1535,8 @@ export const DEVELOPMENT_IDS: Record<string, string> = {
   'POPUP_BANNER': 'PENDING_ID',
   'POPUP_CONTENTBLOCK': 'PENDING_ID'
 };
+
+
 
 /**
  * Mapeo de IDs para producción
@@ -1634,10 +1639,19 @@ export const PRODUCTION_IDS: Record<string, string> = {
  * Función para obtener el ID correcto según el entorno
  */
 export function getComponentIdByEnvironment(component: string): string {
+  console.log(`🔧 [getComponentIdByEnvironment] Componente: ${component}`);
+  console.log(`🔧 [getComponentIdByEnvironment] NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`🔧 [getComponentIdByEnvironment] isProduction: ${isProduction}`);
+  console.log(`🔧 [getComponentIdByEnvironment] isDevelopment: ${isDevelopment}`);
+  
   if (isProduction) {
-    return PRODUCTION_IDS[component] || 'PENDING_ID';
+    const prodId = PRODUCTION_IDS[component] || 'PENDING_ID';
+    console.log(`🔧 [getComponentIdByEnvironment] ID de producción para ${component}: ${prodId}`);
+    return prodId;
   } else {
-    return DEVELOPMENT_IDS[component] || 'PENDING_ID';
+    const devId = DEVELOPMENT_IDS[component] || 'PENDING_ID';
+    console.log(`🔧 [getComponentIdByEnvironment] ID de desarrollo para ${component}: ${devId}`);
+    return devId;
   }
 }
 
@@ -1661,6 +1675,22 @@ export function updateEnvironmentIds(newIds: Record<string, string>): void {
   } else {
     Object.assign(DEVELOPMENT_IDS, newIds);
   }
+}
+
+/**
+ * Función de fallback para usar IDs de desarrollo en producción
+ * Útil cuando los IDs de producción no están configurados
+ */
+export function getComponentIdWithFallback(component: string): string {
+  const envId = getComponentIdByEnvironment(component);
+  
+  // Si el ID del entorno es PENDING_ID o un placeholder, usar el de desarrollo
+  if (envId === 'PENDING_ID' || envId.includes('PROD_') || envId.includes('PLACEHOLDER')) {
+    console.log(`⚠️ [getComponentIdWithFallback] Usando ID de desarrollo como fallback para ${component}`);
+    return DEVELOPMENT_IDS[component] || 'PENDING_ID';
+  }
+  
+  return envId;
 }
 
 

@@ -20,7 +20,7 @@ import {
   isMixedComponent,
   getComponentsByType,
   ComponentData
-} from '../config/componentEnums';
+} from '../app/config/componentEnums';
 
 /**
  * Hook para obtener datos de un componente PIXELUP
