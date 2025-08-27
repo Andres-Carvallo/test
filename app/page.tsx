@@ -37,9 +37,6 @@ import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
 import { getComponentIdWithFallback } from "@/app/config/componentEnums";
 import { getBaseUrl, getBaseUrlWithLogs } from "@/app/utils/urlUtils";
 
-const siteUrl = getBaseUrlWithLogs();
-const canonicalUrl = getBaseUrlWithLogs();
-
 export const revalidate = 60; // Revalida cada 60 segundos
 
 export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
@@ -104,48 +101,49 @@ export const metadata = async () => {
       seoDescription = `${title} - ${text}`.substring(0, 160);
     }
     
+        const baseUrl = getBaseUrlWithLogs();
     console.log(`🔧 [metadata] Meta description optimizada:`, seoDescription);
-    console.log(`🔧 [metadata] Base URL usada:`, getBaseUrlWithLogs());
+    console.log(`🔧 [metadata] Base URL usada:`, baseUrl);
     
-         const seoMetadata = {
-       title: bannerImage.images[0].title || defaultSeoData.title,
-       description: seoDescription,
-       keywords: bannerImage.images[0].buttonText || defaultSeoData.keywords,
-      robots: {
-        index: true,
-        follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          'max-video-preview': -1,
-          'max-image-preview': 'large',
-          'max-snippet': -1,
-        },
-      },
-                      openGraph: {
-           title: bannerImage.images[0].title || defaultSeoData.title,
-           description: seoDescription,
-           type: 'website',
-           url: getBaseUrlWithLogs(),
-           siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
-         images: [
-           {
-             url: bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage,
-             width: 1200,
-             height: 630,
-             alt: bannerImage.images[0].title || defaultSeoData.title,
-           },
-         ],
+          const seoMetadata = {
+        title: bannerImage.images[0].title || defaultSeoData.title,
+        description: seoDescription,
+        keywords: bannerImage.images[0].buttonText || defaultSeoData.keywords,
+       robots: {
+         index: true,
+         follow: true,
+         googleBot: {
+           index: true,
+           follow: true,
+           'max-video-preview': -1,
+           'max-image-preview': 'large',
+           'max-snippet': -1,
+         },
        },
-       twitter: {
-         card: 'summary_large_image',
-         title: bannerImage.images[0].title || defaultSeoData.title,
-         description: seoDescription,
-         images: [bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage],
-       },
-               alternates: {
-          canonical: getBaseUrlWithLogs(),
+                       openGraph: {
+            title: bannerImage.images[0].title || defaultSeoData.title,
+            description: seoDescription,
+            type: 'website',
+            url: baseUrl,
+            siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
+          images: [
+            {
+              url: bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage,
+              width: 1200,
+              height: 630,
+              alt: bannerImage.images[0].title || defaultSeoData.title,
+            },
+          ],
         },
+        twitter: {
+          card: 'summary_large_image',
+          title: bannerImage.images[0].title || defaultSeoData.title,
+          description: seoDescription,
+          images: [bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage],
+        },
+                alternates: {
+           canonical: baseUrl,
+         },
      };
      
      console.log('🔧 [metadata] Metadata completo:', JSON.stringify(seoMetadata, null, 2));
@@ -153,6 +151,7 @@ export const metadata = async () => {
      return seoMetadata;
    } catch (error) {
     console.error("Error fetching banner data:", error);
+    const baseUrl = getBaseUrlWithLogs();
     return {
       title: defaultSeoData.title,
       description: defaultSeoData.description,
@@ -172,7 +171,7 @@ export const metadata = async () => {
          title: defaultSeoData.title,
          description: defaultSeoData.description,
          type: 'website',
-         url: getBaseUrlWithLogs(),
+         url: baseUrl,
          siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
          images: [
            {
@@ -190,13 +189,9 @@ export const metadata = async () => {
          images: [defaultSeoData.ogImage],
        },
        alternates: {
-         canonical: getBaseUrlWithLogs(),
+         canonical: baseUrl,
        },
     };
-    
-    console.log('🔧 [metadata] Metadata fallback:', JSON.stringify(metadata, null, 2));
-    
-    return metadata;
   }
 };
 
