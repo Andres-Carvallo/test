@@ -7,19 +7,12 @@ import Modal from "@/components/Core/Modals/ModalSeo";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
 import imageCompression from "browser-image-compression";
-import { PIXELUPComponents } from "@/app/config/componentEnums";
-import { useComponentId } from "@/hooks/useComponentId";
+import { COMPONENT_IDS } from "@/app/config/componentEnums";
 
 const ContactForm01BO: React.FC = () => {
-  // Obtener los IDs usando hooks en el nivel superior
-  const bannerId = useComponentId(
-    PIXELUPComponents.CONTACT_FORM_BANNER,
-    'NEXT_PUBLIC_CONTACT_FORM_BANNER_ID'
-  );
-  const bannerImageId = useComponentId(
-    PIXELUPComponents.CONTACT_FORM_BANNER_IMG,
-    'NEXT_PUBLIC_CONTACT_FORM_BANNER_IMGID'
-  );
+  // Obtener los IDs usando la nueva estructura
+  const bannerId = COMPONENT_IDS.CONTACT_FORM_BANNER();
+  const bannerImageId = COMPONENT_IDS.CONTACT_FORM_BANNER_IMG();
 
   const [formData, setFormData] = useState<any>({
     formTitle: "Envíanos un mensaje",

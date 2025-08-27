@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
 import toast from "react-hot-toast";
-import { getComponentIdByEnvironment, PIXELUPComponents } from "@/app/config/componentEnums";
+import { COMPONENT_IDS } from "@/app/config/componentEnums";
 
 interface WhatsAppConfig {
   isActive: boolean;
@@ -28,7 +28,7 @@ const WhatsAppConfig: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const contentBlockId = getComponentIdByEnvironment(PIXELUPComponents.WHATSAPP_CONFIG);
+  const contentBlockId = COMPONENT_IDS.WHATSAPP_CONFIG();
 
   const fetchConfig = async () => {
     try {

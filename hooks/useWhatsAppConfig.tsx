@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { getComponentIdByEnvironment, PIXELUPComponents } from "@/app/config/componentEnums";
+import { COMPONENT_IDS } from "@/app/config/componentEnums";
 
 interface WhatsAppConfig {
   isActive: boolean;
@@ -17,7 +17,7 @@ export function useWhatsAppConfig() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const contentBlockId = getComponentIdByEnvironment(PIXELUPComponents.WHATSAPP_CONFIG);
+  const contentBlockId = COMPONENT_IDS.WHATSAPP_CONFIG();
 
   const fetchConfig = async () => {
     try {

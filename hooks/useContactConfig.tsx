@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useComponentId } from '@/hooks/useComponentId';
-import { PIXELUPComponents, getComponentIdWithFallback } from '@/app/config/componentEnums';
+import { COMPONENT_IDS } from '@/app/config/componentEnums';
 
 interface ContactConfig {
   formTitle: string;
@@ -36,7 +35,7 @@ export const useContactConfig = () => {
       setLoading(true);
       setError(null);
 
-      const bannerId = getComponentIdWithFallback('CONTACT_FORM_BANNER');
+      const bannerId = COMPONENT_IDS.CONTACT_FORM_BANNER();
 
       // Obtener datos del banner base
       const bannerResponse = await fetch(

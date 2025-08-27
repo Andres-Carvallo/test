@@ -8,12 +8,8 @@ import imageCompression from "browser-image-compression";
 import Modal from "@/components/Core/Modals/ModalSeo";
 import { getCroppedImg } from "@/lib/cropImage";
 import { 
-  PIXELUPComponents, 
-  getPIXELUPComponentId, 
-  getPIXELUPComponentData,
-  getComponentIdWithFallback
-} from "../../config/componentEnums";
-import { useComponentId, useComponentImageId } from "../../../hooks/useComponentId";
+  COMPONENT_IDS
+} from "@/app/config/componentEnums";
 
 const Hero: React.FC = () => {
   const [bannerData, setBannerData] = useState<any | null>(null);
@@ -49,9 +45,9 @@ const Hero: React.FC = () => {
   const ALERT_CHARACTERS = 154;
 
   // Usar el hook para obtener los IDs de los componentes con fallback
-  const seoBannerId = getComponentIdWithFallback('SEO_BANNER');
+  const seoBannerId = COMPONENT_IDS.SEO_BANNER();
   // Usar el hook para obtener el ID de la imagen hija con fallback
-  const seoBannerImageId = getComponentIdWithFallback('SEO_BANNER_IMG');
+  const seoBannerImageId = COMPONENT_IDS.SEO_BANNER_IMG();
 
   // Log para verificar que los IDs se obtienen correctamente
   console.log(`🔧 [SEO Component] IDs obtenidos: Banner=${seoBannerId}, Image=${seoBannerImageId}`);

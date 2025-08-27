@@ -7,23 +7,43 @@ import {
   PIXELUPComponents, 
   CoreComponents, 
   PIXELUP_COMPONENT_DATA, 
-  CORE_COMPONENT_DATA, 
-  getPIXELUPComponentData, 
-  getCoreComponentData, 
-  getPIXELUPComponentDefaultData, 
-  getCoreComponentDefaultData, 
-  isBannerComponent, 
-  isContentBlockComponent, 
-  isMixedComponent, 
-  getPendingComponents
+  CORE_COMPONENT_DATA
 } from '@/app/config/componentEnums';
 import { ensureBannerHasImage } from '@/utils/imageUtils';
+
+// Función para obtener componentes pendientes con la nueva estructura
+const getPendingComponents = () => {
+  const pending: Array<{ component: PIXELUPComponents | CoreComponents; data: any }> = [];
+  
+  // Revisar componentes PIXELUP
+  Object.entries(PIXELUP_COMPONENT_DATA).forEach(([component, data]) => {
+    // Excluir componentes _IMG ya que se crean como imágenes hijas
+    if (!component.includes('_IMG')) {
+      pending.push({ 
+        component: component as PIXELUPComponents, 
+        data 
+      });
+    }
+  });
+  
+  // Revisar componentes Core
+  Object.entries(CORE_COMPONENT_DATA).forEach(([component, data]) => {
+    // Excluir componentes _IMG ya que se crean como imágenes hijas
+    if (!component.includes('_IMG')) {
+      pending.push({ 
+        component: component as CoreComponents, 
+        data 
+      });
+    }
+  });
+  
+  return pending;
+};
 
 interface GeneratedId {
   component: string;
   type: 'banner' | 'contentBlock' | 'image';
       id: string;
-  envVariable?: string;
 }
 
 interface TestResult {
@@ -75,15 +95,13 @@ const ContentBlockForm: React.FC = () => {
 
     try {
       const componentData = selectedComponent in PIXELUP_COMPONENT_DATA
-        ? getPIXELUPComponentData(selectedComponent as PIXELUPComponents)
-        : getCoreComponentData(selectedComponent as CoreComponents);
+        ? PIXELUP_COMPONENT_DATA[selectedComponent as PIXELUPComponents]
+        : CORE_COMPONENT_DATA[selectedComponent as CoreComponents];
 
       console.log(`Creando componente: ${selectedComponent}`);
       console.log('Datos del componente:', {
         type: componentData.type,
-        needsImage: componentData.needsImage,
-        hasImageData: !!componentData.imageData,
-        imageEnvVariable: componentData.imageEnvVariable
+        needsImage: componentData.needsImage
       });
       console.log('Datos por defecto:', componentData.defaultData);
 
@@ -110,64 +128,62 @@ const ContentBlockForm: React.FC = () => {
           const newId: GeneratedId = {
             component: selectedComponent,
             type: 'banner',
-            id: bannerId,
-            envVariable: componentData.envVariable
+            id: bannerId
           };
           
           setGeneratedIds(prev => [...prev, newId]);
           console.log(`✅ Banner creado exitosamente con ID: ${bannerId}`);
 
-          // Si el componente necesita una imagen hija, crearla
+          // Si el componente necesita una imagen hija, crear el componente _IMG correspondiente
           console.log(`🔍 Verificando imagen hija para ${selectedComponent}:`, {
-            needsImage: componentData.needsImage,
-            hasImageData: !!componentData.imageData,
-            imageEnvVariable: componentData.imageEnvVariable
+            needsImage: componentData.needsImage
           });
           
-          console.log(`🔍 Condición de imagen hija:`, {
-            needsImage: componentData.needsImage,
-            hasImageData: !!componentData.imageData,
-            condition: componentData.needsImage && componentData.imageData
-          });
-          
-          if (componentData.needsImage && componentData.imageData) {
+          if (componentData.needsImage) {
             try {
               console.log(`🔄 Intentando crear imagen hija para ${selectedComponent}...`);
               
-              // Crear la imagen hija con los datos completos
-              const imageData = {
-                ...componentData.imageData, // Ya contiene todos los campos necesarios
-                siteId: siteId
-              };
-
-              console.log(`📤 Datos de imagen hija a enviar:`, imageData);
-
-              const imageResponse = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${siteId}`,
-                imageData,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                  }
-                }
-              );
-
-              console.log(`📥 Respuesta de la API para imagen hija:`, imageResponse.data);
-
-              if (imageResponse.data && imageResponse.data.banner && imageResponse.data.banner.id) {
-                const imageId = imageResponse.data.banner.id;
-                const imageIdObj: GeneratedId = {
-                  component: `${selectedComponent}_IMAGE`,
-                  type: 'image',
-                  id: imageId,
-                  envVariable: componentData.imageEnvVariable
-                };
+              // Buscar el componente _IMG correspondiente
+              const imageComponentName = `${selectedComponent}_IMG`;
+              const imageComponentData = PIXELUP_COMPONENT_DATA[imageComponentName];
+              
+              if (imageComponentData) {
+                console.log(`📤 Creando componente de imagen: ${imageComponentName}`);
                 
-                setGeneratedIds(prev => [...prev, imageIdObj]);
-                console.log(`✅ Imagen hija creada para ${selectedComponent} con ID: ${imageId}`);
+                // Crear la imagen hija como imagen del banner principal
+                const imageData = {
+                  ...imageComponentData.defaultData,
+                  siteId: siteId
+                };
+
+                const imageResponse = await axios.post(
+                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${siteId}`,
+                  imageData,
+                  {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json'
+                    }
+                  }
+                );
+
+                console.log(`📥 Respuesta de la API para imagen hija:`, imageResponse.data);
+
+                if (imageResponse.data && imageResponse.data.banner && imageResponse.data.banner.id) {
+                  const imageId = imageResponse.data.banner.id;
+                  const imageIdObj: GeneratedId = {
+                    component: imageComponentName,
+                    type: 'image',
+                    id: imageId
+                  };
+                  
+                  setGeneratedIds(prev => [...prev, imageIdObj]);
+                  console.log(`✅ Imagen hija creada para ${selectedComponent} con ID: ${imageId}`);
+                } else {
+                  console.error(`❌ Respuesta de imagen hija no contiene ID válido:`, imageResponse.data);
+                }
               } else {
-                console.error(`❌ Respuesta de imagen hija no contiene ID válido:`, imageResponse.data);
+                console.warn(`⚠️ No se encontró componente de imagen para ${selectedComponent}`);
               }
             } catch (imageError: any) {
               console.error(`❌ Error al crear imagen hija para ${selectedComponent}:`, imageError);
@@ -202,8 +218,7 @@ const ContentBlockForm: React.FC = () => {
           const newId: GeneratedId = {
             component: selectedComponent,
             type: 'contentBlock',
-            id: contentBlockId,
-            envVariable: componentData.envVariable
+            id: contentBlockId
           };
           
           setGeneratedIds(prev => [...prev, newId]);
@@ -237,49 +252,13 @@ const ContentBlockForm: React.FC = () => {
             const newId: GeneratedId = {
               component: `${selectedComponent}_BANNER`,
               type: 'banner',
-              id: bannerId,
-              envVariable: componentData.envVariable
+              id: bannerId
             };
             
             setGeneratedIds(prev => [...prev, newId]);
             console.log(`✅ Banner creado exitosamente con ID: ${bannerId}`);
 
-                        // Si el componente necesita una imagen hija, crearla
-            if (componentData.needsImage && componentData.imageData) {
-              try {
-                // Crear la imagen hija con los datos completos
-                const imageData = {
-                  ...componentData.imageData, // Ya contiene todos los campos necesarios
-                  siteId: siteId
-                };
-
-                const imageResponse = await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${siteId}`,
-                  imageData,
-                  {
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json'
-                    }
-                  }
-                );
-
-                if (imageResponse.data && imageResponse.data.image && imageResponse.data.image.id) {
-                  const imageId = imageResponse.data.image.id;
-                  const imageIdObj: GeneratedId = {
-                    component: `${selectedComponent}_IMAGE`,
-                    type: 'image',
-                    id: imageId,
-                    envVariable: componentData.imageEnvVariable
-                  };
-                  
-                  setGeneratedIds(prev => [...prev, imageIdObj]);
-                  console.log(`✅ Imagen hija creada para ${selectedComponent} con ID: ${imageId}`);
-                }
-              } catch (imageError) {
-                console.error(`Error al crear imagen hija para ${selectedComponent}:`, imageError);
-              }
-            }
+            
           }
         }
 
@@ -303,8 +282,7 @@ const ContentBlockForm: React.FC = () => {
             const newId: GeneratedId = {
               component: `${selectedComponent}_CONTENTBLOCK`,
               type: 'contentBlock',
-              id: contentBlockId,
-              envVariable: componentData.envVariable
+              id: contentBlockId
             };
             
             setGeneratedIds(prev => [...prev, newId]);
@@ -367,48 +345,58 @@ const ContentBlockForm: React.FC = () => {
             nuevosIds.push({
               component: component,
               type: 'banner',
-              id: bannerId,
-              envVariable: data.envVariable
+              id: bannerId
             });
             
             console.log(`✅ ${component} creado con ID: ${bannerId}`);
 
-                        // Si el componente necesita una imagen hija, crearla
+                        // Si el componente necesita una imagen hija, crear el componente _IMG correspondiente
             console.log(`🔍 Verificando imagen hija para ${component}:`, {
-              needsImage: data.needsImage,
-              hasImageData: !!data.imageData,
-              imageEnvVariable: data.imageEnvVariable
+              needsImage: data.needsImage
             });
             
-            if (data.needsImage && data.imageData) {
+            if (data.needsImage) {
               try {
-                // Crear la imagen hija con los datos completos
-                const imageData = {
-                  ...data.imageData, // Ya contiene todos los campos necesarios
-                  siteId: siteId
-                };
-
-                const imageResponse = await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${siteId}`,
-                  imageData,
-                  {
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json'
-                    }
-                  }
-                );
-
-                if (imageResponse.data && imageResponse.data.image && imageResponse.data.image.id) {
-                  const imageId = imageResponse.data.image.id;
-                  nuevosIds.push({
-                    component: `${component}_IMAGE`,
-                    type: 'image',
-                    id: imageId,
-                    envVariable: data.imageEnvVariable
-                  });
+                console.log(`🔄 Intentando crear imagen hija para ${component}...`);
+                
+                // Buscar el componente _IMG correspondiente
+                const imageComponentName = `${component}_IMG`;
+                const imageComponentData = PIXELUP_COMPONENT_DATA[imageComponentName];
+                
+                if (imageComponentData) {
+                  console.log(`📤 Creando componente de imagen: ${imageComponentName}`);
                   
-                  console.log(`✅ Imagen hija creada para ${component} con ID: ${imageId}`);
+                  // Crear la imagen hija como imagen del banner principal
+                  const imageData = {
+                    ...imageComponentData.defaultData,
+                    siteId: siteId
+                  };
+
+                  const imageResponse = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${siteId}`,
+                    imageData,
+                    {
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                      }
+                    }
+                  );
+
+                  if (imageResponse.data && imageResponse.data.banner && imageResponse.data.banner.id) {
+                    const imageId = imageResponse.data.banner.id;
+                    nuevosIds.push({
+                      component: imageComponentName,
+                      type: 'image',
+                      id: imageId
+                    });
+                    
+                    console.log(`✅ Imagen hija creada para ${component} con ID: ${imageId}`);
+                  } else {
+                    console.error(`❌ Respuesta de imagen hija no contiene ID válido:`, imageResponse.data);
+                  }
+                } else {
+                  console.warn(`⚠️ No se encontró componente de imagen para ${component}`);
                 }
               } catch (imageError) {
                 console.error(`Error al crear imagen hija para ${component}:`, imageError);
@@ -436,8 +424,7 @@ const ContentBlockForm: React.FC = () => {
             nuevosIds.push({
               component: component,
               type: 'contentBlock',
-              id: contentBlockId,
-              envVariable: data.envVariable
+              id: contentBlockId
             });
             
             console.log(`✅ ${component} creado con ID: ${contentBlockId}`);
@@ -492,15 +479,63 @@ const ContentBlockForm: React.FC = () => {
           );
 
           if (response.data && response.data.banner && response.data.banner.id) {
-          const bannerId = response.data.banner.id;
-          nuevosIds.push({
+            const bannerId = response.data.banner.id;
+            nuevosIds.push({
               component: component,
               type: 'banner',
-            id: bannerId,
-              envVariable: data.envVariable
+              id: bannerId
             });
             
             console.log(`✅ ${component} creado con ID: ${bannerId} para sitio ${customSiteId}`);
+
+            // Si el componente necesita una imagen hija, crear el componente _IMG correspondiente
+            if (data.needsImage) {
+              try {
+                console.log(`🔄 Intentando crear imagen hija para ${component}...`);
+                
+                // Buscar el componente _IMG correspondiente
+                const imageComponentName = `${component}_IMG`;
+                const imageComponentData = PIXELUP_COMPONENT_DATA[imageComponentName];
+                
+                if (imageComponentData) {
+                  console.log(`📤 Creando componente de imagen: ${imageComponentName}`);
+                  
+                  // Crear la imagen hija como imagen del banner principal
+                  const imageData = {
+                    ...imageComponentData.defaultData,
+                    siteId: customSiteId
+                  };
+
+                  const imageResponse = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/banners/${bannerId}/images?siteId=${customSiteId}`,
+                    imageData,
+                    {
+                      headers: {
+                        'Authorization': `Bearer ${customToken}`,
+                        'Content-Type': 'application/json'
+                      }
+                    }
+                  );
+
+                  if (imageResponse.data && imageResponse.data.banner && imageResponse.data.banner.id) {
+                    const imageId = imageResponse.data.banner.id;
+                    nuevosIds.push({
+                      component: imageComponentName,
+                      type: 'image',
+                      id: imageId
+                    });
+                    
+                    console.log(`✅ Imagen hija creada para ${component} con ID: ${imageId} para sitio ${customSiteId}`);
+                  } else {
+                    console.error(`❌ Respuesta de imagen hija no contiene ID válido:`, imageResponse.data);
+                  }
+                } else {
+                  console.warn(`⚠️ No se encontró componente de imagen para ${component}`);
+                }
+              } catch (imageError) {
+                console.error(`Error al crear imagen hija para ${component}:`, imageError);
+              }
+            }
           }
 
         } else if (data.type === 'contentBlock') {
@@ -520,12 +555,11 @@ const ContentBlockForm: React.FC = () => {
 
           if (response.data && response.data.contentBlock && response.data.contentBlock.id) {
             const contentBlockId = response.data.contentBlock.id;
-          nuevosIds.push({
-              component: component,
-              type: 'contentBlock',
-              id: contentBlockId,
-              envVariable: data.envVariable
-            });
+                    nuevosIds.push({
+            component: component,
+            type: 'contentBlock',
+            id: contentBlockId
+          });
             
             console.log(`✅ ${component} creado con ID: ${contentBlockId} para sitio ${customSiteId}`);
           }
@@ -549,38 +583,14 @@ const ContentBlockForm: React.FC = () => {
   };
 
   const copiarIdsParaEnums = () => {
-    // Agrupar por tipo de componente
-    const bannerIds = generatedIds.filter(id => id.type === 'banner');
-    const contentBlockIds = generatedIds.filter(id => id.type === 'contentBlock');
+    let textToCopy = '// Formato para copiar y pegar directamente en COMPONENT_IDS:\n\n';
     
-    let textToCopy = '// IDs generados para actualizar en config/componentEnums.ts\n\n';
-    
-    // IDs de Banners
-    if (bannerIds.length > 0) {
-      textToCopy += '// BANNERS\n';
-      bannerIds.forEach(id => {
-        textToCopy += `${id.component}: '${id.id}',\n`;
-      });
-      textToCopy += '\n';
-    }
-    
-    // IDs de Content Blocks
-    if (contentBlockIds.length > 0) {
-      textToCopy += '// CONTENT BLOCKS\n';
-      contentBlockIds.forEach(id => {
-        textToCopy += `${id.component}: '${id.id}',\n`;
-      });
-      textToCopy += '\n';
-    }
-    
-    // Lista completa para referencia
-    textToCopy += '// LISTA COMPLETA\n';
     generatedIds.forEach(id => {
-      textToCopy += `${id.component}: '${id.id}', // ${id.type}\n`;
+      textToCopy += `'${id.component}': () => isProduction ? 'PROD_${id.component}_ID' : '${id.id}',\n`;
     });
     
     navigator.clipboard.writeText(textToCopy).then(() => {
-      alert('IDs copiados al portapapeles. Pega en config/componentEnums.ts');
+      alert('Formato para COMPONENT_IDS copiado al portapapeles');
     }).catch(() => {
       // Fallback para navegadores que no soportan clipboard API
       const textArea = document.createElement('textarea');
@@ -589,7 +599,7 @@ const ContentBlockForm: React.FC = () => {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('IDs copiados al portapapeles. Pega en config/componentEnums.ts');
+      alert('Formato para COMPONENT_IDS copiado al portapapeles');
     });
   };
 
@@ -614,19 +624,7 @@ const ContentBlockForm: React.FC = () => {
     textToCopy += '// ========================================\n\n';
     
     generatedIds.forEach(id => {
-      const componentData = id.component in PIXELUP_COMPONENT_DATA
-        ? getPIXELUPComponentData(id.component as PIXELUPComponents)
-        : getCoreComponentData(id.component as CoreComponents);
-      
-      textToCopy += `[PIXELUPComponents.${id.component}]: {\n`;
-      textToCopy += `    id: '${id.id}', // Generado via API\n`;
-      textToCopy += `    type: '${componentData.type}',\n`;
-      textToCopy += `    jsonStructure: '${componentData.jsonStructure || 'simple'}',\n`;
-      textToCopy += `    envVariable: '${componentData.envVariable || 'N/A'}',\n`;
-      textToCopy += `    defaultData: {\n`;
-      textToCopy += `      // ... mantener los datos por defecto existentes\n`;
-      textToCopy += `    }\n`;
-      textToCopy += `  },\n\n`;
+      textToCopy += `'${id.component}': () => isProduction ? 'PROD_${id.component}_ID' : '${id.id}',\n\n`;
     });
     
     // Lista simple para referencia rápida
@@ -655,11 +653,14 @@ const ContentBlockForm: React.FC = () => {
   };
 
   const copiarIdsSimples = () => {
-    const simpleIds = generatedIds.map(id => `${id.component}: '${id.id}'`).join(',\n');
-    const textToCopy = `// IDs simples para copiar y pegar\n\n${simpleIds}`;
+    let textToCopy = '// Formato para copiar y pegar directamente en COMPONENT_IDS:\n\n';
+    
+    generatedIds.forEach(id => {
+      textToCopy += `'${id.component}': () => isProduction ? 'PROD_${id.component}_ID' : '${id.id}',\n`;
+    });
     
     navigator.clipboard.writeText(textToCopy).then(() => {
-      alert('IDs simples copiados al portapapeles');
+      alert('Formato para COMPONENT_IDS copiado al portapapeles');
     }).catch(() => {
       const textArea = document.createElement('textarea');
       textArea.value = textToCopy;
@@ -667,7 +668,7 @@ const ContentBlockForm: React.FC = () => {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('IDs simples copiados al portapapeles');
+      alert('Formato para COMPONENT_IDS copiado al portapapeles');
     });
   };
 
@@ -680,8 +681,7 @@ const ContentBlockForm: React.FC = () => {
     textToCopy += '// Copia estas referencias y pégalas en el script:\n\n';
     
     generatedIds.forEach(id => {
-      const enumType = id.component in PIXELUP_COMPONENT_DATA ? 'PIXELUPComponents' : 'CoreComponents';
-      textToCopy += `${enumType}.${id.component},\n`;
+      textToCopy += `'${id.component}',\n`;
     });
     
     textToCopy += '\n// ========================================\n';
@@ -690,8 +690,7 @@ const ContentBlockForm: React.FC = () => {
     
     textToCopy += 'const componentesParaGenerar = [\n';
     generatedIds.forEach(id => {
-      const enumType = id.component in PIXELUP_COMPONENT_DATA ? 'PIXELUPComponents' : 'CoreComponents';
-      textToCopy += `  ${enumType}.${id.component},\n`;
+      textToCopy += `  '${id.component}',\n`;
     });
     textToCopy += '];\n';
     
@@ -728,7 +727,7 @@ const ContentBlockForm: React.FC = () => {
     textToCopy += '// ========================================\n\n';
     
     generatedIds.forEach(id => {
-      textToCopy += `  '${id.component}': '${id.id}',\n`;
+      textToCopy += `  '${id.component}': () => isProduction ? 'PROD_${id.component}_ID' : '${id.id}',\n`;
     });
     
     textToCopy += '\n// ========================================\n';
@@ -738,7 +737,7 @@ const ContentBlockForm: React.FC = () => {
     textToCopy += '// Copiar y pegar esto en la consola del navegador:\n';
     textToCopy += `updateEnvironmentIds({\n`;
     generatedIds.forEach(id => {
-      textToCopy += `  '${id.component}': '${id.id}',\n`;
+      textToCopy += `  '${id.component}': () => isProduction ? 'PROD_${id.component}_ID' : '${id.id}',\n`;
     });
     textToCopy += '});\n';
     
@@ -982,8 +981,7 @@ const ContentBlockForm: React.FC = () => {
     textToCopy += '// ========================================\n\n';
     
     generatedIds.forEach(id => {
-      const enumType = id.component in PIXELUP_COMPONENT_DATA ? 'PIXELUPComponents' : 'CoreComponents';
-      textToCopy += `id: ${enumType}.${id.component}, → id: '${id.id}',\n`;
+      textToCopy += `'${id.component}': () => isProduction ? 'PROD_${id.component}_ID' : '${id.id}',\n`;
     });
     
     textToCopy += '\n// ========================================\n';
@@ -991,9 +989,9 @@ const ContentBlockForm: React.FC = () => {
     textToCopy += '// ========================================\n\n';
     
     generatedIds.forEach(id => {
-      const enumType = id.component in PIXELUP_COMPONENT_DATA ? 'PIXELUPComponents' : 'CoreComponents';
-      textToCopy += `// Buscar: id: ${enumType}.${id.component},\n`;
-      textToCopy += `// Reemplazar con: id: '${id.id}',\n\n`;
+      textToCopy += `// Buscar: '${id.component}': {\n`;
+      textToCopy += `// Reemplazar con: '${id.component}': {\n`;
+      textToCopy += `//   dev: '${id.id}',\n\n`;
     });
     
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -1112,27 +1110,27 @@ const ContentBlockForm: React.FC = () => {
               >
                 <option value="">Selecciona un componente...</option>
                 <optgroup label="Componentes PIXELUP">
-                  {Object.entries(PIXELUPComponents)
-                    .filter(([key, value]) => !key.includes('_IMG')) // Filtrar componentes _IMG
-                    .map(([key, value]) => {
-                      const componentData = PIXELUP_COMPONENT_DATA[value as PIXELUPComponents];
+                  {Object.keys(PIXELUP_COMPONENT_DATA)
+                    .filter(key => !key.includes('_IMG')) // Filtrar componentes _IMG
+                    .map((key) => {
+                      const componentData = PIXELUP_COMPONENT_DATA[key];
                       const hasImage = componentData?.needsImage;
                       return (
-                        <option key={value} value={value}>
-                          {key.replace(/_/g, ' ')} {value !== key ? `(${value})` : ''} {hasImage ? '🖼️' : ''}
+                        <option key={key} value={key}>
+                          {key.replace(/_/g, ' ')} {hasImage ? '🖼️' : ''}
                         </option>
                       );
                     })}
                 </optgroup>
                 <optgroup label="Componentes Core">
-                  {Object.entries(CoreComponents)
-                    .filter(([key, value]) => !key.includes('_IMG')) // Filtrar componentes _IMG
-                    .map(([key, value]) => {
-                      const componentData = CORE_COMPONENT_DATA[value as CoreComponents];
+                  {Object.keys(CORE_COMPONENT_DATA)
+                    .filter(key => !key.includes('_IMG')) // Filtrar componentes _IMG
+                    .map((key) => {
+                      const componentData = CORE_COMPONENT_DATA[key as CoreComponents];
                       const hasImage = componentData?.needsImage;
                       return (
-                        <option key={value} value={value}>
-                          {key.replace(/_/g, ' ')} {value !== key ? `(${value})` : ''} {hasImage ? '🖼️' : ''}
+                        <option key={key} value={key}>
+                          {key.replace(/_/g, ' ')} {hasImage ? '🖼️' : ''}
                         </option>
                       );
                     })}
@@ -1147,8 +1145,8 @@ const ContentBlockForm: React.FC = () => {
                 {/* Información de imagen hija */}
                 {(() => {
                   const componentData = selectedComponent in PIXELUP_COMPONENT_DATA
-                    ? getPIXELUPComponentData(selectedComponent as PIXELUPComponents)
-                    : getCoreComponentData(selectedComponent as CoreComponents);
+                    ? PIXELUP_COMPONENT_DATA[selectedComponent as PIXELUPComponents]
+                    : CORE_COMPONENT_DATA[selectedComponent as CoreComponents];
                   
                   if (componentData?.needsImage) {
                     return (
@@ -1168,8 +1166,8 @@ const ContentBlockForm: React.FC = () => {
                 <pre className="text-sm bg-gray-100 p-2 rounded overflow-auto max-h-40">
                   {JSON.stringify(
                     selectedComponent in PIXELUP_COMPONENT_DATA
-                      ? getPIXELUPComponentDefaultData(selectedComponent as PIXELUPComponents)
-                      : getCoreComponentDefaultData(selectedComponent as CoreComponents),
+                      ? PIXELUP_COMPONENT_DATA[selectedComponent as PIXELUPComponents].defaultData
+                      : CORE_COMPONENT_DATA[selectedComponent as CoreComponents].defaultData,
                     null,
                     2
                   )}
@@ -1290,7 +1288,6 @@ const ContentBlockForm: React.FC = () => {
 {generatedIds.map((id, index) => 
 `${index + 1}. ${id.component} (${id.type.toUpperCase()})
    ID: ${id.id}
-   Variable: ${id.envVariable || 'N/A'}
 `).join('\n')}
                </pre>
             </div>
@@ -1433,9 +1430,10 @@ const ContentBlockForm: React.FC = () => {
       <div className="bg-gray-100 p-4 rounded-lg mt-6">
         <h3 className="text-lg font-semibold mb-2">ℹ️ Información del Sistema</h3>
         <div className="text-sm space-y-1">
-          <p><strong>Componentes PIXELUP:</strong> {Object.keys(PIXELUP_COMPONENT_DATA).length}</p>
-          <p><strong>Componentes Core:</strong> {Object.keys(CORE_COMPONENT_DATA).length}</p>
-          <p><strong>Variables mapeadas:</strong> 0 (sistema simplificado)</p>
+          <p><strong>Componentes PIXELUP:</strong> {Object.keys(PIXELUP_COMPONENT_DATA).filter(c => !c.includes('_IMG')).length} (excluyendo _IMG)</p>
+          <p><strong>Componentes Core:</strong> {Object.keys(CORE_COMPONENT_DATA).filter(c => !c.includes('_IMG')).length} (excluyendo _IMG)</p>
+          <p><strong>Componentes _IMG:</strong> {Object.keys(PIXELUP_COMPONENT_DATA).filter(c => c.includes('_IMG')).length} (creados como imágenes hijas)</p>
+          <p><strong>Sistema de IDs:</strong> Funciones con condicional dev/prod</p>
           <p><strong>Componentes pendientes:</strong> {pendingComponents.length}</p>
           <p><strong>IDs generados en sesión:</strong> {generatedIds.length}</p>
         </div>
