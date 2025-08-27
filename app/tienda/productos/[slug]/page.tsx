@@ -40,7 +40,21 @@ export async function generateMetadata({ params }: any) {
     let seoDescription = "Descubre este increíble producto en nuestra tienda.";
     
     if (product.description) {
-      const cleanDescription = product.description.replace(/(<([^>]+)>)/gi, "").trim();
+      let cleanDescription = product.description;
+      
+      // Intentar parsear JSON si la descripción está en formato JSON
+      try {
+        const parsedDesc = JSON.parse(product.description);
+        if (parsedDesc.content) {
+          cleanDescription = parsedDesc.content;
+        }
+      } catch (e) {
+        // Si no es JSON válido, usar la descripción tal como está
+        cleanDescription = product.description;
+      }
+      
+      // Limpiar HTML tags
+      cleanDescription = cleanDescription.replace(/(<([^>]+)>)/gi, "").trim();
       
       // Crear una descripción que incluya el nombre del producto y la descripción
       const productName = product.name || '';
@@ -73,7 +87,7 @@ export async function generateMetadata({ params }: any) {
       openGraph: {
         title: product.name,
         description: seoDescription,
-        type: 'product',
+        type: 'website',
         url: canonicalUrl,
         siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
         images: [
@@ -149,6 +163,33 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
       notFound();
     }
 
+    // Crear la descripción SEO para el párrafo visible
+    let seoDescription = "Descubre este increíble producto en nuestra tienda.";
+    
+    if (product.description) {
+      let cleanDescription = product.description;
+      
+      // Intentar parsear JSON si la descripción está en formato JSON
+      try {
+        const parsedDesc = JSON.parse(product.description);
+        if (parsedDesc.content) {
+          cleanDescription = parsedDesc.content;
+        }
+      } catch (e) {
+        // Si no es JSON válido, usar la descripción tal como está
+        cleanDescription = product.description;
+      }
+      
+      // Limpiar HTML tags
+      cleanDescription = cleanDescription.replace(/(<([^>]+)>)/gi, "").trim();
+      
+      // Crear una descripción que incluya el nombre del producto y la descripción
+      const productName = product.name || '';
+      const description = cleanDescription.length > 120 ? cleanDescription.substring(0, 120) + '...' : cleanDescription;
+      
+      seoDescription = `${productName} - ${description}`.substring(0, 160);
+    }
+
     // Obtener los detalles completos del producto incluyendo atributos
     const productData = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${product.id}/skus?siteId=${siteId}`,
@@ -199,7 +240,7 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
       <>
         {/* Párrafo SEO visible para Google - debe coincidir con la meta description */}
         <div className="sr-only">
-          <p>{`${product.name} - ${product.description ? product.description.replace(/(<([^>]+)>)/gi, "").trim() : "Descubre este increíble producto en nuestra tienda."}`}</p>
+          <p>{seoDescription}</p>
         </div>
 
         {/* 
