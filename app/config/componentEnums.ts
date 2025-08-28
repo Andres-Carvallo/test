@@ -30,11 +30,12 @@ export const COMPONENT_IDS = {
   
 
 
-'SEO_BANNER': () => isProduction ? 'PROD_SEO_BANNER_ID' : 'd975bfcc-af37-4a13-8507-a7b55ae635cf',
-'SEO_BANNER_IMG': () => isProduction ? 'PROD_SEO_BANNER_IMG_ID' : '0017686c-59df-4c24-bd68-f5b723bc2de7',
+'SEO_BANNER': () => isProduction ? 'a049ec19-dd59-45dd-9e8a-2b1dd397d8d0' : '0edbeadf-d106-447a-8c79-05496418f6c4',
+'SEO_BANNER_IMG': () => isProduction ? '5ea53ed2-9187-4710-a786-d359e500edc9' : '9982b08e-9c3d-4ac8-9cd1-57c569cadfbd',
 
 
-  
+
+
 
 
 
