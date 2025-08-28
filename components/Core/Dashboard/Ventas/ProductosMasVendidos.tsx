@@ -125,36 +125,36 @@ const ProductosMasVendidos: React.FC = () => {
       case 2:
         return "🥉";
       default:
-        return `${index + 1}°`;
+        return `${index + 1}`;
     }
   };
 
   const getRankColor = (index: number) => {
     switch (index) {
       case 0:
-        return "from-yellow-400 to-amber-500";
+        return "bg-amber-100 border-amber-200 text-amber-700";
       case 1:
-        return "from-gray-300 to-gray-400";
+        return "bg-gray-100 border-gray-200 text-gray-700";
       case 2:
-        return "from-amber-600 to-orange-600";
+        return "bg-orange-100 border-orange-200 text-orange-700";
       default:
-        return "from-blue-400 to-indigo-500";
+        return "bg-blue-100 border-blue-200 text-blue-700";
     }
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="p-8">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
-                  className="flex items-center space-x-4"
+                  className="flex items-center space-x-3"
                 >
-                  <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                     <div className="h-3 bg-gray-200 rounded w-1/2"></div>
@@ -169,13 +169,13 @@ const ProductosMasVendidos: React.FC = () => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-50 to-red-50 px-8 py-6">
-        <div className="flex items-center mb-6">
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4">
+      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center mb-4">
+          <div className="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center mr-3">
             <svg
-              className="w-6 h-6 text-white"
+              className="w-5 h-5 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -189,7 +189,7 @@ const ProductosMasVendidos: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Top Productos</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Top Productos</h2>
             <p className="text-gray-600 text-sm">
               Los más vendidos del año {new Date().getFullYear()}
             </p>
@@ -197,18 +197,18 @@ const ProductosMasVendidos: React.FC = () => {
         </div>
 
         {/* Controles de ordenamiento */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex space-x-2">
           <button
-            className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-colors duration-200 ${
               sortOrder === "amount"
-                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                : "bg-white text-gray-700 border border-gray-200 hover:border-orange-300 hover:text-orange-600"
+                ? "bg-gray-700 text-white"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
             }`}
             onClick={() => setSortOrder("amount")}
           >
             <span className="flex items-center">
               <svg
-                className="w-4 h-4 mr-2"
+                className="w-4 h-4 mr-1"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -223,16 +223,16 @@ const ProductosMasVendidos: React.FC = () => {
             </span>
           </button>
           <button
-            className={`px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-colors duration-200 ${
               sortOrder === "quantity"
-                ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg"
-                : "bg-white text-gray-700 border border-gray-200 hover:border-orange-300 hover:text-orange-600"
+                ? "bg-gray-700 text-white"
+                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
             }`}
             onClick={() => setSortOrder("quantity")}
           >
             <span className="flex items-center">
               <svg
-                className="w-4 h-4 mr-2"
+                className="w-4 h-4 mr-1"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -249,72 +249,53 @@ const ProductosMasVendidos: React.FC = () => {
       </div>
 
       {/* Lista de productos */}
-      <div className="p-8">
+      <div className="p-6">
         {mostSoldProducts && mostSoldProducts.length > 0 ? (
-          <div className="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+          <div className="space-y-3 max-h-[550px] overflow-y-auto">
             {mostSoldProducts.map((product, index) => (
               <div
                 key={product.productId}
-                className="group relative bg-gradient-to-r from-gray-50 to-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:scale-102"
+                className="group relative bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
               >
-                <div className="flex items-center space-x-4">
-                  {/* Ranking Badge */}
+                <div className="flex items-center space-x-3">
+                  {/* Ranking Badge - Más pequeño y simple */}
                   <div
-                    className={`w-14 h-14 bg-gradient-to-r ${getRankColor(
+                    className={`w-8 h-8 ${getRankColor(
                       index
-                    )} rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg`}
+                    )} rounded-full flex items-center justify-center font-bold text-xs border-2 flex-shrink-0`}
                   >
-                    {typeof getRankIcon(index) === "string" &&
-                    getRankIcon(index).length === 2 ? (
-                      getRankIcon(index)
-                    ) : (
-                      <span className="text-sm">{getRankIcon(index)}</span>
-                    )}
+                    {getRankIcon(index)}
                   </div>
 
-                  {/* Product Info */}
+                  {/* Product Info - Simplificado */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-gray-900 truncate group-hover:text-orange-600 transition-colors duration-300">
+                    <h3 className="text-sm font-semibold text-gray-900 truncate group-hover:text-gray-700 transition-colors duration-200">
                       {product.productName}
                     </h3>
-                    <div className="mt-2 grid grid-cols-2 gap-4">
-                      <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
-                        <p className="text-xs text-blue-600 font-medium mb-1">
-                          Cantidad Vendida
-                        </p>
-                        <p className="text-xl font-bold text-blue-700">
+                    <div className="mt-2 flex space-x-4">
+                      <div className="flex items-center space-x-1">
+                        <span className="text-xs text-gray-500">Cant:</span>
+                        <span className="text-sm font-semibold text-gray-900">
                           {product.quantity.toLocaleString()}
-                        </p>
+                        </span>
                       </div>
-                      <div className="bg-green-50 rounded-xl p-3 border border-green-100">
-                        <p className="text-xs text-green-600 font-medium mb-1">
-                          Ingresos Totales
-                        </p>
-                        <p className="text-xl font-bold text-green-700">
+                      <div className="flex items-center space-x-1">
+                        <span className="text-xs text-gray-500">Total:</span>
+                        <span className="text-sm font-semibold text-gray-900">
                           {formatCurrency(product.amount)}
-                        </p>
+                        </span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Progress Indicator */}
-                  <div className="hidden md:block">
-                    {index < 3 && (
-                      <div className="w-2 h-16 bg-gradient-to-t from-orange-200 to-orange-500 rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
-                    )}
-                  </div>
                 </div>
-
-                {/* Hover effect overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-50/0 to-red-50/0 group-hover:from-orange-50/30 group-hover:to-red-50/30 rounded-2xl transition-all duration-300 pointer-events-none"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mb-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <svg
-                className="w-12 h-12 text-orange-400"
+                className="w-8 h-8 text-gray-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -327,34 +308,15 @@ const ProductosMasVendidos: React.FC = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">
               No hay productos disponibles
             </h3>
-            <p className="text-gray-500 text-center">
+            <p className="text-gray-500 text-center text-sm">
               No se encontraron productos vendidos en el período actual.
-              <br />
-              Los datos aparecerán cuando se registren ventas.
             </p>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #f97316, #dc2626);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #ea580c, #b91c1c);
-        }
-      `}</style>
     </div>
   );
 };

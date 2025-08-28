@@ -9,6 +9,7 @@ import {
 } from "react-google-recaptcha-v3";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+
 function ContactForm() {
   const [formData, setFormData] = useState({
     name: "",
@@ -75,70 +76,195 @@ function ContactForm() {
   };
 
   return (
-    <div className="py-10">
-      <div className=" px-6 mt-6 mb-12 mx-auto">
-        <div className="w-full items-center justify-center text-center">
-          <p className="text-4xl md:text-5xl font-extrabold my-6 text-primary">
-            Contacto
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-12 mt-10 lg:grid-cols-2">
-          <div className="p-4 py-6 rounded-lg bg-gray-50 dark:bg-gray-800 md:p-8">
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-4"
-            >
-              <input
-                name="name"
-                type="text"
-                className="block w-full px-5 py-2.5 text-gray-700 placeholder-gray-400 bg-gray-100 border border-gray-200 rounded-lg dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
-                placeholder="Nombre"
-                value={formData.name}
-                onChange={handleChange}
-              />
-              <input
-                name="email"
-                type="email"
-                className="block w-full px-5 py-2.5 text-gray-700 placeholder-gray-400 bg-gray-100 border border-gray-200 rounded-lg dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
-                placeholder="Correo Electrónico"
-                value={formData.email}
-                onChange={handleChange}
-              />
-
-              <input
-                name="subject"
-                type="text"
-                className="block w-full px-5 py-2.5 text-gray-700 placeholder-gray-400 bg-gray-100 border border-gray-200 rounded-lg dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
-                placeholder="Asunto"
-                value={formData.subject}
-                onChange={handleChange}
-              />
-              <textarea
-                name="message"
-                className="block w-full h-32 px-5 py-2.5 text-gray-700 placeholder-gray-400 bg-gray-100 border border-gray-200 rounded-lg md:h-80 dark:placeholder-gray-600 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
-                placeholder="Mensaje"
-                value={formData.message}
-                onChange={handleChange}
-              ></textarea>
-              <button
-                type="submit"
-                className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white bg-primary rounded-lg hover:bg-primary transition-colors duration-300 transform focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50"
-                disabled={loading}
-              >
-                {loading ? "Cargando..." : "Enviar"}
-              </button>
-            </form>
-          </div>
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-1">
-            <img
-              src="/img/pollollamada.webp"
-              alt="Premium Benefits"
-              className="w-full h-full object-cover rounded-xl"
-            />
+    <div>
+      {/* Banner Principal */}
+      <div className="relative w-full h-[250px] md:h-[300px]">
+        <img
+          src="/bannercontacto.webp"
+          alt="Banner Contacto"
+          className="h-full w-full object-cover"
+        />
+        <div className="flex absolute inset-0 items-center justify-center bg-black/50">
+          <div className="text-center text-white">
+       {/*      <h1 className="mb-4 text-3xl md:text-4xl font-bold">
+              Contacto
+            </h1> */}
+            <h1 className="bg-black/40 md:bg-black/80 w-full text-xl md:text-3xl p-4 mx-auto">
+             ¿Te perdiste entre tanto sabor? No te preocupes, estamos a un mensaje de distancia.
+            </h1>
           </div>
         </div>
       </div>
+
+      {/* Formulario y Foto */}
+      <section className="py-10 md:py-20 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid items-start gap-8 grid-cols-1 md:grid-cols-2 md:gap-12">
+            {/* Formulario */}
+            <div className="rounded-lg bg-white p-4 shadow-lg md:p-8">
+              <h2 className="mb-6 text-2xl md:text-3xl font-bold text-gray-800">
+                Envíanos un mensaje
+              </h2>
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="mb-2 block text-sm md:text-base font-medium text-gray-700"
+                  >
+                    Nombre completo
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full bg-gray-100 border border-gray-300 px-3 py-2 text-sm md:text-base rounded-md focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm md:text-base font-medium text-gray-700"
+                  >
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full bg-gray-100 border border-gray-300 px-3 py-2 text-sm md:text-base rounded-md focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="subject"
+                    className="mb-2 block text-sm md:text-base font-medium text-gray-700"
+                  >
+                    Asunto
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className="w-full bg-gray-100 border border-gray-300 px-3 py-2 text-sm md:text-base rounded-md focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="mb-2 block text-sm md:text-base font-medium text-gray-700"
+                  >
+                    Mensaje
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows={6}
+                    className="w-full bg-gray-100 border border-gray-300 px-3 py-2 text-sm md:text-base rounded-md focus:border-blue-400 focus:ring-blue-400 focus:outline-none focus:ring-opacity-40"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-md px-4 py-2.5 font-medium transition-colors duration-300 text-sm md:text-base bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Cargando..." : "Enviar mensaje"}
+                </button>
+              </form>
+            </div>
+
+            {/* Foto */}
+            <div className="hidden md:block">
+              <img
+                src="lateralcontacto.webp"
+                alt="Contacto"
+                className="w-full rounded-lg object-cover shadow-xl h-[600px]"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Información de Contacto */}
+      <section className="pb-10 md:pb-20 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="rounded-lg bg-white p-4 shadow-lg md:p-8">
+            <h3 className="mb-6 text-center text-xl md:text-2xl font-bold text-gray-800">
+              Información de contacto
+            </h3>
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 md:gap-8">
+
+
+              <div className="flex items-center rounded-lg p-4 md:p-6 bg-primary/10">
+                <div className="mr-4 flex-shrink-0 text-primary">
+                  <svg
+                    className="h-8 w-8 md:h-10 md:w-10"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="mb-1 text-base md:text-lg font-semibold text-gray-800">
+                    Email
+                  </h4>
+                  <p className="text-sm md:text-base text-gray-600">
+                  contacto@casarenteria.cl
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center rounded-lg p-4 md:p-6 bg-primary/10">
+                <div className="mr-4 flex-shrink-0 text-primary">
+                  <svg
+                    className="h-8 w-8 md:h-10 md:w-10"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="mb-1 text-base md:text-lg font-semibold text-gray-800">
+                    Teléfono
+                  </h4>
+                  <p className="text-sm md:text-base text-gray-600">
+                  +56 9 7533 0640
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

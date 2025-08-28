@@ -225,7 +225,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             <React.Fragment>
               <Link
                 href="#"
-                className={`group relative flex items-center gap-3 rounded-lg py-2.5 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                className={`group relative flex items-center gap-3 rounded-lg py-2.5 px-4 font-medium text-white duration-300 ease-in-out hover:bg-black/10 ${
                   isRouteActive(link.path, false, submenuPaths) &&
                   "bg-secondary/10"
                 }`}
@@ -276,7 +276,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <li key={index}>
                       <Link
                         href={sublink.path}
-                        className={`group relative flex items-center gap-3 rounded-lg py-2 px-3 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+                        className={`group relative flex items-center gap-3 rounded-lg py-2 px-3 font-medium text-white duration-300 ease-in-out hover:bg-black/10 ${
                           isRouteActive(sublink.path, true) && "bg-black/10"
                         }`}
                         onClick={() => {
@@ -309,7 +309,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <li>
         <Link
           href={link.path}
-          className={`group relative flex items-center gap-2 rounded-lg py-2 px-4 font-medium text-secondary duration-300 ease-in-out hover:bg-black/10 ${
+          className={`group relative flex items-center gap-2 rounded-lg py-2 px-4 font-medium text-white duration-300 ease-in-out hover:bg-black/10 ${
             isRouteActive(link.path, true) && "bg-secondary/10"
           }`}
           onClick={() => handleLinkClick(link.path)}

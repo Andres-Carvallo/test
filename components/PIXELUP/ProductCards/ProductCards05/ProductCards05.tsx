@@ -202,9 +202,9 @@ const ProductCard05: React.FC<ProductCardProps> = ({
       <div className="p-2 md:p-4 flex justify-between items-start">
         <div className="text-left flex-1 mr-2">
           <Link href={`/tienda/productos/${slugify(product.name)}`}>
-            <h3 className="font-montserrat text-xs md:text-sm font-medium text-gray-700 truncate max-w-[12ch] md:max-w-[18ch] hover:text-primary transition-colors">
-              {product.name}
-            </h3>
+                    <h3 className="font-montserrat text-xs md:text-sm font-medium text-gray-700 truncate max-w-[12ch] md:max-w-[18ch] hover:text-primary transition-colors">
+          {product.name}
+        </h3>
           </Link>
           {renderPrice()}
         </div>

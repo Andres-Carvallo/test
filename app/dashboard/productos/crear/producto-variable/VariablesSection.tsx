@@ -5,7 +5,7 @@ import VariationForm from "./VariationForm";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRevalidation } from "@/app/Context/RevalidationContext";
-import VariationForm_sinstarken from "./VariationForm_sinstarken";
+import VariationForm_sinstarken from "./VariationForm";
 
 interface Variation {
   description: string;

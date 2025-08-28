@@ -293,7 +293,6 @@ const Servicios04BO: React.FC = () => {
       }
     } catch (error) {
       console.error("Error al obtener título e imágenes:", error);
-      toast.error("Error al cargar las imágenes");
     } finally {
       setLoadingTitulo(false);
     }

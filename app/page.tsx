@@ -34,22 +34,55 @@ import {
   HomeConfig,
 } from "@/app/utils/homeConfig";
 import DynamicHomeComponents from "@/app/components/DynamicHomeComponents";
-const siteUrl = process.env.NEXT_PUBLIC_BASE_URL;
-const canonicalUrl = process.env.NEXT_PUBLIC_BASE_URL;
+import { COMPONENT_IDS } from "@/app/config/componentEnums";
+import { getBaseUrl, getBaseUrlWithLogs, getRobustBaseUrl } from "@/app/utils/urlUtils";
 
 export const revalidate = 60; // Revalida cada 60 segundos
 
 export const dynamic = "force-dynamic"; // O 'force-static' si quieres comportamiento estático
 
 async function fetchBannerData() {
-  const bannerId = process.env.NEXT_PUBLIC_SEO_BANNER_ID;
-  const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
-  );
-  return response.data.banner;
+  const bannerId = COMPONENT_IDS.SEO_BANNER();
+  
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+    );
+    return response.data.banner;
+  } catch (error) {
+    console.error(`❌ [fetchBannerData] Error al obtener banner:`, error);
+    throw error;
+  }
+}
+
+async function getSeoDescription() {
+  const defaultDescription = "Una nueva plataforma para emprendedores y Pymes!";
+  
+  try {
+    const bannerImage = await fetchBannerData();
+    
+    if (bannerImage.images[0].landingText) {
+      const cleanText = bannerImage.images[0].landingText.replace(/<[^>]*>/g, '').trim();
+      const title = bannerImage.images[0].title || '';
+      const text = cleanText.length > 100 ? cleanText.substring(0, 100) + '...' : cleanText;
+      return `${title} - ${text}`.substring(0, 160);
+    }
+    
+    return defaultDescription;
+  } catch (error) {
+    return defaultDescription;
+  }
 }
 
 export const metadata = async () => {
+  // Obtener la URL actual del request
+  const headersList = await import('next/headers').then(m => m.headers());
+  const host = headersList.get('host') || 'dev-ecommerce.pixelup.cl';
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
+  
+
+  
   const defaultSeoData = {
     title: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
     description: "Una nueva plataforma para emprendedores y Pymes!",
@@ -59,48 +92,119 @@ export const metadata = async () => {
 
   try {
     const bannerImage = await fetchBannerData();
-    return {
-      title: bannerImage.images[0].title,
-      description: bannerImage.images[0].landingText,
-      ogImage: bannerImage.images[0].mainImage.url,
-      keywords: bannerImage.images[0].buttonText,
-      openGraph: {
-        title: bannerImage.images[0].title,
-        description: bannerImage.images[0].landingText,
-        images: [
-          {
-            url: bannerImage.images[0].mainImage.url,
-            width: 800,
-            height: 600,
-            alt: bannerImage.images[0].title,
-          },
-        ],
-      },
-    };
-  } catch (error) {
+    
+    // Crear una descripción más atractiva y específica
+    let seoDescription = defaultSeoData.description;
+    
+    if (bannerImage.images[0].landingText) {
+      // Limpiar HTML y crear una descripción más específica
+      const cleanText = bannerImage.images[0].landingText.replace(/<[^>]*>/g, '').trim();
+      
+      // Crear una descripción que incluya el título y el texto
+      const title = bannerImage.images[0].title || '';
+      const text = cleanText.length > 100 ? cleanText.substring(0, 100) + '...' : cleanText;
+      
+      seoDescription = `${title} - ${text}`.substring(0, 160);
+    }
+    
+    
+    
+          const seoMetadata = {
+        title: bannerImage.images[0].title || defaultSeoData.title,
+        description: seoDescription,
+        keywords: bannerImage.images[0].buttonText || defaultSeoData.keywords,
+       robots: {
+         index: true,
+         follow: true,
+         googleBot: {
+           index: true,
+           follow: true,
+           'max-video-preview': -1,
+           'max-image-preview': 'large',
+           'max-snippet': -1,
+         },
+       },
+                       openGraph: {
+            title: bannerImage.images[0].title || defaultSeoData.title,
+            description: seoDescription,
+            type: 'website',
+            url: baseUrl,
+            siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
+          images: [
+            {
+              url: bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage,
+              width: 1200,
+              height: 630,
+              alt: bannerImage.images[0].title || defaultSeoData.title,
+            },
+          ],
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: bannerImage.images[0].title || defaultSeoData.title,
+          description: seoDescription,
+          images: [bannerImage.images[0].mainImage?.url || defaultSeoData.ogImage],
+        },
+                alternates: {
+           canonical: baseUrl,
+         },
+     };
+     
+     
+     return seoMetadata;
+   } catch (error) {
     console.error("Error fetching banner data:", error);
+    // Obtener la URL actual del request para el fallback
+    const headersList = await import('next/headers').then(m => m.headers());
+    const host = headersList.get('host') || 'dev-ecommerce.pixelup.cl';
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
     return {
       title: defaultSeoData.title,
       description: defaultSeoData.description,
-      openGraph: {
-        title: defaultSeoData.title,
-        description: defaultSeoData.description,
-        images: [
-          {
-            url: defaultSeoData.ogImage,
-            width: 800,
-            height: 600,
-            alt: defaultSeoData.title,
-          },
-        ],
+      keywords: defaultSeoData.keywords,
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
       },
+             openGraph: {
+         title: defaultSeoData.title,
+         description: defaultSeoData.description,
+         type: 'website',
+         url: baseUrl,
+         siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
+         images: [
+           {
+             url: defaultSeoData.ogImage,
+             width: 1200,
+             height: 630,
+             alt: defaultSeoData.title,
+           },
+         ],
+       },
+       twitter: {
+         card: 'summary_large_image',
+         title: defaultSeoData.title,
+         description: defaultSeoData.description,
+         images: [defaultSeoData.ogImage],
+       },
+       alternates: {
+         canonical: baseUrl,
+       },
     };
   }
 };
 
 export default async function Page() {
   try {
-    const seoData = await metadata();
+    const seoDescription = await getSeoDescription();
 
     // Cargar configuración del home
     let homeConfig = await fetchHomeConfig();
@@ -110,6 +214,11 @@ export default async function Page() {
 
     return (
       <>
+        {/* Párrafo SEO visible para Google - debe coincidir con la meta description */}
+        <div className="sr-only">
+          <p>{seoDescription}</p>
+        </div>
+        
         <DynamicNavbar />
         <DynamicHomeComponents config={homeConfig} />
         <DynamicFooter />

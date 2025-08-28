@@ -18,6 +18,7 @@ import Link from "next/link";
 import Loader from "@/components/common/Loader";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useLogo } from "@/context/LogoContext";
 
 interface Order {
   id: string;
@@ -133,7 +134,8 @@ export default function DetalleOrdenes() {
   const printRef = useRef<HTMLDivElement>(null);
   const [pedido, setPedido] = useState<Order | null>(null);
   const Token = String(getCookie("AdminTokenAuth"));
-  const imagePath = process.env.NEXT_PUBLIC_LOGO_COLOR;
+  const { logo } = useLogo();
+  const imagePath = logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR;
   const [attributesMap, setAttributesMap] = useState<any>({});
 
   // Estados para verificación de plan PRO
@@ -225,31 +227,77 @@ export default function DetalleOrdenes() {
 
   const handleDownloadPdf = async () => {
     if (printRef.current) {
-      const canvas = await html2canvas(printRef.current, {
-        scale: 2, // Increase the scale to improve resolution
-        useCORS: true, // Enable cross-origin images
-      });
+      // Crear una copia del elemento para aplicar estilos específicos para PDF
+      const element = printRef.current.cloneNode(true) as HTMLElement;
+      
+      // Aplicar estilos inline para evitar colores oklch
+      const style = document.createElement('style');
+      style.textContent = `
+        * {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+          border-color: #d1d5db !important;
+        }
+        .bg-primary {
+          background-color: #3b82f6 !important;
+        }
+        .text-white {
+          color: #ffffff !important;
+        }
+        .text-gray-500 {
+          color: #6b7280 !important;
+        }
+        .text-gray-700 {
+          color: #374151 !important;
+        }
+        .bg-gray-200 {
+          background-color: #e5e7eb !important;
+        }
+        .text-gray-400 {
+          color: #9ca3af !important;
+        }
+      `;
+      element.appendChild(style);
+      
+      // Agregar temporalmente al DOM
+      element.style.position = 'absolute';
+      element.style.left = '-9999px';
+      element.style.top = '-9999px';
+      document.body.appendChild(element);
+      
+      try {
+        const canvas = await html2canvas(element, {
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+        });
 
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "px",
-        format: "a4", // Standard A4 size
-      });
+              const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "px",
+          format: "a4", // Standard A4 size
+        });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      // Calculate the scale to fit the image within the page
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const scale = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        // Calculate the scale to fit the image within the page
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const scale = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
 
-      const scaledWidth = imgWidth * scale;
-      const scaledHeight = imgHeight * scale;
+        const scaledWidth = imgWidth * scale;
+        const scaledHeight = imgHeight * scale;
 
-      pdf.addImage(imgData, "PNG", 0, 0, scaledWidth, scaledHeight);
-      pdf.save(`Orden_Número_${pedido?.correlative}.pdf`);
+        pdf.addImage(imgData, "PNG", 0, 0, scaledWidth, scaledHeight);
+        pdf.save(`Orden_Número_${pedido?.correlative}.pdf`);
+      } finally {
+        // Limpiar el elemento temporal
+        if (element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      }
     }
   };
 

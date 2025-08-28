@@ -44,11 +44,13 @@ const VariationForm: React.FC<any> = ({
   handleImageRemove,
   baseProductDescription, //descripcion del producto base
   skuImages, // Imágenes del producto base
+  baseProductInfo, // Información del producto base
 }) => {
   const { attributes, setAttributes, loading, error } = useAPI();
   const editFormRef = useRef<HTMLDivElement>(null);
   const isEditMode = !!variation.id;
   const [useBaseDescription, setUseBaseDescription] = useState(false); //descripcion del producto base
+  const [useBaseShortDescription, setUseBaseShortDescription] = useState(false); //descripcion corta del producto base
   const currentVariationIndex = index;
   const [attributePairs, setAttributePairs] = useState([
     { id: "", value: "", isNew: true } as {
@@ -85,8 +87,17 @@ const VariationForm: React.FC<any> = ({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [originalFileName, setOriginalFileName] = useState<string>("");
   const [image, setImage] = useState<any>(null);
+  
+  // Estados para las descripciones
+  const [description, setDescription] = useState<string>("");
+  const [shortDescription, setShortDescription] = useState<string>("");
+  const [showShortDescription, setShowShortDescription] = useState(true);
+  const [showLongDescription, setShowLongDescription] = useState(true);
   const [descriptionLength, setDescriptionLength] = useState(0);
+  const [shortDescriptionCharCount, setShortDescriptionCharCount] = useState(0);
   const maxDescriptionLength = 1000;
+  const maxShortDescriptionLength = 200;
+  const [isShortDescriptionAtLimit, setIsShortDescriptionAtLimit] = useState(false);
 
   const { triggerRevalidation } = useRevalidation();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);

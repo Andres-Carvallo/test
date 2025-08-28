@@ -178,7 +178,7 @@ const BannerPrincipal = () => {
                   <img
                     src={bannerData.banner.images[0].mainImage.url}
                     alt={bannerData.banner.title || "Banner"}
-                    className="w-full h-full object-cover min-h-[400px]"
+                    className="w-full h-full object-cover min-h-[200px]"
                   />
                   {(config.desktop.showTitle ||
                     config.desktop.showLandingText ||

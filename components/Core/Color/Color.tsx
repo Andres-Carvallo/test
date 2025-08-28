@@ -334,7 +334,7 @@ const Color: React.FC = () => {
                           Color primario: {getCurrentColorOption().label}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-3">
+                     {/* <div className="flex items-center space-x-3">
                         <div 
                           className="w-8 h-8 rounded-full border border-gray-300"
                           style={{ 
@@ -355,7 +355,7 @@ const Color: React.FC = () => {
                         <span className="text-sm text-gray-600">
                           Color de acento
                         </span>
-                      </div>
+                      </div>*/}
                     </div>
                   </div>
                 </div>

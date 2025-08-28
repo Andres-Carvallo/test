@@ -204,7 +204,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
 
   const handleButtonClick = () => {
     if (product.hasVariations) {
-      window.location.href = `/tienda/productosv2/${slugify(product.name)}`;
+      window.location.href = `/tienda/productos/${slugify(product.name)}`;
     } else {
       addToCartHandler(product.skuId, 1);
     }
@@ -220,7 +220,7 @@ const ProductCard03: React.FC<ProductCardProps> = ({
           En Oferta
         </span>
       )}
-      <Link href={`/tienda/productosv2/${slugify(product.name)}`}>
+      <Link href={`/tienda/productos/${slugify(product.name)}`}>
         {/* <div className="absolute top-4 right-4 bg-primary text-secondary px-2 py-1 rounded-bl-lg">{productType.name}</div> */}
         <img
           src={product.mainImageUrl}

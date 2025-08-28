@@ -10,7 +10,7 @@ const Frase01: React.FC<any> = ({ id }) => {
   const fetchBannerHome = async () => {
     try {
       setLoading(true); // Mostrar el indicador de carga
-      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_ID}`; 
+      const bannerId = `${process.env.NEXT_PUBLIC_FRASE01_CONTENTBLOCK}`;   
 
       const productTypeResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/content-blocks/${bannerId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
@@ -32,13 +32,13 @@ const Frase01: React.FC<any> = ({ id }) => {
   }, []); // Debería ejecutarse solo en el montaje inicial
   return (
     <section>
-      <div className="m-16 flex text-center items-center max-md:flex-col font-medium text-muted px-6 font-sans">
+      <div className="m-16 flex text-center items-center max-md:flex-col font-medium text-primary px-6 font-sans">
         {/*  <div className="max-md:mt-4">
     <h3 className="bg-white text-blue-500 font-semibold py-2 px-4 rounded text-sm hover:bg-slate-100 mx-6">
       {bannerData?.title}
     </h3>
   </div>*/}
-        <p className="text-2xl font-semibold flex-1 italic">
+        <p className="text-2xl font-semibold flex-1 italic ">
           « {bannerData?.contentText} »
         </p>
       </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { getCookie } from "cookies-next";
+import { jwtDecode } from "jwt-decode";
 
 interface SubscriptionPlan {
   hasAdvancedOrProPlan: boolean;
@@ -22,6 +23,37 @@ export const useSubscriptionPlan = (): SubscriptionPlan => {
         setError(null);
         
         const token = getCookie("AdminTokenAuth");
+        
+        // Verificar si es el usuario de PixelUP (excepción especial)
+        let isPixelUPUser = false;
+        if (token) {
+          try {
+            const decodedToken = jwtDecode<{ sub: string }>(token as string);
+            const userId = decodedToken.sub;
+            
+            const userResponse = await axios.get(
+              `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/users/${userId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            
+            const userEmail = userResponse.data.user.email;
+            isPixelUPUser = userEmail === "hola.pixelup@gmail.com";
+          } catch (error) {
+            console.error("Error al obtener datos del usuario:", error);
+          }
+        }
+        
+        // Si es el usuario de PixelUP, dar acceso completo
+        if (isPixelUPUser) {
+          setHasAdvancedOrProPlan(true);
+          setCurrentPlan("Plan PRO (Usuario PixelUP)");
+          setLoading(false);
+          return;
+        }
         
         // Usar Promise.race para timeout de 5 segundos
         const timeoutPromise = new Promise((_, reject) =>

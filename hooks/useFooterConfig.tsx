@@ -29,6 +29,9 @@ interface FooterConfig {
   landingText: string;
   // Redes sociales se cargan dinámicamente desde el componente RedesSociales
   socialNetworks?: any[];
+  // Campo para logo personalizado del footer
+  useCustomLogo: boolean;
+  footerLogoData?: any;
 }
 
 interface FooterDisplayConfig {
@@ -87,6 +90,7 @@ const defaultConfig: FooterConfig = {
     },
     { title: "Política de Devoluciones", url: "/devoluciones", enabled: true },
   ],
+  useCustomLogo: false,
 };
 
 export function useFooterConfig() {

@@ -126,6 +126,15 @@ const getLogoStyle = (logoSize: number = 64) => {
   };
 };
 
+// Función para obtener el logo apropiado en el preview
+const getFooterLogo = (config: any, logo: any) => {
+  if (config.useCustomLogo && config.footerLogoData?.[0]?.mainImage?.url) {
+    return config.footerLogoData[0].mainImage.url;
+  }
+  
+  return logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR;
+};
+
 // Componente de vista previa para Footer02 (Moderno)
 const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
   <div
@@ -145,9 +154,7 @@ const Footer02Preview = ({ config, logo }: { config: any; logo: any }) => (
                   alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
                   className="object-contain mb-2"
                   style={getLogoStyle(config.logoSize)}
-                  src={
-                    logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR
-                  }
+                  src={getFooterLogo(config, logo)}
                 />
               )}
               {config.showDescription && config.description && (
@@ -319,7 +326,7 @@ const Footer03Preview = ({ config, logo }: { config: any; logo: any }) => (
                 alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
                 className="object-contain mx-auto mb-2"
                 style={getLogoStyle(config.logoSize)}
-                src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
+                src={getFooterLogo(config, logo)}
               />
             )}
             {config.showDescription && config.description && (

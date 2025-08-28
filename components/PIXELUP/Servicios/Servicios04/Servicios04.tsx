@@ -338,7 +338,7 @@ const Servicios04 = () => {
 
                 <div className="mt-8 flex justify-end">
                   <Link
-                    href="https://www.pixelup.cl"
+                    href={`${process.env.NEXT_PUBLIC_WHATSAPP_LINK}`}
                     className="px-8 py-4 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg text-lg"
                   >
                     Contáctanos
@@ -496,7 +496,7 @@ const Servicios04 = () => {
 
                 <div className="mt-8 flex justify-end">
                   <Link
-                    href="https://www.pixelup.cl"
+                    href={`${process.env.NEXT_PUBLIC_WHATSAPP_LINK}`}
                     className="px-8 py-4 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg text-lg"
                   >
                     Contáctanos
@@ -507,7 +507,7 @@ const Servicios04 = () => {
           )}
         </div>
         {/* Botón para mostrar todos los servicios */}
-        <div className="text-center mt-16 px-4">
+{/*         <div className="text-center mt-16 px-4">
           <button
             onClick={toggleCarteraCompleta}
             className="inline-block px-8 py-3 bg-primary hover:bg-primary/80 text-white rounded font-semibold transition-all shadow-md hover:shadow-lg"
@@ -516,7 +516,7 @@ const Servicios04 = () => {
               ? "Ocultar Servicios"
               : "Descubre Todos los Servicios"}
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

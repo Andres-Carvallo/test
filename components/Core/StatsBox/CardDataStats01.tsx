@@ -20,33 +20,30 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
   children,
 }) => {
   return (
-    <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden transform hover:scale-105 transition-all duration-300">
-      {/* Gradiente de fondo sutil */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-white to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
+    <div className="group relative bg-white rounded-lg shadow-sm hover:shadow-md border border-gray-200 overflow-hidden transition-all duration-200">
       {/* Contenido principal */}
-      <div className="relative p-6 md:p-8">
+      <div className="relative p-6">
         {/* Icono mejorado */}
-        <div className="flex items-start justify-between mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-            <div className="text-white text-xl">{children}</div>
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-200">
+            <div className="text-white text-lg">{children}</div>
           </div>
 
           {/* Indicador de cambio */}
           {percentageChange !== undefined && (
             <div
-              className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              className={`px-2 py-1 rounded-md text-xs font-medium ${
                 percentageChange > 0
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-green-100 text-green-700 border border-green-200"
                   : percentageChange < 0
-                  ? "bg-red-100 text-red-700"
-                  : "bg-gray-100 text-gray-700"
+                  ? "bg-red-100 text-red-700 border border-red-200"
+                  : "bg-gray-100 text-gray-700 border border-gray-200"
               }`}
             >
               <div className="flex items-center space-x-1">
                 {percentageChange > 0 ? (
                   <svg
-                    className="w-4 h-4"
+                    className="w-3 h-3"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -58,7 +55,7 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
                   </svg>
                 ) : percentageChange < 0 ? (
                   <svg
-                    className="w-4 h-4"
+                    className="w-3 h-3"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -77,16 +74,16 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
 
         {/* Métricas principales */}
         <div className="space-y-2">
-          <h4 className="text-3xl md:text-4xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+          <h4 className="text-2xl font-semibold text-gray-900 group-hover:text-gray-700 transition-colors duration-200">
             {total}
           </h4>
-          <p className="text-gray-600 font-medium text-lg">{title}</p>
+          <p className="text-gray-600 font-medium text-sm">{title}</p>
 
           {/* Información adicional */}
           {rate && (
             <div className="pt-2">
               <span
-                className={`inline-flex items-center text-sm font-medium ${
+                className={`inline-flex items-center text-xs font-medium ${
                   levelUp
                     ? "text-green-600"
                     : levelDown
@@ -98,7 +95,7 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
                 {levelUp && (
                   <svg
                     aria-label="increase"
-                    className="ml-2 w-4 h-4 fill-current"
+                    className="ml-1 w-3 h-3 fill-current"
                     viewBox="0 0 10 11"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -112,7 +109,7 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
                 {levelDown && (
                   <svg
                     aria-label="decrease"
-                    className="ml-2 w-4 h-4 fill-current"
+                    className="ml-1 w-3 h-3 fill-current"
                     viewBox="0 0 10 11"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +126,7 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
         </div>
 
         {/* Línea decorativa inferior */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-300 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
       </div>
     </div>
   );

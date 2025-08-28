@@ -27,6 +27,7 @@ import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css"; // Import styles
 import { useRevalidation } from "@/app/Context/RevalidationContext";
 import { slugify } from "@/app/utils/slugify";
+import ProductInfoBoxesConfig from "@/app/dashboard/zona-repartos/ProductInfoBoxesConfig";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -189,6 +190,17 @@ const CrearVariable: React.FC = () => {
     productTypes: [],
     name: "",
     description: "",
+    additionalData1: "",
+    additionalData2: JSON.stringify({
+      showInfoBoxes: true,
+      boxesConfig: {
+        freeShipping: true,
+        warranty: true,
+        returns: true
+      },
+      warrantyText: "Cobertura completa",
+      returnsText: "30 días sin preguntas"
+    }),
     statusCode: "ACTIVE",
     enabledForDelivery: false,
     enabledForWithdrawal: false,
@@ -242,35 +254,189 @@ const CrearVariable: React.FC = () => {
   const [openModalId, setOpenModalId] = useState(null);
   const [descriptionLength, setDescriptionLength] = useState(0);
   const maxDescriptionLength = 1000;
-  const validateForm = () => {
-    let valid = true;
+  const maxShortDescriptionLength = 200; // Límite de caracteres para descripción corta
+  const [shortDescriptionCharCount, setShortDescriptionCharCount] = useState(0); // Contador de caracteres para descripción corta
+  
+  // Estados para controlar la visibilidad de las descripciones
+  const [showShortDescription, setShowShortDescription] = useState(true);
+  const [showLongDescription, setShowLongDescription] = useState(true);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [freeShippingAmount, setFreeShippingAmount] = useState<string | null>(null);
+  const [isFreeShippingEnabled, setIsFreeShippingEnabled] = useState(true);
+  
+  // Estados locales para las descripciones
+  const [description, setDescription] = useState<string>("");
+  const [shortDescription, setShortDescription] = useState<string>("");
+  const [isShortDescriptionAtLimit, setIsShortDescriptionAtLimit] = useState(false);
+  
+  // Función helper para verificar si el contenido HTML está realmente vacío
+  const isHtmlContentEmpty = (htmlContent: string): boolean => {
+    if (!htmlContent || htmlContent.trim() === '') {
+      return true;
+    }
+    
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Verificar si el texto está vacío o solo contiene espacios/lineas en blanco
+    return textContent.trim() === '';
+  };
+  
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    setDescriptionLength(value.length);
+  };
 
+  const handleShortDescriptionChange = (value: string) => {
+    // Limitar la longitud del contenido HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = value;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    if (textContent.length <= maxShortDescriptionLength) {
+      setShortDescription(value);
+      setShortDescriptionCharCount(textContent.length);
+      setIsShortDescriptionAtLimit(textContent.length === maxShortDescriptionLength);
+    } else {
+      // Si excede el límite, mantener el valor anterior y mostrar error
+      toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres`);
+      setIsShortDescriptionAtLimit(true);
+      
+      // No actualizar el estado, mantener el valor anterior
+      return;
+    }
+  };
+
+  const handleShortDescriptionToggle = (enabled: boolean) => {
+    setShowShortDescription(enabled);
+  };
+
+  const handleLongDescriptionToggle = (enabled: boolean) => {
+    setShowLongDescription(enabled);
+  };
+
+  // Sincronizar estados locales con formData
+  useEffect(() => {
+    const longDescriptionData = {
+      content: description,
+      enabled: showLongDescription
+    };
+    
+    setFormData((prevFormData: any) => ({
+      ...prevFormData,
+      description: JSON.stringify(longDescriptionData),
+    }));
+  }, [description, showLongDescription]);
+
+  useEffect(() => {
+    const shortDescriptionData = {
+      content: shortDescription,
+      enabled: showShortDescription
+    };
+    
+    setFormData((prevFormData: any) => ({
+      ...prevFormData,
+      additionalData1: JSON.stringify(shortDescriptionData),
+    }));
+  }, [shortDescription, showShortDescription]);
+
+  // Efecto adicional para manejar el pegado de texto
+  useEffect(() => {
+    if (shortDescription) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = shortDescription;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Si el texto excede el límite, revertir al valor anterior
+      if (textContent.length > maxShortDescriptionLength) {
+        toast.error(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres`);
+      }
+    }
+  }, [shortDescription]);
+
+  // Limpiar errores de validación cuando cambien los estados de las descripciones
+  useEffect(() => {
+    setValidationErrors([]);
+  }, [showShortDescription, showLongDescription]);
+
+  // Limpiar errores de validación cuando se agregue contenido a las descripciones
+  useEffect(() => {
+    // Solo limpiar errores si las descripciones están habilitadas y tienen contenido
+    if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción corta')));
+    }
+    if (showLongDescription && !isHtmlContentEmpty(description)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción larga')));
+    }
+  }, [shortDescription, description, showShortDescription, showLongDescription]);
+  const getValidationErrors = () => {
+    const errors: string[] = [];
+    
+    // Verificar nombre
     if (!formData.name) {
-      toast.error("El nombre del producto es requerido");
-      valid = false;
+      errors.push("El nombre del producto es requerido");
     }
     if (nameError) {
-      toast.error("No se puede publicar el producto con un nombre que ya existe");
-      valid = false;
+      errors.push("No se puede publicar el producto con un nombre que ya existe");
     }
-    if (!formData.description) {
-      toast.error("La descripción del producto es requerida");
-      valid = false;
+    
+    // Verificar descripción corta (solo si está habilitada) - USANDO ESTADOS LOCALES
+    if (showShortDescription && isHtmlContentEmpty(shortDescription)) {
+      errors.push("La descripción corta del producto es requerida");
+    } else if (showShortDescription && !isHtmlContentEmpty(shortDescription)) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = shortDescription;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      if (textContent.length > maxShortDescriptionLength) {
+        errors.push(`La descripción corta no puede exceder ${maxShortDescriptionLength} caracteres. Actualmente tiene ${textContent.length} caracteres.`);
+      }
     }
-
+    
+    // Verificar descripción larga (solo si está habilitada) - USANDO ESTADOS LOCALES
+    if (showLongDescription && isHtmlContentEmpty(description)) {
+      errors.push("La descripción larga del producto es requerida");
+    } else if (showLongDescription && !isHtmlContentEmpty(description)) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = description;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      if (textContent.length > maxDescriptionLength) {
+        errors.push(`La descripción larga no puede exceder ${maxDescriptionLength} caracteres. Actualmente tiene ${textContent.length} caracteres.`);
+      }
+    }
+    
+    // Verificar categoría
     if (formData.productTypes.length === 0) {
-      toast.error("La categoría es requerida");
-      valid = false;
+      errors.push("La categoría es requerida");
     }
+    
+    // Verificar opciones de entrega
     if (!formData.enabledForDelivery && !formData.enabledForWithdrawal) {
-      toast.error("Debe seleccionar al menos una opción: Delivery o Retiro");
-      valid = false;
+      errors.push("Debe seleccionar al menos una opción: Delivery o Retiro");
     }
+    
+    // Verificar imagen principal
     if (!formData.mainImage.data) {
-      toast.error("La imagen principal es requerida");
-      valid = false;
+      errors.push("La imagen principal es requerida");
     }
-    return valid;
+    
+    return errors;
+  };
+
+  const isFormValid = () => {
+    const errors = getValidationErrors();
+    return errors.length === 0;
+  };
+
+  const validateForm = () => {
+    const errors = getValidationErrors();
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+      return false;
+    }
+    return true;
   };
 
   useEffect(() => {
@@ -298,10 +464,76 @@ const CrearVariable: React.FC = () => {
 
         setSelectedProductTypes(selectedProductTypes);
 
+        // Manejar descripción larga (description)
+        let longDescriptionContent = "";
+        let longDescriptionEnabled = true;
+        try {
+          if (productData.description) {
+            const longDescData = JSON.parse(productData.description);
+            longDescriptionContent = longDescData.content || "";
+            longDescriptionEnabled = longDescData.enabled !== undefined ? longDescData.enabled : true;
+          } else {
+            longDescriptionContent = productData.description || "";
+            longDescriptionEnabled = true;
+          }
+        } catch (error) {
+          // Si no es JSON válido, usar como texto plano
+          longDescriptionContent = productData.description || "";
+          longDescriptionEnabled = true;
+        }
+        
+        setDescription(longDescriptionContent);
+        setShowLongDescription(longDescriptionEnabled);
+        setDescriptionLength(longDescriptionContent.length);
+
+        // Manejar descripción corta (additionalData1)
+        let shortDescriptionContent = "";
+        let shortDescriptionEnabled = true;
+        try {
+          if (productData.additionalData1) {
+            const shortDescData = JSON.parse(productData.additionalData1);
+            shortDescriptionContent = shortDescData.content || "";
+            shortDescriptionEnabled = shortDescData.enabled !== undefined ? shortDescData.enabled : true;
+          } else {
+            shortDescriptionContent = productData.additionalData1 || "";
+            shortDescriptionEnabled = true;
+          }
+        } catch (error) {
+          // Si no es JSON válido, usar como texto plano
+          shortDescriptionContent = productData.additionalData1 || "";
+          shortDescriptionEnabled = true;
+        }
+        
+        setShortDescription(shortDescriptionContent);
+        setShowShortDescription(shortDescriptionEnabled);
+        
+        // Inicializar contador de caracteres para descripción corta
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = shortDescriptionContent;
+        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+        setShortDescriptionCharCount(textContent.length);
+        
         setFormData({
           ...formData,
           name: productData.name,
-          description: productData.description,
+          description: JSON.stringify({
+            content: longDescriptionContent,
+            enabled: longDescriptionEnabled
+          }),
+          additionalData1: JSON.stringify({
+            content: shortDescriptionContent,
+            enabled: shortDescriptionEnabled
+          }),
+          additionalData2: productData.additionalData2 || JSON.stringify({
+            showInfoBoxes: true,
+            boxesConfig: {
+              freeShipping: true,
+              warranty: true,
+              returns: true
+            },
+            warrantyText: "Cobertura completa",
+            returnsText: "30 días sin preguntas"
+          }),
           enabledForDelivery: productData.enabledForDelivery,
           enabledForWithdrawal: productData.enabledForWithdrawal,
           hasVariations: true,
@@ -447,13 +679,7 @@ const CrearVariable: React.FC = () => {
       [name]: parseFloat(value) || null,
     }));
   };
-  const handleDescriptionChange = (value: string) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      description: value,
-    }));
-    setDescriptionLength(value.length);
-  };
+  // Estas funciones ya están definidas arriba con los nuevos estados locales
 
   const handleCancel = () => {
     handleClearImage(setMainImage);
@@ -465,10 +691,31 @@ const CrearVariable: React.FC = () => {
     setSelectedImages([]);
     setIsFeatured(false);
     setIsEditMode(false);
+    
+    // Limpiar estados locales de descripciones
+    setDescription("");
+    setShortDescription("");
+    setShowShortDescription(true);
+    setShowLongDescription(true);
+    setShortDescriptionCharCount(0);
+    setDescriptionLength(0);
+    setIsShortDescriptionAtLimit(false);
+    
     setFormData({
       productTypes: [],
       name: "",
-      description: "",
+      description: JSON.stringify({ content: "", enabled: true }),
+      additionalData1: JSON.stringify({ content: "", enabled: true }),
+      additionalData2: JSON.stringify({
+        showInfoBoxes: true,
+        boxesConfig: {
+          freeShipping: true,
+          warranty: true,
+          returns: true
+        },
+        warrantyText: "Cobertura completa",
+        returnsText: "30 días sin preguntas"
+      }),
       statusCode: "ACTIVE",
       enabledForDelivery: false,
       enabledForWithdrawal: false,
@@ -494,10 +741,31 @@ const CrearVariable: React.FC = () => {
   const handleExitEditMode = () => {
     // Limpieza de todos los estados relacionados con la edición
     setIsEditMode(false);
+    
+    // Limpiar estados locales de descripciones
+    setDescription("");
+    setShortDescription("");
+    setShowShortDescription(true);
+    setShowLongDescription(true);
+    setShortDescriptionCharCount(0);
+    setDescriptionLength(0);
+    setIsShortDescriptionAtLimit(false);
+    
     setFormData({
       productTypes: [],
       name: "",
-      description: "",
+      description: JSON.stringify({ content: "", enabled: true }),
+      additionalData1: JSON.stringify({ content: "", enabled: true }),
+      additionalData2: JSON.stringify({
+        showInfoBoxes: true,
+        boxesConfig: {
+          freeShipping: true,
+          warranty: true,
+          returns: true
+        },
+        warrantyText: "Cobertura completa",
+        returnsText: "30 días sin preguntas"
+      }),
       statusCode: "ACTIVE",
       enabledForDelivery: false,
       enabledForWithdrawal: false,
@@ -605,11 +873,19 @@ const CrearVariable: React.FC = () => {
   ) => {
     event.preventDefault();
 
-    if (!isEditMode && !validateForm()) {
-      toast.error("Por favor, corrige los errores antes de enviar");
-      setIsLoading(false);
+    // Si el formulario no es válido, mostrar errores y no continuar
+    if (!isEditMode && !isFormValid()) {
+      const errors = getValidationErrors();
+      setValidationErrors(errors);
+      
+      // Mostrar el primer error como toast
+      if (errors.length > 0) {
+        toast.error(errors[0]);
+      }
+      
       return;
     }
+    
     setIsLoading(true);
     try {
       const token = getCookie("AdminTokenAuth");
@@ -752,7 +1028,69 @@ const CrearVariable: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    fetchFreeShippingAmount();
   }, []);
+
+  const fetchFreeShippingAmount = async () => {
+    try {
+      const token = getCookie("AdminTokenAuth");
+      
+      // Obtener el estado global del envío gratis desde la API de opciones
+      const optionsResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/options?pageNumber=1&pageSize=50&siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const option = optionsResponse.data.options.find(
+        (opt: any) => opt.code === "FREE_SHIPPING_MINIMUM_AMOUNT"
+      );
+
+      if (option) {
+        const isEnabled = option.value !== null;
+        setIsFreeShippingEnabled(isEnabled);
+        
+        // Si está habilitado, obtener el monto desde el content block
+        if (isEnabled) {
+          const contentBlockId = process.env.NEXT_PUBLIC_MONTOENVIOGRATIS_CONTENTBLOCK;
+          const contentBlockResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          
+          const contentText = contentBlockResponse.data.contentBlock.contentText;
+          if (contentText && contentText.trim() !== "" && contentText !== "DISABLED") {
+            setFreeShippingAmount(contentText);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching free shipping amount:", error);
+    }
+  };
+
+  // Limpiar errores de validación cuando cambien los estados de las descripciones
+  useEffect(() => {
+    setValidationErrors([]);
+  }, [showShortDescription, showLongDescription]);
+
+  // Limpiar errores de validación cuando se agregue contenido a las descripciones
+  useEffect(() => {
+    // Solo limpiar errores si las descripciones están habilitadas y tienen contenido
+    if (showShortDescription && !isHtmlContentEmpty(formData.additionalData1)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción corta')));
+    }
+    if (showLongDescription && !isHtmlContentEmpty(formData.description)) {
+      setValidationErrors(prev => prev.filter(error => !error.includes('descripción larga')));
+    }
+  }, [formData.additionalData1, formData.description, showShortDescription, showLongDescription]);
 
   useEffect(() => {
     // Si estamos en modo edición y hay un ID en la URL, ocultamos el formulario base
@@ -1173,14 +1511,66 @@ const CrearVariable: React.FC = () => {
                   </div>
                 </div>
                 <div className="mt-8">
-                  <label
-                    htmlFor="descripcion"
-                    className="font-normal text-primary"
-                  >
-                    Descripción Producto Base
-                  </label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="font-normal text-primary">Descripción Corta</label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={showShortDescription}
+                        onChange={(e) => handleShortDescriptionToggle(e.target.checked)}
+                      />
+                      <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Mostrar en tienda
+                      </span>
+                    </label>
+                  </div>
+                  <div className={`${isShortDescriptionAtLimit ? 'border-2 border-red-500 rounded' : ''}`}>
+                    <ReactQuill
+                      value={shortDescription}
+                      onChange={handleShortDescriptionChange}
+                      modules={{
+                        toolbar: [
+                          ["bold", "italic", "underline"],
+                          [{ list: "ordered" }, { list: "bullet" }],
+                        ],
+                      }}
+                      formats={[
+                        "bold",
+                        "italic",
+                        "underline",
+                        "list",
+                        "bullet",
+                      ]}
+                      placeholder="Ingresa una descripción corta del producto (máximo 200 caracteres)"
+                    />
+                  </div>
+                  <div className="flex justify-end items-center mt-2">
+                    <div className={`text-left text-sm ${isShortDescriptionAtLimit ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+                      {shortDescriptionCharCount}/{maxShortDescriptionLength} caracteres
+                      {isShortDescriptionAtLimit && ' - Límite alcanzado'}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-8">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="font-normal text-primary">Descripción Producto Base</label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={showLongDescription}
+                        onChange={(e) => handleLongDescriptionToggle(e.target.checked)}
+                      />
+                      <div className="relative w-8 h-5 bg-secondary peer-focus:outline-none peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary" />
+                      <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Mostrar en tienda
+                      </span>
+                    </label>
+                  </div>
                   <ReactQuill
-                    value={formData.description}
+                    value={description}
                     onChange={handleDescriptionChange}
                     modules={{
                       toolbar: [
@@ -1449,13 +1839,57 @@ const CrearVariable: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                
+                {/* Configuración de Cajas Informativas */}
+                <div className="mt-8">
+                  <ProductInfoBoxesConfig
+                    value={formData.additionalData2}
+                    onChange={(value) => setFormData({ ...formData, additionalData2: value })}
+                    freeShippingAmount={freeShippingAmount}
+                    isFreeShippingEnabled={isFreeShippingEnabled}
+                  />
+                </div>
+                
                 <button
-                  className="shadow bg-primary text-secondary hover:bg-secondary hover:text-primary px-4 py-2 mt-4"
+                  className={`shadow px-4 py-2 mt-4 transition-colors ${
+                    isFormValid() 
+                      ? "bg-primary text-secondary hover:bg-secondary hover:text-primary" 
+                      : "bg-gray-400 text-gray-600 hover:bg-gray-500"
+                  }`}
                   style={{ borderRadius: "var(--radius)" }}
                   onClick={handleSubmit}
+                  disabled={isLoading}
+                  title={!isFormValid() ? "Haz clic para ver los errores de validación" : ""}
                 >
                   {isEditMode ? "Guardar Cambios" : "Crear Producto Base"}
                 </button>
+                
+                {/* Mostrar errores de validación */}
+                {validationErrors.length > 0 && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <h3 className="text-sm font-medium text-red-800">
+                        Errores de validación ({validationErrors.length})
+                      </h3>
+                    </div>
+                    <ul className="list-disc list-inside space-y-1">
+                      {validationErrors.map((error, index) => (
+                        <li key={index} className="text-sm text-red-700">
+                          {error}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => setValidationErrors([])}
+                      className="mt-3 text-sm text-red-600 hover:text-red-800 underline"
+                    >
+                      Ocultar errores
+                    </button>
+                  </div>
+                )}
                 {isEditMode ? (
                   <Link
                     /* onClick={handleCancel} */
@@ -1480,6 +1914,7 @@ const CrearVariable: React.FC = () => {
               variations={variations}
               setVariations={setVariations}
               baseProductDescription={formData.description}
+              baseProductInfo={formData}
             />
           </div>
           {/* FIN COL PRINCIPAL */}
@@ -1580,7 +2015,7 @@ const CrearVariable: React.FC = () => {
                     className="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     Recortar y Subir
-                  </button>
+                  </button> 
                   <button
                     onClick={() => {
                       setMainImage(null);

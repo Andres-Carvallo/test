@@ -72,7 +72,7 @@ const Colecciones: React.FC<ColeccionesProps> = ({
             isMobile={false}
           />
           <div className="flex justify-center mx-auto px-4 mt-10 mb-20">
-            <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-w-[300px] max-w-[1100px]">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 min-w-[300px] max-w-[1100px]">
               {collectionProducts.map((product: any) => (
                 <ProductCard
                   key={product.id}

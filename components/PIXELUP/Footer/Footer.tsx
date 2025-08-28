@@ -94,6 +94,8 @@ export default function Footer() {
   const { socialNetworks } = useSocialNetworks();
   const [collections, setCollections] = useState<any[]>([]);
   const [collectionsLoading, setCollectionsLoading] = useState(false);
+  const [footerLogoData, setFooterLogoData] = useState<any | null>(null);
+  const [footerLogoLoading, setFooterLogoLoading] = useState(false);
 
   // Función temporal para debug - remover después
   React.useEffect(() => {
@@ -106,6 +108,43 @@ export default function Footer() {
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [refreshConfig]);
+
+  // Cargar logo personalizado del footer
+  const fetchFooterLogo = async () => {
+    if (!config.useCustomLogo) {
+      console.log("🔍 Footer logo: useCustomLogo es false, usando logo global");
+      return;
+    }
+    
+    try {
+      setFooterLogoLoading(true);
+      const logoId = process.env.NEXT_PUBLIC_LOGO_FOOTER_ID;
+
+      console.log("🔍 Footer logo: Intentando cargar logo con ID:", logoId);
+
+      if (!logoId || logoId === "PENDIENTE_CONFIGURAR") {
+        console.warn("⚠️ No se ha configurado NEXT_PUBLIC_LOGO_FOOTER_ID");
+        return;
+      }
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/banners/${logoId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`
+      );
+
+      console.log("🔍 Footer logo: Respuesta de la API:", response.data);
+
+      if (response.data.banner?.images && response.data.banner.images.length > 0) {
+        console.log("✅ Footer logo: Logo cargado exitosamente:", response.data.banner.images[0]);
+        setFooterLogoData(response.data.banner.images);
+      } else {
+        console.warn("⚠️ Footer logo: No se encontraron imágenes en la respuesta");
+      }
+    } catch (error) {
+      console.error("❌ Error al cargar logo del footer:", error);
+    } finally {
+      setFooterLogoLoading(false);
+    }
+  };
 
   // Cargar colecciones reales
   const fetchCollections = async () => {
@@ -146,7 +185,8 @@ export default function Footer() {
 
   useEffect(() => {
     fetchCollections();
-  }, []);
+    fetchFooterLogo();
+  }, [config.useCustomLogo]);
 
   // Obtener enlaces del menú de navegación real
   const realMenuItems = mainMenuConfig.showInFooter
@@ -169,6 +209,8 @@ export default function Footer() {
         collection.slug || collection.title.toLowerCase().replace(/\s+/g, "-"),
     })),
     menuItems: realMenuItems,
+    // Incluir datos del logo personalizado del footer
+    footerLogoData: footerLogoData,
   };
 
   // Función helper para renderizar container con imagen de fondo
@@ -228,7 +270,7 @@ export default function Footer() {
     );
   };
 
-  if (loading || collectionsLoading) {
+  if (loading || collectionsLoading || (config.useCustomLogo && footerLogoLoading)) {
     return (
       <footer className="bg-gray-800 flex items-center justify-center w-full">
         <div className="max-w-7xl w-full mx-auto py-16 px-6 sm:px-8 lg:py-20 lg:px-12">
@@ -242,6 +284,26 @@ export default function Footer() {
     );
   }
 
+  // Función para obtener el logo apropiado
+  const getFooterLogo = () => {
+    console.log("🔍 getFooterLogo:", {
+      useCustomLogo: config.useCustomLogo,
+      footerLogoData: footerLogoData,
+      footerLogoUrl: footerLogoData?.[0]?.mainImage?.url,
+      globalLogoUrl: logo?.mainImage?.url,
+      fallbackUrl: process.env.NEXT_PUBLIC_LOGO_COLOR
+    });
+    
+    if (config.useCustomLogo && footerLogoData?.[0]?.mainImage?.url) {
+      console.log("✅ Usando logo personalizado del footer:", footerLogoData[0].mainImage.url);
+      return footerLogoData[0].mainImage.url;
+    }
+    
+    const fallbackUrl = logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR;
+    console.log("✅ Usando logo global:", fallbackUrl);
+    return fallbackUrl;
+  };
+
   if (error) {
     console.error("Error loading footer config:", error);
     return null;
@@ -249,12 +311,15 @@ export default function Footer() {
 
   // Renderizar el template seleccionado
   const renderFooter = () => {
+    const footerLogoUrl = getFooterLogo();
+    
     switch (config.selectedTemplate) {
       case "Footer02":
         return (
           <Footer02Template
             config={fullConfig}
             logo={logo}
+            footerLogoUrl={footerLogoUrl}
           />
         );
       case "Footer03":
@@ -262,6 +327,7 @@ export default function Footer() {
           <Footer03Template
             config={fullConfig}
             logo={logo}
+            footerLogoUrl={footerLogoUrl}
           />
         );
       default:
@@ -269,6 +335,7 @@ export default function Footer() {
           <Footer02Template
             config={fullConfig}
             logo={logo}
+            footerLogoUrl={footerLogoUrl}
           />
         );
     }
@@ -278,31 +345,33 @@ export default function Footer() {
 }
 
 // Template Footer02 (Moderno) - similar estructura pero diferente layout
-const Footer02Template = ({ config, logo }: { config: any; logo: any }) => (
-  <div className="p-8">
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Logo y Descripción */}
-        {(config.showLogo || config.showDescription) && (
-          <div className="lg:col-span-4">
-            {config.showLogo && (
-              <img
-                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-                className="object-contain mb-4"
-                style={getLogoStyle(config.logoSize)}
-                src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
-              />
-            )}
-            {config.showDescription && config.description && (
-              <p
-                className="text-sm leading-relaxed mb-6"
-                style={{ color: config.textColor }}
-              >
-                {config.description}
-              </p>
-            )}
-          </div>
-        )}
+const Footer02Template = ({ config, logo, footerLogoUrl }: { config: any; logo: any; footerLogoUrl: string }) => {
+
+  return (
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Logo y Descripción */}
+          {(config.showLogo || config.showDescription) && (
+            <div className="lg:col-span-4">
+              {config.showLogo && (
+                <img
+                  alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
+                  className="object-contain mb-4"
+                  style={getLogoStyle(config.logoSize)}
+                  src={footerLogoUrl}
+                />
+              )}
+              {config.showDescription && config.description && (
+                <p
+                  className="text-sm leading-relaxed mb-6"
+                  style={{ color: config.textColor }}
+                >
+                  {config.description}
+                </p>
+              )}
+            </div>
+          )}
 
         {/* Contenido principal */}
         <div
@@ -436,33 +505,36 @@ const Footer02Template = ({ config, logo }: { config: any; logo: any }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // Template Footer03 (Minimalista)
-const Footer03Template = ({ config, logo }: { config: any; logo: any }) => (
-  <div className="p-6">
-    <div className="max-w-4xl mx-auto text-center">
-      {/* Logo y Descripción */}
-      {(config.showLogo || config.showDescription) && (
-        <div className="mb-6 text-center">
-          {config.showLogo && (
-            <img
-              alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
-              className="object-contain mx-auto mb-3"
-              style={getLogoStyle(config.logoSize)}
-              src={logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR}
-            />
-          )}
-          {config.showDescription && config.description && (
-            <p
-              className="text-sm max-w-md mx-auto"
-              style={{ color: config.textColor }}
-            >
-              {config.description}
-            </p>
-          )}
-        </div>
-      )}
+const Footer03Template = ({ config, logo, footerLogoUrl }: { config: any; logo: any; footerLogoUrl: string }) => {
+
+  return (
+    <div className="p-6">
+      <div className="max-w-4xl mx-auto text-center">
+        {/* Logo y Descripción */}
+        {(config.showLogo || config.showDescription) && (
+          <div className="mb-6 text-center">
+            {config.showLogo && (
+              <img
+                alt={process.env.NEXT_PUBLIC_NOMBRE_TIENDA}
+                className="object-contain mx-auto mb-3"
+                style={getLogoStyle(config.logoSize)}
+                src={footerLogoUrl}
+              />
+            )}
+            {config.showDescription && config.description && (
+              <p
+                className="text-sm max-w-md mx-auto"
+                style={{ color: config.textColor }}
+              >
+                {config.description}
+              </p>
+            )}
+          </div>
+        )}
 
       {/* Navegación organizada en secciones */}
       <div
@@ -596,4 +668,5 @@ const Footer03Template = ({ config, logo }: { config: any; logo: any }) => (
       </div>
     </div>
   </div>
-);
+  );
+};

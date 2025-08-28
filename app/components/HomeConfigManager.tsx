@@ -18,17 +18,9 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { HomeConfig } from "@/app/utils/homeConfig";
-
-interface ComponentConfig {
-  id: string;
-  title: string;
-  description?: string;
-  icon?: string;
-  category?: string;
-}
+import { useComponentCategories } from "@/hooks/useComponentCategories";
+import { ComponentPreview, SortableComponent, type ComponentConfig } from "@/app/components/shared/BaseComponentManager";
 
 interface HomeConfigManagerProps {
   availableComponents: ComponentConfig[];
@@ -38,522 +30,6 @@ interface HomeConfigManagerProps {
   onReset: () => void;
   loading?: boolean;
   aboutVisibleComponents?: string[];
-}
-
-// Componente de vista previa
-function ComponentPreview({
-  component,
-  onClose,
-  onAdd,
-  onNavigate,
-  currentIndex = 0,
-  totalComponents = 0,
-}: {
-  component: ComponentConfig;
-  onClose: () => void;
-  onAdd: () => void;
-  onNavigate?: (direction: 'prev' | 'next') => void;
-  currentIndex?: number;
-  totalComponents?: number;
-}) {
-  const [previewComponent, setPreviewComponent] =
-    useState<React.ReactNode>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Navegación con teclado
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!onNavigate) return;
-      
-      switch (event.key) {
-        case 'ArrowLeft':
-          event.preventDefault();
-          onNavigate('prev');
-          break;
-        case 'ArrowRight':
-          event.preventDefault();
-          onNavigate('next');
-          break;
-        case 'Escape':
-          event.preventDefault();
-          onClose();
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onNavigate, onClose]);
-
-  // Mapeo de componentes a sus respectivos componentes de vista previa
-  const getPreviewComponent = async (componentId: string) => {
-    try {
-      setLoading(true);
-
-      // Importaciones dinámicas para los componentes de vista previa
-      const componentMap: { [key: string]: () => Promise<any> } = {
-        marqueeTOP: () =>
-          import("@/components/PIXELUP/Marquee/MarqueeTop/Marquee"),
-        bannerPrincipal01: () =>
-          import(
-            "@/components/PIXELUP/BannerPrincipal/BannerPrincipal01/BannerPrincipal01"
-          ),
-        destacadosCat: () =>
-          import("@/components/PIXELUP/Destacados/DestacadosCat/DestacadosCat"),
-        testimonios03: () =>
-          import(
-            "@/components/PIXELUP/Testimonios/Testimonios03/Testimonios03"
-          ),
-        testimonios: () =>
-          import(
-            "@/components/PIXELUP/Testimonios/Testimonios01/Testimonios01"
-          ),
-        testimonios04: () =>
-          import(
-            "@/components/PIXELUP/Testimonios/Testimonios04/Testimonios04"
-          ),
-        sinFoto04: () =>
-          import("@/components/PIXELUP/SinFoto/SinFoto04/SinFoto04"),
-        colecciones01: () =>
-          import(
-            "@/components/PIXELUP/Colecciones/Colecciones01/Colecciones01"
-          ),
-        colecciones02: () =>
-          import(
-            "@/components/PIXELUP/Colecciones/Colecciones02/Colecciones02"
-          ),
-        galeria01: () =>
-          import("@/components/PIXELUP/Galeria/Galeria01/Galeria01"),
-        galeria02: () =>
-          import("@/components/PIXELUP/Galeria/Galeria02/Galeria02"),
-        nosotros01: () =>
-          import("@/components/PIXELUP/Nosotros/Nosotros01/Nosotros01"),
-        sinFoto06: () =>
-          import("@/components/PIXELUP/SinFoto/SinFoto06/SinFoto06"),
-        sinFoto07: () =>
-          import("@/components/PIXELUP/SinFoto/SinFoto07/SinFoto07"),
-        ubicacion02: () =>
-          import("@/components/PIXELUP/Ubicacion/Ubicacion02/Ubicacion02"),
-        servicios01: () =>
-          import("@/components/PIXELUP/Servicios/Servicios01/Servicios01"),
-        servicios02: () =>
-          import("@/components/PIXELUP/Servicios/Servicios02/Servicios02"),
-        servicios03: () =>
-          import("@/components/PIXELUP/Servicios/Servicios03/Servicios03"),
-        servicios04: () =>
-          import("@/components/PIXELUP/Servicios/Servicios04/Servicios04"),
-       
-        sinFoto: () =>
-          import("@/components/PIXELUP/SinFoto/SinFoto05/SinFoto05"),
-        sinFoto02: () =>
-          import("@/components/PIXELUP/SinFoto/SinFoto02/SinFoto02"),
-        hero06: () => import("@/components/PIXELUP/Hero/Hero06/Hero06"),
-        materiales: () =>
-          import("@/components/PIXELUP/SinFoto/Materiales/Materiales"),
-        logoscarrusel: () =>  
-          import("@/components/PIXELUP/Marcas/LogosCarrusel/LogosCarrusel"),
-        logosfijos: () =>
-          import("@/components/PIXELUP/Marcas/LogosFijos/LogosFijos"),
-        logosdinamicos: () =>
-          import("@/components/PIXELUP/Marcas/LogosDinamicos/LogosDinamicos"),
-        hero07: () => import("@/components/PIXELUP/Hero/Hero07/Hero07"),
-        hero08: () => import("@/components/PIXELUP/Hero/Hero08/Hero08"),
-        hero09: () => import("@/components/PIXELUP/Hero/Hero09/Hero09"),
-        bannerPrincipal02: () =>
-          import(
-            "@/components/PIXELUP/BannerPrincipal/BannerPrincipal02/BannerPrincipal02"
-          ),
-        hero01: () => import("@/components/PIXELUP/Hero/Hero01/Hero01"),
-        hero02: () => import("@/components/PIXELUP/Hero/Hero02/Hero02"),
-        hero03: () => import("@/components/PIXELUP/Hero/Hero03/Hero03"),
-        hero04: () => import("@/components/PIXELUP/Hero/Hero04/Hero04"),
-        hero05: () => import("@/components/PIXELUP/Hero/Hero05/Hero05"),
-        sinFoto01: () =>
-          import("@/components/PIXELUP/SinFoto/SinFoto01/SinFoto01"),
-        sinFoto03: () =>
-          import("@/components/PIXELUP/SinFoto/SinFoto03/SinFoto03"),
-        categoria01: () =>
-          import("@/components/PIXELUP/Categorias/Categoria01/Categoria01"),
-        categoria02: () =>
-          import("@/components/PIXELUP/Categorias/Categoria02/Categoria02"),
-        categoria03: () =>
-          import("@/components/PIXELUP/Categorias/Categoria03/Categoria03"),
-        categoria04: () =>
-          import("@/components/PIXELUP/Categorias/Categoria04/Categoria04"),
-        categoria05: () =>
-          import("@/components/PIXELUP/Categorias/Categoria05/Categoria05"),
-        categoria06: () =>
-          import("@/components/PIXELUP/Categorias/Categoria06/Categoria06"),
-        categoria07: () =>
-          import("@/components/PIXELUP/Categorias/Categoria07/Categoria07"),
-        feedInstagram: () =>
-          import("@/components/PIXELUP/FeedInstagram/FeedInstagram"),
-        parallax: () => import("@/components/PIXELUP/Parallax/Parallax"),
-      };
-
-      const importFunction = componentMap[componentId];
-      if (importFunction) {
-        try {
-          const importedModule = await importFunction();
-          const Component = importedModule.default;
-          setPreviewComponent(<Component />);
-        } catch (importError) {
-          console.warn(
-            `No se pudo cargar la vista previa para ${componentId}:`,
-            importError
-          );
-          setPreviewComponent(
-            <div className="text-center py-8 text-gray-500">
-              <p>Vista previa no disponible para este componente</p>
-              <p className="text-sm mt-2">
-                Puedes agregarlo directamente para ver cómo se ve en tu página
-              </p>
-            </div>
-          );
-        }
-      } else {
-        setPreviewComponent(
-          <div className="text-center py-8 text-gray-500">
-            <p>Vista previa no disponible para este componente</p>
-            <p className="text-sm mt-2">
-              Puedes agregarlo directamente para ver cómo se ve en tu página
-            </p>
-          </div>
-        );
-      }
-    } catch (error) {
-      console.error("Error al cargar vista previa:", error);
-      setPreviewComponent(
-        <div className="text-center py-8 text-gray-500">
-          <p>Error al cargar la vista previa</p>
-          <p className="text-sm mt-2">
-            Puedes agregarlo directamente para ver cómo se ve en tu página
-          </p>
-        </div>
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getPreviewComponent(component.id);
-  }, [component.id]);
-
-  const getCategoryIcon = (category: string) => {
-    const icons: { [key: string]: React.ReactNode } = {
-      Banners: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M3 9h18" />
-          <path d="M9 21V9" />
-        </svg>
-      ),
-      Hero: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 0 1-1.125-1.125v-3.75ZM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-8.25ZM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-2.25Z" />
-        </svg>
-      ),
-      Categorías: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-        </svg>
-      ),
-      Productos: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-          <line x1="7" y1="7" x2="7.01" y2="7" />
-        </svg>
-      ),
-      Servicios: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-        </svg>
-      ),
-      Social: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="18" cy="5" r="3" />
-          <circle cx="6" cy="12" r="3" />
-          <circle cx="18" cy="19" r="3" />
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-        </svg>
-      ),
-      Multimedia: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M3 9h18" />
-          <path d="M9 21V9" />
-        </svg>
-      ),
-      Contenido: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 0 1-1.125-1.125v-3.75ZM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-8.25ZM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-2.25Z" />
-        </svg>
-      ),
-      Información: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 16v-4" />
-          <path d="M12 8h.01" />
-        </svg>
-      ),
-      Marcas: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke="currentColor"
-          className="size-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
-          />
-        </svg>
-      ),
-      Efectos: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
-      ),
-    };
-    return icons[category] || (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14,2 14,8 20,8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-        <polyline points="10,9 9,9 8,9" />
-      </svg>
-    );
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            {/* Información del componente */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                {getCategoryIcon(component.category || "")}
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {component.title}
-                </h2>
-                {component.category && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {component.category} • ID: {component.id}
-                  </p>
-                )}
-              </div>
-            </div>
-            
-            {/* Navegación y botón cerrar agrupados en la derecha */}
-            <div className="flex items-center space-x-3">
-              {/* Navegación: flecha izquierda, indicador, flecha derecha */}
-              {onNavigate && totalComponents > 1 && (
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => onNavigate('prev')}
-                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900"
-                    title="Componente anterior"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  
-                  <div className="text-sm text-gray-500 font-medium px-3 py-1 bg-gray-50 rounded-lg">
-                    {currentIndex + 1} de {totalComponents}
-                  </div>
-                  
-                  <button
-                    onClick={() => onNavigate('next')}
-                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900"
-                    title="Siguiente componente"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-              
-              {/* Botón cerrar */}
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {component.description && (
-            <p className="text-gray-600 mt-3">{component.description}</p>
-          )}
-        </div>
-
-        {/* Contenido - Vista previa */}
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Cargando vista previa...</p>
-              </div>
-            </div>
-          ) : (
-            <div className="p-6">
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Vista Previa
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Así se verá este componente en tu página de inicio
-                </p>
-              </div>
-              <div className="border border-gray-200 rounded-lg overflow-hidden">
-                {previewComponent}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-200">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-            >
-              Volver
-            </button>
-            <div className="flex gap-3">
-              <button
-                onClick={onAdd}
-                disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Agregar Componente
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // Modal para componentes inactivos
@@ -579,198 +55,23 @@ function InactiveComponentsModal({
     useState<ComponentConfig | null>(null);
   const [currentComponentIndex, setCurrentComponentIndex] = useState(0);
 
-  const getCategoryIcon = (category: string) => {
-    const icons: { [key: string]: React.ReactNode } = {
-      Banners: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M3 9h18" />
-          <path d="M9 21V9" />
-        </svg>
-      ),
-      Hero: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 0 1-1.125-1.125v-3.75ZM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-8.25ZM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-2.25Z" />
-        </svg>
-      ),
-      Categorías: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-        </svg>
-      ),
-      Productos: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-          <line x1="7" y1="7" x2="7.01" y2="7" />
-        </svg>
-      ),
-      Servicios: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-        </svg>
-      ),
-      Social: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="18" cy="5" r="3" />
-          <circle cx="6" cy="12" r="3" />
-          <circle cx="18" cy="19" r="3" />
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-        </svg>
-      ),
-      Multimedia: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M3 9h18" />
-          <path d="M9 21V9" />
-        </svg>
-      ),
-      Contenido: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 0 1-1.125-1.125v-3.75ZM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-8.25ZM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-2.25Z" />
-        </svg>
-      ),
-      Información: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 16v-4" />
-          <path d="M12 8h.01" />
-        </svg>
-      ),
-      Marcas: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke="currentColor"
-          className="size-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
-          />
-        </svg>
-      ),
-      Efectos: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
-      ),
-    };
-    return icons[category] || (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14,2 14,8 20,8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-        <polyline points="10,9 9,9 8,9" />
-      </svg>
-    );
-  };
+  // Combinar todos los componentes disponibles
+  const allComponents = [...activeComponents, ...inactiveComponents];
+
+  // Usar el hook de categorías
+  const { getCategoryIcon, getCategoryColor, getAllCategories } = useComponentCategories(allComponents);
 
   // Obtener categorías únicas
   const categories = Array.from(
     new Set(
-      inactiveComponents
+      allComponents
         .map((comp) => comp.category)
         .filter(Boolean) as string[]
     )
   );
 
   // Filtrar componentes por búsqueda y categoría
-  const filteredComponents = inactiveComponents.filter((component) => {
+  const filteredComponents = allComponents.filter((component) => {
     const matchesSearch =
       component.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (component.description?.toLowerCase() || "").includes(
@@ -814,14 +115,16 @@ function InactiveComponentsModal({
   };
 
   const navigateToComponent = (direction: 'prev' | 'next') => {
-    const allFilteredComponents = filteredComponents;
-    if (allFilteredComponents.length === 0) return;
+    if (!previewComponent) return;
     
+    const allFilteredComponents = filteredComponents;
+    const currentIndex = allFilteredComponents.findIndex(comp => comp.id === previewComponent.id);
     let newIndex;
+    
     if (direction === 'prev') {
-      newIndex = currentComponentIndex > 0 ? currentComponentIndex - 1 : allFilteredComponents.length - 1;
+      newIndex = currentIndex > 0 ? currentIndex - 1 : allFilteredComponents.length - 1;
     } else {
-      newIndex = currentComponentIndex < allFilteredComponents.length - 1 ? currentComponentIndex + 1 : 0;
+      newIndex = currentIndex < allFilteredComponents.length - 1 ? currentIndex + 1 : 0;
     }
     
     setCurrentComponentIndex(newIndex);
@@ -842,7 +145,7 @@ function InactiveComponentsModal({
                   Agregar Componentes
                 </h2>
                 <p className="text-white text-sm">
-                  Explora y selecciona los componentes que deseas agregar a tu página de inicio
+                  Explora y selecciona los componentes que deseas agregar a tu página Home
                 </p>
               </div>
               <button
@@ -864,64 +167,6 @@ function InactiveComponentsModal({
                 </svg>
               </button>
             </div>
-
-            {/* Buscador y controles */}
-     {/*        <div className="flex justify-between items-center gap-4">
-              <div className="flex-1 max-w-md">
-                <div className="relative">
-                  <svg
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="Buscar componentes..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
-                  />
-                </div>
-              </div>
-              
-             
-              <div className="flex items-center space-x-4">
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === "grid"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      viewMode === "list"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div> */}
           </div>
 
           {/* Contenido principal con sidebar */}
@@ -942,12 +187,12 @@ function InactiveComponentsModal({
                     }`}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
                     </svg>
-                    <span>Todas ({inactiveComponents.length})</span>
+                    <span>Todas ({allComponents.length})</span>
                   </button>
                   {categories.map((category) => {
-                    const categoryCount = inactiveComponents.filter(comp => comp.category === category).length;
+                    const categoryCount = allComponents.filter(comp => comp.category === category).length;
                     return (
                       <button
                         key={category}
@@ -999,7 +244,7 @@ function InactiveComponentsModal({
                     ([category, components]) => (
                       <div key={category}>
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8  flex items-center justify-center text-gray-500">
+                          <div className="w-8 h-8 flex items-center justify-center text-gray-500">
                             {getCategoryIcon(category)}
                           </div>
                           <div>
@@ -1017,7 +262,7 @@ function InactiveComponentsModal({
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {components.map((component) => {
                               const isActive = activeComponents.some(active => active.id === component.id);
-                              const isSharedWithAbout = aboutVisibleComponents && aboutVisibleComponents.includes(component.id);
+                              const isAboutComponent = aboutVisibleComponents.includes(component.id);
 
                               return (
                                 <div
@@ -1046,12 +291,12 @@ function InactiveComponentsModal({
                                               Activo
                                             </span>
                                           )}
-                                          {isSharedWithAbout && (
-                                            <div className="flex items-center gap-1 text-xs text-orange-600 mt-1">
+                                          {isAboutComponent && (
+                                            <div className="flex items-center gap-1 mt-1">
                                               <svg className="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                               </svg>
-                                              Compartido con About
+                                              <span className="text-xs text-orange-600 font-medium">Compartido con About Us</span>
                                             </div>
                                           )}
                                         </div>
@@ -1114,7 +359,7 @@ function InactiveComponentsModal({
                           <div className="space-y-3">
                             {components.map((component) => {
                               const isActive = activeComponents.some(active => active.id === component.id);
-                              const isSharedWithAbout = aboutVisibleComponents && aboutVisibleComponents.includes(component.id);
+                              const isAboutComponent = aboutVisibleComponents.includes(component.id);
 
                               return (
                                 <div
@@ -1132,35 +377,24 @@ function InactiveComponentsModal({
                                           {component.title.charAt(0)}
                                         </div>
                                         <div>
-                                          <div className="flex items-center gap-2">
-                                            <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                                              {component.title}
-                                            </h4>
-                                            <p className="text-xs text-gray-500 font-medium">
-                                              ID: {component.id}
-                                            </p>
-                                            {isActive && (
-                                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
-                                                Activo
-                                              </span>
-                                            )}
-                                            {isSharedWithAbout && (
-                                              <div className="flex items-center gap-1 text-xs text-orange-600 mt-1">
-                                                <svg className="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
-                                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                </svg>
-                                                Compartido con About
-                                              </div>
-                                            )}
-                                          </div>
+                                          <h4 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                            {component.title}
+                                          </h4>
                                           <p className="text-xs text-gray-500 font-medium">
                                             ID: {component.id}
                                           </p>
-                                          {component.description && (
-                                            <p className="text-sm text-gray-600 mt-1 max-w-md">
-                                              {component.description}
-                                            </p>
-                                          )}
+                                          <div className="flex items-center gap-2 mt-1">
+                                            {isActive && (
+                                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Activo
+                                              </span>
+                                            )}
+                                            {isAboutComponent && (
+                                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600">
+                                                Compartido con About Us
+                                              </span>
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
@@ -1231,10 +465,10 @@ function InactiveComponentsModal({
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-4">
                 <div className="bg-primary/30 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                  {filteredComponents.length} de {inactiveComponents.length} componentes
+                  {filteredComponents.length} de {allComponents.length} componentes
                 </div>
                 <p className="text-sm text-gray-600">
-                  Selecciona los componentes que deseas agregar a tu página
+                  Selecciona los componentes que deseas agregar a tu página Home
                 </p>
               </div>
               <button
@@ -1263,316 +497,6 @@ function InactiveComponentsModal({
   );
 }
 
-// Componente Sortable para elementos activos (solo drag and drop)
-function SortableComponent({
-  component,
-  index,
-  onMove,
-  onToggle,
-  totalItems = 0,
-}: {
-  component: ComponentConfig;
-  index: number;
-  onMove: (direction: "up" | "down") => void;
-  onToggle: (activate: boolean) => void;
-  totalItems?: number;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: component.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  const getCategoryIcon = (category: string) => {
-    const icons: { [key: string]: React.ReactNode } = {
-      Banners: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M3 9h18" />
-          <path d="M9 21V9" />
-        </svg>
-      ),
-      Hero: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 0 1-1.125-1.125v-3.75ZM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-8.25ZM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-2.25Z" />
-        </svg>
-      ),
-      Categorías: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-        </svg>
-      ),
-      Productos: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-          <line x1="7" y1="7" x2="7.01" y2="7" />
-        </svg>
-      ),
-      Servicios: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.89l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-        </svg>
-      ),
-      Social: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="18" cy="5" r="3" />
-          <circle cx="6" cy="12" r="3" />
-          <circle cx="18" cy="19" r="3" />
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-        </svg>
-      ),
-      Multimedia: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M3 9h18" />
-          <path d="M9 21V9" />
-        </svg>
-      ),
-      Contenido: (
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 7.125C2.25 6.504 2.754 6 3.375 6h6c.621 0 1.125.504 1.125 1.125v3.75c0 .621-.504 1.125-1.125 1.125h-6a1.125 1.125 0 0 1-1.125-1.125v-3.75ZM14.25 8.625c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v8.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-8.25ZM3.75 16.125c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125h-5.25a1.125 1.125 0 0 1-1.125-1.125v-2.25Z" />
-        </svg>
-      ),
-      Información: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 16v-4" />
-          <path d="M12 8h.01" />
-        </svg>
-      ),
-      Marcas: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="1.5"
-          stroke="currentColor"
-          className="size-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
-          />
-        </svg>
-      ),
-      Efectos: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-        </svg>
-      ),
-    };
-    return icons[category] || (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14,2 14,8 20,8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-        <polyline points="10,9 9,9 8,9" />
-      </svg>
-    );
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`component-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm ${
-        isDragging ? "dragging" : ""
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            {...attributes}
-            {...listeners}
-            className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center drag-handle"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-primary">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-medium text-gray-900">{component.title}</h4>
-              {component.category && (
-                <span className="category-badge flex items-center gap-1">
-                  {getCategoryIcon(component.category)}
-                  <span>{component.category}</span>
-                </span>
-              )}
-            </div>
-            {component.description && (
-              <p className="text-sm text-gray-600">{component.description}</p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onMove("up")}
-            disabled={index === 0}
-            className="action-button p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 tooltip"
-            data-tooltip="Mover arriba"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 15l7-7 7 7"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={() => onMove("down")}
-            disabled={index === totalItems - 1}
-            className="action-button p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 tooltip"
-            data-tooltip="Mover abajo"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={() => onToggle(false)}
-            className="action-button p-1 text-red-400 hover:text-red-600 tooltip"
-            data-tooltip="Desactivar componente"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function HomeConfigManager({
   availableComponents,
   config,
@@ -1590,6 +514,9 @@ export default function HomeConfigManager({
   >([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Usar el hook de categorías
+  const { getCategoryIcon, getCategoryColor, getAllCategories } = useComponentCategories(availableComponents);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -1801,28 +728,6 @@ export default function HomeConfigManager({
         </div>
       </div>
 
-      {/* Stats */}
-{/*       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg border border-gray-200 component-card">
-          <div className="text-2xl font-bold text-blue-600">
-            {activeComponents.length}
-          </div>
-          <div className="text-sm text-gray-600">Componentes Activos</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200 component-card">
-          <div className="text-2xl font-bold text-gray-600">
-            {inactiveComponents.length}
-          </div>
-          <div className="text-sm text-gray-600">Componentes Inactivos</div>
-        </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200 component-card">
-          <div className="text-2xl font-bold text-green-600">
-            {availableComponents.length}
-          </div>
-          <div className="text-sm text-gray-600">Total Disponibles</div>
-        </div>
-      </div> */}
-
       {/* Componentes Activos */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
         <div className="p-4 border-b border-gray-200">
@@ -1836,7 +741,7 @@ export default function HomeConfigManager({
                 </span>
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                Estos componentes se mostrarán en el home en el orden
+                Estos componentes se mostrarán en la página Home en el orden
                 especificado
               </p>
             </div>
@@ -1873,18 +778,23 @@ export default function HomeConfigManager({
               items={activeComponents.map((comp) => comp.id)}
               strategy={verticalListSortingStrategy}
             >
-              {activeComponents.map((component, index) => (
-                <SortableComponent
-                  key={component.id}
-                  component={component}
-                  index={index}
-                  onMove={(direction) => moveComponent(component.id, direction)}
-                  onToggle={(activate) =>
-                    toggleComponent(component.id, activate)
-                  }
-                  totalItems={activeComponents.length}
-                />
-              ))}
+              {activeComponents.map((component, index) => {
+                const isShared = aboutVisibleComponents?.includes(component.id) || false;
+                return (
+                  <SortableComponent
+                    key={component.id}
+                    component={component}
+                    index={index}
+                    onMove={(direction) => moveComponent(component.id, direction)}
+                    onToggle={(activate) =>
+                      toggleComponent(component.id, activate)
+                    }
+                    totalItems={activeComponents.length}
+                    isShared={isShared}
+                    sharedWith="About Us"
+                  />
+                );
+              })}
             </SortableContext>
 
             {activeComponents.length === 0 && (
@@ -1942,8 +852,8 @@ export default function HomeConfigManager({
         onActivateComponent={(componentId) =>
           toggleComponent(componentId, true)
         }
-        aboutVisibleComponents={aboutVisibleComponents || []}
         activeComponents={activeComponents}
+        aboutVisibleComponents={aboutVisibleComponents}
       />
     </div>
   );

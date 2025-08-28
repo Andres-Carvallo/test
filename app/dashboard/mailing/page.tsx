@@ -28,6 +28,31 @@ const Mailing: React.FC = () => {
     "header"
   );
 
+  // Constantes para validación
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB en bytes
+  const ALLOWED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+  // Función para validar archivo
+  const validateImageFile = (file: File): { isValid: boolean; error?: string } => {
+    // Validar tamaño
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        isValid: false,
+        error: `El archivo es demasiado grande. Tamaño máximo permitido: 5MB. Tu archivo: ${(file.size / (1024 * 1024)).toFixed(2)}MB`
+      };
+    }
+
+    // Validar formato
+    if (!ALLOWED_FORMATS.includes(file.type)) {
+      return {
+        isValid: false,
+        error: `Formato de archivo no permitido. Formatos aceptados: JPG, PNG, WebP. Tu archivo: ${file.type}`
+      };
+    }
+
+    return { isValid: true };
+  };
+
   const fetchBannerData = async () => {
     try {
       setIsLoading(true);
@@ -76,6 +101,16 @@ const Mailing: React.FC = () => {
   ) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validar el archivo antes de procesarlo
+      const validation = validateImageFile(file);
+      
+      if (!validation.isValid) {
+        toast.error(validation.error || "Error al validar el archivo");
+        // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+        e.target.value = '';
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
@@ -319,7 +354,7 @@ const Mailing: React.FC = () => {
                     </svg>
                     <p className="mb-2 text-sm text-gray-500">Subir Imagen</p>
                     <p className="text-xs text-gray-500">
-                      PNG, JPG o Webp (800x800px)
+                      PNG, JPG o WebP (máx. 5MB)
                     </p>
                   </div>
                 </label>
@@ -404,7 +439,7 @@ const Mailing: React.FC = () => {
                     </svg>
                     <p className="mb-2 text-sm text-gray-500">Subir Imagen</p>
                     <p className="text-xs text-gray-500">
-                      PNG, JPG o Webp (800x800px)
+                      PNG, JPG o WebP (máx. 5MB)
                     </p>
                   </div>
                 </label>

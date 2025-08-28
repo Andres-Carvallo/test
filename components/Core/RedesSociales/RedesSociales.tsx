@@ -79,12 +79,17 @@ export const getSocialNetworksConfig = async () => {
     );
 
     if (response.data.contentBlock?.contentText) {
-      const savedNetworks = JSON.parse(response.data.contentBlock.contentText);
-      // Agregar iconos a las redes sociales
-      return savedNetworks.map((network: any) => ({
-        ...network,
-        icon: getSocialNetworkIcon(network.name),
-      }));
+      try {
+        const savedNetworks = JSON.parse(response.data.contentBlock.contentText);
+        // Agregar iconos a las redes sociales
+        return savedNetworks.map((network: any) => ({
+          ...network,
+          icon: getSocialNetworkIcon(network.name),
+        }));
+      } catch (parseError) {
+        console.warn("El contenido no es JSON válido, usando configuración por defecto:", response.data.contentBlock.contentText);
+        return [];
+      }
     }
     return [];
   } catch (error) {
@@ -129,6 +134,7 @@ const RedesSociales: React.FC<ReviewSettingsProps> = () => {
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Todas las redes sociales disponibles para agregar
   const allAvailableNetworks: SocialNetwork[] = [
@@ -161,7 +167,11 @@ const RedesSociales: React.FC<ReviewSettingsProps> = () => {
         icon: getSocialNetworkIcon(network.name),
       }));
       setSocialNetworks(networksWithIcons);
-      setOriginalSocialNetworks(networksWithIcons);
+      // Solo actualizar originalSocialNetworks en la carga inicial
+      if (isInitialLoad) {
+        setOriginalSocialNetworks(networksWithIcons);
+        setIsInitialLoad(false);
+      }
     } else if (!loading) {
       // Si no hay redes sociales en el contexto y ya terminó de cargar, usar valores por defecto
       const defaultNetworks = [
@@ -180,8 +190,9 @@ const RedesSociales: React.FC<ReviewSettingsProps> = () => {
       ];
       setSocialNetworks(defaultNetworks);
       setOriginalSocialNetworks(defaultNetworks);
+      setIsInitialLoad(false);
     }
-  }, [contextSocialNetworks, loading]);
+  }, [contextSocialNetworks, loading, isInitialLoad]);
 
   // Guardar configuración de redes sociales usando el contexto
   const saveSocialNetworksSettings = async () => {
@@ -202,6 +213,7 @@ const RedesSociales: React.FC<ReviewSettingsProps> = () => {
       if (success) {
         toast.success("Configuración de redes sociales guardada correctamente");
         setOriginalSocialNetworks([...socialNetworks]);
+        setIsInitialLoad(false);
         // El contexto ya se actualiza inmediatamente con cada cambio
       } else {
         toast.error("Error al guardar la configuración de redes sociales");
@@ -397,7 +409,7 @@ const RedesSociales: React.FC<ReviewSettingsProps> = () => {
               Esta configuración se sincroniza automáticamente con el footer y
               otros componentes de la tienda.{" "}
               <strong>
-                Los cambios se ven inmediatamente en la vista previa
+                Los cambios se ven inmediatamente en la vista previa {" "} 
               </strong>
               y se aplicarán permanentemente al guardar.
             </p>

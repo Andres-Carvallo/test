@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+"use client"
 import React, { useState, useEffect, useRef } from "react";
 import { FaWhatsapp, FaInstagram } from "react-icons/fa";
 import Link from "next/link";

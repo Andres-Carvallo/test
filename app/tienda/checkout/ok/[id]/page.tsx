@@ -9,6 +9,7 @@ import Loader from "@/components/common/Loader";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
+import { useLogo } from "@/context/LogoContext";
 
 interface Order {
   totals: any;
@@ -66,6 +67,7 @@ interface Order {
 
 const OrderReceipt: React.FC = () => {
   const { id } = useParams();
+  const { logo } = useLogo();
   const [attributesMap, setAttributesMap] = useState<{ [key: string]: any }>(
     {}
   );
@@ -74,7 +76,7 @@ const OrderReceipt: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
-  const imagePath = process.env.NEXT_PUBLIC_LOGO_COLOR;
+  const imagePath = logo?.mainImage?.url || process.env.NEXT_PUBLIC_LOGO_COLOR;
   const handleDownloadPdf = async () => {
     const buttonElement = document.getElementById("download-button");
     if (buttonElement) {
@@ -82,10 +84,53 @@ const OrderReceipt: React.FC = () => {
     }
 
     if (printRef.current) {
-      const canvas = await html2canvas(printRef.current, {
-        scale: 2, // Aumenta la escala para mejorar la resolución
-        useCORS: true, // Permite imágenes de origen cruzado
-      });
+      // Crear una copia del elemento para aplicar estilos específicos para PDF
+      const element = printRef.current.cloneNode(true) as HTMLElement;
+      
+      // Aplicar estilos inline para evitar colores oklch
+      const style = document.createElement('style');
+      style.textContent = `
+        * {
+          color: #000000 !important;
+          background-color: #ffffff !important;
+          border-color: #d1d5db !important;
+        }
+        .bg-primary {
+          background-color: #3b82f6 !important;
+        }
+        .text-white {
+          color: #ffffff !important;
+        }
+        .text-gray-500 {
+          color: #6b7280 !important;
+        }
+        .text-gray-700 {
+          color: #374151 !important;
+        }
+        .bg-gray-200 {
+          background-color: #e5e7eb !important;
+        }
+        .text-gray-400 {
+          color: #9ca3af !important;
+        }
+        .text-primary {
+          color: #3b82f6 !important;
+        }
+      `;
+      element.appendChild(style);
+      
+      // Agregar temporalmente al DOM
+      element.style.position = 'absolute';
+      element.style.left = '-9999px';
+      element.style.top = '-9999px';
+      document.body.appendChild(element);
+      
+      try {
+        const canvas = await html2canvas(element, {
+          useCORS: true, // Permite imágenes de origen cruzado
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+        });
 
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
@@ -105,12 +150,18 @@ const OrderReceipt: React.FC = () => {
       const scaledWidth = imgWidth * scale;
       const scaledHeight = imgHeight * scale;
 
-      pdf.addImage(imgData, "PNG", 0, 0, scaledWidth, scaledHeight);
-      pdf.save(`Orden_Número_${order?.correlative}.pdf`);
-    }
+              pdf.addImage(imgData, "PNG", 0, 0, scaledWidth, scaledHeight);
+        pdf.save(`Orden_Número_${order?.correlative}.pdf`);
+      } finally {
+        // Limpiar el elemento temporal
+        if (element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      }
 
-    if (buttonElement) {
-      buttonElement.style.display = "block"; // Vuelve a mostrar el botón
+      if (buttonElement) {
+        buttonElement.style.display = "block"; // Vuelve a mostrar el botón
+      }
     }
   };
 
@@ -181,11 +232,47 @@ const OrderReceipt: React.FC = () => {
   }
 
   if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
+    return (
+      <div className="min-h-[65vh] flex items-center justify-center bg-gray-100">
+        <div className="max-w-md mx-auto text-center p-8 bg-white rounded-lg shadow-md">
+          <div className="mb-4">
+            <svg className="mx-auto h-16 w-16 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error al cargar la orden</h2>
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.history.back()} 
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Volver atrás
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!order) {
-    return <div className="text-center">Orden no encontrada</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="max-w-md mx-auto text-center p-8 bg-white rounded-lg shadow-md">
+          <div className="mb-4">
+            <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Orden no encontrada</h2>
+          <p className="text-gray-600 mb-4">No se pudo encontrar la orden solicitada. Verifica que el enlace sea correcto.</p>
+          <button 
+            onClick={() => window.history.back()} 
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Volver atrás
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -209,7 +296,7 @@ const OrderReceipt: React.FC = () => {
           <div className="text-center mt-6 mb-6">
             <img
               src={imagePath}
-              alt="Logo Tavola"
+              alt="Logo"
               className="mx-auto max-h-40"
             />
           </div>
@@ -301,14 +388,25 @@ const OrderReceipt: React.FC = () => {
                 key={item.id}
                 className="flex flex-col rounded-lg sm:flex-row sm:items-center my-4 border border-gray-300 pb-4 p-4"
               >
-                {/* Imagen del producto */}
-                <div className="sm:w-24 w-full mb-4 sm:mb-0 sm:mr-4 flex justify-center">
-                  <img
-                    src={item.sku.mainImageUrl}
-                    alt={item.sku.product.name}
-                    className="w-16 h-16 object-cover rounded-lg"
-                  />
-                </div>
+                                 {/* Imagen del producto */}
+                 <div className="sm:w-24 w-full mb-4 sm:mb-0 sm:mr-4 flex justify-center">
+                   {item.sku.mainImageUrl ? (
+                     <img
+                       src={item.sku.mainImageUrl}
+                       alt={item.sku.product.name}
+                       className="w-16 h-16 object-cover rounded-lg"
+                       onError={(e) => {
+                         e.currentTarget.style.display = 'none';
+                         e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                       }}
+                     />
+                   ) : null}
+                   <div className={`w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center ${item.sku.mainImageUrl ? 'hidden' : ''}`}>
+                     <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                     </svg>
+                   </div>
+                 </div>
 
                 {/* Información del producto */}
                 <div className="flex-1">

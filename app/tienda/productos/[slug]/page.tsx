@@ -4,10 +4,20 @@ import { notFound } from "next/navigation";
 import { slugify } from "@/app/utils/slugify";
 import BannerTienda01 from "@/components/PIXELUP/BannerTienda/BannerTienda01/BannerTienda01";
 import ProductDetailClient from "./ProductDetailClient";
-
+import { getBaseUrl, getBaseUrlWithLogs, getCanonicalUrl, getRobustBaseUrl } from "@/app/utils/urlUtils";
 
 export async function generateMetadata({ params }: any) {
   const siteId = process.env.NEXT_PUBLIC_API_URL_SITEID || "";
+
+  // Obtener la URL actual del request
+  const headersList = await import('next/headers').then(m => m.headers());
+  const host = headersList.get('host') || 'dev-ecommerce.pixelup.cl';
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
+  
+  console.log('🔧 [product-metadata] Host detectado:', host);
+  console.log('🔧 [product-metadata] Protocolo:', protocol);
+  console.log('🔧 [product-metadata] Base URL generada:', baseUrl);
 
   try {
     // Obtener todos los productos
@@ -34,40 +44,92 @@ export async function generateMetadata({ params }: any) {
       };
     }
 
-    const canonicalUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/tienda/productos/${params.slug}`;
-    const description = product.description
-      ? product.description.replace(/(<([^>]+)>)/gi, "")
-      : "";
-    const keywords = description
-      ? description.split(/\s+/).slice(0, 10).join(", ")
+    // Generar URL canónica de manera más explícita
+    const productPath = `/tienda/productos/${params.slug}`;
+    const canonicalUrl = `${baseUrl}${productPath}`;
+    
+    console.log('🔧 [product-metadata] Base URL:', baseUrl);
+    console.log('🔧 [product-metadata] Product path:', productPath);
+    console.log('🔧 [product-metadata] URL canónica generada:', canonicalUrl);
+    console.log('🔧 [product-metadata] ¿Es URL absoluta?', canonicalUrl.startsWith('http'));
+    
+    // Crear una descripción más atractiva y específica para el producto
+    let seoDescription = "Descubre este increíble producto en nuestra tienda.";
+    
+    if (product.description) {
+      let cleanDescription = product.description;
+      
+      // Intentar parsear JSON si la descripción está en formato JSON
+      try {
+        const parsedDesc = JSON.parse(product.description);
+        if (parsedDesc.content) {
+          cleanDescription = parsedDesc.content;
+        }
+      } catch (e) {
+        // Si no es JSON válido, usar la descripción tal como está
+        cleanDescription = product.description;
+      }
+      
+      // Limpiar HTML tags
+      cleanDescription = cleanDescription.replace(/(<([^>]+)>)/gi, "").trim();
+      
+      // Crear una descripción que incluya el nombre del producto y la descripción
+      const productName = product.name || '';
+      const description = cleanDescription.length > 120 ? cleanDescription.substring(0, 120) + '...' : cleanDescription;
+      
+      seoDescription = `${productName} - ${description}`.substring(0, 160);
+    }
+    
+    console.log(`🔧 [product-metadata] Meta description para ${product.name}:`, seoDescription);
+    
+    const keywords = seoDescription
+      ? seoDescription.split(/\s+/).slice(0, 10).join(", ")
       : "";
 
-    return {
+    const metadata = {
       title: product.name,
-      description: description,
+      description: seoDescription,
       keywords: keywords,
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
       openGraph: {
         title: product.name,
-        description: description,
+        description: seoDescription,
+        type: 'website',
+        url: canonicalUrl,
+        siteName: process.env.NEXT_PUBLIC_NOMBRE_TIENDA,
         images: [
           {
             url: product.mainImageUrl,
-            width: 800,
-            height: 600,
+            width: 1200,
+            height: 630,
             alt: product.name,
           },
         ],
-        url: canonicalUrl,
       },
       twitter: {
+        card: 'summary_large_image',
         title: product.name,
-        description: description,
+        description: seoDescription,
         images: [product.mainImageUrl],
       },
       alternates: {
         canonical: canonicalUrl,
       },
     };
+    
+    console.log('🔧 [product-metadata] Metadata completo:', JSON.stringify(metadata, null, 2));
+    
+    return metadata;
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
@@ -122,6 +184,33 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
       notFound();
     }
 
+    // Crear la descripción SEO para el párrafo visible
+    let seoDescription = "Descubre este increíble producto en nuestra tienda.";
+    
+    if (product.description) {
+      let cleanDescription = product.description;
+      
+      // Intentar parsear JSON si la descripción está en formato JSON
+      try {
+        const parsedDesc = JSON.parse(product.description);
+        if (parsedDesc.content) {
+          cleanDescription = parsedDesc.content;
+        }
+      } catch (e) {
+        // Si no es JSON válido, usar la descripción tal como está
+        cleanDescription = product.description;
+      }
+      
+      // Limpiar HTML tags
+      cleanDescription = cleanDescription.replace(/(<([^>]+)>)/gi, "").trim();
+      
+      // Crear una descripción que incluya el nombre del producto y la descripción
+      const productName = product.name || '';
+      const description = cleanDescription.length > 120 ? cleanDescription.substring(0, 120) + '...' : cleanDescription;
+      
+      seoDescription = `${productName} - ${description}`.substring(0, 160);
+    }
+
     // Obtener los detalles completos del producto incluyendo atributos
     const productData = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL_CLIENTE}/api/v1/products/${product.id}/skus?siteId=${siteId}`,
@@ -151,6 +240,8 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
 
           return {
             ...sku,
+            description: sku.description, // Asegurar que se incluya la descripción larga
+            additionalData1: sku.additionalData1, // Asegurar que se incluya la descripción corta
             attributes:
               attributesData.code === 0
                 ? attributesData.skuAttributes.map((attr: any) => ({
@@ -168,9 +259,17 @@ async function DetalleProductos({ params }: { params: { slug: string } }) {
 
     return (
       <>
-        <div>
-          <BannerTienda01 />
+        {/* Párrafo SEO visible para Google - debe coincidir con la meta description */}
+        <div className="sr-only">
+          <p>{seoDescription}</p>
         </div>
+
+        {/* 
+          <div>
+            <BannerTienda01 />
+          </div>
+         
+        */}
 
         <div className="mx-auto">
           <ProductDetailClient productData={productData} />

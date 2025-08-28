@@ -109,11 +109,14 @@ const FreeShippingOption: React.FC<any> = ({}) => {
   const updateContentBlock = async (value: string | null) => {
     try {
       const contentBlockId = process.env.NEXT_PUBLIC_MONTOENVIOGRATIS_CONTENTBLOCK;
+      // Si value es null (envío gratis desactivado), usar "DISABLED" como identificador
+      const contentText = value === null ? "DISABLED" : (value || "");
+      
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL_BO_CLIENTE}/api/v1/content-blocks/${contentBlockId}?siteId=${process.env.NEXT_PUBLIC_API_URL_SITEID}`,
         {
           title: "Monto Envío Gratis",
-          contentText: value || "",
+          contentText: contentText,
         },
         {
           headers: {
@@ -195,9 +198,34 @@ const FreeShippingOption: React.FC<any> = ({}) => {
 
   return (
     <div className="p-8 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+      <h2 className="text-2xl font-bold mb-6 text-primary">
         Configuración de Envío Gratis
       </h2>
+      
+      {/* Explicación del envío gratis */}
+      <div className="shadow-md rounded-lg p-6 bg-gray-50 border border-gray-200 mb-6">
+        <div className="flex items-start">
+          <div className="flex-shrink-0">
+            <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-lg font-medium text-primary mb-2">
+              ¿Cómo funciona el envío gratis?
+            </h3>
+            <div className="text-gray-700 space-y-2">
+              <p>
+                <strong>Funcionamiento:</strong> Cuando configuras un monto mínimo para envío gratis, los clientes que alcancen ese valor en su carrito de compras recibirán automáticamente el envío sin costo adicional.
+              </p>
+              <p>
+                <strong>Ejemplo:</strong> Si estableces $50.000 como monto mínimo, cualquier compra que supere ese valor tendrá envío gratis, independientemente de la zona de reparto configurada.
+              </p>
+              
+            </div>
+          </div>
+        </div>
+      </div>
       
       {/* Información del plan actual */}
 

@@ -4,12 +4,14 @@ import axios from "axios";
 import { getCookie } from "cookies-next";
 import Loader from "@/components/common/Loader-t";
 import Link from "next/link";
-import { FaStore, FaHandshake, FaShieldAlt } from "react-icons/fa";
+import * as LucideIcons from "lucide-react";
+import { popularIcons } from "@/utils/iconList";
 
 // Definir interfaces para el tipado
 interface BoxContent {
   title: string;
   contentText: string;
+  icon?: string; // Agregar campo para el icono
 } 
 
 interface ContentData {
@@ -32,10 +34,22 @@ interface ApiResponse {
   };
 }
 
+
 const SinFoto05BO: React.FC = () => {
   const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO05_CONTENTBLOCK || "";
   const [loading, setLoading] = useState<boolean>(true);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Función para renderizar iconos dinámicamente
+  const renderIcon = (iconName: string, className: string = "text-2xl text-primary") => {
+    if (!iconName) return null;
+    
+    const IconComponent = (LucideIcons as any)[iconName];
+    if (IconComponent) {
+      return <IconComponent className={className} />;
+    }
+    return null;
+  };
 
   // Función de utilidad para formatear URLs
   const formatURL = (url: string): string => {
@@ -83,9 +97,9 @@ const SinFoto05BO: React.FC = () => {
     epigrafe: "",
     titulo: "",
     contenido: "",
-    box1: { title: "", contentText: "" },
-    box2: { title: "", contentText: "" },
-    box3: { title: "", contentText: "" },
+    box1: { title: "", contentText: "", icon: "Handshake" },
+    box2: { title: "", contentText: "", icon: "Shield" },
+    box3: { title: "", contentText: "", icon: "Store" },
     textoBoton: "",
     linkBoton: "",
   });
@@ -220,10 +234,10 @@ const SinFoto05BO: React.FC = () => {
         {showPreview && (
           <div className="mb-8 overflow-x-auto">
             <h3 className="font-medium text-gray-700 mb-4">Vista Previa:</h3>
-            <section className="py-12 bg-gradient-to-b from-white to-gray-50">
+            <section className="py-12 bg-white">
               <div className="mx-auto px-4">
                 <div className="max-w-3xl mx-auto text-center">
-                  <h2 className="text-2xl font-bold text-[#EB4F5D] mt-2 mb-4">
+                  <h2 className="text-2xl font-bold text-primary mt-2 mb-4">
                     {formData.epigrafe}
                   </h2>
                   <p className="text-gray-600 mb-8">
@@ -239,10 +253,8 @@ const SinFoto05BO: React.FC = () => {
 
                     {[formData.box1, formData.box2, formData.box3].map((box, index) => (
                       <div key={index} className="flex flex-col items-center text-center p-4">
-                        <div className="bg-[#2F3C69]/10 rounded-full p-3 mb-4">
-                          {index === 0 && <FaHandshake className="text-2xl text-[#2F3C69]" />}
-                          {index === 1 && <FaShieldAlt className="text-2xl text-[#2F3C69]" />}
-                          {index === 2 && <FaStore className="text-2xl text-[#2F3C69]" />}
+                        <div className="bg-primary/10 rounded-full p-3 mb-4">
+                          {renderIcon(box.icon || "Circle", "text-2xl text-primary")}
                         </div>
                         <h3 className="text-lg font-semibold text-gray-800 mb-2">
                           {box.title}
@@ -257,9 +269,10 @@ const SinFoto05BO: React.FC = () => {
                   <div className="text-center mt-8">
                     <Link
                       href={formData.linkBoton || '#'}
-                      className="inline-block bg-[#EB4F5D] text-white px-6 py-2 rounded-full text-sm hover:bg-[#EB4F5D]/90 transition-colors duration-300"
+                      className="inline-block bg-primary text-white px-6 py-2 text-sm hover:bg-primary/90 transition-colors duration-300"
+                      style={{ borderRadius: "var(--radius)" }}
                     >
-                      {formData.textoBoton || 'Texto del botón'}
+                      {formData.textoBoton || 'Conoce más sobre nosotros'}
                     </Link>
                   </div>
                 </div>
@@ -364,6 +377,37 @@ const SinFoto05BO: React.FC = () => {
                         style={{ borderRadius: "var(--radius)" }}
                         rows={3}
                       />
+                    </div>
+                    <div>
+                      <h3 className="font-normal text-primary">
+                        Icono <span className="text-primary">*</span>
+                      </h3>
+                      <div className="relative">
+                        <select
+                          value={boxData.icon || "Circle"}
+                          onChange={(e) => handleChange("icon", e.target.value, boxNum - 1)}
+                          className="shadow block w-full px-4 py-3 mt-2 mb-4 border border-gray-300 appearance-none bg-white"
+                          style={{ borderRadius: "var(--radius)" }}
+                        >
+                          {popularIcons.map((iconName) => (
+                            <option key={iconName} value={iconName}>
+                              {iconName}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                          <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                      {/* Vista previa del icono seleccionado */}
+                      <div className="flex items-center space-x-2 mt-2">
+                        <span className="text-sm text-gray-600">Vista previa:</span>
+                        <div className="bg-primary/10 rounded-full p-2">
+                          {renderIcon(boxData.icon || "Circle", "text-lg text-primary")}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

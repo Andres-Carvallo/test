@@ -4,11 +4,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAPI } from "@/app/Context/ProductTypeContext";
 import Link from "next/link";
-import ProductCard02 from "../ProductCards/ProductCards02/ProductCard02";
-import ProductCard01 from "@/components/PIXELUP/ProductCards/ProductCards01/ProductCard01";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import ProductCard05 from "../ProductCards/ProductCards05/ProductCards05";
+import { getActiveComponents } from "@/app/config/GlobalConfig";
+
 interface Product {
   id: string;
   skuId: string;
@@ -18,14 +17,13 @@ interface Product {
 
 const Destacados01: React.FC<any> = ({
   text,
-  ProductCardComponent = ProductCard05,
 }) => {
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState<Error | null>(null);
   const { addToCartHandler } = useAPI();
   const [products, setProducts] = useState<Product[]>([]);
   const [autoplay, setAutoplay] = useState(true);
+  const { ProductCard } = getActiveComponents();
 
   const fetchStockForVariation = async (productId: string, skuId: string) => {
     try {
@@ -189,11 +187,11 @@ const Destacados01: React.FC<any> = ({
     <div className="py-8 px-4">
       <div className="mx-auto max-w-6xl relative">
         <div className="text-center mb-4">
-          <span className="text-sm uppercase tracking-wider text-gray-500">
+  {/*         <span className="text-sm uppercase tracking-wider text-gray-500">
             Descubre
-          </span>
-          <h2 className="text-3xl md:text-4xl text-primary font-bold mt-2 uppercase">
-            {text}
+          </span> */}
+          <h2 className="text-3xl md:text-4xl text-gray-500 font-bold mt-2 uppercase">
+            Descubre
           </h2>
         </div>
         <div className="relative">
@@ -220,7 +218,7 @@ const Destacados01: React.FC<any> = ({
             renderButtonGroupOutside={true}
           >
             {products.map((product: any) => (
-              <ProductCardComponent
+              <ProductCard
                 key={product.id}
                 product={product}
                 addToCartHandler={addToCartHandler}

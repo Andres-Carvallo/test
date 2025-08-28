@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { FaStore, FaHandshake, FaShieldAlt } from "react-icons/fa";
+import * as LucideIcons from "lucide-react";
 
 // Definir interfaces para el tipado
 interface BoxContent {
   title: string;
   contentText: string;
+  icon?: string; // Agregar campo para el icono
 }
 
 interface ContentData {
@@ -33,6 +34,17 @@ interface ApiResponse {
 const SinFoto05: React.FC = () => {
   const ContentBlockId = process.env.NEXT_PUBLIC_SINFOTO05_CONTENTBLOCK || "";
   const [contentData, setContentData] = useState<ContentData | null>(null);
+
+  // Función para renderizar iconos dinámicamente
+  const renderIcon = (iconName: string, className: string = "text-2xl text-primary") => {
+    if (!iconName) return null;
+    
+    const IconComponent = (LucideIcons as any)[iconName];
+    if (IconComponent) {
+      return <IconComponent className={className} />;
+    }
+    return null;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,44 +91,19 @@ const SinFoto05: React.FC = () => {
             <div className="hidden md:block absolute top-1/2 left-1/3 w-px h-16 bg-gray-200 transform -translate-y-1/2"></div>
             <div className="hidden md:block absolute top-1/2 left-2/3 w-px h-16 bg-gray-200 transform -translate-y-1/2"></div>
 
-            {/* Asesoría Personalizada */}
-            <div className="flex flex-col items-center text-center p-4">
-              <div className="bg-primary/10 rounded-full p-3 mb-4">
-                <FaHandshake className="text-2xl text-primary" />
+            {[contentData.box1, contentData.box2, contentData.box3].map((box, index) => (
+              <div key={index} className="flex flex-col items-center text-center p-4">
+                <div className="bg-primary/10 rounded-full p-3 mb-4">
+                  {renderIcon(box.icon || "Circle", "text-2xl text-primary")}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {box.title}
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  {box.contentText}
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                {contentData.box1.title}
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {contentData.box1.contentText}
-              </p>
-            </div>
-
-            {/* Garantía y Servicio */}
-            <div className="flex flex-col items-center text-center p-4">
-              <div className="bg-primary/10 rounded-full p-3 mb-4">
-                <FaShieldAlt className="text-2xl text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                {contentData.box2.title}
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {contentData.box2.contentText}
-              </p>
-            </div>
-
-            {/* Despacho Gratuito */}
-            <div className="flex flex-col items-center text-center p-4">
-              <div className="bg-primary/10 rounded-full p-3 mb-4">
-                <FaStore className="text-2xl text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                {contentData.box3.title}
-              </h3>
-              <p className="text-gray-600 text-sm">
-                {contentData.box3.contentText}
-              </p>
-            </div>
+            ))}
           </div>
 
           <div className="text-center mt-8">

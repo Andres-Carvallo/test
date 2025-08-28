@@ -11,16 +11,16 @@ import type { ComponentType } from "react";
  * Configuración global por defecto de la aplicación
  */
 export const globalConfig: GlobalConfig = {
-  activeFooter: "Footer01",
+  activeFooter: "Footer05",
   activeNavbar: "Navbar01",
   activeProductCard: "ProductCard02",
-  activeProductDetail: "ProductDetail01",
+  activeProductDetail: "ProductDetail03",
   whatsappButton: {
     isActive: true,
     link: process.env.NEXT_PUBLIC_WHATSAPP_LINK || "",
   },
   bannerPrincipalAspects: {
-    desktop: "16/5",
+    desktop: "16/7",
     tablet: "16/6",
     mobile: "3/2",
   },
@@ -33,7 +33,7 @@ export const globalConfig: GlobalConfig = {
     mobile: "9/5",
   },
   bannerTiendaAspects: {
-    desktop: "16/4",
+    desktop: "16/3",
     mobile: "3/2",
   },
 };
@@ -42,7 +42,7 @@ export const globalConfig: GlobalConfig = {
 // ************** Tipos de Componentes **************
 // **************************************************
 
-type FooterType = "Footer01" | "Footer02" | "Footer03";
+type FooterType = "Footer01" | "Footer02" | "Footer03" | "Footer05";
 type NavbarType = "Navbar01" | "Navbar02";
 type ProductCardType =
   | "ProductCard01"
@@ -53,7 +53,8 @@ type ProductCardType =
 type ProductDetailType =
   | "ProductDetail01"
   | "ProductDetail02"
-  | "ProductDetail03";
+  | "ProductDetail03"
+  | "ProductDetail04";
 
 // **************************************************
 // ************** Componentes de Carga **************
@@ -84,6 +85,10 @@ const footerComponents = {
   ),
   Footer03: dynamic(
     () => import("@/components/PIXELUP/Footer/Footer03/Footer03"),
+    { loading: LoadingComponent, ssr: true }
+  ),
+  Footer05: dynamic(
+    () => import("@/components/PIXELUP/Footer/Footer05/Footer05"),
     { loading: LoadingComponent, ssr: true }
   ),
 } as const;
@@ -158,6 +163,13 @@ const productDetailComponents = {
     () =>
       import(
         "@/components/PIXELUP/ProductDetail/ProductDetail03/ProductDetail03"
+      ),
+    { loading: LoadingComponent, ssr: true }
+  ),
+  ProductDetail04: dynamic(
+    () =>
+      import(
+        "@/components/PIXELUP/ProductDetail/ProductDetail04/ProductDetail04"
       ),
     { loading: LoadingComponent, ssr: true }
   ),

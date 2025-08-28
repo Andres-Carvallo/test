@@ -1,16 +1,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Script from "next/script";
+import Link from "next/link";
 
 // Definir interfaces para el tipado
 interface ContentData {
   title: string;
   paragraph: string;
-  listItems: string[];
   buttonText: string;
   buttonLink: string;
-  videoUrl: string;
+  mainImage?: {
+    name: string;
+    type: string;
+    size: number;
+    data: string;
+  };
 }
 
 interface ApiResponse {
@@ -54,102 +58,43 @@ const Hero07: React.FC = () => {
   }
 
   return (
-    <>
-      <Script
-        src="https://www.youtube.com/iframe_api"
-        strategy="beforeInteractive"
-      />
-      <section className="py-16">
-        <div className="mx-auto px-8 max-w-[90%]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {/* Columna de Texto */}
-            <div className="space-y-6">
-              <h2 className="text-4xl font-bold    mb-4">
-                {contentData.title}
-              </h2>
-              <div 
-                className="text-lg mb-6"
-                dangerouslySetInnerHTML={{ __html: contentData.paragraph }}
-              />
-              <div className="space-y-4">
-                {contentData.listItems.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-primary"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span className="">{item}</span>
-                  </div>
-                ))}
-              </div>
-              <a 
+    <section className="py-16">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
+          {/* Columna de Imagen */}
+          <div>
+            <img
+              src={contentData.mainImage?.data || "https://picsum.photos/800/600"}
+              alt="Nuestra Empresa"
+              className="w-full object-cover shadow-xl h-[600px]"
+              style={{ borderRadius: "var(--radius)" }}
+            />
+          </div>
+          
+          {/* Columna de Texto */}
+          <div>
+            <h2 className="mb-6 font-bold text-4xl">
+              {contentData.title}
+            </h2>
+            <div 
+              className="mb-4 text-base"
+              dangerouslySetInnerHTML={{ __html: contentData.paragraph }}
+            />
+            <div className="flex flex-col gap-4 pt-6 sm:flex-row">
+              <Link 
                 href={contentData.buttonLink}
-                className="mt-8 bg-primary text-white px-8 py-3 rounded-md hover:bg-primary/50 transition-colors inline-flex items-center gap-2"
-                style={{ borderRadius: "var(--radius)" }}
+                className="bg-primary text-white hover:bg-primary/80 inline-flex items-center justify-center border border-transparent px-6 py-2.5 text-base font-medium transition-colors duration-300"
+                style={{
+                  borderRadius: "var(--radius)",
+                }}
               >
                 {contentData.buttonText}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </a>
-            </div>
-
-            {/* Columna de Video */}
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-xl" style={{ borderRadius: "var(--radius)" }}>
-              <iframe
-                className="absolute top-0 left-0 w-full h-full"
-                src={`${contentData.videoUrl}?autoplay=1&mute=1&playlist=${contentData.videoUrl.split('/').pop()}&rel=0&modestbranding=1&controls=0&showinfo=0&enablejsapi=1`}
-                title="Video corporativo"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
-                id="youtube-player"
-              ></iframe>
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    var player;
-                    function onYouTubeIframeAPIReady() {
-                      player = new YT.Player('youtube-player', {
-                        events: {
-                          'onStateChange': onPlayerStateChange
-                        }
-                      });
-                    }
-                    function onPlayerStateChange(event) {
-                      if (event.data == YT.PlayerState.ENDED) {
-                        player.playVideo();
-                      }
-                    }
-                  `,
-                }}
-              />
+              </Link>
             </div>
           </div>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 
