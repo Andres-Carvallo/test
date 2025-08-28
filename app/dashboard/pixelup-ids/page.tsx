@@ -1737,7 +1737,7 @@ const ContentBlockFormInner: React.FC = () => {
               {/* Nota: Las credenciales se ingresan en el modal de login dual */}
               <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  💡 Las credenciales se ingresan en el modal de login dual que se abre al hacer clic en "Autenticar Dual"
+                  💡 Las credenciales se ingresan en el modal de login dual que se abre al hacer clic en &quot;Autenticar Dual&quot;
                 </p>
               </div>
               
