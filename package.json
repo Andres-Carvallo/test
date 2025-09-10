@@ -4,9 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/auto-setup.js && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "onboard": "node scripts/onboard.js",
+    "auto-setup": "node scripts/auto-setup.js",
+    "init:home": "node scripts/initHomeConfig.js",
+    "init:footer": "node scripts/initFooterConfig.js",
+    "init:contact": "node scripts/initContactFormConfig.js",
+    "init:whatsapp": "node scripts/initWhatsAppConfig.js",
+    "init:navbar": "node scripts/initNavbarConfig.js",
+    "init:aboutus": "node scripts/initAboutUsConfig.js",
+    "init:services": "node scripts/initServicesListConfig.js",
+    "init:sinfoto": "node scripts/initSinFotoConfig.js",
+    "init:all-missing": "node scripts/initAllMissingComponents.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -26,6 +37,7 @@
     "cookies-next": "^4.1.1",
     "date-fns": "^3.6.0",
     "date-fns-tz": "^3.2.0",
+    "echarts": "^5.4.3",
     "echarts-for-react": "^3.0.2",
     "fast-xml-parser": "^5.0.9",
     "googleapis": "^140.0.1",

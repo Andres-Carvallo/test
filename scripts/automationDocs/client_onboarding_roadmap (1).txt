@@ -1,0 +1,179 @@
+
+# 🚀 Automated Onboarding Roadmap (Turborepo + Vercel + Content API)
+
+This roadmap defines the full process for onboarding a new client in our ecommerce platform using Vercel, Turborepo, and our custom content API.
+
+---
+
+## 🧭 Overview
+
+### Final Goal
+
+When onboarding a new client, the system will automatically:
+
+1. Create a new `siteId` via our backend API.
+2. Duplicate a template app from `apps/template-client` → `apps/client-name`.
+3. Populate content (e.g., banners) linked to that `siteId`.
+4. Generate a TypeScript enum (`bannerIds.ts`) with the content IDs.
+5. Commit and push the project to GitHub.
+6. Create a new Vercel project pointing to `apps/client-name`.
+
+---
+
+## ✅ Tasks Breakdown
+
+### 1. Project Structure
+
+Ensure the monorepo has the following default structure:
+
+```
+apps/
+  template-client/
+  client-name/       <-- will be generated
+packages/
+  ui/
+  utils/
+scripts/
+  onboard.js         <-- main automation logic
+  generate-banners.js
+```
+
+---
+
+### 2. Environment Variables
+
+Set these in your `.env` file and GitHub repo secrets:
+
+```
+BANNERS_API_URL=https://miapi.com/banners
+SITE_API_URL=https://miapi.com/sites
+API_AUTH_TOKEN=your-secret-token
+VERCEL_TOKEN=your-vercel-token
+```
+
+---
+
+### 3. Automation Script Flow (`scripts/onboard.js`)
+
+#### 🔹 1. Get client name from input
+
+```js
+const clientName = process.argv[2];
+```
+
+#### 🔹 2. Create `siteId`
+
+```js
+const siteRes = await fetch(`${SITE_API_URL}`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${API_AUTH_TOKEN}`,
+  },
+  body: JSON.stringify({ name: clientName, slug: clientName }),
+});
+const siteData = await siteRes.json();
+const siteId = siteData.id;
+```
+
+#### 🔹 3. Duplicate Template
+
+```js
+fs.cpSync('apps/template-client', `apps/${clientName}`, { recursive: true });
+```
+
+#### 🔹 4. Generate Banners + Enums
+
+```js
+// POST banners with siteId, write bannerIds.ts in client app
+```
+
+#### 🔹 5. Git Commit and Push
+
+```js
+execSync('git add . && git commit -m "Add client" && git push');
+```
+
+#### 🔹 6. Create Vercel Project
+
+```js
+await axios.post('https://api.vercel.com/v9/projects', {
+  name: clientName,
+  rootDirectory: `apps/${clientName}`,
+  gitRepository: {
+    type: "github",
+    repo: "your-org/your-repo",
+  },
+});
+```
+
+---
+
+### 4. GitHub Action Workflow (`.github/workflows/onboard.yml`)
+
+```yaml
+name: Onboard New Client
+
+on:
+  workflow_dispatch:
+    inputs:
+      client_name:
+        description: "Client Name (e.g. client-xyz)"
+        required: true
+
+jobs:
+  onboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run onboarding
+        env:
+          API_AUTH_TOKEN: ${{ secrets.API_AUTH_TOKEN }}
+          SITE_API_URL: ${{ secrets.SITE_API_URL }}
+          BANNERS_API_URL: ${{ secrets.BANNERS_API_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: node scripts/onboard.js ${{ github.event.inputs.client_name }}
+```
+
+---
+
+## ✅ Summary
+
+| Step                       | Status | Tool           |
+|---------------------------|--------|----------------|
+| Create site ID            | ✅     | Custom API     |
+| Copy Turborepo folder     | ✅     | fs.cpSync      |
+| Generate banner IDs       | ✅     | API + fs.write |
+| Git push project          | ✅     | execSync       |
+| Create Vercel project     | ✅     | Vercel API     |
+| Trigger from GitHub UI    | ✅     | GitHub Actions |
+
+---
+
+## 📂 Final Folder Layout
+
+```
+monorepo/
+├── apps/
+│   ├── template-client/
+│   └── client-name/
+├── scripts/
+│   └── onboard.js
+├── .github/
+│   └── workflows/
+│       └── onboard.yml
+├── .env
+```
+
+---
+
+Keep this roadmap updated as the automation evolves.
