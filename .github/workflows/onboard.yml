@@ -36,9 +36,13 @@ jobs:
           node-version: '18'
           cache: 'npm'
           
+      - name: 🔧 Upgrade npm to 9.8.1
+        run: npm install -g npm@9.8.1
+          
       - name: 📦 Install Dependencies
-        run: npm ci
-        
+        run: |
+          npm ci || npm install
+          
       - name: ✅ Validate Client Name
         run: |
           CLIENT_NAME="${{ github.event.inputs.client_name }}"
@@ -50,7 +54,6 @@ jobs:
           
       - name: 🏗️ Create Environment Template
         run: |
-          # Create basic environment file for the scripts to work
           cat > .env.local << EOF
           NEXT_PUBLIC_API_URL_BO_CLIENTE=https://pixelup-customer-backoffice-api-git-de-80bd27-pixelups-projects.vercel.app
           NEXT_PUBLIC_API_URL_CLIENTE=https://pixelup-ecommerce-api-git-development-pixelups-projects.vercel.app
